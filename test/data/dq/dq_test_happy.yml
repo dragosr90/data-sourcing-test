@@ -1,0 +1,18 @@
+columns:
+  PK1: bigint
+  PK2: bigint
+  PK3: bigint
+  Type: string
+PK: 
+  - PK1
+  - PK2
+unique: 
+  - PK2
+not_null:
+  - PK1
+referential_checks:
+  - column: Type
+    filter: Type is not null
+    reference_schema: ""
+    reference_table: reference
+    reference_column: Lookup1

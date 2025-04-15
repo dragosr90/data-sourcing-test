@@ -1,0 +1,5 @@
+columns:
+  PK1: bigint
+  PK2: bigint
+  PK3: bigint
+  Type: int

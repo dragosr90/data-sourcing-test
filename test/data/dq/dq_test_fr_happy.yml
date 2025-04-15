@@ -1,0 +1,6 @@
+referential_checks:
+  - column: Type
+    filter: Type is not null
+    reference_schema: ""
+    reference_table: reference
+    reference_column: Lookup1

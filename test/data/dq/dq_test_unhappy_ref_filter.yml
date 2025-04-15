@@ -1,0 +1,5 @@
+referential_checks:
+  - column: Type
+    reference_schema: ""
+    reference_table: reference
+    reference_column: Lookup1
