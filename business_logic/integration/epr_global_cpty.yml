@@ -1,0 +1,205 @@
+target: int_{{ RUN_MONTH }}.epr_global_cpty
+
+sources:
+  - alias: EPR_ENT_PARTY
+    columns:
+    - GLOBAL_ID
+    - LAST_UPDATE_DATE
+    - PRTY_TYP
+    - PRTY_NM
+    source: stg_{{ RUN_MONTH }}.dial_epr_enterprise_party
+  - alias: EPR_RLTN_UP
+    columns:
+    - RLTNSHP_TYP
+    - RLTNSHP_STTS
+    - GLOBAL_ID1
+    - GLOBAL_ID2
+    filter: RLTNSHP_TYP = 102
+    source: stg_{{ RUN_MONTH }}.dial_epr_party_relationship
+  - alias: EPR_RLTN_HO
+    columns:
+    - RLTNSHP_TYP
+    - RLTNSHP_STTS
+    - GLOBAL_ID1
+    - GLOBAL_ID2
+    filter: RLTNSHP_TYP = 103
+    source: stg_{{ RUN_MONTH }}.dial_epr_party_relationship
+  - alias: EPR_RLTN_DP
+    columns:
+    - RLTNSHP_TYP
+    - RLTNSHP_STTS
+    - GLOBAL_ID1
+    - GLOBAL_ID2
+    filter: RLTNSHP_TYP = 101
+    source: stg_{{ RUN_MONTH }}.dial_epr_party_relationship
+  - alias: EPR_EXT_ID_LEI
+    columns:
+    - GLOBAL_ID
+    - EXTRN_ID_TYP
+    - EXTRN_ID_VAL
+    filter: EXTRN_ID_TYP = 'LEI'
+    source: stg_{{ RUN_MONTH }}.dial_epr_party_external_identifier
+  - alias: EPR_CLASS_02_NACE
+    columns:
+    - GLOBAL_ID
+    - CLSFCTN_TYP
+    - CLSFCTN_VAL
+    filter: CLSFCTN_TYP = 2
+    source: stg_{{ RUN_MONTH }}.dial_epr_party_classification
+  - alias: EPR_ENT_PARTY_UP
+    columns:
+    - GLOBAL_ID
+    source: stg_{{ RUN_MONTH }}.dial_epr_enterprise_party
+  - alias: EPR_ENT_PARTY_HO
+    columns:
+    - GLOBAL_ID
+    source: stg_{{ RUN_MONTH }}.dial_epr_enterprise_party
+  - alias: EPR_ENT_PARTY_DP
+    columns:
+    - GLOBAL_ID
+    source: stg_{{ RUN_MONTH }}.dial_epr_enterprise_party
+  - alias: EPR_ORG
+    columns:
+    - GLOBAL_ID
+    - MAIN_COC
+    - CNTRY_OF_INCORP
+    - LAST_UPDATE_DATE
+    source: stg_{{ RUN_MONTH }}.dial_epr_organisation
+  - alias: EPR_LOC_ID_INSIGHT
+    columns:
+    - GLOBAL_ID
+    - LOCL_SRC_SYSTM
+    - LOCL_ID
+    filter: LOCL_SRC_SYSTM = 'INSIGHTER'
+    source: stg_{{ RUN_MONTH }}.dial_epr_party_local_identifier
+  - alias: EPR_ADDRESS_PREF
+    columns:
+    - GLOBAL_ID
+    - ADRES_TYPE
+    - CNTRY
+    filter: ADRES_TYPE = 'PREF'
+    source: stg_{{ RUN_MONTH }}.dial_epr_party_address
+  - alias: EPR_ADDRESS_OFF
+    columns:
+    - GLOBAL_ID
+    - ADRES_TYPE
+    - CNTRY
+    filter: ADRES_TYPE = 'OFF'
+    source: stg_{{ RUN_MONTH }}.dial_epr_party_address
+  - alias: EPR_CLASS_SBI_01
+    columns:
+    - GLOBAL_ID
+    - CLSFCTN_TYP
+    - CLSFCTN_VAL
+    filter: CLSFCTN_TYP = 1
+    source: stg_{{ RUN_MONTH }}.dial_epr_party_classification
+  - alias: EPR_CLASS_SBI_03
+    columns:
+    - GLOBAL_ID
+    - CLSFCTN_TYP
+    - CLSFCTN_VAL
+    filter: CLSFCTN_TYP = 3
+    source: stg_{{ RUN_MONTH }}.dial_epr_party_classification
+  - alias: EPR_FINANCIAL_DET
+    columns:
+    - GLOBAL_ID
+    - ACCNT_DATA_LEVEL
+    - ANNL_TRNOVER
+    - ACCNT_CRRNCY
+    source: stg_{{ RUN_MONTH }}.dial_epr_organisation_financial_details
+  - alias: EPR_CLASS_VAL
+    columns:
+    - GLOBAL_ID
+    - CLSFCTN_TYP
+    - CLSFCTN_VAL
+    filter: CLSFCTN_STS = 1  and CLSFCTN_TYP = 18
+    source: stg_{{ RUN_MONTH }}.dial_epr_party_classification
+
+transformations:
+  - join:
+      left_source: EPR_ENT_PARTY
+      right_source: EPR_ORG
+      condition: 
+        - EPR_ENT_PARTY.GLOBAL_ID = EPR_ORG.GLOBAL_ID
+  - join:
+      right_source: EPR_CLASS_02_NACE
+      condition: 
+        - EPR_ENT_PARTY.GLOBAL_ID = EPR_CLASS_02_NACE.GLOBAL_ID 
+  - join:
+      right_source: EPR_CLASS_SBI_03
+      condition: 
+        - EPR_ENT_PARTY.GLOBAL_ID = EPR_CLASS_SBI_03.GLOBAL_ID
+  - join:
+      right_source: EPR_CLASS_SBI_01
+      condition: 
+        - EPR_ENT_PARTY.GLOBAL_ID = EPR_CLASS_SBI_01.GLOBAL_ID
+  - join:
+      right_source: EPR_ADDRESS_OFF
+      condition:
+        - EPR_ENT_PARTY.GLOBAL_ID = EPR_ADDRESS_OFF.GLOBAL_ID
+  - join: 
+      right_source: EPR_ADDRESS_PREF
+      condition: 
+        - EPR_ENT_PARTY.GLOBAL_ID = EPR_ADDRESS_PREF.GLOBAL_ID
+  - join:
+      right_source: EPR_EXT_ID_LEI
+      condition: 
+        - EPR_ENT_PARTY.GLOBAL_ID = EPR_EXT_ID_LEI.GLOBAL_ID
+  - join:
+      right_source: EPR_RLTN_UP
+      condition: 
+        - EPR_ENT_PARTY.GLOBAL_ID = EPR_RLTN_UP.GLOBAL_ID1
+  - join:
+      right_source: EPR_ENT_PARTY_UP
+      condition: 
+        - EPR_RLTN_UP.GLOBAL_ID2 = EPR_ENT_PARTY_UP.GLOBAL_ID
+  - join:
+      right_source: EPR_RLTN_HO
+      condition: 
+        - EPR_ENT_PARTY.GLOBAL_ID = EPR_RLTN_HO.GLOBAL_ID1
+  - join:
+      right_source: EPR_ENT_PARTY_HO
+      condition: 
+        - EPR_RLTN_HO.GLOBAL_ID2 = EPR_ENT_PARTY_HO.GLOBAL_ID
+  - join:
+      right_source: EPR_RLTN_DP
+      condition: 
+        - EPR_ENT_PARTY.GLOBAL_ID = EPR_RLTN_DP.GLOBAL_ID1
+  - join:
+      right_source: EPR_ENT_PARTY_DP
+      condition: 
+        - EPR_RLTN_DP.GLOBAL_ID2 = EPR_ENT_PARTY_DP.GLOBAL_ID
+  - join:
+      right_source: EPR_LOC_ID_INSIGHT
+      condition: 
+        - EPR_ENT_PARTY.GLOBAL_ID = EPR_LOC_ID_INSIGHT.GLOBAL_ID
+  - join:
+      right_source: EPR_FINANCIAL_DET
+      condition: 
+        - EPR_ENT_PARTY.GLOBAL_ID = EPR_FINANCIAL_DET.GLOBAL_ID
+  - join:
+      right_source: EPR_CLASS_VAL
+      condition: 
+        - EPR_ENT_PARTY.GLOBAL_ID = EPR_CLASS_VAL.GLOBAL_ID
+
+expressions:
+  GlobalCounterpartyIdentifier: EPR_ENT_PARTY.GLOBAL_ID
+  PartyType: EPR_ENT_PARTY.PRTY_TYP
+  NationalIdentifier: case when EPR_ENT_PARTY.PRTY_TYP = 'ORG' then EPR_ORG.MAIN_COC end
+  CounterpartyName: EPR_ENT_PARTY.PRTY_NM
+  LeiCode: case when EPR_EXT_ID_LEI.EXTRN_ID_TYP = 'LEI' then EPR_EXT_ID_LEI.EXTRN_ID_VAL end
+  OfficialNace: case when EPR_CLASS_02_NACE.CLSFCTN_TYP = 2 then EPR_CLASS_02_NACE.CLSFCTN_VAL end
+  UltimateParentOrganisation: EPR_ENT_PARTY_UP.GLOBAL_ID
+  HeadOfficeOrganisation: case when EPR_RLTN_HO.RLTNSHP_TYP = 103 then EPR_ENT_PARTY_HO.GLOBAL_ID end
+  ImmediateParentOrganisation: case when EPR_RLTN_DP.RLTNSHP_TYP = 101 then EPR_ENT_PARTY_DP.GLOBAL_ID end
+  CountryOfIncorporation: EPR_ORG.CNTRY_OF_INCORP
+  InsighterId: case when EPR_LOC_ID_INSIGHT.LOCL_SRC_SYSTM = 'INSIGHTER' then EPR_LOC_ID_INSIGHT.LOCL_ID end
+  CountryOfResidence: case when EPR_ADDRESS_PREF.ADRES_TYPE = 'PREF' then EPR_ADDRESS_PREF.CNTRY end
+  OfficialSbiCode: case when EPR_CLASS_SBI_01.CLSFCTN_TYP = 1 then EPR_CLASS_SBI_01.CLSFCTN_VAL end
+  RealSbiCode: case when EPR_CLASS_SBI_03.CLSFCTN_TYP = 3 then EPR_CLASS_SBI_03.CLSFCTN_VAL end
+  GroupAnnualTurnover: case when EPR_RLTN_UP.RLTNSHP_TYP = 102 and EPR_FINANCIAL_DET.ACCNT_DATA_LEVEL = 3 and EPR_RLTN_UP.RLTNSHP_STTS = 1 then EPR_FINANCIAL_DET.ANNL_TRNOVER end
+  GroupAnnualTurnoverCurrency: case when EPR_RLTN_UP.RLTNSHP_TYP = 102 and EPR_FINANCIAL_DET.ACCNT_DATA_LEVEL = 3 and EPR_RLTN_UP.RLTNSHP_STTS = 1 then EPR_FINANCIAL_DET.ACCNT_CRRNCY end
+  SmeIndicator: case when EPR_CLASS_VAL.CLSFCTN_VAL = 1 then 'Y' when EPR_CLASS_VAL.CLSFCTN_VAL = 2 then 'N' else null end
+
+drop_duplicates: true
+  
