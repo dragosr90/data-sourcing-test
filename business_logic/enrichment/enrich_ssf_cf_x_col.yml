@@ -1,0 +1,80 @@
+target: enrich_{{ RUN_MONTH }}.enrich_ssf_cf_x_col
+  
+sources:
+  - alias: SSF_CF_X_COL
+    source: int_{{ RUN_MONTH }}.int_ssf_cf_x_col
+  - alias: SSF_CF
+    source: int_{{ RUN_MONTH }}.int_ssf_cf
+  - alias: TCTRL_SSC_COL
+    source: stg_{{ RUN_MONTH }}.tctrl_ssc_ssf_basel
+  - alias: TCTRL_SSC_CF
+    source: stg_{{ RUN_MONTH }}.tctrl_ssc_ssf_basel
+  - alias: FAC_ROLLUP
+    source: enrich_{{ RUN_MONTH }}.enrich_facility_roll_up
+
+transformations:
+  - join:
+      left_source: SSF_CF_X_COL
+      right_source: SSF_CF
+      condition:
+        - SSF_CF.localfacilityidentifier = SSF_CF_X_COL.creditfacility
+        - SSF_CF.reporting_date = SSF_CF_X_COL.reporting_date
+        - SSF_CF.delivery_entity = SSF_CF_X_COL.delivery_entity
+      how: inner
+  - add_variables:
+      column_mapping:
+        var_delivery_entity: substr(SSF_CF_X_COL.delivery_entity,1,length(SSF_CF_X_COL.delivery_entity)-5)
+  - join: 
+      right_source: TCTRL_SSC_COL
+      how: left
+      condition:
+        - var_delivery_entity = TCTRL_SSC_COL.delivery_entity
+        - SSF_CF_X_COL.collateralssid = TCTRL_SSC_COL.sourcesystemidentifier
+  - join: 
+      right_source: TCTRL_SSC_CF
+      how: left
+      condition:
+        - var_delivery_entity = TCTRL_SSC_CF.delivery_entity
+        - SSF_CF_X_COL.creditfacilityssid = TCTRL_SSC_CF.sourcesystemidentifier
+  - join:
+      right_source: FAC_ROLLUP
+      condition:
+        - SSF_CF.reporting_date = FAC_ROLLUP.reporting_date
+        - SSF_CF.delivery_entity = FAC_ROLLUP.delivery_entity_orig
+        - SSF_CF.localfacilityidentifier = FAC_ROLLUP.localfacilityidentifier
+      how: left
+
+expressions:
+  reporting_date: SSF_CF_X_COL.reporting_date
+  delivery_entity_orig: SSF_CF_X_COL.delivery_entity
+  delivery_entity: var_delivery_entity
+  collateralidentifier: SSF_CF_X_COL.collateral
+  collateral_agmt_id: TCTRL_SSC_COL.basel_ssc || SSF_CF_X_COL.collateral
+  tine_collateral_agmt_id: CASE
+                              WHEN SSF_CF_X_COL.delivery_entity='FBS_REPT' 
+                                THEN 'SSM' || SSF_CF_X_COL.collateral || '_FBS' 
+                              WHEN SSF_CF_X_COL.delivery_entity='IHUB-FR1_CALC' 
+                                THEN 'SSM' || SSF_CF_X_COL.collateral || '_IHUB-FR1'
+                              WHEN SSF_CF_X_COL.delivery_entity='IHUB-DE2_CALC' 
+                                THEN 'SSM' || SSF_CF_X_COL.collateral || '_IHUB-DE2'
+                              WHEN SSF_CF_X_COL.delivery_entity='IHUB-BE1_REPT' 
+                                THEN 'SSM' || SSF_CF_X_COL.collateral || '_IHUB-BE1'
+                              WHEN SSF_CF_X_COL.delivery_entity='AACF_REPT' 
+                                THEN 'SSM' || SSF_CF_X_COL.collateral || '_AACF'
+                              WHEN SSF_CF_X_COL.delivery_entity='LEASE_REPT' 
+                                THEN 'SSM' || SSF_CF_X_COL.collateral || '_LEASE'
+                              WHEN SSF_CF_X_COL.delivery_entity='ENTRACARD_REPT' 
+                                THEN 'SSM' || SSF_CF_X_COL.collateral || '_ENTRACARD'
+                              WHEN SSF_CF_X_COL.delivery_entity='VIENNA_REPT' 
+                                THEN 'SSM' || SSF_CF_X_COL.collateral || '_VIENNA'
+                              WHEN SSF_CF_X_COL.delivery_entity='ALFAM_REPT' 
+                                THEN 'SSM' || SSF_CF_X_COL.collateral || '_ALFAM'
+                            END
+  ar_id: TCTRL_SSC_CF.basel_ssc || coalesce(FAC_ROLLUP.highest_existing_facility,SSF_CF_X_COL.creditfacility)
+  plnplindicator: SSF_CF.plnplindicator
+  ar_exp_type: "'CREDIT FACILITY'"
+  b4_eligible: cast(NULL as string)
+  b4_std_eligible: cast(NULL as string)
+  dep_to_cash_col_flag: cast(NULL as string)
+
+drop_duplicates: true

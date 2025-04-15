@@ -1,0 +1,356 @@
+target: enrich_{{ RUN_MONTH }}.enrich_ssf_col
+  
+sources:
+  - alias: SSF_COL
+    columns:
+    - reporting_date
+    - delivery_entity
+    - collateralidentifier
+    - nominalcollateralvaluetcurr
+    - originalcollateralvaluercurr
+    - nominalcollateralvaluercurr
+    - legalregistrationvaluercurr
+    - thirdpartypriorityclaimrcurr
+    - averagemarketvaluercurr
+    - collateraltype
+    - borrowersprimaryresidence
+    - lienposition
+    - csacashindicator
+    - heldbythirdpartyindicator
+    - revaluationfrequency
+    - collateralprovisiondate
+    - incomeproducingrestfinance
+    - maturitydate
+    - valuationdate
+    - originalcollateralvaldt
+    - originalcollateralvaluetcurr
+    - originalcollateralvalueramnt
+    - nominalcollateralvalueramnt
+    - legalregistrationvalueramnt
+    - averagemarketvalueramnt
+    - thirdpartypriorityclaimramnt
+    - numberofhousingunits
+    - legalbindingtofinishproperty
+    - developmentstatus
+    - countryofcollateral
+    - eligibleupdatetype
+    - property_upgrade_ind
+    - realestatetype
+    - realestatepurposetype
+    - securitycode
+    - sourcesystemidentifier
+    source: int_{{ RUN_MONTH }}.int_ssf_col
+  - alias: TCTRL_COLLTYPE
+    columns:
+    - ssf_col_type
+    - mdl_col_type
+    source: stg_{{ RUN_MONTH }}.tctrl_colltype_ssf_x_basel
+  - alias: FX_NOMT
+    columns:
+    - reporting_date
+    - quoted_ccy
+    - exchange_rate
+    source: stg_{{ RUN_MONTH }}.tmdm_113_fx_eom_rates
+  - alias: FX_ORG
+    columns:
+    - reporting_date
+    - quoted_ccy
+    - exchange_rate
+    source: stg_{{ RUN_MONTH }}.tmdm_113_fx_eom_rates
+  - alias: FX_LGL
+    columns:
+    - reporting_date
+    - quoted_ccy
+    - exchange_rate
+    source: stg_{{ RUN_MONTH }}.tmdm_113_fx_eom_rates
+  - alias: FX_NOMR
+    columns:
+    - reporting_date
+    - quoted_ccy
+    - exchange_rate
+    source: stg_{{ RUN_MONTH }}.tmdm_113_fx_eom_rates
+  - alias: FX_3RD
+    columns:
+    - reporting_date
+    - quoted_ccy
+    - exchange_rate
+    source: stg_{{ RUN_MONTH }}.tmdm_113_fx_eom_rates
+  - alias: FX_AVG
+    columns:
+    - reporting_date
+    - quoted_ccy
+    - exchange_rate
+    source: stg_{{ RUN_MONTH }}.tmdm_113_fx_eom_rates
+  - alias: MDM_1005
+    columns:
+    - reporting_date
+    - abbreviated_name
+    - ct_code_user
+    source: stg_{{ RUN_MONTH }}.tmdm_1005_b2_coll_type
+  - alias: TCTRL_PROP
+    columns:
+    - basel_real_estate_type
+    - valuation_quarter
+    - haircut_percentage
+    source: stg_{{ RUN_MONTH }}.tctrl_property_value
+  - alias: TCTRL_SSC
+    columns:
+    - delivery_entity
+    - sourcesystemidentifier
+    - basel_ssc
+    source: stg_{{ RUN_MONTH }}.tctrl_ssc_ssf_basel
+
+transformations:
+  - join: 
+      left_source: SSF_COL
+      right_source: TCTRL_COLLTYPE
+      how: left
+      condition:
+        - SSF_COL.collateraltype = TCTRL_COLLTYPE.ssf_col_type
+  - join: 
+      right_source: FX_NOMT
+      how: left
+      condition:
+        - SSF_COL.reporting_date = FX_NOMT.reporting_date
+        - SSF_COL.nominalcollateralvaluetcurr = FX_NOMT.quoted_ccy
+  - join: 
+      right_source: FX_ORG
+      how: left
+      condition:
+        - SSF_COL.reporting_date = FX_ORG.reporting_date
+        - SSF_COL.originalcollateralvaluercurr = FX_ORG.quoted_ccy
+  - join: 
+      right_source: FX_LGL
+      how: left
+      condition:
+        - SSF_COL.reporting_date = FX_LGL.reporting_date
+        - SSF_COL.legalregistrationvaluercurr = FX_LGL.quoted_ccy
+  - join: 
+      right_source: FX_NOMR
+      how: left
+      condition:
+        - SSF_COL.reporting_date = FX_NOMR.reporting_date
+        - SSF_COL.nominalcollateralvaluercurr = FX_NOMR.quoted_ccy
+  - join: 
+      right_source: FX_3RD
+      how: left
+      condition:
+        - SSF_COL.reporting_date = FX_3RD.reporting_date
+        - SSF_COL.thirdpartypriorityclaimrcurr = FX_3RD.quoted_ccy
+  - join: 
+      right_source: FX_AVG
+      how: left
+      condition:
+        - SSF_COL.reporting_date = FX_AVG.reporting_date
+        - SSF_COL.averagemarketvaluercurr = FX_AVG.quoted_ccy
+  - add_variables:
+      column_mapping:
+        var_basel_collateral_type: CASE 
+                                    WHEN SSF_COL.collateraltype = '2' AND SSF_COL.borrowersprimaryresidence = 'Y' AND SSF_COL.lienposition = 1 THEN 'CT003'
+                                    WHEN SSF_COL.collateraltype = '2' AND SSF_COL.borrowersprimaryresidence = 'Y' AND SSF_COL.lienposition > 1 THEN 'CT004'
+                                    WHEN SSF_COL.collateraltype = '2' AND SSF_COL.borrowersprimaryresidence = 'N' AND SSF_COL.lienposition = 1 THEN 'CT005'
+                                    WHEN SSF_COL.collateraltype = '2' AND SSF_COL.borrowersprimaryresidence = 'N' AND SSF_COL.lienposition > 1 THEN 'CT006'
+                                    WHEN SSF_COL.collateraltype = '2' THEN 'CT002'
+                                    WHEN SSF_COL.collateraltype = '4' THEN 'CT055'
+                                    WHEN SSF_COL.collateraltype = '6' AND SSF_COL.csacashindicator = 'Y' AND SSF_COL.heldbythirdpartyindicator = 'Y' THEN 'CT059'
+                                    WHEN SSF_COL.collateraltype = '6' AND SSF_COL.csacashindicator = 'Y' THEN 'CT050'
+                                    WHEN SSF_COL.collateraltype = '6' AND SSF_COL.heldbythirdpartyindicator = 'Y' THEN 'CT058'
+                                    WHEN SSF_COL.collateraltype = '6' THEN 'CT011'
+                                    WHEN SSF_COL.collateraltype = '8' AND SSF_COL.csacashindicator = 'Y' THEN 'CT053'
+                                    WHEN SSF_COL.collateraltype = '8' AND SSF_COL.revaluationfrequency = 1 THEN 'CT114'
+                                    WHEN SSF_COL.collateraltype = '8' THEN 'CT014'
+                                    WHEN SSF_COL.collateraltype = '45' AND SSF_COL.heldbythirdpartyindicator = 'Y' THEN 'CT062'
+                                    WHEN SSF_COL.collateraltype = '45' THEN 'CT015'
+                                    WHEN SSF_COL.collateraltype = '46' AND SSF_COL.csacashindicator = 'Y' THEN 'CT054'
+                                    WHEN SSF_COL.collateraltype = '46' AND SSF_COL.heldbythirdpartyindicator = 'Y' THEN 'CT063'
+                                    WHEN SSF_COL.collateraltype = '46' THEN 'CT016'
+                                    WHEN SSF_COL.collateraltype = '47' AND SSF_COL.heldbythirdpartyindicator = 'Y' THEN 'CT064'
+                                    WHEN SSF_COL.collateraltype = '47' THEN 'CT017'
+                                    ELSE TCTRL_COLLTYPE.mdl_col_type
+                                  END
+        var_basel_real_estate_type: CASE  
+                                      WHEN SSF_COL.realestatepurposetype='REU' THEN 'Rental'
+                                      WHEN var_basel_collateral_type in ('CT005','CT006') THEN 'Rental'
+                                      WHEN SSF_COL.realestatetype='OFC' THEN 'Office'
+                                      WHEN SSF_COL.realestatetype='INDUST' THEN 'Industry'
+                                      WHEN SSF_COL.realestatetype='RETAILS' THEN 'Retail'
+                                      WHEN var_basel_collateral_type in ('CT002','CT003','CT004') THEN 'Residential'
+                                      WHEN var_basel_collateral_type='CT082' THEN 'Industry'
+                                      WHEN var_basel_collateral_type in ('CT007','CT008','CT009','CT055') THEN 'Other'
+                                    END
+        var_valuationdate: coalesce(SSF_COL.valuationdate,SSF_COL.reporting_date) 
+        var_valuation_quarter: date_format(var_valuationdate, 'yyyy') || 'Q' || quarter(var_valuationdate)
+        var_delivery_entity: substr(SSF_COL.delivery_entity,1,length(SSF_COL.delivery_entity)-5)
+  - join: 
+      right_source: MDM_1005
+      how: left
+      condition:
+        - var_basel_collateral_type = MDM_1005.abbreviated_name
+  - join: 
+      right_source: TCTRL_PROP
+      how: left
+      condition:
+        - var_basel_real_estate_type = TCTRL_PROP.basel_real_estate_type
+        - var_valuation_quarter = TCTRL_PROP.valuation_quarter
+  - join: 
+      right_source: TCTRL_SSC
+      how: left
+      condition:
+        - var_delivery_entity = TCTRL_SSC.delivery_entity
+        - SSF_COL.sourcesystemidentifier = TCTRL_SSC.sourcesystemidentifier
+  - add_variables:
+      column_mapping:
+        var_measurement_ccy: coalesce(SSF_COL.nominalcollateralvaluercurr,SSF_COL.originalcollateralvaluercurr)
+        var_property_upgrade_ind: coalesce(SSF_COL.property_upgrade_ind,'0')
+        var_haircut_percentage: 0
+        var_originalcollateralvalueramnt: SSF_COL.originalcollateralvalueramnt/FX_ORG.exchange_rate
+        var_nominalcollateralvalueramnt: SSF_COL.nominalcollateralvalueramnt/FX_NOMR.exchange_rate
+        var_legalregistrationvalueramnt: SSF_COL.legalregistrationvalueramnt/FX_LGL.exchange_rate
+        var_averagemarketvalueramnt: SSF_COL.averagemarketvalueramnt/FX_AVG.exchange_rate
+        var_thirdpartypriorityclaimramnt: SSF_COL.thirdpartypriorityclaimramnt/FX_3RD.exchange_rate
+        var_orig_property_value: var_originalcollateralvalueramnt+var_originalcollateralvalueramnt*var_haircut_percentage
+        var_curr_property_value: var_nominalcollateralvalueramnt+var_nominalcollateralvalueramnt*var_haircut_percentage
+        var_orig_mkt_value: CASE
+                              WHEN MDM_1005.ct_code_user in ('CRMRRE','CRMCRE') and var_orig_property_value>0 
+                                  THEN CASE 
+                                          WHEN SSF_COL.lienposition>1 and var_thirdpartypriorityclaimramnt<=var_orig_property_value and var_legalregistrationvalueramnt>0
+                                            THEN least(var_orig_property_value-var_thirdpartypriorityclaimramnt,var_legalregistrationvalueramnt)
+                                          WHEN SSF_COL.lienposition>1 and var_thirdpartypriorityclaimramnt<=var_orig_property_value
+                                            THEN var_orig_property_value-var_thirdpartypriorityclaimramnt
+                                          WHEN SSF_COL.lienposition>1 and var_thirdpartypriorityclaimramnt>var_orig_property_value
+                                            THEN 0
+                                          WHEN SSF_COL.lienposition>1 and var_thirdpartypriorityclaimramnt is null and var_legalregistrationvalueramnt>0
+                                            THEN least(var_orig_property_value,var_legalregistrationvalueramnt)
+                                          WHEN SSF_COL.lienposition=1 and var_legalregistrationvalueramnt>0
+                                            THEN least(var_orig_property_value,var_legalregistrationvalueramnt)
+                                          ELSE var_orig_property_value
+                                      END
+                                  ELSE CASE
+                                          WHEN SSF_COL.lienposition>1 and var_thirdpartypriorityclaimramnt<=var_originalcollateralvalueramnt 
+                                            THEN var_originalcollateralvalueramnt-var_thirdpartypriorityclaimramnt
+                                          WHEN SSF_COL.lienposition>1 and var_thirdpartypriorityclaimramnt>var_originalcollateralvalueramnt
+                                            THEN 0
+                                          ELSE var_originalcollateralvalueramnt
+                                      END
+                            END 
+        var_avg_mkt_value:  case when MDM_1005.ct_code_user in ('CRMRRE','CRMCRE') and var_averagemarketvalueramnt>0 then
+                                case 
+                                    when SSF_COL.lienposition>1 and var_thirdpartypriorityclaimramnt<=var_averagemarketvalueramnt and var_legalregistrationvalueramnt>0
+                                      then least(var_averagemarketvalueramnt-var_thirdpartypriorityclaimramnt,var_legalregistrationvalueramnt)
+                                    when SSF_COL.lienposition>1 and var_thirdpartypriorityclaimramnt<=var_averagemarketvalueramnt
+                                      then var_averagemarketvalueramnt-var_thirdpartypriorityclaimramnt
+                                    when SSF_COL.lienposition>1 and var_thirdpartypriorityclaimramnt>var_averagemarketvalueramnt
+                                      then 0
+                                    when SSF_COL.lienposition>1 and var_thirdpartypriorityclaimramnt is null and var_legalregistrationvalueramnt>0
+                                      then least(var_averagemarketvalueramnt,var_legalregistrationvalueramnt)
+                                    when SSF_COL.lienposition=1 and var_legalregistrationvalueramnt>0
+                                      then least(var_averagemarketvalueramnt,var_legalregistrationvalueramnt)
+                                    else var_averagemarketvalueramnt
+                                end
+                              else var_averagemarketvalueramnt
+                            end 
+        var_curr_mkt_value:  case when MDM_1005.ct_code_user in ('CRMRRE','CRMCRE') and var_curr_property_value>0 then
+                                case  when SSF_COL.lienposition>1 and var_thirdpartypriorityclaimramnt<=var_curr_property_value and var_legalregistrationvalueramnt>0
+                                          then least(var_curr_property_value-var_thirdpartypriorityclaimramnt,var_legalregistrationvalueramnt)
+                                      when SSF_COL.lienposition>1 and var_thirdpartypriorityclaimramnt<=var_curr_property_value
+                                          then var_curr_property_value-var_thirdpartypriorityclaimramnt
+                                      when SSF_COL.lienposition>1 and var_thirdpartypriorityclaimramnt>var_curr_property_value
+                                            then 0
+                                      when SSF_COL.lienposition>1 and var_thirdpartypriorityclaimramnt is null and var_legalregistrationvalueramnt>0
+                                          then least(var_curr_property_value,var_legalregistrationvalueramnt)
+                                      when SSF_COL.lienposition=1 and var_legalregistrationvalueramnt>0
+                                          then least(var_curr_property_value,var_legalregistrationvalueramnt)
+                                      else var_curr_property_value
+                                end
+                              else 
+                                case when SSF_COL.lienposition>1 and var_thirdpartypriorityclaimramnt<=var_nominalcollateralvalueramnt 
+                                        then  var_nominalcollateralvalueramnt-var_thirdpartypriorityclaimramnt
+                                    when SSF_COL.lienposition>1 and var_thirdpartypriorityclaimramnt>var_nominalcollateralvalueramnt
+                                            then 0
+                                    else var_nominalcollateralvalueramnt 
+                                end
+                            end 
+        var_collateral_value: case when MDM_1005.ct_code_user in ('CRMRRE','CRMCRE') then
+                                case  when SSF_COL.reporting_date<date('2025-01-01') and var_delivery_entity<>'VIENNA' then var_curr_mkt_value
+                                      when  SSF_COL.reporting_date<date('2028-01-01') and var_delivery_entity<>'VIENNA' and var_valuationdate=SSF_COL.originalcollateralvaldt then var_curr_mkt_value
+                                      when var_property_upgrade_ind=1 then var_curr_mkt_value
+                                      when var_property_upgrade_ind=0 and var_orig_mkt_value is null and var_avg_mkt_value is null then 0
+                                      when var_property_upgrade_ind=0 and var_avg_mkt_value is null then least(var_orig_mkt_value,var_curr_mkt_value)
+                                      when var_property_upgrade_ind=0 then least(var_curr_mkt_value,greatest(var_orig_mkt_value,var_avg_mkt_value))
+                                      else var_curr_property_value
+                                end
+                              else 
+                                case when SSF_COL.lienposition>1 and var_thirdpartypriorityclaimramnt<=var_nominalcollateralvalueramnt
+                                        then  var_nominalcollateralvalueramnt-var_thirdpartypriorityclaimramnt
+                                    when SSF_COL.lienposition>1 and var_thirdpartypriorityclaimramnt>var_nominalcollateralvalueramnt
+                                        then 0
+                                    else var_nominalcollateralvalueramnt 
+                                end
+                            end
+
+expressions:
+  reporting_date: SSF_COL.reporting_date
+  delivery_entity_orig: SSF_COL.delivery_entity
+  delivery_entity: var_delivery_entity
+  ar_start_date: SSF_COL.collateralprovisiondate
+  collateraltype: SSF_COL.collateraltype
+  lienposition: SSF_COL.lienposition
+  revaluation_frequency: SSF_COL.revaluationfrequency
+  incomeproducingrestfinance: case when MDM_1005.ct_code_user in ('CRMRRE','CRMCRE') and SSF_COL.incomeproducingrestfinance is null then 'Y' else SSF_COL.incomeproducingrestfinance end
+  maturity_date: SSF_COL.maturitydate
+  valuationdate: var_valuationdate 
+  originalcollateralvaldt: SSF_COL.originalcollateralvaldt
+  original_ccy: coalesce(SSF_COL.nominalcollateralvaluetcurr,SSF_COL.originalcollateralvaluetcurr)
+  originalcollateralvalueramnt: var_originalcollateralvalueramnt
+  nominalcollateralvalueramnt: var_nominalcollateralvalueramnt
+  legalregistrationvalueramnt: var_legalregistrationvalueramnt
+  averagemarketvalueramnt: var_averagemarketvalueramnt
+  third_party_priority_claim: var_thirdpartypriorityclaimramnt
+  orig_property_value: var_orig_property_value
+  curr_property_value: var_curr_property_value
+  avg_mkt_value: var_avg_mkt_value
+  orig_mkt_value: var_orig_mkt_value
+  curr_mkt_value: var_curr_mkt_value 
+  collateral_value: var_collateral_value
+  latest_collateral_value: var_collateral_value
+  numberofhousingunits: case when MDM_1005.ct_code_user='CRMRRE' and SSF_COL.numberofhousingunits is null then 5 else SSF_COL.numberofhousingunits end 
+  legalbindingtofinishproperty: case when MDM_1005.ct_code_user='CRMRRE' and SSF_COL.legalbindingtofinishproperty is null then 'N' else SSF_COL.legalbindingtofinishproperty end
+  developmentstatus: case when MDM_1005.ct_code_user in ('CRMRRE','CRMCRE') and SSF_COL.developmentstatus is null then 'D' else SSF_COL.developmentstatus end 
+  measurement_ccy: case when var_delivery_entity in ('LEASE','AACF') and var_measurement_ccy='GBP' then 'EUR' else var_measurement_ccy end
+  borrowersprimaryresidence: case when MDM_1005.ct_code_user='CRMRRE' and SSF_COL.borrowersprimaryresidence is null then 'N' else SSF_COL.borrowersprimaryresidence end 
+  countryofcollateral: SSF_COL.countryofcollateral
+  eligible_update_type: SSF_COL.eligibleupdatetype
+  collateralidentifier: SSF_COL.collateralidentifier
+  collateral_agmt_id: TCTRL_SSC.basel_ssc || SSF_COL.collateralidentifier
+  tine_collateral_agmt_id: CASE
+                              WHEN SSF_COL.delivery_entity='FBS_REPT' 
+                                THEN 'SSM' || SSF_COL.collateralidentifier || '_FBS' 
+                              WHEN SSF_COL.delivery_entity='IHUB-FR1_CALC' 
+                                THEN 'SSM' || SSF_COL.collateralidentifier || '_IHUB-FR1'
+                              WHEN SSF_COL.delivery_entity='IHUB-DE2_CALC' 
+                                THEN 'SSM' || SSF_COL.collateralidentifier || '_IHUB-DE2'
+                              WHEN SSF_COL.delivery_entity='IHUB-BE1_REPT' 
+                                THEN 'SSM' || SSF_COL.collateralidentifier || '_IHUB-BE1'
+                              WHEN SSF_COL.delivery_entity='AACF_REPT' 
+                                THEN 'SSM' || SSF_COL.collateralidentifier || '_AACF'
+                              WHEN SSF_COL.delivery_entity='LEASE_REPT' 
+                                THEN 'SSM' || SSF_COL.collateralidentifier || '_LEASE'
+                              WHEN SSF_COL.delivery_entity='ENTRACARD_REPT' 
+                                THEN 'SSM' || SSF_COL.collateralidentifier || '_ENTRACARD'
+                              WHEN SSF_COL.delivery_entity='VIENNA_REPT' 
+                                THEN 'SSM' || SSF_COL.collateralidentifier || '_VIENNA'
+                              WHEN SSF_COL.delivery_entity='ALFAM_REPT' 
+                                THEN 'SSM' || SSF_COL.collateralidentifier || '_ALFAM'
+                            END
+  collateral_agmt_ssc: TCTRL_SSC.basel_ssc 
+  exchange_rate_to_original_ccy: FX_NOMT.exchange_rate
+  property_upgrade_ind: var_property_upgrade_ind
+  realestatetype: SSF_COL.realestatetype
+  realestatepurposetype: SSF_COL.realestatepurposetype
+  securitycode: SSF_COL.securitycode
+  basel_collateral_type: var_basel_collateral_type
+  basel_collateral_sub_type: MDM_1005.ct_code_user
+  basel_real_estate_type: var_basel_real_estate_type
+  haircut_percentage: TCTRL_PROP.haircut_percentage
+
+drop_duplicates: true

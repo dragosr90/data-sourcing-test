@@ -1,0 +1,198 @@
+target: enrich_{{ RUN_MONTH }}.enrich_ssf_pr_fr
+
+sources:
+  - alias: SSF_PR
+    filter: delivery_entity = 'IHUB-FR1_CALC'
+    source: int_{{ RUN_MONTH }}.int_ssf_pr
+  - alias: SSF_FP
+    filter: delivery_entity = 'IHUB-FR1_CALC'
+    source: int_{{ RUN_MONTH }}.int_ssf_fp
+  - alias: SSF_CA
+    filter: delivery_entity = 'IHUB-FR1_CALC'
+    source: int_{{ RUN_MONTH }}.int_ssf_ca
+  - alias: SSF_CF
+    filter: delivery_entity = 'IHUB-FR1_CALC'
+    source: int_{{ RUN_MONTH }}.int_ssf_cf
+  - alias: SSF_CP_X_CF
+    filter: delivery_entity = 'IHUB-FR1_CALC'
+    source: int_{{ RUN_MONTH }}.int_ssf_cp_x_cf
+  - alias: SSF_CP
+    filter: delivery_entity = 'IHUB-FR1_CALC'
+    source: int_{{ RUN_MONTH }}.int_ssf_cp
+  - alias: SSF_CA_DUMMY_FAC
+    filter: delivery_entity_orig= 'IHUB-FR1_CALC'
+    source: enrich_{{ RUN_MONTH }}.enrich_ssf_ca_dummy_fac
+  - alias: FAC_HRCHY
+    filter: delivery_entity_orig= 'IHUB-FR1_CALC'
+    source: enrich_{{ RUN_MONTH }}.enrich_facility_roll_up 
+  - alias: FX_INT
+    source: stg_{{ RUN_MONTH }}.tmdm_113_fx_eom_rates
+  - alias: PREFIX_PR
+    source: stg_{{ RUN_MONTH }}.tctrl_ssc_ssf_basel
+  - alias: PREFIX_CP
+    source: stg_{{ RUN_MONTH }}.tctrl_ssc_ssf_basel
+  - alias: PREFIX_CF
+    source: stg_{{ RUN_MONTH }}.tctrl_ssc_ssf_basel
+  - alias: MDM_1001
+    source: stg_{{ RUN_MONTH }}.tmdm_1001_b2_prd_type
+
+transformations:
+  - join:
+      left_source: SSF_PR
+      right_source: SSF_FP
+      condition:
+        - SSF_PR.reporting_date = SSF_FP.reporting_date
+        - SSF_PR.delivery_entity = SSF_FP.delivery_entity
+        - SSF_PR.arrangementidentifier  = SSF_FP.arrangementidentifier 
+      how: left
+  - join:
+      right_source: SSF_CA
+      condition:
+        - SSF_PR.reporting_date = SSF_CA.reporting_date
+        - SSF_PR.delivery_entity = SSF_CA.delivery_entity
+        - SSF_PR.arrangementidentifier  = SSF_CA.arrangementidentifier 
+      how: left
+  - add_variables:
+      column_mapping:
+        var_facility_id: coalesce(SSF_CA.creditfacility,SSF_FP.creditfacility)
+  - join:
+      right_source: FAC_HRCHY
+      condition:
+        - SSF_PR.reporting_date = FAC_HRCHY.reporting_date
+        - SSF_PR.delivery_entity = FAC_HRCHY.delivery_entity_orig
+        - var_facility_id  = FAC_HRCHY.localfacilityidentifier
+      how: left
+  - join:
+      right_source: SSF_CF
+      condition:
+        - SSF_PR.reporting_date = SSF_CF.reporting_date
+        - SSF_PR.delivery_entity = SSF_CF.delivery_entity
+        - coalesce(FAC_HRCHY.highest_existing_facility,var_facility_id) = SSF_CF.localfacilityidentifier
+      how: left
+  - join:
+      right_source: SSF_CP_X_CF
+      condition:
+        - SSF_CF.reporting_date = SSF_CP_X_CF.reporting_date
+        - SSF_CF.delivery_entity = SSF_CP_X_CF.delivery_entity
+        - SSF_CF.localfacilityidentifier = SSF_CP_X_CF.creditfacility
+      how: left 
+  - join:
+      right_source: SSF_CP
+      condition:
+        - SSF_CP_X_CF.reporting_date =SSF_CP.reporting_date
+        - SSF_CP_X_CF.delivery_entity = SSF_CP.delivery_entity
+        - SSF_CP_X_CF.participatingcounterparty  = SSF_CP.localid
+      how: left
+  - join:
+      right_source: SSF_CA_DUMMY_FAC
+      condition:
+        - SSF_CA_DUMMY_FAC.reporting_date = SSF_CA.reporting_date
+        - SSF_CA_DUMMY_FAC.delivery_entity_orig = SSF_CA.delivery_entity
+        - SSF_CA_DUMMY_FAC.arrangementidentifier  = SSF_CA.arrangementidentifier 
+      how: left
+  - join: 
+      right_source: FX_INT
+      how: left
+      condition:
+        - SSF_PR.reporting_date = FX_INT.reporting_date
+        - SSF_PR.accruedinterestamounttcurr = FX_INT.quoted_ccy
+  - add_variables:
+      column_mapping:
+        var_balance_compensation_flg: case when SSF_CA.arrangementidentifier is not null and SSF_CF.facilitytype='BCF' 
+                                            and size(collect_set(SSF_CA.arrangementidentifier)  over (partition by coalesce(SSF_CF.parentcreditfacility,SSF_CF.localfacilityidentifier)))>1
+                                            then 1
+                                      else 0 end  
+        var_principal_amount: case when SSF_PR.debitcreditindicator='C' then  SSF_PR.nominalamountramnt*-1
+                                  else (1-coalesce(SSF_CA.transferredpercentage,SSF_FP.transferredpercentage,0))*SSF_PR.nominalamountramnt
+                                end
+        var_ifrs9_risk_stage: coalesce(SSF_CA.ifrs9riskstage,SSF_CF.ifrs9riskstage,'X')
+        var_dummy_fac_flg: case when SSF_CA_DUMMY_FAC.arrangementidentifier is not null then 1 else 0 end
+        var_delivery_entity: substr(SSF_PR.delivery_entity,1,length(SSF_PR.delivery_entity)-5)
+  - join:
+      right_source: PREFIX_PR
+      condition:
+        - var_delivery_entity= PREFIX_PR.delivery_entity
+        - SSF_PR.sourcesystemidentifier= PREFIX_PR.sourcesystemidentifier
+      how: left
+  - join:
+      right_source: PREFIX_CP
+      condition:
+        - var_delivery_entity= PREFIX_CP.delivery_entity
+        - SSF_CP.sourcesystemidentifier= PREFIX_CP.sourcesystemidentifier
+      how: left
+  - join:
+      right_source: PREFIX_CF
+      condition:
+        - var_delivery_entity= PREFIX_CF.delivery_entity
+        - SSF_CF.sourcesystemidentifier= PREFIX_CF.sourcesystemidentifier
+      how: left
+  - join:
+      right_source: MDM_1001
+      condition:
+        - SSF_PR.reporting_date= MDM_1001.reporting_date
+        - SSF_PR.basel2producttype= cast(MDM_1001.code as string)
+      how: left
+
+expressions:
+  reporting_date: SSF_PR.reporting_date
+  delivery_entity_orig: SSF_PR.delivery_entity
+  delivery_entity: var_delivery_entity
+  ssf_source_table: case when SSF_CA.arrangementidentifier is not null then 'Current Account' 
+                        when SSF_FP.arrangementidentifier is not null then 'Financing Product' 
+                        end
+  ray_prefix: 'PC'
+  lending_expo_agmt_ssc: PREFIX_PR.basel_ssc
+  lending_expo_agmt_id: concat(PREFIX_PR.basel_ssc, SSF_PR.arrangementidentifier)
+  lending_expo_agmt_uid: SSF_PR.arrangementidentifier
+  tine_lending_expo_agmt_id: concat('PDE', SSF_PR.arrangementidentifier)
+  dummy_fac_flg: var_dummy_fac_flg
+  credit_fac_agmt_id: case when SSF_CF.localfacilityidentifier is not null THEN
+                                    concat(PREFIX_CF.basel_ssc, SSF_CF.localfacilityidentifier)
+                          when var_dummy_fac_flg=1 then SSF_CA_DUMMY_FAC.credit_fac_agmt_id
+                      end
+  tine_credit_fac_agmt_id: case when SSF_CF.localfacilityidentifier is not null THEN
+                                    concat('PDF', SSF_CF.localfacilityidentifier)
+                          when var_dummy_fac_flg=1 then SSF_CA_DUMMY_FAC.credit_fac_agmt_id
+                      end 
+  cpty_id: case when SSF_CP_X_CF.participatingcounterparty is not null then concat(PREFIX_CP.basel_ssc, SSF_CP.localid)
+                when var_dummy_fac_flg=1 then  SSF_CA_DUMMY_FAC.cpty_id
+            end 
+  reporting_entity: SSF_PR.reportingentity
+  basel_product_type: SSF_PR.basel2producttype
+  off_balance_product_flag: case when MDM_1001.off_balance='True' then 1
+                                 when MDM_1001.off_balance='False' then 0
+                            end
+  revolvingindicator: case when SSF_CF.REVOLVING='Y' then 1 else 0 end
+  subordination_type: case when SSF_FP.SUBORDINATED='Y' then 'Subordinated Lien' else 'Unsubordinated Lien' end
+  ar_start_date: SSF_PR.tradedate
+  maturity_date: SSF_FP.MATURITYDATE
+  effective_maturity: case when SSF_FP.effectivematuritydt > SSF_FP.reporting_date then round(date_diff(day, SSF_FP.reporting_date,SSF_FP.effectivematuritydt)/365.25,2) end
+  balance_compensation_flg: var_balance_compensation_flg
+  original_ccy: case when balance_compensation_flg=1 then 'EUR'
+                else SSF_PR.nominalamounttcurr end
+  accrued_fees: SSF_PR.accruedfeesamountramnt
+  accrued_interest: SSF_PR.accruedinterestamounttamnt/fx_int.exchange_rate
+  pre_calculated_ead: cast(NULL as DOUBLE)
+  principal_amount: case when balance_compensation_flg=1
+                            then sum(var_principal_amount) over (partition by coalesce(SSF_CF.parentcreditfacility,SSF_CF.localfacilityidentifier)) 
+                                / size(collect_set(SSF_CA.arrangementidentifier)  over (partition by coalesce(SSF_CF.parentcreditfacility,SSF_CF.localfacilityidentifier)))
+                        else var_principal_amount
+                    end 
+  ar_financial_status_type: cast(NULL as string)
+  ifrs9_risk_stage: var_ifrs9_risk_stage
+  accumulatedwriteofframnt: coalesce(SSF_CA.accumulatedwriteofframnt,SSF_FP.accumulatedwriteofframnt)
+  write_off_amount: 0
+  loan_loss_allowance_t_ccy: case when var_ifrs9_risk_stage='X' then null else coalesce(SSF_CA.loanlossallowancetcurr,SSF_FP.loanlossallowancetcurr) end
+  loan_loss_allowance_t_amount: case when var_ifrs9_risk_stage='X' then null else coalesce(SSF_CA.loanlossallowancetamnt,SSF_FP.loanlossallowancetamnt) end
+  loan_loss_allowance_amount: coalesce(SSF_CA.loanlossallowanceramnt,SSF_FP.loanlossallowanceramnt)
+  asset_sec_involvement_type: SSF_FP.securitisationroletype
+  process_filter_code: cast(NULL as string)
+  credit_risk_approach_type: case when SSF_CF.riskweightedexposureapproach = 'SA'and SSF_CF.plnplindicator = 'PL' then 'STD_R'
+                                  when SSF_CF.riskweightedexposureapproach = 'SA'and SSF_CF.plnplindicator = 'NPL' then 'STD_NR'
+                                  when SSF_CF.riskweightedexposureapproach = 'AIRB'and SSF_CF.plnplindicator = 'PL' then 'IRB_R'
+                                  when SSF_CF.riskweightedexposureapproach = 'AIRB'and SSF_CF.plnplindicator = 'NPL' then 'IRB_ADV_NR'
+                                  when SSF_CF.riskweightedexposureapproach = 'FIRB'and SSF_CF.plnplindicator = 'PL' then 'IRB_FOUND_R'
+                                  when SSF_CF.riskweightedexposureapproach = 'FIRB'and SSF_CF.plnplindicator = 'NPL' then 'IRB_FOUND_NR'
+                                  else NULL
+                            end
+  qrretransactor: coalesce(SSF_CA.qrretransactor,SSF_FP.qrretransactor,'N') 

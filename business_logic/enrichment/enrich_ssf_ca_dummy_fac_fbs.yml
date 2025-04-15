@@ -1,0 +1,117 @@
+target: enrich_{{ RUN_MONTH }}.enrich_ssf_ca_dummy_fac_fbs
+
+sources:
+  - alias: SSF_CA
+    filter: creditfacility is null
+    source: stg_{{ RUN_MONTH }}.ssf_fbs_ca
+  - alias: SSF_PR
+    filter: coalesce(DebitCreditIndicator,'D') = 'D' and NominalAmountReportingAmount>1
+    source: stg_{{ RUN_MONTH }}.ssf_fbs_pr
+  - alias: SSF_CP_X_CA
+    filter: counterpartyrole='MAIN'
+    source: stg_{{ RUN_MONTH }}.ssf_fbs_cpxca
+  - alias: SSF_CP
+    source: stg_{{ RUN_MONTH }}.ssf_fbs_cp
+  - alias: PREFIX_CA
+    source: stg_202408.tctrl_ssc_ssf_basel
+  - alias: PREFIX_CP
+    source: stg_202408.tctrl_ssc_ssf_basel
+
+transformations:
+  - join:
+      left_source: SSF_PR
+      right_source: SSF_CA
+      condition:
+        - SSF_PR.ReportingDate = SSF_CA.ReportingDate
+        - SSF_PR.DeliveryEntity = SSF_CA.DeliveryEntity
+        - SSF_PR.arrangementidentifier  = SSF_CA.arrangementidentifier 
+      how: inner
+  - join:
+      right_source: SSF_CP_X_CA
+      condition:
+        - SSF_CP_X_CA.ReportingDate = SSF_CA.ReportingDate
+        - SSF_CP_X_CA.DeliveryEntity = SSF_CA.DeliveryEntity
+        - SSF_CP_X_CA.currentaccount  = SSF_CA.arrangementidentifier 
+      how: left
+  - join:
+      right_source: SSF_CP
+      condition:
+        - SSF_CP_X_CA.ReportingDate =SSF_CP.ReportingDate
+        - SSF_CP_X_CA.DeliveryEntity = SSF_CP.DeliveryEntity
+        - SSF_CP_X_CA.participatingcounterparty  = SSF_CP.localid
+      how: left
+  - join:
+      right_source: PREFIX_CA
+      condition:
+        - SSF_CA.DeliveryEntity= PREFIX_CA.Delivery_Entity
+        - SSF_CA.sourcesystemidentifier= PREFIX_CA.sourcesystemidentifier
+      how: left
+  - join:
+      right_source: PREFIX_CP
+      condition:
+        - SSF_CA.DeliveryEntity= PREFIX_CP.Delivery_Entity
+        - SSF_CP.sourcesystemidentifier= PREFIX_CP.sourcesystemidentifier
+      how: left
+
+expressions:
+  reporting_date: SSF_CA.ReportingDate
+  arrangementidentifier: SSF_CA.arrangementidentifier
+  delivery_entity: SSF_CA.DeliveryEntity
+  credit_fac_agmt_uid: concat('CF/',SSF_CA.arrangementidentifier)
+  credit_fac_agmt_id: concat(PREFIX_CA.basel_ssc,credit_fac_agmt_uid)
+  tine_credit_fac_agmt_id: case when SSF_CA.DeliveryEntity='IHUB-FR1' then  concat('PDF', credit_fac_agmt_uid)
+                           when SSF_CA.DeliveryEntity='IHUB-DE2' then  concat('PCF', credit_fac_agmt_uid)
+                           when SSF_CA.DeliveryEntity='IHUB-BE1' then  concat('YDI', credit_fac_agmt_uid)
+                       end
+  cpty_id: concat(PREFIX_CP.basel_ssc,SSF_CP.localid)
+  tine_cpty_id: case  when SSF_CP.DeliveryEntity='FBS' then SSF_CP.localid 
+                  when SSF_CP.DeliveryEntity='IHUB-FR1' then concat('PDC',SSF_CP.localid)
+                  when SSF_CP.DeliveryEntity='IHUB-DE2' then concat('PCC',SSF_CP.localid)
+                  when SSF_CP.DeliveryEntity='IHUB-BE1' then concat('YDV',SSF_CP.localid)
+                  when SSF_CP.DeliveryEntity='AACF' then concat('SGC', SSF_CP.localid)
+                  when SSF_CP.DeliveryEntity='LEASE' and SSF_CP.countryofincorporation='NL' then 'SBC' || SSF_CP.localid ||' n AMSTELNL'
+                  when SSF_CP.DeliveryEntity='LEASE' then 'SBC' || SSF_CP.localid || ' i AMSTELNL'
+                  when SSF_CP.DeliveryEntity='ENTRACARD' then SSF_CP.localid 
+                  when SSF_CP.DeliveryEntity='VIENNA' then SSF_CP.localid
+              end
+  credit_agmt_id: cast(NULL as string)
+  credit_fac_agmt_ssc: PREFIX_CA.basel_ssc
+  global_fac_id: cast(NULL as string) 
+  basel_product_type: SSF_PR.BaselIIProductType
+  committed_ind: 'N'
+  typeofcommitment: 'N'
+  revolvingindicator: 0
+  original_ccy: SSF_PR.NominalAmountTransactionCurrency
+  pre_calculated_ead: cast(NULL as DOUBLE) 
+  credit_limit: 0
+  accrued_fees: 0
+  drawn_amount: case when SSF_PR.debitcreditindicator='C' then  SSF_PR.NominalAmountReportingAmount*-1
+                                else SSF_PR.NominalAmountReportingAmount
+                              end
+  ead_model: cast(NULL as DOUBLE)
+  dummy_fac_flag: 1
+  lgd_class: 'L1'
+  lgd_model: 'LNOMO401'
+  lgd_source_system_id: 'TRANS'
+  ifrs9_risk_stage: SSF_CA.ifrs9riskstage
+  loan_loss_allowance_amount: SSF_CA.LoanLossAllowanceReportingAmount
+  multi_obligor_fac_flag: cast(NULL as string)
+  process_filter_code: cast(NULL as string)
+  ray_prefix: case when SSF_CA.DeliveryEntity in ('IHUB-DE2','IHUB-FR1') then 'PC'
+                   when SSF_CA.DeliveryEntity in ('IHUB-BE1','FBS') then 'NL'
+              end
+  reporting_entity: SSF_PR.reportingentity
+  secz_invl_type: cast(NULL as string)
+  single_drawdown_flag: cast(NULL as string)
+  sourced_exemption_id: cast(NULL as string)
+  ar_start_date: SSF_PR.tradedate
+  term_out_date: cast(NULL as date)
+  maturity_date: case when SSF_PR.BaselIIProductType='134' then  DATEADD(day, 1,  SSF_CA.ReportingDate) 
+                      else DATEADD(year, 1,  SSF_CA.ReportingDate) 
+                 end
+  credit_risk_approach_type: cast(NULL as string)
+  specialisedlendingtype: cast(NULL as string)
+  highqualityindicator : cast(NULL as string)
+  infrastructsupportingfactor: cast(NULL as string)
+  landacquisitiondevconstexpofin: cast(NULL as string)
+  projectfinancephaseindicator: cast(NULL as string)

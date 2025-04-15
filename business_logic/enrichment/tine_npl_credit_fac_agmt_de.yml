@@ -1,0 +1,113 @@
+target: enrich_{{ RUN_MONTH }}.tine_npl_credit_fac_agmt_de
+
+sources:
+  - alias: SSF_PR
+    columns:
+    - reporting_date
+    - delivery_entity
+    - credit_fac_agmt_id
+    - principal_amount
+    source: enrich_{{ RUN_MONTH }}.enrich_ssf_pr_de
+  - alias: FAC
+    columns:
+    - reporting_date
+    - delivery_entity_orig  
+    - delivery_entity  
+    - credit_fac_agmt_uid  
+    - credit_fac_agmt_id  
+    - tine_credit_fac_agmt_id  
+    - cpty_id  
+    - credit_agmt_id  
+    - credit_fac_agmt_ssc  
+    - global_fac_id  
+    - basel_product_type  
+    - committed_ind  
+    - typeofcommitment  
+    - revolvingindicator  
+    - original_ccy  
+    - pre_calculated_ead  
+    - credit_limit  
+    - accrued_fees  
+    - ead_model  
+    - dummy_fac_flag  
+    - lgd_class  
+    - lgd_model  
+    - lgd_source_system_id  
+    - ifrs9_risk_stage  
+    - loan_loss_allowance_amount  
+    - multi_obligor_fac_flag  
+    - process_filter_code  
+    - ray_prefix  
+    - reporting_entity  
+    - secz_invl_type  
+    - single_drawdown_flag  
+    - sourced_exemption_id  
+    - ar_start_date  
+    - term_out_date  
+    - maturity_date  
+    - credit_risk_approach_type  
+    - specialisedlendingtype  
+    - highqualityindicator  
+    - infrastructsupportingfactor  
+    - landacquisitiondevconstexpofin  
+    - projectfinancephaseindicator 
+    source: enrich_{{ RUN_MONTH }}.facility_with_dummy_de
+
+transformations:
+  - aggregation:
+      source: SSF_PR
+      alias: LENDING
+      group: ["SSF_PR.reporting_date", "SSF_PR.delivery_entity", "SSF_PR.credit_fac_agmt_id"]
+      column_mapping:
+          DRAWN_AMOUNT: SUM(SSF_PR.principal_amount)  
+  - join:
+      left_source: FAC
+      right_source: LENDING
+      condition:
+        - FAC.reporting_date = LENDING.reporting_date
+        - FAC.delivery_entity = LENDING.delivery_entity
+        - FAC.credit_fac_agmt_id  = LENDING.credit_fac_agmt_id
+
+expressions:
+  reporting_date: FAC.reporting_date
+  delivery_entity_orig: FAC.delivery_entity_orig
+  delivery_entity: FAC.delivery_entity
+  credit_fac_agmt_uid: FAC.credit_fac_agmt_uid
+  credit_fac_agmt_id: FAC.credit_fac_agmt_id
+  tine_credit_fac_agmt_id: FAC.tine_credit_fac_agmt_id
+  cpty_id: FAC.cpty_id
+  credit_agmt_id: FAC.credit_agmt_id
+  credit_fac_agmt_ssc: FAC.credit_fac_agmt_ssc
+  global_fac_id: FAC.global_fac_id
+  basel_product_type: FAC.basel_product_type
+  committed_ind: FAC.committed_ind
+  typeofcommitment: FAC.typeofcommitment
+  revolvingindicator: FAC.revolvingindicator
+  original_ccy: FAC.original_ccy
+  pre_calculated_ead: FAC.pre_calculated_ead
+  credit_limit: FAC.credit_limit
+  accrued_fees: FAC.accrued_fees
+  drawn_amount: LENDING.drawn_amount
+  ead_model: FAC.ead_model
+  dummy_fac_flag: FAC.dummy_fac_flag
+  lgd_class: FAC.lgd_class
+  lgd_model: FAC.lgd_model
+  lgd_source_system_id: FAC.lgd_source_system_id
+  ifrs9_risk_stage: FAC.ifrs9_risk_stage
+  loan_loss_allowance_amount: FAC.loan_loss_allowance_amount
+  multi_obligor_fac_flag: FAC.multi_obligor_fac_flag
+  process_filter_code: FAC.process_filter_code
+  ray_prefix: FAC.ray_prefix
+  reporting_entity: FAC.reporting_entity
+  secz_invl_type: FAC.secz_invl_type
+  single_drawdown_flag: FAC.single_drawdown_flag
+  sourced_exemption_id: FAC.sourced_exemption_id
+  ar_start_date: FAC.ar_start_date
+  term_out_date: FAC.term_out_date
+  maturity_date: FAC.maturity_date
+  credit_risk_approach_type: FAC.credit_risk_approach_type
+  specialisedlendingtype: FAC.specialisedlendingtype
+  highqualityindicator: FAC.highqualityindicator
+  infrastructsupportingfactor: FAC.infrastructsupportingfactor
+  landacquisitiondevconstexpofin: FAC.landacquisitiondevconstexpofin
+  projectfinancephaseindicator: FAC.projectfinancephaseindicator

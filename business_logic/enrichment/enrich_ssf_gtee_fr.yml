@@ -1,0 +1,102 @@
+target: enrich_{{ RUN_MONTH }}.enrich_ssf_gtee_fr
+
+sources:
+  - alias: SSF_GTEE
+    columns:
+    - reporting_date
+    - delivery_entity
+    - sourcesystemidentifier
+    - guaranteeidentifier
+    - maturitydate
+    - guaranteevaluetramnt
+    filter: delivery_entity = 'IHUB-FR1_CALC'
+    source: int_{{ RUN_MONTH }}.int_ssf_gtee
+  - alias: SSF_GTEE_X_GTOR
+    columns:
+    - reporting_date
+    - delivery_entity
+    - guarantee
+    - guarantor
+    filter: delivery_entity = 'IHUB-FR1_CALC'
+    source: int_{{ RUN_MONTH }}.int_ssf_gtee_x_gtor
+  - alias: SSF_CP
+    columns:
+    - reporting_date
+    - delivery_entity
+    - localid
+    - basel2counterpartytype
+    - countryofincorporation
+    - countryofresidence
+    - frcounterpartysegmentation
+    - globalcounterpartyidentifier
+    - totalassetsramnt
+    - totalassetsrcurr
+    - annualturnoverramnt
+    - annualturnoverrcurr
+    - ultimateparentorganisation
+    - insighterid
+    - sourcesystemidentifier
+    - aacalphacode
+    filter: delivery_entity = 'IHUB-FR1_CALC'
+    source: int_{{ RUN_MONTH }}.int_ssf_cp
+  - alias: PREFIX_GTEE
+    columns:
+    - delivery_entity
+    - sourcesystemidentifier
+    - basel_ssc
+    source: stg_{{ RUN_MONTH }}.tctrl_ssc_ssf_basel
+  - alias: PREFIX_CP
+    columns:
+    - delivery_entity
+    - sourcesystemidentifier
+    - basel_ssc
+    source: stg_{{ RUN_MONTH }}.tctrl_ssc_ssf_basel
+
+transformations:
+  - join:
+      left_source: SSF_GTEE
+      right_source: SSF_GTEE_X_GTOR
+      condition:
+        - SSF_GTEE.reporting_date = SSF_GTEE_X_GTOR.reporting_date
+        - SSF_GTEE.delivery_entity = SSF_GTEE_X_GTOR.delivery_entity
+        - SSF_GTEE.guaranteeidentifier = SSF_GTEE_X_GTOR.guarantee
+      how: left
+  - join:
+      right_source: SSF_CP
+      condition:
+        - SSF_CP.reporting_date = SSF_GTEE_X_GTOR.reporting_date
+        - SSF_CP.delivery_entity = SSF_GTEE_X_GTOR.delivery_entity
+        - SSF_CP.localid = SSF_GTEE_X_GTOR.guarantor
+      how: left
+  - add_variables:
+      column_mapping:
+        var_delivery_entity: substr(SSF_GTEE.delivery_entity,1,length(SSF_GTEE.delivery_entity)-5)
+  - join:
+      right_source: PREFIX_GTEE
+      condition:
+        - var_delivery_entity= PREFIX_GTEE.delivery_entity
+        - SSF_GTEE.sourcesystemidentifier= PREFIX_GTEE.sourcesystemidentifier
+      how: left
+  - join:
+      right_source: PREFIX_CP
+      condition:
+        - var_delivery_entity= PREFIX_CP.delivery_entity
+        - SSF_CP.sourcesystemidentifier= PREFIX_CP.sourcesystemidentifier
+      how: left
+
+expressions:
+  reporting_date: SSF_GTEE.reporting_date
+  delivery_entity_orig: SSF_GTEE.delivery_entity
+  delivery_entity: var_delivery_entity
+  guarantee_agmt_id: concat(PREFIX_GTEE.basel_ssc,SSF_GTEE.guaranteeidentifier)
+  guarantee_agmt_uid: SSF_GTEE.guaranteeidentifier
+  guarantee_agmt_ssc: PREFIX_GTEE.basel_ssc
+  cpty_id: concat(PREFIX_CP.basel_ssc,SSF_CP.localid)
+  cpty_uid: SSF_CP.localid 
+  cpty_ssc: PREFIX_CP.basel_ssc
+  maturity_date: SSF_GTEE.maturitydate
+  basel_guarantee_type: 1
+  guarantee_principal_only_ind: 'N'
+  guarantee_value: SSF_GTEE.guaranteevaluetramnT
+
+drop_duplicates: true

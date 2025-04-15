@@ -1,0 +1,51 @@
+target: enrich_{{ RUN_MONTH }}.enrich_facility_roll_up_fbs
+
+sources:
+  - alias: CF1
+    filter: parentcreditfacility is not null
+    source: stg_{{ RUN_MONTH }}.ssf_fbs_cf
+  - alias: CF2
+    source: stg_{{ RUN_MONTH }}.ssf_fbs_cf
+  - alias: CF3
+    source: stg_{{ RUN_MONTH }}.ssf_fbs_cf
+  - alias: CF4
+    source: stg_{{ RUN_MONTH }}.ssf_fbs_cf
+
+transformations:
+  - join:
+      left_source: CF1
+      right_source: CF2
+      condition:
+        - CF1.ReportingDate = CF2.ReportingDate
+        - CF1.parentcreditfacility = CF2.localfacilityidentifier
+        - CF1.ParentCreditFacilitySourceSystemIdentifier = CF2.sourcesystemidentifier
+      how: left 
+  - join:
+      right_source: CF3
+      condition:
+        - CF2.ReportingDate = CF3.ReportingDate
+        - CF2.parentcreditfacility = CF3.localfacilityidentifier
+        - CF2.ParentCreditFacilitySourceSystemIdentifier = CF3.sourcesystemidentifier
+      how: left 
+  - join:
+      right_source: CF4
+      condition:
+        - CF3.ReportingDate = CF4.ReportingDate
+        - CF3.parentcreditfacility = CF4.localfacilityidentifier
+        - CF3.ParentCreditFacilitySourceSystemIdentifier = CF4.sourcesystemidentifier
+      how: left 
+
+expressions:
+  reporting_date: CF1.ReportingDate
+  delivery_entity: CF1.deliveryentity
+  localfacilityidentifier: CF1.localfacilityidentifier
+  parentcreditfacility: CF1.parentcreditfacility
+  highest_existing_facility: coalesce(CF4.localfacilityidentifier,CF3.localfacilityidentifier,CF2.localfacilityidentifier,CF1.localfacilityidentifier)
+  highest_facility_explained: case  when CF4.localfacilityidentifier is not null then 'level 3 parent found'
+                                    when CF3.parentcreditfacility is not null then 'level 3 parent not found'
+                                    when CF3.localfacilityidentifier is not null then 'level 2 parent found'
+                                    when CF2.parentcreditfacility is not null then 'level 2 parent not found'
+                                    when CF2.localfacilityidentifier is not null then 'level 1 parent found'
+                                    when CF1.parentcreditfacility is not null then 'level 1 parent not found'
+                              end
+  sub_facility_flg: case when CF2.localfacilityidentifier is not null then 1 else 0 end

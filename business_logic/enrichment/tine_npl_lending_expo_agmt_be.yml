@@ -1,0 +1,100 @@
+target: enrich_{{ RUN_MONTH }}.tine_npl_lending_expo_agmt_be
+
+sources:
+  - alias: PR
+    columns:
+    - reporting_date
+    - reporting_date
+    - delivery_entity_orig
+    - delivery_entity
+    - ssf_source_table
+    - ray_prefix
+    - lending_expo_agmt_ssc
+    - lending_expo_agmt_id
+    - lending_expo_agmt_uid
+    - tine_lending_expo_agmt_id
+    - dummy_fac_flg
+    - credit_fac_agmt_id
+    - tine_credit_fac_agmt_id
+    - cpty_id
+    - reporting_entity
+    - basel_product_type
+    - off_balance_product_flag
+    - revolvingindicator
+    - subordination_type
+    - ar_start_date
+    - maturity_date
+    - effective_maturity
+    - original_ccy
+    - accrued_fees
+    - accrued_interest
+    - pre_calculated_ead
+    - principal_amount
+    - ar_financial_status_type
+    - ifrs9_risk_stage
+    - accumulatedwriteofframnt
+    - write_off_amount
+    - loan_loss_allowance_t_ccy
+    - loan_loss_allowance_t_amount
+    - loan_loss_allowance_amount
+    - asset_sec_involvement_type
+    - process_filter_code
+    - credit_risk_approach_type
+    - qrretransactor
+    source: enrich_{{ RUN_MONTH }}.enrich_ssf_pr_be
+  - alias: FAC
+    columns:
+    - reporting_date
+    - delivery_entity  
+    - credit_fac_agmt_id
+    - lgd_class  
+    source: enrich_{{ RUN_MONTH }}.facility_with_dummy_be
+
+transformations:
+ 
+  - join:
+      left_source: PR
+      right_source: FAC
+      condition:
+        - PR.reporting_date = FAC.reporting_date
+        - PR.delivery_entity = FAC.delivery_entity
+        - PR.credit_fac_agmt_id  = FAC.credit_fac_agmt_id
+
+expressions:
+  reporting_date: PR.reporting_date
+  delivery_entity_orig: PR.delivery_entity_orig
+  delivery_entity: PR.delivery_entity
+  ssf_source_table: PR.ssf_source_table
+  ray_prefix: PR.ray_prefix
+  lending_expo_agmt_ssc: PR.lending_expo_agmt_ssc
+  lending_expo_agmt_id: PR.lending_expo_agmt_id
+  lending_expo_agmt_uid: PR.lending_expo_agmt_uid
+  tine_lending_expo_agmt_id: PR.tine_lending_expo_agmt_id
+  dummy_fac_flg: PR.dummy_fac_flg
+  credit_fac_agmt_id: PR.credit_fac_agmt_id
+  tine_credit_fac_agmt_id: PR.tine_credit_fac_agmt_id
+  cpty_id: PR.cpty_id
+  reporting_entity: PR.reporting_entity
+  basel_product_type: PR.basel_product_type
+  off_balance_product_flag: PR.off_balance_product_flag
+  revolvingindicator: PR.revolvingindicator
+  subordination_type: case when substr(FAC.lgd_class, 1,1) in ('M','N','Z') then 'Subordinated Lien' else PR.subordination_type end
+  ar_start_date: PR.ar_start_date
+  maturity_date: PR.maturity_date
+  effective_maturity: PR.effective_maturity
+  original_ccy: PR.original_ccy
+  accrued_fees: PR.accrued_fees
+  accrued_interest: PR.accrued_interest
+  pre_calculated_ead: PR.pre_calculated_ead
+  principal_amount: PR.principal_amount
+  ar_financial_status_type: PR.ar_financial_status_type
+  ifrs9_risk_stage: PR.ifrs9_risk_stage
+  accumulatedwriteofframnt: PR.accumulatedwriteofframnt
+  write_off_amount: PR.write_off_amount
+  loan_loss_allowance_t_ccy: PR.loan_loss_allowance_t_ccy
+  loan_loss_allowance_t_amount: PR.loan_loss_allowance_t_amount
+  loan_loss_allowance_amount: PR.loan_loss_allowance_amount
+  asset_sec_involvement_type: PR.asset_sec_involvement_type
+  process_filter_code: PR.process_filter_code
+  credit_risk_approach_type: PR.credit_risk_approach_type
+  qrretransactor: PR.qrretransactor

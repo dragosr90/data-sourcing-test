@@ -1,0 +1,40 @@
+target: enrich_{{ RUN_MONTH }}.tine_cpty_fr
+
+sources:
+  - alias: CP
+    source: enrich_{{ RUN_MONTH }}.enrich_ssf_cp_fr
+
+expressions:
+  reporting_date: CP.reporting_date
+  delivery_entity: CP.delivery_entity
+  cpty_id: CP.cpty_id
+  basel_cpty_type: CP.basel_cpty_type
+  country_of_incorporation: CP.country_of_incorporation
+  country_of_residence: CP.country_of_residence
+  cpty_ssc: CP.cpty_ssc
+  cpty_type: CP.cpty_type
+  cpty_uid: CP.cpty_uid
+  exchange_flag: CP.exchange_flag
+  gbc_flag: CP.gbc_flag
+  gbc_id: CP.gbc_id
+  guarantor_flag: CP.guarantor_flag
+  issuer_flag: CP.issuer_flag
+  npl_primary_borrower_flag: CP.npl_primary_borrower_flag
+  probability_of_default_model: CP.probability_of_default_model
+  ray_prefix: CP.ray_prefix
+  sme_indicator: CP.sme_indicator
+  total_assets: CP.total_assets
+  total_assets_ccy: CP.total_assets_ccy
+  turnover: CP.turnover
+  turnover_ccy: CP.turnover_ccy
+  ucr: CP.ucr
+  UCR_APPROVAL_DATE: CP.UCR_APPROVAL_DATE
+  ucr_outdated_f: CP.ucr_outdated_f
+  ultimate_parent_id: CP.ultimate_parent_id
+  sme_sf_group_annl_turnover: CP.sme_sf_group_annl_turnover
+  probability_of_default: CP.probability_of_default
+  pd_with_moc_floor_at_rep: CP.pd_with_moc_floor_at_rep
+  financial_institution_flag: CP.financial_institution_flag
+  tier1leverageratio: CP.tier1leverageratio
+  commonequitytier1ratio: CP.commonequitytier1ratio
+  scrarating: CP.scrarating

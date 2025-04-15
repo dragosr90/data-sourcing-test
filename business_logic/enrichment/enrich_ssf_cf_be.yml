@@ -1,0 +1,131 @@
+target: enrich_{{ RUN_MONTH }}.enrich_ssf_cf_be
+
+sources:
+  - alias: SSF_CF
+    filter: delivery_entity = 'IHUB-BE1_REPT' 
+    source: int_{{ RUN_MONTH }}.int_ssf_cf
+  - alias: FAC_ROLLUP
+    filter: delivery_entity_orig= 'IHUB-BE1_REPT'
+    source: enrich_{{ RUN_MONTH }}.enrich_facility_roll_up
+  - alias: FAIR_LGD
+    source: stg_{{ RUN_MONTH }}.tdial_lgd_actual
+  - alias: SSF_CP_X_CF
+    filter: delivery_entity = 'IHUB-BE1_REPT' and counterpartyrole='MAIN'
+    source: int_{{ RUN_MONTH }}.int_ssf_cp_x_cf
+  - alias: SSF_CP
+    filter: delivery_entity = 'IHUB-BE1_REPT'
+    source: int_{{ RUN_MONTH }}.int_ssf_cp
+  - alias: FX_LMT
+    source: stg_{{ RUN_MONTH }}.tmdm_113_fx_eom_rates
+  - alias: PREFIX_CP
+    source: stg_{{ RUN_MONTH }}.tctrl_ssc_ssf_basel
+  - alias: PREFIX_CF
+    source: stg_{{ RUN_MONTH }}.tctrl_ssc_ssf_basel
+
+transformations:
+  - join:
+      left_source: SSF_CF
+      right_source: SSF_CP_X_CF
+      condition:
+        - SSF_CF.reporting_date = SSF_CP_X_CF.reporting_date
+        - SSF_CF.delivery_entity = SSF_CP_X_CF.delivery_entity
+        - SSF_CF.localfacilityidentifier = SSF_CP_X_CF.creditfacility
+      how: left 
+  - join:
+      right_source: SSF_CP
+      condition:
+        - SSF_CP.reporting_date = SSF_CP_X_CF.reporting_date
+        - SSF_CP.delivery_entity = SSF_CP_X_CF.delivery_entity
+        - SSF_CP.localid = SSF_CP_X_CF.participatingcounterparty
+      how: left 
+  - join:
+      right_source: FAC_ROLLUP
+      condition:
+        - SSF_CF.reporting_date = FAC_ROLLUP.reporting_date
+        - SSF_CF.delivery_entity = FAC_ROLLUP.delivery_entity_orig
+        - SSF_CF.localfacilityidentifier  = FAC_ROLLUP.localfacilityidentifier
+      how: left
+  - join:
+      right_source: FAIR_LGD
+      condition:
+        - SSF_CF.reporting_date = FAIR_LGD.reporting_date
+        - SSF_CF.globalfacilityidentifier = FAIR_LGD.gfid
+      how: left 
+  - join:
+      right_source: FX_LMT
+      condition:
+        - SSF_CF.reporting_date = FX_LMT.reporting_date
+        - SSF_CF.creditlimittcurr=FX_LMT.quoted_ccy
+      how: left 
+  - add_variables:
+      column_mapping:
+        var_delivery_entity: substr(SSF_CF.delivery_entity,1,length(SSF_CF.delivery_entity)-5)
+  - join:
+      right_source: PREFIX_CF
+      condition:
+        - var_delivery_entity= PREFIX_CF.delivery_entity
+        - SSF_CF.sourcesystemidentifier= PREFIX_CF.sourcesystemidentifier
+      how: left
+  - join:
+      right_source: PREFIX_CP
+      condition:
+        - var_delivery_entity= PREFIX_CP.delivery_entity
+        - SSF_CP.sourcesystemidentifier= PREFIX_CP.sourcesystemidentifier
+      how: left
+  - add_variables:
+      column_mapping:
+        var_credit_fac_agmt_id: concat(PREFIX_CF.basel_ssc,SSF_CF.localfacilityidentifier)
+
+expressions:
+  reporting_date: SSF_CF.reporting_date
+  delivery_entity_orig: SSF_CF.delivery_entity
+  delivery_entity: var_delivery_entity
+  credit_fac_agmt_uid: SSF_CF.localfacilityidentifier
+  credit_fac_agmt_id: var_credit_fac_agmt_id
+  tine_credit_fac_agmt_id: cast(NULL as string)
+  cpty_id: concat(PREFIX_CP.basel_ssc, SSF_CP.localid)
+  credit_agmt_id: cast(NULL as string)
+  credit_fac_agmt_ssc: PREFIX_CF.basel_ssc
+  global_fac_id: SSF_CF.globalfacilityidentifier
+  basel_product_type: SSF_CF.basel2producttype
+  committed_ind: SSF_CF.typeofcommitment
+  typeofcommitment: SSF_CF.typeofcommitment
+  revolvingindicator: case when SSF_CF.revolving='Y' then 1 else 0 end 
+  original_ccy: SSF_CF.creditlimittcurr
+  pre_calculated_ead: cast(NULL as DOUBLE)
+  credit_limit: SSF_CF.creditlimittamnt/FX_LMT.exchange_rate
+  accrued_fees: cast(NULL as DOUBLE)
+  drawn_amount: cast(NULL as DOUBLE)
+  ead_model: SSF_CF.eadmodelcode
+  dummy_fac_flag: 0
+  lgd_class: coalesce(concat(FAIR_LGD.lgd_class, FAIR_LGD.lgd_legal_risk_score),'L1') 
+  lgd_model: coalesce(FAIR_LGD.lgd_model_code,'LNOMO401') 
+  lgd_source_system_id: case when FAIR_LGD.gfid is not null then 'FAIR' else 'TRANS' end
+  ifrs9_risk_stage: SSF_CF.ifrs9riskstage
+  loan_loss_allowance_amount: SSF_CF.loanlossallowanceramnt
+  multi_obligor_fac_flag: cast(NULL as string)
+  process_filter_code: cast(NULL as string)
+  ray_prefix: 'NL'
+  reporting_entity: SSF_CF.reportingentity 
+  secz_invl_type: cast(NULL as string)
+  single_drawdown_flag: cast(NULL as string)
+  sourced_exemption_id: cast(NULL as string)
+  ar_start_date: SSF_CF.tradedate
+  term_out_date: SSF_CF.expirydate
+  maturity_date: coalesce(SSF_CF.maturitydate,dateadd(month,8,SSF_CF.reporting_date))
+  credit_risk_approach_type: case when SSF_CF.riskweightedexposureapproach = 'SA'and SSF_CF.plnplindicator = 'PL' then 'STD_R'
+                                  when SSF_CF.riskweightedexposureapproach = 'SA'and SSF_CF.plnplindicator = 'NPL' then 'STD_NR'
+                                  when SSF_CF.riskweightedexposureapproach = 'AIRB'and SSF_CF.plnplindicator = 'PL' then 'IRB_R'
+                                  when SSF_CF.riskweightedexposureapproach = 'AIRB'and SSF_CF.plnplindicator = 'NPL' then 'IRB_ADV_NR'
+                                  when SSF_CF.riskweightedexposureapproach = 'FIRB'and SSF_CF.plnplindicator = 'PL' then 'IRB_FOUND_R'
+                                  when SSF_CF.riskweightedexposureapproach = 'FIRB'and SSF_CF.plnplindicator = 'NPL' then 'IRB_FOUND_NR'
+                                  else NULL
+                            end 
+  specialisedlendingtype: SSF_CF.specialisedlendingtype
+  highqualityindicator: SSF_CF.highqualityindicator
+  infrastructsupportingfactor: SSF_CF.infrastructsupportingfactor
+  landacquisitiondevconstexpofin: SSF_CF.landacqdevandconstexpfin
+  projectfinancephaseindicator: SSF_CF.projectfinancephaseindicator
+
+filter_target:
+- coalesce(FAC_ROLLUP.sub_facility_flg,0)=0

@@ -1,0 +1,173 @@
+target: enrich_{{ RUN_MONTH }}.enrich_ssf_cp_be
+
+sources:
+  - alias: SSF_CP
+    columns:
+    - reporting_date
+    - delivery_entity
+    - localid
+    - basel2counterpartytype
+    - countryofincorporation
+    - countryofresidence
+    - frcounterpartysegmentation
+    - globalcounterpartyidentifier
+    - totalassetsramnt
+    - totalassetsrcurr
+    - annualturnoverramnt
+    - annualturnoverrcurr
+    - ultimateparentorganisation
+    - insighterid
+    - sourcesystemidentifier
+    - aacalphacode
+    filter: delivery_entity = 'IHUB-BE1_REPT'
+    source: int_{{ RUN_MONTH }}.int_ssf_cp
+  - alias: PREFIX_CP
+    columns:
+    - delivery_entity
+    - sourcesystemidentifier
+    - basel_ssc
+    source: stg_{{ RUN_MONTH }}.tctrl_ssc_ssf_basel
+  - alias: FAIR
+    columns:
+    - reporting_date
+    - rapid_id
+    - approved_ucr
+    - ucr_including_conservatism
+    - type_of_conservatism
+    - pd_approval_date
+    - pd_model_version
+    - approved_pd
+    - pd_including_conservatism
+    source: stg_{{ RUN_MONTH }}.tdial_rating_pd_ucr_actual
+  - alias: RAPID
+    columns:
+    - obligor_id_aacac
+    - total_assets_amount
+    - total_assets_amount_currency
+    - total_turnover_amount
+    - total_turnover_amount_currency
+    source: stg_{{ RUN_MONTH }}.tb2c_rapid_counterparty
+  - alias: SCRA
+    columns:
+    - reporting_date
+    - GLOBAL_ID
+    - bnk30712_raw_val
+    - bnk38250_raw_val
+    - fc_min_capital_req_raw_val
+    - fc_min_capital_req_incl_buf_raw_val
+    source: int_{{ RUN_MONTH }}.int_dial_rating_fca_scra_int
+  - alias: CR_RATING
+    columns:
+    - mtng_mnmm_rgltry_rqrmnts
+    - mtng_bffr_rqrmnts
+    - unfrm_cntrprty_rtng
+    - stnd_crdt_rsk_assmnt_rtng
+    source: stg_{{ RUN_MONTH }}.tdial_andes_stnd_crdt_rtng
+
+
+transformations:
+  - join:
+      left_source: SSF_CP
+      right_source: FAIR
+      condition:
+        - SSF_CP.reporting_date = FAIR.reporting_date
+        - SSF_CP.aacalphacode = FAIR.rapid_id
+      how: left
+  - add_variables:
+      column_mapping:
+        var_ucr: case when FAIR.approved_ucr in ('6','7','8') then FAIR.approved_ucr else coalesce(FAIR.ucr_including_conservatism,'6+') end
+        var_delivery_entity: substr(SSF_CP.delivery_entity,1,length(SSF_CP.delivery_entity)-5)
+  - join:
+      right_source: PREFIX_CP
+      condition:
+        - var_delivery_entity= PREFIX_CP.delivery_entity
+        - SSF_CP.sourcesystemidentifier= PREFIX_CP.sourcesystemidentifier
+      how: left
+  - join:
+      right_source: RAPID
+      condition:
+        - SSF_CP.aacalphacode=trim(RAPID.obligor_id_aacac)
+      how: left
+  - join:
+      right_source: SCRA
+      condition:
+        - SSF_CP.reporting_date = SCRA.reporting_date
+        - SSF_CP.globalcounterpartyidentifier=SCRA.global_id
+      how: left
+  - join:
+      right_source: CR_RATING
+      condition:
+        - coalesce(SCRA.fc_min_capital_req_raw_val,' ')=CR_RATING.mtng_mnmm_rgltry_rqrmnts 
+        - coalesce(SCRA.fc_min_capital_req_incl_buf_raw_val,' ')=CR_RATING.mtng_bffr_rqrmnts
+        - var_ucr = CR_RATING.unfrm_cntrprty_rtng
+      how: left
+
+
+expressions:
+  reporting_date: SSF_CP.reporting_date
+  delivery_entity_orig: SSF_CP.delivery_entity
+  delivery_entity: var_delivery_entity
+  cpty_id: PREFIX_CP.basel_ssc || SSF_CP.localid
+  tine_cpty_id: concat('YDV', SSF_CP.localid)
+  basel_cpty_type: SSF_CP.basel2counterpartytype 
+  country_of_incorporation: SSF_CP.countryofincorporation
+  country_of_residence: SSF_CP.countryofresidence
+  cpty_ssc: PREFIX_CP.basel_ssc
+  cpty_type: case when SSF_CP.frcounterpartysegmentation='1' then 'Individual' else 'Organization' end
+  cpty_uid: SSF_CP.localid
+  exchange_flag: cast(null as string)
+  gbc_flag: 0 
+  gbc_id: SSF_CP.globalcounterpartyidentifier
+  guarantor_flag: cast(null as string)
+  issuer_flag: cast(null as string)
+  npl_primary_borrower_flag: cast(null as string)
+  probability_of_default_model: case when FAIR.approved_ucr in ('6','7','8') then FAIR.pd_model_version 
+                                    when FAIR.ucr_including_conservatism is null then 'AA_NONE'
+                                    when FAIR.type_of_conservatism='RATING_OUTDATED' then 'AA_NONE'
+                                    else FAIR.pd_model_version 
+                                end
+  ray_prefix: 'NL'
+  sme_indicator: cast(null as string)
+  total_assets: case when coalesce(SSF_CP.totalassetsramnt,0)>0 then SSF_CP.totalassetsramnt
+                      else  RAPID.total_assets_amount 
+                end
+  total_assets_ccy: case when coalesce(SSF_CP.totalassetsramnt,0)>0 then SSF_CP.totalassetsrcurr
+                          when SSF_CP.totalassetsramnt>0 then RAPID.total_assets_amount_currency
+                          else SSF_CP.totalassetsrcurr
+                      end 
+  turnover: case when SSF_CP.frcounterpartysegmentation='1' then null
+                  when coalesce(SSF_CP.annualturnoverramnt,0)>0 then SSF_CP.annualturnoverramnt
+                  else RAPID.total_turnover_amount
+            end
+  turnover_ccy: case when coalesce(SSF_CP.annualturnoverramnt,0)>0 then SSF_CP.annualturnoverrcurr
+                      when RAPID.total_turnover_amount>0 then RAPID.total_turnover_amount_currency
+                      else SSF_CP.annualturnoverrcurr
+                end
+  ucr: var_ucr
+  UCR_APPROVAL_DATE: case when FAIR.approved_ucr in ('6','7','8') then FAIR.pd_approval_date
+                          when FAIR.UCR_INCLUDING_CONSERVATISM is null then to_date('9999-12-31', 'yyyy-MM-dd')
+                          when FAIR.TYPE_OF_CONSERVATISM='RATING_OUTDATED' then to_date('9999-12-31', 'yyyy-MM-dd')
+                          else FAIR.PD_APPROVAL_DATE
+                      end 
+  ucr_outdated_f: case when months_between(SSF_CP.reporting_date,ucr_approval_date )>15 then '1' end
+  ultimate_parent_id: case when SSF_CP.frcounterpartysegmentation='1' then null 
+                            else coalesce(SSF_CP.ultimateparentorganisation,PREFIX_CP.basel_ssc || SSF_CP.localid) 
+                      end
+  sme_sf_group_annl_turnover: cast(null as double)
+  probability_of_default: case when FAIR.approved_ucr in ('6','7','8') then 1
+                                when FAIR.ucr_including_conservatism is null then 0.24
+                                when FAIR.type_of_conservatism='RATING_OUTDATED' then 0.24
+                                when FAIR.ucr_including_conservatism='6+' then 0.24
+                                else FAIR.approved_pd/100
+                            end
+  pd_with_moc_floor_at_rep: case when FAIR.approved_ucr in ('6','7','8') then FAIR.pd_including_conservatism/100
+                                  when FAIR.ucr_including_conservatism is null then null
+                                  when FAIR.type_of_conservatism='RATING_OUTDATED' then null
+                                  else FAIR.pd_including_conservatism/100
+                            end
+  financial_institution_flag: case when SSF_CP.insighterid is not null then 1 else 0 end
+  tier1leverageratio: cast(SCRA.bnk30712_raw_val as double)
+  commonequitytier1ratio: cast(SCRA.bnk38250_raw_val as double)
+  scrarating: case when SCRA.global_id is not null then CR_RATING.stnd_crdt_rsk_assmnt_rtng end
+
+drop_duplicates: true

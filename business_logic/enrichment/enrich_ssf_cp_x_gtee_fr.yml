@@ -1,0 +1,46 @@
+target: enrich_{{ RUN_MONTH }}.enrich_ssf_cp_x_gtee_fr
+
+sources:
+  - alias: SSF_CP_X_GTEE
+    filter: delivery_entity = 'IHUB-FR1_CALC'
+    source: int_{{ RUN_MONTH }}.int_ssf_cp_x_gtee
+  - alias: FAC
+    source: enrich_{{ RUN_MONTH }}.tine_npl_credit_fac_agmt_fr
+  - alias: PREFIX_GTEE
+    source: stg_{{ RUN_MONTH }}.tctrl_ssc_ssf_basel
+  - alias: PREFIX_CP
+    source: stg_{{ RUN_MONTH }}.tctrl_ssc_ssf_basel
+
+transformations:
+  - join:
+      left_source: SSF_CP_X_GTEE
+      right_source: PREFIX_GTEE
+      condition:
+        - substr(SSF_CP_X_GTEE.delivery_entity,1,length(SSF_CP_X_GTEE.delivery_entity)-5)= PREFIX_GTEE.delivery_entity
+        - SSF_CP_X_GTEE.guaranteessid= PREFIX_GTEE.sourcesystemidentifier
+      how: left
+  - add_variables:
+      column_mapping:
+        var_delivery_entity: substr(SSF_CP_X_GTEE.delivery_entity,1,length(SSF_CP_X_GTEE.delivery_entity)-5)
+  - join:
+      right_source: PREFIX_CP
+      condition:
+        - var_delivery_entity= PREFIX_CP.delivery_entity
+        - SSF_CP_X_GTEE.counterpartyssid= PREFIX_CP.sourcesystemidentifier
+      how: left
+  - join:
+      right_source: FAC
+      condition:
+        - SSF_CP_X_GTEE.reporting_date = FAC.reporting_date
+        - SSF_CP_X_GTEE.delivery_entity = FAC.delivery_entity_orig
+        - concat(PREFIX_CP.basel_ssc,SSF_CP_X_GTEE.counterparty) = FAC.cpty_id
+      how: left
+
+expressions:
+  reporting_date: SSF_CP_X_GTEE.reporting_date
+  delivery_entity_orig: SSF_CP_X_GTEE.delivery_entity
+  delivery_entity: var_delivery_entity
+  ar_id: FAC.credit_fac_agmt_id
+  guarantee_agmt_id: concat(PREFIX_GTEE.basel_ssc,SSF_CP_X_GTEE.guarantee)
+
+drop_duplicates: true
