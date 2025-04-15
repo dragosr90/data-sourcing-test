@@ -1,0 +1,13 @@
+columns: 156
+PK: 
+  - collateralidentifier
+  - delivery_entity
+not_null:
+  - collateralidentifier
+  - delivery_entity
+referential_checks:
+  - column: collateraltype
+    filter: collateraltype is not null
+    reference_schema: stg
+    reference_table: tctrl_colltype_ssf_x_basel
+    reference_column: SSF_COL_TYPE
