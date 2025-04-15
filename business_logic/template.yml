@@ -1,0 +1,57 @@
+# Example enrich_{{ RUN_MONTH }}.enrich_ssf_{{ DELIVERY_ENTITY }}_col
+target: name of target delta table, should contain placeholder {{ RUN_MONTH }} in schema and can optionally also contain {{ DELIVERY_ENTITY }}
+
+sources: # list of source mappings (alias, columns, filter and source name in catalog)
+  - alias: short name for the table, to use to refer to this table in transformations/expressions
+    columns: # Optional list of columns, If not available select all columns
+        - name of the column from the table
+    source: the table name in the catalog
+    filter: optional, should contain a filter statement in SQL syntax
+  - ...
+
+# [ optional ]
+transformations: # list of transformation steps
+  - join:  # Mapping of join step
+      alias: Optionally, alias of transformed dataset after adding variables
+      left_source: Mandatory if this join is first transformation step
+      right_source: name of right alias
+      condition: # List of join conditions`
+        - join condition as an expressions, like "alias_left.col_left = alias_right.col_right"
+  - add_variables: # Mapping of additional variables
+      alias: Optionally, alias of transformed dataset after adding variables
+      source: Mandatory if this add_variables is first transformation step
+      column_mapping:
+        name of variable: expression in SQL syntax
+        name of nth variable: expression in SQL syntax 
+  - aggregation: # Mapping of aggregation of output data
+      alias: Alias of aggregated dataset
+      source: Mandatory if this aggregation is first transformation step
+      group: # list of columns to group data
+      - name of grouping column
+      column_mapping: # mapping of aggregation functions after grouping, 
+        name of aggregation column: name of aggregation function, for instance min, mean, max
+  - union: # Mapping of intermediate unions (vertically stacked) of input sources or aliased transformed datasets
+      alias: Alias of new union datasets
+      source: Mandatory if this union is first transformation step
+      column_mapping:
+          alias of 1st source / transformed aliased dataset:
+            target column 1 union data: expression in SQL syntax  
+            target column 2 union data: expression in SQL syntax
+          alias of 2nd source / transformed aliased dataset:
+            target column 1 union data: expression in SQL syntax  
+            target column 2 union data: expression in SQL syntax  
+
+        
+# Expressions get evaluated at once, so you cannot use one target field as input for another expression. Use variables for this instead. 
+expressions:
+- target field in target table : expression in SQL syntax
+- ...
+
+# [optional]
+# Duplicates from final output can be dropped with this setting
+drop_duplicates: true
+
+# [ optional ]
+filter_target: # list of filter expressions
+- expression in SQL syntax
+- ...
