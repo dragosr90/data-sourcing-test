@@ -1,0 +1,47 @@
+target: test_pivot_table
+
+sources:
+  - alias: TBL_A
+    columns:
+    - col01
+    - col02
+    - col03
+    source: table_a
+  - alias: TBL_B
+    columns:
+    - col01
+    - col04
+    source: table_b
+  - alias: TBL_C
+    source: table_c
+
+transformations:
+  - join:
+      left_source: TBL_A
+      right_source: TBL_B
+      condition: 
+        - TBL_A.col01 = TBL_B.col01
+      how: left
+  - pivot:
+      alias: TBL_PIVOT
+      group_cols: ['TBL_A.col01', 'TBL_A.col02']
+      pivot_col: TBL_B.col04
+      pivot_value_col: TBL_A.col03
+      column_mapping:
+        X: min
+        Y: max
+        Z: min
+  - join:
+      right_source: TBL_C
+      condition:
+        - TBL_PIVOT.X = TBL_C.X
+      how: left
+
+expressions:
+  ID1: TBL_PIVOT.col01
+  ID2: TBL_PIVOT.col02
+  X: TBL_PIVOT.X
+  Y: TBL_PIVOT.Y
+  Z: TBL_PIVOT.Z
+  V5: TBL_C.col05
+  V6: TBL_C.col06

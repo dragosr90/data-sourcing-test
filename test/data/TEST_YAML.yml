@@ -1,0 +1,95 @@
+target: test_catalog.test_schema_{{ RUN_MONTH }}.test_target_table
+
+sources:
+  - alias: TBLA
+    columns:
+    - col01
+    - col02
+    - col03
+    source: table_a
+  - alias: TBLA_TRUE
+    columns:
+    - col01
+    - col04
+    - col04b
+    filter: col04 = 1
+    source: table_a
+  - alias: TBLA_FALSE
+    columns:
+    - col01
+    - col05
+    - col05b
+    filter: col04 = 0
+    source: table_a
+  - alias: TBLB
+    columns:
+    - col01
+    - col09
+    - col10
+    filter: col09 = 'keep'
+    source: table_b
+  - alias: TBLC
+    columns:
+    - col01c
+    - col11
+    - col12
+    source: table_c
+
+transformations:
+  - join:
+      left_source: TBLA
+      right_source: TBLB
+      condition: 
+        - TBLA.col01 = TBLB.col01
+      how: left
+  - join:
+      right_source: TBLC
+      condition: 
+        - TBLA.col01 = TBLC.col01c
+      how: left
+  - join:
+      right_source: TBLA_TRUE
+      condition: 
+        - TBLA.col01 = TBLA_TRUE.col04
+      how: left
+  - join:
+      right_source: TBLA_FALSE
+      condition: 
+        - TBLA.col01 = TBLA_FALSE.col05
+      how: left
+  - add_variables:
+      column_mapping:
+        var_case_col: CASE WHEN TBLA.col01 = 1 THEN 1 ELSE 2 END
+  - aggregation:
+      alias: TBL_AGG
+      group:
+      - TBLA.col01
+      column_mapping:
+        max_TBLA_col02: max(TBLA.col02)
+        max_TBLA_col03: max(TBLA.col03)
+        first_TBLB_col09: first(TBLB.col09)
+        avg_TBLB_col10: avg(TBLB.col10)
+        max_TBLA_TRUE_col04b: max(TBLA_TRUE.col04b)
+        max_TBLA_FALSE_col05b: max(TBLA_FALSE.col05b)
+        median_TBLC_col11: median(TBLC.col11)
+        median_TBLC_col12: median(TBLC.col12)
+        first_var_case_col: first(var_case_col)
+
+expressions:
+  MainIdentifier: TBL_AGG.col01
+  MaxCol3: case when TBL_AGG.max_TBLA_col02>2 then TBL_AGG.max_TBLA_col03 end
+  MedCol12: TBL_AGG.median_TBLC_col12
+  AvgCol09: TBL_AGG.avg_TBLB_col10
+  NullInCase: case when TBL_AGG.col01 is null then "NULL" else "NOTNULL" end
+  StrInCase: case when TBL_AGG.first_TBLB_col09 = "keep" then 'keeping' else 'notkeeping' end
+  ConstNull1: NULL
+  ConstNull2: null
+  ConstString: "Hello World-123_! :)"
+  ConstEmptyString: ""
+  ConstInt: 0
+  FirstCaseCol: TBL_AGG.first_var_case_col
+
+
+filter_target:
+- AvgCol09 >= 7
+- MedCol12 = 11

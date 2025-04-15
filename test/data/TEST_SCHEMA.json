@@ -1,0 +1,59 @@
+{
+    "fields": [
+      {
+        "metadata": {},
+        "name": "MainIdentifier",
+        "nullable": true,
+        "type": "long"
+      },
+      {
+        "metadata": {},
+        "name": "MaxCol3",
+        "nullable": true,
+        "type": "long"
+      },
+      {
+        "metadata": {},
+        "name": "MedCol12",
+        "nullable": true,
+        "type": "double"
+      },
+      {
+        "metadata": {},
+        "name": "AvgCol09",
+        "nullable": true,
+        "type": "double"
+      },
+      {
+        "metadata": {},
+        "name": "NullInCase",
+        "nullable": false,
+        "type": "string"
+      },
+      {
+        "metadata": {},
+        "name": "StrInCase",
+        "nullable": false,
+        "type": "string"
+      },
+      {
+        "metadata": {},
+        "name": "ConstEmptyString",
+        "nullable": false,
+        "type": "string"
+      },
+      {
+        "metadata": {},
+        "name": "ConstInt",
+        "nullable": false,
+        "type": "integer"
+      },
+      {
+        "metadata": {},
+        "name": "ConstString",
+        "nullable": false,
+        "type": "string"
+      }
+    ],
+    "type": "struct"
+  }
