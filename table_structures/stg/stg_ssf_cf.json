@@ -1,0 +1,2003 @@
+{
+  "fields": [
+    {
+      "metadata": {},
+      "name": "LOCALFACILITYIDENTIFIER",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "SOURCESYSTEMIDENTIFIER",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "GLOBALFACILITYIDENTIFIER",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "LOCALREFERENCEIDENTIFIER",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "ALTLOCALREFERENCEIDENTIFIER",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "REPORTINGENTITY",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "PARENTCREDITFACILITY",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "PARENTCREDITFACILITYSSID",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "RISKSTAGEIDENTIFIER",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "RISKSTAGEVERSION",
+      "nullable": true,
+      "type": "decimal(38,0)"
+    },
+    {
+      "metadata": {},
+      "name": "PLNPLINDICATOR",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "ARRANGEMENTPARTICIPATIONTYPE",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "CREDITLIMITTAMNT",
+      "nullable": true,
+      "type": "decimal(25,5)"
+    },
+    {
+      "metadata": {},
+      "name": "CREDITLIMITTCURR",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "CREDITLIMITRAMNT",
+      "nullable": true,
+      "type": "decimal(25,5)"
+    },
+    {
+      "metadata": {},
+      "name": "CREDITLIMITRCURR",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "CREDITLIMITRCOA",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "TRADEDATE",
+      "nullable": true,
+      "type": "date"
+    },
+    {
+      "metadata": {},
+      "name": "AGGREGATEDARREARSAMOUNTTAMNT",
+      "nullable": true,
+      "type": "decimal(18,5)"
+    },
+    {
+      "metadata": {},
+      "name": "AGGREGATEDARREARSAMOUNTTCURR",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "AGGREGATEDARREARSAMOUNTRAMNT",
+      "nullable": true,
+      "type": "decimal(18,5)"
+    },
+    {
+      "metadata": {},
+      "name": "AGGREGATEDARREARSAMOUNTRCURR",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "AGGREGATEDARREARSAMOUNTRCOA",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "LOANLOSSALLOWANCETAMNT",
+      "nullable": true,
+      "type": "decimal(18,5)"
+    },
+    {
+      "metadata": {},
+      "name": "LOANLOSSALLOWANCETCURR",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "LOANLOSSALLOWANCERAMNT",
+      "nullable": true,
+      "type": "decimal(18,5)"
+    },
+    {
+      "metadata": {},
+      "name": "LOANLOSSALLOWANCERCURR",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "LOANLOSSALLOWANCERCOA",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "RISKWEIGHTEDEXPAMOUNTTAMNT",
+      "nullable": true,
+      "type": "decimal(18,5)"
+    },
+    {
+      "metadata": {},
+      "name": "RISKWEIGHTEDEXPAMOUNTTCURR",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "RISKWEIGHTEDEXPAMOUNTRAMNT",
+      "nullable": true,
+      "type": "decimal(18,5)"
+    },
+    {
+      "metadata": {},
+      "name": "RISKWEIGHTEDEXPAMOUNTRCURR",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "RISKWEIGHTEDEXPAMOUNTRCOA",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "ORIGINALUNIFORMCPRATING",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "PROBABILITYOFDEFAULT",
+      "nullable": true,
+      "type": "decimal(38,6)"
+    },
+    {
+      "metadata": {},
+      "name": "ORIGINALPROBABILITYOFDEFAULT",
+      "nullable": true,
+      "type": "decimal(38,6)"
+    },
+    {
+      "metadata": {},
+      "name": "ORIGINALLIFETIMEPOD",
+      "nullable": true,
+      "type": "decimal(38,6)"
+    },
+    {
+      "metadata": {},
+      "name": "RESIDUALLIFETIMEPOD",
+      "nullable": true,
+      "type": "decimal(38,6)"
+    },
+    {
+      "metadata": {},
+      "name": "DOWNTURNLOSSGIVENDEFAULT",
+      "nullable": true,
+      "type": "decimal(38,6)"
+    },
+    {
+      "metadata": {},
+      "name": "POINTINTIMELOSSGIVENDEFAULT",
+      "nullable": true,
+      "type": "decimal(38,6)"
+    },
+    {
+      "metadata": {},
+      "name": "IMPAIREDSTATUS",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "RECOURSE",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "MORTGAGEPORTFOLIO",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "PRODUCTPROGRAM",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "CREDITPRODUCTPROGRAMSEGMENT",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "PRECEDINGCREDITFACILITY",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "PRECEDINGCREDITFACILITYSSID",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "PRECEDINGCFTERMINATIONTYPE",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "UNDRAWNTAMNT",
+      "nullable": true,
+      "type": "decimal(18,5)"
+    },
+    {
+      "metadata": {},
+      "name": "UNDRAWNTCURR",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "UNDRAWNRAMNT",
+      "nullable": true,
+      "type": "decimal(18,5)"
+    },
+    {
+      "metadata": {},
+      "name": "UNDRAWNRCURR",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "UNDRAWNRCOA",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "ORIGINALSETTLEMENTDATE",
+      "nullable": true,
+      "type": "date"
+    },
+    {
+      "metadata": {},
+      "name": "PLNPLINDICATORATDEFAULT",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "CREDITLIMITATDEFAULTTAMNT",
+      "nullable": true,
+      "type": "decimal(18,5)"
+    },
+    {
+      "metadata": {},
+      "name": "CREDITLIMITATDEFAULTTCURR",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "CREDITLIMITATDEFAULTRAMNT",
+      "nullable": true,
+      "type": "decimal(18,5)"
+    },
+    {
+      "metadata": {},
+      "name": "CREDITLIMITATDEFAULTRCURR",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "CREDITLIMITATDEFAULTRCOA",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "EXPOSUREATDEFAULTTAMNT",
+      "nullable": true,
+      "type": "decimal(18,5)"
+    },
+    {
+      "metadata": {},
+      "name": "EXPOSUREATDEFAULTTCURR",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "EXPOSUREATDEFAULTRAMNT",
+      "nullable": true,
+      "type": "decimal(18,5)"
+    },
+    {
+      "metadata": {},
+      "name": "EXPOSUREATDEFAULTRCURR",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "EXPOSUREATDEFAULTRCOA",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "ORIGINALCREDITLIMITRCOA",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "ORIGINALCREDITLIMITRAMNT",
+      "nullable": true,
+      "type": "decimal(18,5)"
+    },
+    {
+      "metadata": {},
+      "name": "ORIGINALCREDITLIMITRCURR",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "ORIGINALCREDITLIMITTAMNT",
+      "nullable": true,
+      "type": "decimal(18,5)"
+    },
+    {
+      "metadata": {},
+      "name": "ORIGINALCREDITLIMITTCURR",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "ORIGINALFINECUSTOMERRISKGRD",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "CONTRACTSTATUS",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "CONTRACTSTATUSDATE",
+      "nullable": true,
+      "type": "date"
+    },
+    {
+      "metadata": {},
+      "name": "DEBTRECOVERY",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "DEBTRECOVERYSTARTDATE",
+      "nullable": true,
+      "type": "date"
+    },
+    {
+      "metadata": {},
+      "name": "DEBTRECOVERYENDDATE",
+      "nullable": true,
+      "type": "date"
+    },
+    {
+      "metadata": {},
+      "name": "DEBTRESTRUCTURING",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "DATEOFFIRSTDEBTRESTRUCTURING",
+      "nullable": true,
+      "type": "date"
+    },
+    {
+      "metadata": {},
+      "name": "DFLT",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "DEFAULTDATE",
+      "nullable": true,
+      "type": "date"
+    },
+    {
+      "metadata": {},
+      "name": "DEFAULTENDDATE",
+      "nullable": true,
+      "type": "date"
+    },
+    {
+      "metadata": {},
+      "name": "FORBORNE",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "FORBORNEDATE",
+      "nullable": true,
+      "type": "date"
+    },
+    {
+      "metadata": {},
+      "name": "CEASETOBEFORBORNEDATE",
+      "nullable": true,
+      "type": "date"
+    },
+    {
+      "metadata": {},
+      "name": "PROBATIONSTARTDATE",
+      "nullable": true,
+      "type": "date"
+    },
+    {
+      "metadata": {},
+      "name": "PROBATIONENDDATE",
+      "nullable": true,
+      "type": "date"
+    },
+    {
+      "metadata": {},
+      "name": "REFINANCINGINCONTEXTOFFORB",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "CONTRACTMODINCONTEXTOFFORB",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "NONPERFEXPCUREPERIODSTARTDT",
+      "nullable": true,
+      "type": "date"
+    },
+    {
+      "metadata": {},
+      "name": "NONPERFEXPCUREPERIODENDDT",
+      "nullable": true,
+      "type": "date"
+    },
+    {
+      "metadata": {},
+      "name": "IFRS9RISKSTAGE",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "IFRS9RISKSTAGETRANSITIONDATE",
+      "nullable": true,
+      "type": "date"
+    },
+    {
+      "metadata": {},
+      "name": "IFRS9CRIMPRPERIODSTARTDT",
+      "nullable": true,
+      "type": "date"
+    },
+    {
+      "metadata": {},
+      "name": "IFRS9CRIMPRPERIODENDDT",
+      "nullable": true,
+      "type": "date"
+    },
+    {
+      "metadata": {},
+      "name": "IFRS9ADJUSTEDRISKSTAGE",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "IMPAIRED",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "IMPAIRMENTDATE",
+      "nullable": true,
+      "type": "date"
+    },
+    {
+      "metadata": {},
+      "name": "IMPAIRMENTENDDATE",
+      "nullable": true,
+      "type": "date"
+    },
+    {
+      "metadata": {},
+      "name": "LEDGERWRITEOFFRCOA",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "LEDGERWRITEOFFRAMNT",
+      "nullable": true,
+      "type": "decimal(18,5)"
+    },
+    {
+      "metadata": {},
+      "name": "LEDGERWRITEOFFRCURR",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "LEDGERWRITEOFFTAMNT",
+      "nullable": true,
+      "type": "decimal(18,5)"
+    },
+    {
+      "metadata": {},
+      "name": "LEDGERWRITEOFFTCURR",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "LEDGERWRITEOFFPRINCIPALRCOA",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "LEDGERWRITEOFFPRINCIPALRAMT",
+      "nullable": true,
+      "type": "decimal(18,5)"
+    },
+    {
+      "metadata": {},
+      "name": "LEDGERWRITEOFFPRINCIPALRCURR",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "LEDGERWRITEOFFPRINCIPALTAMNT",
+      "nullable": true,
+      "type": "decimal(18,5)"
+    },
+    {
+      "metadata": {},
+      "name": "LEDGERWRITEOFFPRINCIPALTCURR",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "LEDGERWRITEOFFINTERESTRCOA",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "LEDGERWRITEOFFINTERESTRAMNT",
+      "nullable": true,
+      "type": "decimal(18,5)"
+    },
+    {
+      "metadata": {},
+      "name": "LEDGERWRITEOFFINTERESTRCURR",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "LEDGERWRITEOFFINTERESTTAMNT",
+      "nullable": true,
+      "type": "decimal(18,5)"
+    },
+    {
+      "metadata": {},
+      "name": "LEDGERWRITEOFFINTERESTTCURR",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "LEDGERWRITEOFFDATE",
+      "nullable": true,
+      "type": "date"
+    },
+    {
+      "metadata": {},
+      "name": "PERFORMINGINDICATOR",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "NONPERFORMINGSTARTDATE",
+      "nullable": true,
+      "type": "date"
+    },
+    {
+      "metadata": {},
+      "name": "NONPERFORMINGENDDATE",
+      "nullable": true,
+      "type": "date"
+    },
+    {
+      "metadata": {},
+      "name": "RECDEBTORSLEDGWRITEOFFRCOA",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "RECDEBTORSLEDGWRITEOFFRAMNT",
+      "nullable": true,
+      "type": "decimal(18,5)"
+    },
+    {
+      "metadata": {},
+      "name": "RECDEBTORSLEDGWRITEOFFRCURR",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "RECDEBTORSLEDGWRITEOFFTAMNT",
+      "nullable": true,
+      "type": "decimal(18,5)"
+    },
+    {
+      "metadata": {},
+      "name": "RECDEBTORSLEDGWRITEOFFTCURR",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "PRINCRECDEBTLEDGWRIOFFRCOA",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "PRINCRECDEBTLEDGWRIOFFRAMNT",
+      "nullable": true,
+      "type": "decimal(18,5)"
+    },
+    {
+      "metadata": {},
+      "name": "PRINCRECDEBTLEDGWRIOFFRCURR",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "PRINCRECDEBTLEDGWRIOFFTAMNT",
+      "nullable": true,
+      "type": "decimal(18,5)"
+    },
+    {
+      "metadata": {},
+      "name": "PRINCRECDEBTLEDGWRIOFFTCURR",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "INTRECDEBTLEDGWRITEOFFRCOA",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "INTRECDEBTLEDGWRITEOFFRAMNT",
+      "nullable": true,
+      "type": "decimal(18,5)"
+    },
+    {
+      "metadata": {},
+      "name": "INTRECDEBTLEDGWRITEOFFRCURR",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "INTRECDEBTLEDGWRITEOFFTAMNT",
+      "nullable": true,
+      "type": "decimal(18,5)"
+    },
+    {
+      "metadata": {},
+      "name": "INTRECDEBTLEDGWRITEOFFTCURR",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "WRITEOFFRCOA",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "WRITEOFFREPORTINGAMOUNT",
+      "nullable": true,
+      "type": "decimal(18,5)"
+    },
+    {
+      "metadata": {},
+      "name": "WRITEOFFREPORTINGCURRENCY",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "WRITEOFFTRANSACTIONAMOUNT",
+      "nullable": true,
+      "type": "decimal(18,5)"
+    },
+    {
+      "metadata": {},
+      "name": "WRITEOFFTRANSACTIONCURRENCY",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "WRITEOFFPRINCIPALAMOUNTRCOA",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "WRITEOFFPRINCIPALAMOUNTRAMNT",
+      "nullable": true,
+      "type": "decimal(18,5)"
+    },
+    {
+      "metadata": {},
+      "name": "WRITEOFFPRINCIPALAMOUNTRCURR",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "WRITEOFFPRINCIPALAMOUNTTAMNT",
+      "nullable": true,
+      "type": "decimal(18,5)"
+    },
+    {
+      "metadata": {},
+      "name": "WRITEOFFPRINCIPALAMOUNTTCURR",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "WRITEOFFINTERESTAMOUNTRCOA",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "WRITEOFFINTERESTAMOUNTRAMNT",
+      "nullable": true,
+      "type": "decimal(18,5)"
+    },
+    {
+      "metadata": {},
+      "name": "WRITEOFFINTERESTAMOUNTRCURR",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "WRITEOFFINTERESTAMOUNTTAMNT",
+      "nullable": true,
+      "type": "decimal(18,5)"
+    },
+    {
+      "metadata": {},
+      "name": "WRITEOFFINTERESTAMOUNTTCURR",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "WRITEOFFDATE",
+      "nullable": true,
+      "type": "date"
+    },
+    {
+      "metadata": {},
+      "name": "ACCUMULATEDWRITEOFFRCOA",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "ACCUMULATEDWRITEOFFRAMNT",
+      "nullable": true,
+      "type": "decimal(18,5)"
+    },
+    {
+      "metadata": {},
+      "name": "ACCUMULATEDWRITEOFFRCURR",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "ACCUMULATEDWRITEOFFTAMNT",
+      "nullable": true,
+      "type": "decimal(18,5)"
+    },
+    {
+      "metadata": {},
+      "name": "ACCUMULATEDWRITEOFFTCURR",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "DELIVERY_ENTITY",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "REPORTING_PERIOD",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "REPORTING_DATE",
+      "nullable": true,
+      "type": "date"
+    },
+    {
+      "metadata": {},
+      "name": "DELIVERYSET",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "FILE_NAME",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "TIME_STAMP",
+      "nullable": true,
+      "type": "timestamp"
+    },
+    {
+      "metadata": {},
+      "name": "CREDITAGREEMENT",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "CREDITCONVERSIONFACTOR",
+      "nullable": true,
+      "type": "decimal(7,6)"
+    },
+    {
+      "metadata": {},
+      "name": "CREDITCONVERSIONFACTORTYPE",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "THROUGHTHECYCLELOSSGIVENDEF",
+      "nullable": true,
+      "type": "decimal(7,6)"
+    },
+    {
+      "metadata": {},
+      "name": "ORIGINALFINECRGFROMPREVMODEL",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "TYPEOFCOMMITMENT",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "SPECIALISEDLENDINGTYPE",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "PROJECTFINANCEPHASEINDICATOR",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "HIGHQUALITYINDICATOR",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "INFRASTRUCTSUPPORTINGFACTOR",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "RISKWEIGHTEDEXPOSUREAMOUNTLCOA",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "RECDEBTORSLEDGWRITEOFFLCOA",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "ORIGINALCREDITLIMITLCOA",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "EXPOSUREATDEFAULTLCOA",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "CREDITLIMITLCOA",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "UNDRAWNLCOA",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "LOANLOSSALLOWANCELCOA",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "REVOLVING",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "EXPIRYDATE",
+      "nullable": true,
+      "type": "date"
+    },
+    {
+      "metadata": {},
+      "name": "RISKWEIGHTEDEXPOSUREAPPROACH",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "APPROVINGAUTHORITY",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "CONSOLIDATIONKEY",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "CONSOLIDATIONKEYTYPE",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "DEFAULTCUREPERIODSTARTDATE",
+      "nullable": true,
+      "type": "date"
+    },
+    {
+      "metadata": {},
+      "name": "FACILITYTYPE",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "IMPAIRMENTCHARGETAMNT",
+      "nullable": true,
+      "type": "decimal(18,5)"
+    },
+    {
+      "metadata": {},
+      "name": "IMPAIRMENTCHARGETCURR",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "IMPAIRMENTCHARGERAMNT",
+      "nullable": true,
+      "type": "decimal(18,5)"
+    },
+    {
+      "metadata": {},
+      "name": "IMPAIRMENTCHARGERCURR",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "IMPAIRMENTCHARGERCOA",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "IMPAIRMENTCHARGELCOA",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "LTVRATIONONPERFORMINGSTARTDT",
+      "nullable": true,
+      "type": "decimal(10,6)"
+    },
+    {
+      "metadata": {},
+      "name": "MATERIALTHRESHOLDDATE",
+      "nullable": true,
+      "type": "date"
+    },
+    {
+      "metadata": {},
+      "name": "UNADVISEDCREDITLIMITTAMNT",
+      "nullable": true,
+      "type": "decimal(18,5)"
+    },
+    {
+      "metadata": {},
+      "name": "UNADVISEDCREDITLIMITTCURR",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "UNADVISEDCREDITLIMITRAMNT",
+      "nullable": true,
+      "type": "decimal(18,5)"
+    },
+    {
+      "metadata": {},
+      "name": "UNADVISEDCREDITLIMITRCURR",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "UNADVISEDCREDITLIMITRCOA",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "UNADVISEDCREDITLIMITLCOA",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "CRASSDRDWNUNADVCRLIMIND",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "MAXCRGATORIG",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "MINCRGATORIG",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "BORROWINGBASETAMNT",
+      "nullable": true,
+      "type": "decimal(25,5)"
+    },
+    {
+      "metadata": {},
+      "name": "BORROWINGBASETCURR",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "BORROWINGBASERAMNT",
+      "nullable": true,
+      "type": "decimal(25,5)"
+    },
+    {
+      "metadata": {},
+      "name": "BORROWINGBASERCURR",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "BORROWINGBASERCOA",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "BORROWINGBASELCOA",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "SUBJCOVID19PUBLICGUARSCHSTAT",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "NAMECOVID19PUBLICGUARSCH",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "EBACOMPLIANTMORATORIUMSTATUS",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "DTCURREBACOMPLMORATORIUMSTAT",
+      "nullable": true,
+      "type": "date"
+    },
+    {
+      "metadata": {},
+      "name": "MATURITYDTEBACOMPLMORATORIUM",
+      "nullable": true,
+      "type": "date"
+    },
+    {
+      "metadata": {},
+      "name": "EBACOMPLIANTMORATORIUMTYPE",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "GRACEPERIODCAPITALINTEREST",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "INTERNNAMEEBACOMPLMORATORIUM",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "PDMODELCODE",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "AGGREGATEDARREARSAMOUNTLCOA",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "NHGINDICATORATORIGINATION",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "LGDMARGINOFCONSERVATISM",
+      "nullable": true,
+      "type": "decimal(7,6)"
+    },
+    {
+      "metadata": {},
+      "name": "LGDMODELCODE",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "ACCRUEDFEESAMTDEBITCREDITIND",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "ACCRUEDFEESAMTLCOA",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "ACCRUEDFEESAMTRCOA",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "ACCRUEDFEESAMTRAMT",
+      "nullable": true,
+      "type": "decimal(25,5)"
+    },
+    {
+      "metadata": {},
+      "name": "ACCRUEDFEESAMTRCURR",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "ACCRUEDFEESAMTTAMT",
+      "nullable": true,
+      "type": "decimal(25,5)"
+    },
+    {
+      "metadata": {},
+      "name": "ACCRUEDFEESAMTTCURR",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "BOOKTYPE",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "BUSINESSSEGMENT",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "CUSTOMFIELD1CUSTOMFIELDNAME",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "CUSTOMFIELD1CUSTOMFIELDVALUE",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "CUSTOMFIELD2CUSTOMFIELDNAME",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "CUSTOMFIELD2CUSTOMFIELDVALUE",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "CUSTOMFIELD3CUSTOMFIELDNAME",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "CUSTOMFIELD3CUSTOMFIELDVALUE",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "EADAMTBEFOREAPPLOFCONLCOA",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "EADAMTBEFOREAPPLOFCONRCOA",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "EADAMTBEFOREAPPLOFCONRAMT",
+      "nullable": true,
+      "type": "decimal(25,5)"
+    },
+    {
+      "metadata": {},
+      "name": "EADAMTBEFOREAPPLOFCONRCURR",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "EADAMTBEFOREAPPLOFCONTAMT",
+      "nullable": true,
+      "type": "decimal(25,5)"
+    },
+    {
+      "metadata": {},
+      "name": "EADAMTBEFOREAPPLOFCONTCURR",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "EADCALCULATIONMETHOD",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "EADMODELCODE",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "EADPERCENTAGE",
+      "nullable": true,
+      "type": "decimal(7,6)"
+    },
+    {
+      "metadata": {},
+      "name": "EADPERCENTAGEBEFORECON",
+      "nullable": true,
+      "type": "decimal(7,6)"
+    },
+    {
+      "metadata": {},
+      "name": "ELAMTBEFORECONLCOA",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "ELAMTBEFORECONRCOA",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "ELAMTBEFORECONRAMT",
+      "nullable": true,
+      "type": "decimal(25,5)"
+    },
+    {
+      "metadata": {},
+      "name": "ELAMTBEFORECONRCURR",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "ELAMTBEFORECONTAMT",
+      "nullable": true,
+      "type": "decimal(25,5)"
+    },
+    {
+      "metadata": {},
+      "name": "ELAMTBEFORECONTCURR",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "ELBELCOA",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "ELBEPERCENTAGEBEFOREAPPLOFCON",
+      "nullable": true,
+      "type": "decimal(7,6)"
+    },
+    {
+      "metadata": {},
+      "name": "ELBERCOA",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "ELBERAMT",
+      "nullable": true,
+      "type": "decimal(25,5)"
+    },
+    {
+      "metadata": {},
+      "name": "ELBERCURR",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "ELBETAMT",
+      "nullable": true,
+      "type": "decimal(25,5)"
+    },
+    {
+      "metadata": {},
+      "name": "ELBETCURR",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "EXCEMPFRMADVINTRATINGBASEDAPP",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "LANDACQDEVANDCONSTEXPFIN",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "LGDPERCENTAGEOFCON",
+      "nullable": true,
+      "type": "decimal(7,6)"
+    },
+    {
+      "metadata": {},
+      "name": "LGDTYPE",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "LOSSGIVENDEFAULTCLASS",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "MATERIALITYTHRESHOLDENDDATE",
+      "nullable": true,
+      "type": "date"
+    },
+    {
+      "metadata": {},
+      "name": "MAXFINECRG",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "MAXFINECRGATORIG",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "MAXFINECRGFROMPRVMODEL",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "MAXFINECRGFROMPRVMODELATORIG",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "MAXPDPOOL",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "MAXPDPOOLATORIG",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "MAXPD",
+      "nullable": true,
+      "type": "decimal(7,6)"
+    },
+    {
+      "metadata": {},
+      "name": "MAXPDATORIG",
+      "nullable": true,
+      "type": "decimal(7,6)"
+    },
+    {
+      "metadata": {},
+      "name": "MINFINECRG",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "MINFINECRGATORIG",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "MINFINECRGFROMPRVMODEL",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "MINFINECRGFROMPRVMODELATORIG",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "MINPDPOOL",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "MINPDPOOLATORIG",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "MINPD",
+      "nullable": true,
+      "type": "decimal(7,6)"
+    },
+    {
+      "metadata": {},
+      "name": "MINPDATORIG",
+      "nullable": true,
+      "type": "decimal(7,6)"
+    },
+    {
+      "metadata": {},
+      "name": "PDPOOLATORIG",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "PDPOOLATREPORTING",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "BASEL2PRODUCTTYPE",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "PDFROMPRVMODEL",
+      "nullable": true,
+      "type": "decimal(7,6)"
+    },
+    {
+      "metadata": {},
+      "name": "PRVPDMODELCODE",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "APPROVEDLGDRATINGDT",
+      "nullable": true,
+      "type": "date"
+    },
+    {
+      "metadata": {},
+      "name": "CUSTOMFIELDNAME10",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "CUSTOMFIELDVALUE10",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "CUSTOMFIELDNAME11",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "CUSTOMFIELDVALUE11",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "CUSTOMFIELDNAME12",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "CUSTOMFIELDVALUE12",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "CUSTOMFIELDNAME13",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "CUSTOMFIELDVALUE13",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "CUSTOMFIELDNAME14",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "CUSTOMFIELDVALUE14",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "CUSTOMFIELDNAME15",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "CUSTOMFIELDVALUE15",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "CUSTOMFIELDNAME16",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "CUSTOMFIELDVALUE16",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "CUSTOMFIELDNAME17",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "CUSTOMFIELDVALUE17",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "CUSTOMFIELDNAME18",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "CUSTOMFIELDVALUE18",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "CUSTOMFIELDNAME19",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "CUSTOMFIELDVALUE19",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "CUSTOMFIELDNAME20",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "CUSTOMFIELDVALUE20",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "CUSTOMFIELDNAME4",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "CUSTOMFIELDVALUE4",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "CUSTOMFIELDNAME5",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "CUSTOMFIELDVALUE5",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "CUSTOMFIELDNAME6",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "CUSTOMFIELDVALUE6",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "CUSTOMFIELDNAME7",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "CUSTOMFIELDVALUE7",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "CUSTOMFIELDNAME8",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "CUSTOMFIELDVALUE8",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "CUSTOMFIELDNAME9",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "CUSTOMFIELDVALUE9",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "PDMARGINOFCONSERVATISM",
+      "nullable": true,
+      "type": "decimal(7,6)"
+    },
+    {
+      "metadata": {},
+      "name": "PDPERCENTAGEBEFORECONS",
+      "nullable": true,
+      "type": "decimal(7,6)"
+    },
+    {
+      "metadata": {},
+      "name": "MATURITYDATE",
+      "nullable": true,
+      "type": "date"
+    },
+    {
+      "metadata": {},
+      "name": "INCOMEPRODUCINGRESTFINANCE",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "MAXPDFROMPRVMODEL",
+      "nullable": true,
+      "type": "decimal(7,6)"
+    },
+    {
+      "metadata": {},
+      "name": "MAXPDATORIGFROMPRVMODEL",
+      "nullable": true,
+      "type": "decimal(7,6)"
+    },
+    {
+      "metadata": {},
+      "name": "MINPDFROMPRVMODEL",
+      "nullable": true,
+      "type": "decimal(7,6)"
+    },
+    {
+      "metadata": {},
+      "name": "MINPDATORIGFROMPRVMODEL",
+      "nullable": true,
+      "type": "decimal(7,6)"
+    },
+    {
+      "metadata": {},
+      "name": "DROGATINGLENDINGSTANDARDS",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "INSUREDFLAG",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "PENSIONERFLAG",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "SLOTTINGAPPROACHCATEGORY",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "EFFECTIVEMATURITYDT",
+      "nullable": true,
+      "type": "date"
+    }
+  ],
+  "type": "struct"
+}
