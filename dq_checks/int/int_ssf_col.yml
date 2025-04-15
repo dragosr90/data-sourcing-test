@@ -1,0 +1,49 @@
+columns:
+  reporting_date: date
+  collateralidentifier: string
+  delivery_entity: string
+  incomeproducingrestfinance: string
+  numberofhousingunits: double
+  lienposition: double
+  legalbindingtofinishproperty: string
+  developmentstatus: string
+  countryofcollateral: string
+  revaluationfrequency: double
+  borrowersprimaryresidence: string
+  nominalcollateralvaluetcurr: string
+  originalcollateralvaluercurr: string
+  nominalcollateralvaluercurr: string
+  legalregistrationvaluercurr: string
+  thirdpartypriorityclaimrcurr: string
+  averagemarketvaluercurr: string
+  collateraltype: string
+  csacashindicator: string
+  heldbythirdpartyindicator: string
+  collateralprovisiondate: date
+  maturitydate: date
+  valuationdate: date
+  originalcollateralvaldt: date
+  originalcollateralvaluetcurr: string
+  originalcollateralvalueramnt: double
+  nominalcollateralvalueramnt: double
+  legalregistrationvalueramnt: double
+  averagemarketvalueramnt: double
+  thirdpartypriorityclaimramnt: double
+  eligibleupdatetype: string
+  property_upgrade_ind: string
+  realestatetype: string
+  realestatepurposetype: string
+  securitycode: string
+  sourcesystemidentifier: string
+PK: 
+  - collateralidentifier
+  - delivery_entity
+not_null:
+  - collateralidentifier
+  - delivery_entity
+referential_checks:
+  - column: collateraltype
+    filter: collateraltype is not null
+    reference_schema: stg
+    reference_table: tctrl_colltype_ssf_x_basel
+    reference_column: SSF_COL_TYPE
