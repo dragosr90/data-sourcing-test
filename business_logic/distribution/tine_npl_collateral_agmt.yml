@@ -1,0 +1,112 @@
+target: dist_{{ RUN_MONTH }}.tine_npl_collateral_agmt
+
+sources:
+  - alias: SSF_COL
+    source: dist_{{ RUN_MONTH }}.tgt_ssf_col
+  - alias: SSF_CF_X_COL
+    columns:
+      - collateral_agmt_id
+      - plnplindicator
+    source: enrich_{{ RUN_MONTH }}.enrich_ssf_cf_x_col
+
+transformations:
+  - join:
+      left_source: SSF_COL
+      right_source: SSF_CF_X_COL
+      condition:
+        - SSF_COL.collateral_agmt_id = SSF_CF_X_COL.collateral_agmt_id
+      how: left
+
+expressions:
+  collateral_agmt_id: SSF_COL.collateral_agmt_id
+  cpty_id: SSF_COL.cpty_id
+  reporting_date: SSF_COL.reporting_date
+  reporting_entity: SSF_COL.reporting_entity
+  legal_entity_of_the_bank: SSF_COL.legal_entity_of_the_bank
+  basel_collateral_type: SSF_COL.basel_collateral_type
+  basel_collateral_sub_type: SSF_COL.basel_collateral_sub_type
+  ar_start_date: SSF_COL.ar_start_date
+  maturity_date: SSF_COL.maturity_date
+  subordination_type: cast(null as string)
+  last_revaluation_date: cast(null as string)
+  revaluation_frequency: SSF_COL.revaluation_frequency
+  weighted_average_haircut: SSF_COL.haircut_percentage
+  own_estimate_haircut: cast(null as string)
+  eligible_collateral_flag: cast(null as string)
+  business_segment_level_4: cast(null as string)
+  business_segment_level_3: cast(null as string)
+  magnitude_key: cast(null as string)
+  technical_key_segment: cast(null as string)
+  first_loss_covered_flag: cast(null as string)
+  notional_tenor: cast(null as string)
+  local_coa: cast(null as string)
+  reporting_coa: cast(null as string)
+  measurement_ccy: SSF_COL.measurement_ccy
+  original_ccy: SSF_COL.original_ccy
+  exchange_rate_to_original_ccy: SSF_COL.exchange_rate_to_original_ccy
+  latest_collateral_value: SSF_COL.latest_collateral_value
+  third_party_priority_claim: SSF_COL.third_party_priority_claim
+  collateral_value: SSF_COL.collateral_value
+  mortgage_recovery_limit: cast(null as string)
+  borrowing_base_advance_ratio: cast(null as string)
+  over_collateralization_ceiling: cast(null as string)
+  ray_prefix: cast(null as string)
+  time_stamp: cast(null as string)
+  source_system: cast(null as string)
+  collateral_agmt_uid: cast(null as string)
+  collateral_agmt_ssc: SSF_COL.collateral_agmt_ssc
+  cpty_uid: cast(null as string)
+  cpty_ssc: cast(null as string)
+  ar_life_cycle_status_type: cast(null as string)
+  dummy_flag: cast(null as string)
+  pce_portfolio_id: cast(null as string)
+  delivery_entity: SSF_COL.delivery_entity
+  originalcollateralvalueramnt: SSF_COL.originalcollateralvalueramnt
+  collateralvaluationmethod: cast(null as string)
+  collateralvaluationtype: cast(null as string)
+  nominalcollateralvalueramnt: SSF_COL.nominalcollateralvalueramnt
+  borrowersprimaryresidence: SSF_COL.borrowersprimaryresidence
+  recoveryrate: cast(null as string)
+  collateral_region: cast(null as string)
+  original_collateral_agmt_uid: cast(null as string)
+  grosscollateralvalueramnt: cast(null as string)
+  developmentstatus: SSF_COL.developmentstatus
+  lienposition: SSF_COL.lienposition
+  legalregistrationvalueramnt: SSF_COL.legalregistrationvalueramnt
+  securitycode: SSF_COL.securitycode
+  securitycodetype: cast(null as string)
+  dep_to_cash_col_flag: cast(null as string)
+  countryofcollateral: SSF_COL.countryofcollateral
+  std_eligible_coll_ind: cast(null as string)
+  fir_eligible_coll_ind: cast(null as string)
+  air_eligible_coll_ind: cast(null as string)
+  averagemarketvaluetamnt: cast(null as string)
+  averagemarketvaluetcurr: cast(null as string)
+  averagemarketvalueramnt: SSF_COL.averagemarketvalueramnt
+  averagemarketvaluercurr: cast(null as string)
+  averagemarketvaluercoa: cast(null as string)
+  averagemarketvaluelcoa: cast(null as string)
+  incomeproducingrestfinance: SSF_COL.incomeproducingrestfinance
+  legalbindingtofinishproperty: SSF_COL.legalbindingtofinishproperty
+  numberofhousingunits: SSF_COL.numberofhousingunits
+  property_upgrade_ind: SSF_COL.property_upgrade_ind
+  curr_mkt_value: SSF_COL.curr_mkt_value
+  avg_mkt_value: SSF_COL.avg_mkt_value
+  orig_mkt_value: SSF_COL.orig_mkt_value
+  liquidation_period: cast(null as string)
+  collateraldependency: cast(null as string)
+  eligible_update_type: SSF_COL.eligible_update_type
+  originalcollateralvaldt: SSF_COL.originalcollateralvaldt
+  valuationdate: SSF_COL.valuationdate
+  nextvaluationdate: cast(null as string)
+  orig_property_value: SSF_COL.orig_property_value
+  avg_property_value: cast(null as string)
+  curr_property_value: SSF_COL.curr_property_value
+  realestatetype: SSF_COL.realestatetype
+  realestatepurposetype: SSF_COL.realestatepurposetype
+  basel_real_estate_type: SSF_COL.basel_real_estate_type
+
+drop_duplicates: True
+
+filter_target: 
+  - plnplindicator = "NPL"

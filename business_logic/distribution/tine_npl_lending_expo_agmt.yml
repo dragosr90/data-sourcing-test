@@ -1,0 +1,152 @@
+target: dist_{{ RUN_MONTH }}.tine_npl_lending_expo_agmt
+
+sources:
+  - alias: DE
+    source: enrich_{{ RUN_MONTH }}.tine_npl_lending_expo_agmt_de
+  - alias: BE
+    source: enrich_{{ RUN_MONTH }}.tine_npl_lending_expo_agmt_be
+  - alias: FR
+    source: enrich_{{ RUN_MONTH }}.tine_npl_lending_expo_agmt_fr
+
+transformations:
+  - union:
+      source: DE
+      alias: TABLE__UNION
+      column_mapping:
+        DE:
+          reporting_date: reporting_date
+          delivery_entity: delivery_entity
+          ray_prefix: ray_prefix
+          lending_expo_agmt_ssc: lending_expo_agmt_ssc
+          lending_expo_agmt_id: lending_expo_agmt_id
+          lending_expo_agmt_uid: lending_expo_agmt_uid
+          dummy_fac_flg: dummy_fac_flg
+          credit_fac_agmt_id: credit_fac_agmt_id
+          cpty_id: cpty_id
+          reporting_entity: reporting_entity
+          basel_product_type: basel_product_type
+          off_balance_product_flag: off_balance_product_flag
+          revolvingindicator: revolvingindicator
+          subordination_type: subordination_type
+          ar_start_date: ar_start_date
+          maturity_date: maturity_date
+          effective_maturity: effective_maturity
+          original_ccy: original_ccy
+          accrued_fees: accrued_fees
+          accrued_interest: accrued_interest
+          pre_calculated_ead: pre_calculated_ead
+          principal_amount: principal_amount
+          ar_financial_status_type: ar_financial_status_type
+          ifrs9_risk_stage: ifrs9_risk_stage
+          accumulatedwriteofframnt: accumulatedwriteofframnt
+          write_off_amount: write_off_amount
+          loan_loss_allowance_t_ccy: loan_loss_allowance_t_ccy
+          loan_loss_allowance_t_amount: loan_loss_allowance_t_amount
+          loan_loss_allowance_amount: loan_loss_allowance_amount
+          asset_sec_involvement_type: asset_sec_involvement_type
+          process_filter_code: process_filter_code
+          credit_risk_approach_type: credit_risk_approach_type
+          qrretransactor: qrretransactor
+        BE:
+          reporting_date: reporting_date
+          delivery_entity: delivery_entity
+          ray_prefix: ray_prefix
+          lending_expo_agmt_ssc: lending_expo_agmt_ssc
+          lending_expo_agmt_id: lending_expo_agmt_id
+          lending_expo_agmt_uid: lending_expo_agmt_uid
+          dummy_fac_flg: dummy_fac_flg
+          credit_fac_agmt_id: credit_fac_agmt_id
+          cpty_id: cpty_id
+          reporting_entity: reporting_entity
+          basel_product_type: basel_product_type
+          off_balance_product_flag: off_balance_product_flag
+          revolvingindicator: revolvingindicator
+          subordination_type: subordination_type
+          ar_start_date: ar_start_date
+          maturity_date: maturity_date
+          effective_maturity: effective_maturity
+          original_ccy: original_ccy
+          accrued_fees: accrued_fees
+          accrued_interest: accrued_interest
+          pre_calculated_ead: pre_calculated_ead
+          principal_amount: principal_amount
+          ar_financial_status_type: ar_financial_status_type
+          ifrs9_risk_stage: ifrs9_risk_stage
+          accumulatedwriteofframnt: accumulatedwriteofframnt
+          write_off_amount: write_off_amount
+          loan_loss_allowance_t_ccy: loan_loss_allowance_t_ccy
+          loan_loss_allowance_t_amount: loan_loss_allowance_t_amount
+          loan_loss_allowance_amount: loan_loss_allowance_amount
+          asset_sec_involvement_type: asset_sec_involvement_type
+          process_filter_code: process_filter_code
+          credit_risk_approach_type: credit_risk_approach_type
+          qrretransactor: qrretransactor
+        FR:
+          reporting_date: reporting_date
+          delivery_entity: delivery_entity
+          ray_prefix: ray_prefix
+          lending_expo_agmt_ssc: lending_expo_agmt_ssc
+          lending_expo_agmt_id: lending_expo_agmt_id
+          lending_expo_agmt_uid: lending_expo_agmt_uid
+          dummy_fac_flg: dummy_fac_flg
+          credit_fac_agmt_id: credit_fac_agmt_id
+          cpty_id: cpty_id
+          reporting_entity: reporting_entity
+          basel_product_type: basel_product_type
+          off_balance_product_flag: off_balance_product_flag
+          revolvingindicator: revolvingindicator
+          subordination_type: subordination_type
+          ar_start_date: ar_start_date
+          maturity_date: maturity_date
+          effective_maturity: effective_maturity
+          original_ccy: original_ccy
+          accrued_fees: accrued_fees
+          accrued_interest: accrued_interest
+          pre_calculated_ead: pre_calculated_ead
+          principal_amount: principal_amount
+          ar_financial_status_type: ar_financial_status_type
+          ifrs9_risk_stage: ifrs9_risk_stage
+          accumulatedwriteofframnt: accumulatedwriteofframnt
+          write_off_amount: write_off_amount
+          loan_loss_allowance_t_ccy: loan_loss_allowance_t_ccy
+          loan_loss_allowance_t_amount: loan_loss_allowance_t_amount
+          loan_loss_allowance_amount: loan_loss_allowance_amount
+          asset_sec_involvement_type: asset_sec_involvement_type
+          process_filter_code: process_filter_code
+          credit_risk_approach_type: credit_risk_approach_type
+          qrretransactor: qrretransactor
+
+expressions:
+  reporting_date: TABLE__UNION.reporting_date
+  delivery_entity: TABLE__UNION.delivery_entity
+  ray_prefix: TABLE__UNION.ray_prefix
+  lending_expo_agmt_ssc: TABLE__UNION.lending_expo_agmt_ssc
+  lending_expo_agmt_id: TABLE__UNION.lending_expo_agmt_id
+  lending_expo_agmt_uid: TABLE__UNION.lending_expo_agmt_uid
+  dummy_fac_flg: TABLE__UNION.dummy_fac_flg
+  credit_fac_agmt_id: TABLE__UNION.credit_fac_agmt_id
+  cpty_id: TABLE__UNION.cpty_id
+  reporting_entity: TABLE__UNION.reporting_entity
+  basel_product_type: TABLE__UNION.basel_product_type
+  off_balance_product_flag: TABLE__UNION.off_balance_product_flag
+  revolvingindicator: TABLE__UNION.revolvingindicator
+  subordination_type: TABLE__UNION.subordination_type
+  ar_start_date: TABLE__UNION.ar_start_date
+  maturity_date: TABLE__UNION.maturity_date
+  effective_maturity: TABLE__UNION.effective_maturity
+  original_ccy: TABLE__UNION.original_ccy
+  accrued_fees: TABLE__UNION.accrued_fees
+  accrued_interest: TABLE__UNION.accrued_interest
+  pre_calculated_ead: TABLE__UNION.pre_calculated_ead
+  principal_amount: TABLE__UNION.principal_amount
+  ar_financial_status_type: TABLE__UNION.ar_financial_status_type
+  ifrs9_risk_stage: TABLE__UNION.ifrs9_risk_stage
+  accumulatedwriteofframnt: TABLE__UNION.accumulatedwriteofframnt
+  write_off_amount: TABLE__UNION.write_off_amount
+  loan_loss_allowance_t_ccy: TABLE__UNION.loan_loss_allowance_t_ccy
+  loan_loss_allowance_t_amount: TABLE__UNION.loan_loss_allowance_t_amount
+  loan_loss_allowance_amount: TABLE__UNION.loan_loss_allowance_amount
+  asset_sec_involvement_type: TABLE__UNION.asset_sec_involvement_type
+  process_filter_code: TABLE__UNION.process_filter_code
+  credit_risk_approach_type: TABLE__UNION.credit_risk_approach_type
+  qrretransactor: TABLE__UNION.qrretransactor

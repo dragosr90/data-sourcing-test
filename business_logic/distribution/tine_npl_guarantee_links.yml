@@ -1,0 +1,14 @@
+target: dist_{{ RUN_MONTH }}.tine_npl_guarantee_links
+
+sources:
+  - alias: CP_X_GTEE
+    source: enrich_{{ RUN_MONTH }}.tine_npl_guarantee_links_fr
+
+expressions:
+  reporting_date: CP_X_GTEE.reporting_date
+  delivery_entity: CP_X_GTEE.delivery_entity
+  ar_id: CP_X_GTEE.ar_id
+  guarantee_agmt_id: CP_X_GTEE.guarantee_agmt_id
+
+
+

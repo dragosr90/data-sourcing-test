@@ -1,0 +1,54 @@
+target: dist_{{ RUN_MONTH }}.tgt_ssf_col
+  
+sources:
+  - alias: SSF_COL
+    source: enrich_{{ RUN_MONTH }}.enrich_ssf_col
+
+expressions:
+  reporting_date: SSF_COL.reporting_date
+  delivery_entity_orig: SSF_COL.delivery_entity_orig
+  delivery_entity: SSF_COL.delivery_entity
+  ar_start_date: SSF_COL.ar_start_date
+  collateraltype: SSF_COL.collateraltype
+  lienposition: SSF_COL.lienposition
+  revaluation_frequency: coalesce(SSF_COL.revaluation_frequency,1)
+  incomeproducingrestfinance: SSF_COL.incomeproducingrestfinance
+  maturity_date: coalesce(SSF_COL.maturity_date,to_date('2099-12-31','yyyy-MM-dd'))
+  valuationdate: SSF_COL.valuationdate 
+  originalcollateralvaldt: SSF_COL.originalcollateralvaldt
+  original_ccy: SSF_COL.original_ccy
+  originalcollateralvalueramnt: SSF_COL.originalcollateralvalueramnt
+  nominalcollateralvalueramnt: SSF_COL.nominalcollateralvalueramnt
+  legalregistrationvalueramnt: SSF_COL.legalregistrationvalueramnt
+  averagemarketvalueramnt: SSF_COL.averagemarketvalueramnt
+  third_party_priority_claim: SSF_COL.third_party_priority_claim
+  orig_property_value: SSF_COL.orig_property_value
+  curr_property_value: SSF_COL.curr_property_value
+  avg_mkt_value: SSF_COL.avg_mkt_value
+  orig_mkt_value: SSF_COL.orig_mkt_value
+  curr_mkt_value: SSF_COL.curr_mkt_value
+  collateral_value: SSF_COL.collateral_value
+  latest_collateral_value: SSF_COL.latest_collateral_value
+  numberofhousingunits: SSF_COL.numberofhousingunits
+  legalbindingtofinishproperty: SSF_COL.legalbindingtofinishproperty
+  developmentstatus: SSF_COL.developmentstatus
+  measurement_ccy: SSF_COL.measurement_ccy
+  borrowersprimaryresidence: SSF_COL.borrowersprimaryresidence
+  countryofcollateral: SSF_COL.countryofcollateral
+  eligible_update_type: SSF_COL.eligible_update_type
+  collateralidentifier: SSF_COL.collateralidentifier
+  collateral_agmt_id: SSF_COL.collateral_agmt_id
+  tine_collateral_agmt_id: SSF_COL.tine_collateral_agmt_id
+  collateral_agmt_ssc: SSF_COL.collateral_agmt_ssc
+  exchange_rate_to_original_ccy: SSF_COL.exchange_rate_to_original_ccy
+  property_upgrade_ind: SSF_COL.property_upgrade_ind
+  realestatetype: SSF_COL.realestatetype
+  realestatepurposetype: SSF_COL.realestatepurposetype
+  securitycode: SSF_COL.securitycode
+  basel_collateral_type: SSF_COL.basel_collateral_type
+  basel_collateral_sub_type: SSF_COL.basel_collateral_sub_type
+  basel_real_estate_type: SSF_COL.basel_real_estate_type
+  haircut_percentage: SSF_COL.haircut_percentage
+  reporting_entity: cast(NULL as string)
+  cpty_id: cast(NULL as string)
+  legal_entity_of_the_bank: cast(NULL as string)

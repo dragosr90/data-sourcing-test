@@ -1,0 +1,21 @@
+target: dist_{{ RUN_MONTH }}.tine_npl_guarantee_agmt
+
+sources:
+  - alias: GTEE
+    source: enrich_{{ RUN_MONTH }}.tine_npl_guarantee_agmt_fr
+
+expressions:
+  reporting_date: GTEE.reporting_date
+  delivery_entity: GTEE.delivery_entity
+  guarantee_agmt_id: GTEE.guarantee_agmt_id
+  guarantee_agmt_uid: GTEE.guarantee_agmt_uid
+  guarantee_agmt_ssc: GTEE.guarantee_agmt_ssc
+  cpty_id: GTEE.cpty_id
+  cpty_uid: GTEE.cpty_uid
+  cpty_ssc: GTEE.cpty_ssc
+  maturity_date: GTEE.maturity_date
+  basel_guarantee_type: GTEE.basel_guarantee_type
+  guarantee_principal_only_ind: GTEE.guarantee_principal_only_ind
+  guarantee_value: GTEE.guarantee_value
+
+

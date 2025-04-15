@@ -1,0 +1,19 @@
+target: dist_{{ RUN_MONTH }}.tine_pl_collateral_links
+
+sources:
+  - alias: SSF_CF_X_COL
+    source: dist_{{ RUN_MONTH }}.tgt_ssf_cf_x_col
+    filter: plnplindicator = 'PL'
+
+expressions:
+  ar_id: SSF_CF_X_COL.ar_id
+  collateral_agmt_id: SSF_CF_X_COL.collateral_agmt_id
+  ray_prefix: cast(null as string)
+  ar_exp_type: SSF_CF_X_COL.ar_exp_type
+  reporting_date: SSF_CF_X_COL.reporting_date
+  time_stamp: cast(null as string)
+  delivery_entity: SSF_CF_X_COL.delivery_entity
+  b4_eligible: SSF_CF_X_COL.b4_eligible
+  b4_std_eligible: SSF_CF_X_COL.b4_std_eligible
+  adv_eligible: cast(null as string)
+  dep_to_cash_col_flag: SSF_CF_X_COL.dep_to_cash_col_flag
