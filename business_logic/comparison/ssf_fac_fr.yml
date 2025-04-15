@@ -1,0 +1,110 @@
+target: comparison.ssf_fac_fr
+
+sources:
+    - alias: SSF_PR_FR
+      columns: ["reporting_date", "delivery_entity_orig", "CREDIT_FAC_AGMT_ID", "principal_amount"]
+      source: enrich_202408.enrich_ssf_pr_fr
+    - alias: SSF_CF
+      source: stg_202408.tstg_ssf_creditfacility
+      columns: ["DELIVERY_ENTITY", "REPORTING_DATE", "REPORTINGENTITY", "LOCALFACILITYIDENTIFIER", "CREDITLIMITTCURR", "CREDITLIMITTAMNT", "REVOLVING", "BASEL2PRODUCTTYPE", "TYPEOFCOMMITMENT", "GLOBALFACILITYIDENTIFIER", "IFRS9RISKSTAGE", "EADMODELCODE", "loanlossallowanceramnt", "TRADEDATE", "EXPIRYDATE", "MATURITYDATE", "RISKWEIGHTEDEXPOSUREAPPROACH","PLNPLINDICATOR", "SPECIALISEDLENDINGTYPE", "HIGHQUALITYINDICATOR", "INFRASTRUCTSUPPORTINGFACTOR", "LANDACQDEVANDCONSTEXPFIN", "PROJECTFINANCEPHASEINDICATOR"]
+      filter: DELIVERY_ENTITY = 'IHUB-FR1_CALC' AND parentcreditfacility is null and file_name<>'DUMMY CREDIT FACILITY'
+    - alias: FAIR_LGD
+      source: stg_202408.tdial_lgd_actual
+      columns: ["REPORTING_DATE", "LGD_CLASS", "LGD_LEGAL_RISK_SCORE", "LGD_MODEL_CODE", "GFID"]
+    - alias: fx_lmt
+      columns: ["REPORTING_DATE", "QUOTED_CCY", "EXCHANGE_RATE"]
+      source: stg_202408.tmdm_113_fx_eom_rates
+    - alias: SSF_CP
+      columns: ["insighterid", "LOCALID", "DELIVERY_ENTITY", "REPORTING_DATE"]
+      source: stg_202408.tstg_ssf_counterparty
+    - alias: SSF_CP_X_CF
+      columns: ["REPORTING_DATE", "DELIVERY_ENTITY", "CREDITFACILITY", "PARTICIPATINGCOUNTERPARTY"]
+      source: stg_202408.tstg_ssf_cp_x_creditfacility  
+
+transformations:
+    - aggregation:
+        source: SSF_PR
+        alias: LENDING
+        group: ["SSF_PR_FR.reporting_date", "SSF_PR_FR.delivery_entity_orig", "SSF_PR_FR.CREDIT_FAC_AGMT_ID"]
+        column_mapping:
+            DRAWN_AMOUNT: SUM(SSF_PR_FR.principal_amount)
+    - join:
+        left_source: SSF_CF
+        right_source: FAIR_LGD
+        condition:
+          - SSF_CF.REPORTING_DATE = FAIR_LGD.REPORTING_DATE
+          - SSF_CF.GLOBALFACILITYIDENTIFIER = FAIR_LGD.GFID
+    - join:
+        right_source: SSF_CP_X_CF
+        condition:
+        - SSF_CF.REPORTING_DATE = SSF_CP_X_CF.REPORTING_DATE
+        - SSF_CF.DELIVERY_ENTITY = SSF_CP_X_CF.DELIVERY_ENTITY
+        - SSF_CF.LOCALFACILITYIDENTIFIER = SSF_CP_X_CF.CREDITFACILITY
+    - join:
+        right_source: SSF_CP
+        condition:
+        - SSF_CP.REPORTING_DATE = SSF_CP_X_CF.REPORTING_DATE
+        - SSF_CP.DELIVERY_ENTITY = SSF_CP_X_CF.DELIVERY_ENTITY
+        - SSF_CP.LOCALID = SSF_CP_X_CF.PARTICIPATINGCOUNTERPARTY
+    - join:
+        right_source: fx_lmt
+        condition:
+        - SSF_CF.REPORTING_DATE = fx_lmt.REPORTING_DATE
+        - SSF_CF.CREDITLIMITTCURR=fx_lmt.QUOTED_CCY
+    - join:
+        right_source: LENDING
+        condition:
+          - SSF_CF.REPORTING_DATE = LENDING.reporting_date
+          - SSF_CF.DELIVERY_ENTITY = LENDING.DELIVERY_ENTITY_ORIG
+          - concat('PDF',SSF_CF.LOCALFACILITYIDENTIFIER) = LENDING.CREDIT_FAC_AGMT_ID
+
+expressions:
+    reporting_date: SSF_CF.REPORTING_DATE
+    delivery_entity_org: SSF_CF.DELIVERY_ENTITY
+    delivery_entity: substr(SSF_CF.DELIVERY_ENTITY,1,length(SSF_CF.DELIVERY_ENTITY)-5)
+    credit_fac_agmt_uid: SSF_CF.LOCALFACILITYIDENTIFIER
+    credit_fac_agmt_id: concat('PDF', SSF_CF.LOCALFACILITYIDENTIFIER)
+    cpty_id: concat('PDC', SSF_CP.LOCALID)
+    credit_agmt_id: cast(NULL as string)
+    credict_fac_agmt_ssc: cast('PDF' as string)
+    global_fac_id: SSF_CF.GLOBALFACILITYIDENTIFIER
+    basel_product_type: SSF_CF.BASEL2PRODUCTTYPE
+    committed_ind: SSF_CF.TYPEOFCOMMITMENT
+    typeofcommitment: SSF_CF.TYPEOFCOMMITMENT
+    revolvingindicator: CASE WHEN SSF_CF.REVOLVING='Y' THEN 1 ELSE 0 END
+    original_ccy: SSF_CF.CREDITLIMITTCURR
+    pre_calculated_ead: cast(NULL as DOUBLE)
+    credit_limit: SSF_CF.CREDITLIMITTAMNT/fx_lmt.EXCHANGE_RATE
+    accrued_fees: cast(NULL as DOUBLE)
+    drawn_amount: LENDING.DRAWN_AMOUNT
+    ead_model: SSF_CF.EADMODELCODE
+    dummy_fac_flag: cast(0 as INTEGER)
+    lgd_class: coalesce(concat(FAIR_LGD.LGD_CLASS, FAIR_LGD.LGD_LEGAL_RISK_SCORE),'L1')
+    lgd_model: coalesce(FAIR_LGD.LGD_MODEL_CODE,'LNOMO401')
+    lgd_source_system_id: CASE WHEN FAIR_LGD.GFID is not null then 'FAIR' else 'TRANS' END
+    ifrs9_risk_stage: SSF_CF.IFRS9RISKSTAGE
+    loan_loss_allowance_amount: SSF_CF.loanlossallowanceramnt
+    multi_obligor_fac_flag: cast(NULL as string)
+    process_filter_code: cast(NULL as string)
+    ray_prefix: cast('PC' as string)
+    reporting_entity: SSF_CF.REPORTINGENTITY
+    secz_invl_type: cast(NULL as string)
+    single_drawdown_flag: cast(NULL as string)
+    sourced_exemption_id: cast(NULL as string)
+    ar_start_date: SSF_CF.TRADEDATE
+    term_out_date: SSF_CF.EXPIRYDATE
+    maturity_date: coalesce(SSF_CF.MATURITYDATE,dateadd(month,8,SSF_CF.REPORTING_DATE))
+    credit_risk_approach_type: CASE WHEN ssf_cf.RISKWEIGHTEDEXPOSUREAPPROACH = 'SA'and ssf_cf.PLNPLINDICATOR = 'PL' then 'STD_R'
+                                    WHEN ssf_cf.RISKWEIGHTEDEXPOSUREAPPROACH = 'SA'and ssf_cf.PLNPLINDICATOR = 'NPL' then 'STD_NR'
+                                    WHEN ssf_cf.RISKWEIGHTEDEXPOSUREAPPROACH = 'AIRB'and ssf_cf.PLNPLINDICATOR = 'PL' then 'IRB_R'
+                                    WHEN ssf_cf.RISKWEIGHTEDEXPOSUREAPPROACH = 'AIRB'and ssf_cf.PLNPLINDICATOR = 'NPL' then 'IRB_ADV_NR'
+                                    WHEN ssf_cf.RISKWEIGHTEDEXPOSUREAPPROACH = 'FIRB'and ssf_cf.PLNPLINDICATOR = 'PL' then 'IRB_FOUND_R'
+                                    WHEN ssf_cf.RISKWEIGHTEDEXPOSUREAPPROACH = 'FIRB'and ssf_cf.PLNPLINDICATOR = 'NPL' then 'IRB_FOUND_NR'
+                                    else NULL
+                              END
+    specialisedlendingtype: SSF_CF.SPECIALISEDLENDINGTYPE
+    highqualityindicator: SSF_CF.HIGHQUALITYINDICATOR
+    infrastructsupportingfactor: SSF_CF.INFRASTRUCTSUPPORTINGFACTOR
+    landacquisitiondevconstexpofin: SSF_CF.LANDACQDEVANDCONSTEXPFIN
+    projectfinancephaseindicator: SSF_CF.PROJECTFINANCEPHASEINDICATOR
+    financial_institution_flag: CASE WHEN SSF_CP.insighterid is not null then 1 else 0 END
