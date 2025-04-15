@@ -1,0 +1,32 @@
+target: int_{{ RUN_MONTH }}.int_ssf_ca
+
+sources:
+  - alias: STG_SSF_CA
+    columns:
+    - reporting_date
+    - delivery_entity
+    - arrangementidentifier
+    - transferredpercentage
+    - ifrs9riskstage
+    - accumulatedwriteofframnt
+    - loanlossallowancetcurr
+    - loanlossallowancetamnt
+    - loanlossallowanceramnt
+    - creditfacility
+    - qrretransactor
+    filter: delivery_entity in ('IHUB-FR1_CALC','IHUB-DE2_CALC')
+    source: stg_{{ RUN_MONTH }}.tstg_ssf_currentaccount
+
+expressions:
+  reporting_date: STG_SSF_CA.reporting_date
+  delivery_entity: STG_SSF_CA.delivery_entity
+  arrangementidentifier: STG_SSF_CA.arrangementidentifier
+  transferredpercentage: STG_SSF_CA.transferredpercentage
+  ifrs9riskstage: STG_SSF_CA.ifrs9riskstage
+  accumulatedwriteofframnt: STG_SSF_CA.accumulatedwriteofframnt
+  loanlossallowancetcurr: STG_SSF_CA.loanlossallowancetcurr
+  loanlossallowancetamnt: STG_SSF_CA.loanlossallowancetamnt
+  loanlossallowanceramnt: STG_SSF_CA.loanlossallowanceramnt
+  #templory solution to revert the dummy facility
+  creditfacility: case when STG_SSF_CA.creditfacility = concat('CF/',STG_SSF_CA.arrangementidentifier) then null else STG_SSF_CA.creditfacility end 
+  qrretransactor: STG_SSF_CA.qrretransactor

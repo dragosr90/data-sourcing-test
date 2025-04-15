@@ -1,0 +1,21 @@
+target: int_{{ RUN_MONTH }}.int_ssf_gtee
+
+sources:
+  - alias: STG_SSF_GTEE
+    columns:
+    - reporting_date
+    - delivery_entity
+    - sourcesystemidentifier
+    - guaranteeidentifier
+    - maturitydate
+    - guaranteevaluetramnt
+    filter: delivery_entity in ('AACF_REPT','ALFAM_REPT','ENTRACARD_REPT','FBS_REPT','IHUB-BE1_REPT','IHUB-DE2_CALC','IHUB-FR1_CALC','LEASE_REPT','VIENNA_REPT')
+    source: stg_{{ RUN_MONTH }}.tstg_ssf_guarantee
+
+expressions:
+  reporting_date: STG_SSF_GTEE.reporting_date
+  delivery_entity: STG_SSF_GTEE.delivery_entity
+  sourcesystemidentifier: STG_SSF_GTEE.sourcesystemidentifier
+  guaranteeidentifier: STG_SSF_GTEE.guaranteeidentifier
+  maturitydate: STG_SSF_GTEE.maturitydate
+  guaranteevaluetramnt: STG_SSF_GTEE.guaranteevaluetramnt

@@ -1,0 +1,48 @@
+target: int_{{ RUN_MONTH }}.int_dial_rating_fca_scra
+
+sources:
+  - alias: EPR
+    columns:
+    - reporting_date
+    - global_id
+    - locl_src_systm
+    - locl_id
+    filter: locl_src_systm='BCDB'
+    source: stg_{{ RUN_MONTH }}.tdial_epr_party_local_iden
+  - alias: FCA_SCRA
+    columns: 
+    - reporting_date
+    - local_bcdb_id
+    - value_id
+    - raw_value 
+    - statement_date 
+    - input_model_id
+    filter: value_id in ('BNK30712','BNK38250','FC_MIN_CAPITAL_REQ','FC_MIN_CAPITAL_REQ_INCL_BUF')
+    source: stg_{{ RUN_MONTH }}.tdial_rating_fca_scra
+
+transformations:
+  - join:
+      left_source: EPR
+      right_source: FCA_SCRA
+      condition:
+        - lpad(FCA_SCRA.local_bcdb_id,12,'0')= EPR.locl_id
+        - EPR.reporting_date = FCA_SCRA.reporting_date
+      how: inner
+  - aggregation:
+      alias: FCA_SCRA_AGG
+      group: ['EPR.reporting_date', 'EPR.global_id']
+      column_mapping:
+        bnk30712_raw_val: min(CASE FCA_SCRA.value_id WHEN 'BNK30712' THEN FCA_SCRA.raw_value END)
+        bnk38250_raw_val: min(CASE FCA_SCRA.value_id WHEN 'BNK38250' THEN FCA_SCRA.raw_value END)
+        fc_min_capital_req_raw_val: min(CASE FCA_SCRA.value_id WHEN 'FC_MIN_CAPITAL_REQ' THEN FCA_SCRA.raw_value END)
+        fc_min_capital_req_incl_buf_raw_val: min(CASE FCA_SCRA.value_id WHEN 'FC_MIN_CAPITAL_REQ_INCL_BUF' THEN FCA_SCRA.raw_value END)
+
+
+
+expressions:
+  reporting_date: FCA_SCRA_AGG.reporting_date
+  global_id: FCA_SCRA_AGG.global_id
+  bnk30712_raw_val: FCA_SCRA_AGG.bnk30712_raw_val
+  bnk38250_raw_val: FCA_SCRA_AGG.bnk38250_raw_val
+  fc_min_capital_req_raw_val: FCA_SCRA_AGG.fc_min_capital_req_raw_val
+  fc_min_capital_req_incl_buf_raw_val: FCA_SCRA_AGG.fc_min_capital_req_incl_buf_raw_val

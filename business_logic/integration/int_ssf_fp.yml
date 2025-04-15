@@ -1,0 +1,37 @@
+target: int_{{ RUN_MONTH }}.int_ssf_fp
+
+sources:
+  - alias: STG_SSF_FP
+    columns:
+    - reporting_date
+    - delivery_entity
+    - arrangementidentifier
+    - subordinated
+    - maturitydate
+    - effectivematuritydt
+    - transferredpercentage
+    - accumulatedwriteofframnt
+    - loanlossallowancetcurr
+    - loanlossallowancetamnt
+    - loanlossallowanceramnt
+    - creditfacility
+    - securitisationroletype
+    - qrretransactor
+    filter: delivery_entity in ('AACF_REPT','ALFAM_REPT','ENTRACARD_REPT','FBS_REPT','IHUB-BE1_REPT','IHUB-DE2_CALC','IHUB-FR1_CALC','LEASE_REPT','VIENNA_REPT')
+    source: stg_{{ RUN_MONTH }}.tstg_ssf_financingproduct
+
+expressions:
+  reporting_date: STG_SSF_FP.reporting_date
+  delivery_entity: STG_SSF_FP.delivery_entity
+  arrangementidentifier: STG_SSF_FP.arrangementidentifier
+  subordinated: STG_SSF_FP.subordinated
+  maturitydate: STG_SSF_FP.maturitydate
+  effectivematuritydt: STG_SSF_FP.effectivematuritydt
+  transferredpercentage: STG_SSF_FP.transferredpercentage
+  accumulatedwriteofframnt: STG_SSF_FP.accumulatedwriteofframnt
+  loanlossallowancetcurr: STG_SSF_FP.loanlossallowancetcurr
+  loanlossallowancetamnt: STG_SSF_FP.loanlossallowancetamnt
+  loanlossallowanceramnt: STG_SSF_FP.loanlossallowanceramnt
+  creditfacility: STG_SSF_FP.creditfacility
+  securitisationroletype: STG_SSF_FP.securitisationroletype
+  qrretransactor: STG_SSF_FP.qrretransactor

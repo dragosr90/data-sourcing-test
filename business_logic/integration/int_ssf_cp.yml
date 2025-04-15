@@ -1,0 +1,41 @@
+target: int_{{ RUN_MONTH }}.int_ssf_cp
+
+sources:
+  - alias: TSTG_SSF_CP
+    columns:
+    - reporting_date
+    - delivery_entity
+    - localid
+    - basel2counterpartytype
+    - countryofincorporation
+    - countryofresidence
+    - frcounterpartysegmentation
+    - globalcounterpartyidentifier
+    - totalassetsramnt
+    - totalassetsrcurr
+    - annualturnoverramnt
+    - annualturnoverrcurr
+    - ultimateparentorganisation
+    - insighterid
+    - sourcesystemidentifier
+    - aacalphacode
+    filter: delivery_entity in ('IHUB-FR1_CALC','IHUB-DE2_CALC')
+    source: stg_{{ RUN_MONTH }}.tstg_ssf_counterparty
+
+expressions:
+  reporting_date: TSTG_SSF_CP.reporting_date
+  delivery_entity: TSTG_SSF_CP.delivery_entity
+  localid: TSTG_SSF_CP.localid
+  basel2counterpartytype: TSTG_SSF_CP.basel2counterpartytype
+  countryofincorporation: TSTG_SSF_CP.countryofincorporation
+  countryofresidence: TSTG_SSF_CP.countryofresidence
+  frcounterpartysegmentation: TSTG_SSF_CP.frcounterpartysegmentation
+  globalcounterpartyidentifier: TSTG_SSF_CP.globalcounterpartyidentifier
+  totalassetsramnt: TSTG_SSF_CP.totalassetsramnt
+  totalassetsrcurr: TSTG_SSF_CP.totalassetsrcurr
+  annualturnoverramnt: TSTG_SSF_CP.annualturnoverramnt
+  annualturnoverrcurr: TSTG_SSF_CP.annualturnoverrcurr
+  ultimateparentorganisation: TSTG_SSF_CP.ultimateparentorganisation
+  insighterid: TSTG_SSF_CP.insighterid
+  sourcesystemidentifier: TSTG_SSF_CP.sourcesystemidentifier
+  aacalphacode: TSTG_SSF_CP.aacalphacode

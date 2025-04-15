@@ -1,0 +1,47 @@
+target: int_{{ RUN_MONTH }}.ssf_facility_rollup_{{ DELIVERY_ENTITY }}
+
+sources:
+  - alias: CF1
+    filter: ParentCreditFacility<>LocalFacilityIdentifier
+    source: stg_{{ RUN_MONTH }}.ssf_{{ DELIVERY_ENTITY }}_cf
+  - alias: CF2
+    source: stg_{{ RUN_MONTH }}.ssf_{{ DELIVERY_ENTITY }}_cf
+  - alias: CF3
+    source: stg_{{ RUN_MONTH }}.ssf_{{ DELIVERY_ENTITY }}_cf
+  - alias: CF4
+    source: stg_{{ RUN_MONTH }}.ssf_{{ DELIVERY_ENTITY }}_cf
+
+transformations:
+  - join:
+      left_source: CF1
+      right_source: CF2
+      condition:
+        - CF1.ParentCreditFacility = CF2.LocalFacilityIdentifier
+        - CF1.ParentCreditFacilitySourceSystemIdentifier = CF2.SourceSystemIdentifier
+      how: left 
+  - join:
+      right_source: CF3
+      condition:
+        - CF2.ParentCreditFacility = CF3.LocalFacilityIdentifier
+        - CF2.ParentCreditFacilitySourceSystemIdentifier = CF3.SourceSystemIdentifier
+      how: left 
+  - join:
+      right_source: CF4
+      condition:
+        - CF3.ParentCreditFacility = CF4.LocalFacilityIdentifier
+        - CF3.ParentCreditFacilitySourceSystemIdentifier = CF4.SourceSystemIdentifier
+      how: left 
+
+expressions:
+  DeliveryEntity: CF1.DeliveryEntity
+  LocalFacilityIdentifier: CF1.LocalFacilityIdentifier
+  ParentCreditFacility: CF1.ParentCreditFacility
+  HighestExistingFacility: coalesce(CF4.LocalFacilityIdentifier,CF3.LocalFacilityIdentifier,CF2.LocalFacilityIdentifier,CF1.LocalFacilityIdentifier)
+  HighestFacilityExplained: case  when CF4.LocalFacilityIdentifier is not null then 'level 3 parent found'
+                                    when CF3.ParentCreditFacility is not null then 'level 3 parent not found'
+                                    when CF3.LocalFacilityIdentifier is not null then 'level 2 parent found'
+                                    when CF2.ParentCreditFacility is not null then 'level 2 parent not found'
+                                    when CF2.LocalFacilityIdentifier is not null then 'level 1 parent found'
+                                    when CF1.ParentCreditFacility is not null then 'level 1 parent not found'
+                              end
+  SubFacilityFlag: case when CF2.LocalFacilityIdentifier is not null then 1 else 0 end

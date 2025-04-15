@@ -1,0 +1,19 @@
+target: int_{{ RUN_MONTH }}.int_ssf_cp_x_ca
+
+sources:
+  - alias: STG_SSF_CP_X_CA
+    columns:
+    - reporting_date
+    - delivery_entity
+    - currentaccount
+    - participatingcounterparty
+    - counterpartyrole
+    filter: delivery_entity in ('AACF_REPT','ALFAM_REPT','ENTRACARD_REPT','FBS_REPT','IHUB-BE1_REPT','IHUB-DE2_CALC','IHUB-FR1_CALC','LEASE_REPT','VIENNA_REPT')
+    source: stg_{{ RUN_MONTH }}.tstg_ssf_cp_x_currentaccount
+
+expressions:
+  reporting_date: STG_SSF_CP_X_CA.reporting_date
+  delivery_entity: STG_SSF_CP_X_CA.delivery_entity
+  currentaccount: STG_SSF_CP_X_CA.currentaccount
+  participatingcounterparty: STG_SSF_CP_X_CA.participatingcounterparty
+  counterpartyrole: STG_SSF_CP_X_CA.counterpartyrole

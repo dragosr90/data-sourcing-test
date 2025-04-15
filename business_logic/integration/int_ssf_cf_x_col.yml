@@ -1,0 +1,52 @@
+target: int_{{ RUN_MONTH }}.int_ssf_cf_x_col
+
+sources:
+  - alias: STG_SSF_CF_X_COL
+    columns:
+    - reporting_date
+    - collateral
+    - delivery_entity
+    - creditfacility
+    - creditfacilityssid
+    - collateralssid
+    filter: delivery_entity in ('AACF_REPT','ALFAM_REPT','ENTRACARD_REPT','FBS_REPT','IHUB-BE1_REPT','IHUB-DE2_CALC','IHUB-FR1_CALC','LEASE_REPT','VIENNA_REPT')
+    source: stg_{{ RUN_MONTH }}.tstg_ssf_cf_x_collateral
+  - alias: STG_SSF_COL
+    columns:
+    - reporting_date
+    - delivery_entity
+    - collateralidentifier
+    source: stg_{{ RUN_MONTH }}.tstg_ssf_collateral
+  - alias: STG_SSF_CF
+    columns:
+    - reporting_date
+    - delivery_entity
+    - localfacilityidentifier
+    source: stg_{{ RUN_MONTH }}.tstg_ssf_creditfacility
+
+
+transformations:
+  - join:
+      left_source: STG_SSF_CF_X_COL
+      right_source: STG_SSF_COL
+      condition:
+        - STG_SSF_COL.collateralidentifier = STG_SSF_CF_X_COL.collateral
+        - STG_SSF_COL.reporting_date = STG_SSF_CF_X_COL.reporting_date
+        - STG_SSF_COL.delivery_entity = STG_SSF_CF_X_COL.delivery_entity
+      how: inner
+  - join:
+      right_source: STG_SSF_CF
+      condition:
+        - STG_SSF_CF.localfacilityidentifier = STG_SSF_CF_X_COL.creditfacility
+        - STG_SSF_CF.reporting_date = STG_SSF_CF_X_COL.reporting_date
+        - STG_SSF_CF.delivery_entity = STG_SSF_CF_X_COL.delivery_entity
+      how: inner
+
+
+expressions:
+  collateral: STG_SSF_CF_X_COL.collateral
+  creditfacility: STG_SSF_CF_X_COL.creditfacility
+  creditfacilityssid: STG_SSF_CF_X_COL.creditfacilityssid
+  collateralssid: STG_SSF_CF_X_COL.collateralssid
+  delivery_entity: STG_SSF_CF_X_COL.delivery_entity
+  reporting_date: STG_SSF_CF_X_COL.reporting_date

@@ -1,0 +1,22 @@
+target: int_{{ RUN_MONTH }}.int_ssf_cp_x_cf
+
+sources:
+  - alias: STG_SSF_CP_X_CF
+    columns:
+    - reporting_date
+    - delivery_entity
+    - participatingcounterparty
+    - creditfacility    
+    - file_name
+    - counterpartyrole
+    filter: delivery_entity in ('AACF_REPT','ALFAM_REPT','ENTRACARD_REPT','FBS_REPT','IHUB-BE1_REPT','IHUB-DE2_CALC','IHUB-FR1_CALC','LEASE_REPT','VIENNA_REPT')
+              and file_name<>'DUMMY CPxCF'
+    source: stg_{{ RUN_MONTH }}.tstg_ssf_cp_x_creditfacility
+
+expressions:
+  reporting_date: STG_SSF_CP_X_CF.reporting_date
+  delivery_entity: STG_SSF_CP_X_CF.delivery_entity
+  participatingcounterparty: STG_SSF_CP_X_CF.participatingcounterparty
+  creditfacility: STG_SSF_CP_X_CF.creditfacility
+  file_name:  STG_SSF_CP_X_CF.file_name
+  counterpartyrole: STG_SSF_CP_X_CF.counterpartyrole

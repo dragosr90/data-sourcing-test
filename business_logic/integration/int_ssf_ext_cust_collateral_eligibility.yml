@@ -1,0 +1,81 @@
+target: int_{{ RUN_MONTH }}.int_ssf_ext_cust_collateral_eligibility
+
+sources:
+  - alias: TDIAL_GOLD
+    columns:
+    - delivery_entity
+    - global_unit_id
+    - rollup
+    source: stg_{{ RUN_MONTH }}.tdial_gold_cust_service_struc
+  - alias: TCT_COLL_ELIG
+    columns:
+    - reporting_date
+    - delivery_entity
+    - rule_id
+    - global_unit_id
+    - customer_service_level
+    - basel_collateral_type
+    - pl_indicator
+    - eligible
+    source: stg_{{ RUN_MONTH }}.tctrl_collateral_eligibility
+  - alias: TCT_COLL_ELIG_STAR
+    columns:
+    - reporting_date
+    - delivery_entity
+    - rule_id
+    - global_unit_id
+    - customer_service_level
+    - basel_collateral_type
+    - pl_indicator
+    - eligible
+    filter: global_unit_id = '*'
+    source: stg_{{ RUN_MONTH }}.tctrl_collateral_eligibility
+
+transformations:
+  - join:
+      left_source: TDIAL_GOLD
+      right_source: TCT_COLL_ELIG
+      condition:
+        - TDIAL_GOLD.delivery_entity = TDIAL_GOLD.delivery_entity
+      how: inner
+  - add_variables:
+      column_mapping:
+        match_up: case when INSTR(TDIAL_GOLD.rollup,TCT_COLL_ELIG.GLOBAL_UNIT_ID) > 0 then '1' else '2' end
+  - union:
+      alias: TCT_COLL_ELIG_UNION
+      column_mapping:
+        TCT_COLL_ELIG:
+          reporting_date: TCT_COLL_ELIG.reporting_date
+          delivery_entity: TCT_COLL_ELIG.delivery_entity
+          rule_id: TCT_COLL_ELIG.rule_id
+          global_unit_id: TCT_COLL_ELIG.global_unit_id
+          customer_service_level: TCT_COLL_ELIG.customer_service_level
+          basel_collateral_type: TCT_COLL_ELIG.basel_collateral_type
+          pl_indicator: TCT_COLL_ELIG.pl_indicator
+          eligible: TCT_COLL_ELIG.eligible
+          match_up: match_up
+        TCT_COLL_ELIG_STAR:
+          reporting_date: TCT_COLL_ELIG_STAR.reporting_date
+          delivery_entity: TCT_COLL_ELIG_STAR.delivery_entity
+          rule_id: TCT_COLL_ELIG_STAR.rule_id
+          global_unit_id: TCT_COLL_ELIG_STAR.global_unit_id
+          customer_service_level: TCT_COLL_ELIG_STAR.customer_service_level
+          basel_collateral_type: TCT_COLL_ELIG_STAR.basel_collateral_type
+          pl_indicator: TCT_COLL_ELIG_STAR.pl_indicator
+          eligible: TCT_COLL_ELIG_STAR.eligible
+          match_up: cast('VALID' as string)
+
+  
+expressions:
+  reporting_date: TCT_COLL_ELIG_UNION.reporting_date
+  delivery_entity: TCT_COLL_ELIG_UNION.delivery_entity
+  rule_id: TCT_COLL_ELIG_UNION.rule_id
+  global_unit_id: TCT_COLL_ELIG_UNION.global_unit_id
+  customer_service_level: TCT_COLL_ELIG_UNION.customer_service_level
+  basel_collateral_type: TCT_COLL_ELIG_UNION.basel_collateral_type
+  pl_indicator: TCT_COLL_ELIG_UNION.pl_indicator
+  eligible: TCT_COLL_ELIG_UNION.eligible
+  match_up: TCT_COLL_ELIG_UNION.match_up
+
+filter_target: 
+  - match_up in ('1', 'VALID')

@@ -1,0 +1,83 @@
+target: int_{{ RUN_MONTH }}.int_ssf_col
+
+sources:
+  - alias: STG_SSF_COL
+    columns:
+    - reporting_date
+    - delivery_entity
+    - collateralidentifier
+    - nominalcollateralvaluetcurr
+    - originalcollateralvaluercurr
+    - nominalcollateralvaluercurr
+    - legalregistrationvaluercurr
+    - thirdpartypriorityclaimrcurr
+    - averagemarketvaluercurr
+    - collateraltype
+    - borrowersprimaryresidence
+    - lienposition
+    - csacashindicator
+    - heldbythirdpartyindicator
+    - revaluationfrequency
+    - collateralprovisiondate
+    - incomeproducingrestfinance
+    - maturitydate
+    - valuationdate
+    - originalcollateralvaldt
+    - originalcollateralvaluetcurr
+    - originalcollateralvalueramnt
+    - nominalcollateralvalueramnt
+    - legalregistrationvalueramnt
+    - averagemarketvalueramnt
+    - thirdpartypriorityclaimramnt
+    - numberofhousingunits
+    - legalbindingtofinishproperty
+    - developmentstatus
+    - countryofcollateral
+    - eligibleupdatetype
+    - property_upgrade_ind
+    - realestatetype
+    - realestatepurposetype
+    - securitycode
+    - sourcesystemidentifier
+    filter: delivery_entity in ('AACF_REPT','ALFAM_REPT','ENTRACARD_REPT','FBS_REPT','IHUB-BE1_REPT','IHUB-DE2_CALC','IHUB-FR1_CALC','LEASE_REPT','VIENNA_REPT')
+    source: stg_{{ RUN_MONTH }}.tstg_ssf_collateral
+
+expressions:
+  reporting_date: STG_SSF_COL.reporting_date
+  collateralidentifier: STG_SSF_COL.collateralidentifier
+  delivery_entity: STG_SSF_COL.delivery_entity
+  sourcesystemidentifier: STG_SSF_COL.sourcesystemidentifier
+  incomeproducingrestfinance: STG_SSF_COL.incomeproducingrestfinance
+  numberofhousingunits: STG_SSF_COL.numberofhousingunits
+  lienposition: STG_SSF_COL.lienposition
+  legalbindingtofinishproperty: STG_SSF_COL.legalbindingtofinishproperty
+  developmentstatus: STG_SSF_COL.developmentstatus
+  countryofcollateral: STG_SSF_COL.countryofcollateral
+  revaluationfrequency: STG_SSF_COL.revaluationfrequency
+  borrowersprimaryresidence: STG_SSF_COL.borrowersprimaryresidence
+  nominalcollateralvaluetcurr: STG_SSF_COL.nominalcollateralvaluetcurr
+  originalcollateralvaluercurr: STG_SSF_COL.originalcollateralvaluercurr
+  nominalcollateralvaluercurr: STG_SSF_COL.nominalcollateralvaluercurr
+  legalregistrationvaluercurr: STG_SSF_COL.legalregistrationvaluercurr
+  thirdpartypriorityclaimrcurr: STG_SSF_COL.thirdpartypriorityclaimrcurr
+  averagemarketvaluercurr: STG_SSF_COL.averagemarketvaluercurr
+  collateraltype: STG_SSF_COL.collateraltype
+  csacashindicator: STG_SSF_COL.csacashindicator
+  heldbythirdpartyindicator: STG_SSF_COL.heldbythirdpartyindicator
+  collateralprovisiondate: STG_SSF_COL.collateralprovisiondate
+  maturitydate: STG_SSF_COL.maturitydate
+  valuationdate: STG_SSF_COL.valuationdate
+  originalcollateralvaldt: STG_SSF_COL.originalcollateralvaldt
+  originalcollateralvaluetcurr: STG_SSF_COL.originalcollateralvaluetcurr
+  originalcollateralvalueramnt: STG_SSF_COL.originalcollateralvalueramnt
+  nominalcollateralvalueramnt: STG_SSF_COL.nominalcollateralvalueramnt
+  legalregistrationvalueramnt: STG_SSF_COL.legalregistrationvalueramnt
+  averagemarketvalueramnt: STG_SSF_COL.averagemarketvalueramnt
+  thirdpartypriorityclaimramnt: STG_SSF_COL.thirdpartypriorityclaimramnt
+  eligibleupdatetype: STG_SSF_COL.eligibleupdatetype
+  property_upgrade_ind: STG_SSF_COL.property_upgrade_ind
+  realestatetype: STG_SSF_COL.realestatetype
+  realestatepurposetype: STG_SSF_COL.realestatepurposetype
+  securitycode: STG_SSF_COL.securitycode
+
+drop_duplicates: true

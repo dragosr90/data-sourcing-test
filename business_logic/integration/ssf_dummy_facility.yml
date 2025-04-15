@@ -1,0 +1,137 @@
+target: int_{{ RUN_MONTH }}.ssf_dummy_facility_{{ DELIVERY_ENTITY }}
+
+sources:
+  - alias: SSF_CA
+    columns:
+    - DeliveryEntity
+    - ReportingDate
+    - AccumulatedTechnicalWriteoffReportingAmount
+    - ArrangementIdentifier
+    - CreditFacility
+    - Ifrs9RiskStage
+    - LoanLossAllowanceTransactionCurrency
+    - LoanLossAllowanceTransactionAmount
+    - LoanLossAllowanceReportingAmount
+    - SourceSystemIdentifier
+    - TransferredPercentage
+    - QRRETransactor
+    filter: CreditFacility is null
+    source: stg_{{ RUN_MONTH }}.ssf_{{ DELIVERY_ENTITY }}_ca
+  - alias: SSF_PR
+    columns:
+    - DeliveryEntity
+    - ArrangementIdentifier
+    - BaselIIProductType
+    - DebitCreditIndicator
+    - NominalAmountTransactionCurrency
+    - NominalAmountTransactionAmount
+    - ReportingEntity
+    - TradeDate
+    filter: coalesce(DebitCreditIndicator,'D') = 'D' and NominalAmountTransactionAmount>1
+    source: stg_{{ RUN_MONTH }}.ssf_{{ DELIVERY_ENTITY }}_pr
+  - alias: SSF_CP_X_CA
+    columns:
+    - DeliveryEntity
+    - CurrentAccount
+    - ParticipatingCounterparty
+    filter: CounterpartyRole='MAIN'
+    source: stg_{{ RUN_MONTH }}.ssf_{{ DELIVERY_ENTITY }}_cpxca
+  - alias: SSF_CP
+    columns:
+    - DeliveryEntity
+    - LocalId
+    - InsighterId
+    - CountryOfIncorporation
+    - SourceSystemIdentifier
+    source: stg_{{ RUN_MONTH }}.ssf_{{ DELIVERY_ENTITY }}_cp
+  - alias: PREFIX_CA
+    columns:
+    - delivery_entity
+    - SourceSystemIdentifier
+    - basel_ssc
+    source: stg_{{ RUN_MONTH }}.bsl_ctrl_ssc_ssf_basel
+  - alias: PREFIX_CP
+    columns:
+    - delivery_entity
+    - SourceSystemIdentifier
+    - basel_ssc
+    source: stg_{{ RUN_MONTH }}.bsl_ctrl_ssc_ssf_basel
+
+transformations:
+  - join:
+      left_source: SSF_PR
+      right_source: SSF_CA
+      condition:
+        - SSF_PR.ArrangementIdentifier  = SSF_CA.ArrangementIdentifier 
+      how: inner
+  - join:
+      right_source: SSF_CP_X_CA
+      condition:
+        - SSF_CP_X_CA.CurrentAccount  = SSF_CA.ArrangementIdentifier 
+      how: left
+  - join:
+      right_source: SSF_CP
+      condition:
+        - SSF_CP_X_CA.ParticipatingCounterparty  = SSF_CP.LocalId
+      how: left
+  - join:
+      right_source: PREFIX_CA
+      condition:
+        - SSF_CA.DeliveryEntity= PREFIX_CA.delivery_entity
+        - SSF_CA.SourceSystemIdentifier= PREFIX_CA.SourceSystemIdentifier
+      how: left
+  - join:
+      right_source: PREFIX_CP
+      condition:
+        - SSF_CP.DeliveryEntity= PREFIX_CP.delivery_entity
+        - SSF_CP.SourceSystemIdentifier= PREFIX_CP.SourceSystemIdentifier
+      how: left
+
+expressions:
+  DeliveryEntity: SSF_CA.DeliveryEntity
+  ArrangementIdentifier: SSF_CA.ArrangementIdentifier
+  CreditFacilityAgmtUID: concat('CF/',SSF_CA.ArrangementIdentifier)
+  CreditFacilityAgmtID: concat(PREFIX_CA.basel_ssc,CreditFacilityAgmtUID)
+  CreditFacilityAgmtSSC: PREFIX_CA.basel_ssc
+  CounterpartyID: concat(PREFIX_CP.basel_ssc,SSF_CP.LocalId)
+  CreditAgmtID: cast(NULL as string)
+  GlobalFacilityID: cast(NULL as string) 
+  BaselIIProductType: SSF_PR.BaselIIProductType
+  CommittedIndicator: 'N'
+  TypeOfCommitment: 'N'
+  RevolvingIndicator: 0
+  OriginalCCY: SSF_PR.NominalAmountTransactionCurrency
+  PreCalculatedEAD: cast(NULL as DOUBLE) 
+  CreditLimit: 0
+  AccruedFees: 0
+  DrawnAmount: case when SSF_PR.DebitCreditIndicator='C' then  SSF_PR.NominalAmountTransactionAmount*-1
+                                else (1-coalesce(SSF_CA.TransferredPercentage,0))*SSF_PR.NominalAmountTransactionAmount
+                              end
+  EADModel: cast(NULL as DOUBLE)
+  DummyFacilityFlag: 1
+  LGDClass: 'L1'
+  LGDModel: 'LNOMO401'
+  LGDSourceSystemID: 'TRANS'
+  Ifrs9RiskStage: SSF_CA.Ifrs9RiskStage
+  LoanLossAllowanceAmount: SSF_CA.LoanLossAllowanceReportingAmount
+  MultiObligorFacilityFlag: cast(NULL as string)
+  ProcessFilterCode: cast(NULL as string)
+  RAYPrefix: case when SSF_CA.DeliveryEntity in ('IHUB-DE2','IHUB-FR1') then 'PC'
+                   when SSF_CA.DeliveryEntity='IHUB-BE1_REPT' then 'NL'
+              end
+  ReportingEntity: SSF_PR.ReportingEntity
+  SecuritizationInvolvementType: cast(NULL as string)
+  SingleDrawdownFlag: cast(NULL as string)
+  SourcedExemptionID: cast(NULL as string)
+  TradeDate: SSF_PR.TradeDate #AR_Start_Date
+  TermOutDate: cast(NULL as date)
+  MaturityDate: case when SSF_PR.BaselIIProductType='134' then  DATEADD(day, 1,  SSF_CA.ReportingDate) 
+                      else DATEADD(year, 1,  SSF_CA.ReportingDate) 
+                 end
+  CreditRiskApproachType: cast(NULL as string)
+  SpecialisedLendingType: cast(NULL as string)
+  HighQualityIndicator : cast(NULL as string)
+  InfrastructuralSupportingFactor: cast(NULL as string)
+  LandAcquisitionDevelopmentAndConstructionExposureFinance: cast(NULL as string)
+  ProjectFinancePhaseIndicator: cast(NULL as string)
+  

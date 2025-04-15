@@ -1,0 +1,66 @@
+target: int_{{ RUN_MONTH }}.int_ssf_cf
+
+sources:
+  - alias: STG_SSF_CF
+    columns:
+    - reporting_date
+    - delivery_entity
+    - localfacilityidentifier
+    - basel2producttype
+    - typeofcommitment
+    - globalfacilityidentifier
+    - plnplindicator
+    - parentcreditfacility
+    - parentcreditfacilityssid
+    - revolving
+    - facilitytype
+    - ifrs9riskstage
+    - file_name
+    - creditlimittcurr
+    - creditlimittamnt
+    - eadmodelcode
+    - loanlossallowanceramnt
+    - tradedate
+    - expirydate
+    - maturitydate
+    - riskweightedexposureapproach
+    - specialisedlendingtype
+    - highqualityindicator
+    - infrastructsupportingfactor
+    - landacqdevandconstexpfin
+    - projectfinancephaseindicator
+    - reportingentity
+    - sourcesystemidentifier
+    filter: delivery_entity in ('AACF_REPT','ALFAM_REPT','ENTRACARD_REPT','FBS_REPT','IHUB-BE1_REPT','IHUB-DE2_CALC','IHUB-FR1_CALC','LEASE_REPT','VIENNA_REPT')
+              and file_name<>'DUMMY CREDIT FACILITY'
+    source: stg_{{ RUN_MONTH }}.tstg_ssf_creditfacility
+
+expressions:
+  reporting_date: STG_SSF_CF.reporting_date
+  delivery_entity: STG_SSF_CF.delivery_entity
+  localfacilityidentifier: STG_SSF_CF.localfacilityidentifier
+  basel2producttype: STG_SSF_CF.basel2producttype
+  typeofcommitment: STG_SSF_CF.typeofcommitment
+  globalfacilityidentifier: STG_SSF_CF.globalfacilityidentifier
+  plnplindicator: STG_SSF_CF.plnplindicator
+  parentcreditfacility: STG_SSF_CF.parentcreditfacility
+  parentcreditfacilityssid: STG_SSF_CF.parentcreditfacilityssid
+  revolving: STG_SSF_CF.revolving
+  facilitytype: STG_SSF_CF.facilitytype
+  riskweightedexposureapproach: STG_SSF_CF.riskweightedexposureapproach
+  ifrs9riskstage: STG_SSF_CF.ifrs9riskstage
+  file_name: STG_SSF_CF.file_name
+  loanlossallowanceramnt: STG_SSF_CF.loanlossallowanceramnt
+  creditlimittcurr: STG_SSF_CF.creditlimittcurr
+  creditlimittamnt: STG_SSF_CF.creditlimittamnt
+  eadmodelcode: STG_SSF_CF.eadmodelcode
+  tradedate: STG_SSF_CF.tradedate
+  expirydate: STG_SSF_CF.expirydate
+  maturitydate: STG_SSF_CF.maturitydate
+  specialisedlendingtype: STG_SSF_CF.specialisedlendingtype
+  highqualityindicator: STG_SSF_CF.highqualityindicator
+  infrastructsupportingfactor: STG_SSF_CF.infrastructsupportingfactor
+  landacqdevandconstexpfin: STG_SSF_CF.landacqdevandconstexpfin
+  projectfinancephaseindicator: STG_SSF_CF.projectfinancephaseindicator
+  reportingentity: STG_SSF_CF.reportingentity
+  sourcesystemidentifier: STG_SSF_CF.sourcesystemidentifier
