@@ -1,0 +1,5 @@
+"2024Q4V2","2024Q2V1","Add","col","col","eligibleupdatetype","","",""
+"2024Q4V2","2024Q2V1","Add","col","col","realestatepurposetype","","",""
+"2024Q4V2","2024Q2V1","Remove","col","col","","buildingarea","",""
+"2024Q4V2","2024Q2V1","Rename","col","col","numberofhousingunits","numberofhousing","",""
+"2024Q4V2","2024Q2V1","Move","cfxcol","col","allocatednetcolvaluercoa","allocatednetcolvaluercoa","collateral","collateral"
