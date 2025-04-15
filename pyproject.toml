@@ -1,0 +1,121 @@
+[tool.coverage.report]
+exclude_also = [
+  # Ignore imports
+  "from .* import .*",
+  "import .*"
+]
+
+[tool.pytest.ini_options]
+addopts = "--cov=src --cov-report term-missing --cov-report html"
+
+[tool.ruff]
+builtins = ["spark", "dbutils", "display"] # builtins in DB notebooks
+
+# Same as Black.
+line-length = 88
+indent-width = 4
+
+[tool.ruff.lint]
+select = [
+    # "AIR",   # Airflow -> Not relevant
+    "ERA",   # eradicate
+    # "FAST", # FastAPI -> Not relevant
+    "YTT",   # flake-2020
+    "ANN",   # flake8-annotations
+    "ASYNC", # flake8-async
+    "S",     # flake8-bandit
+    "BLE",   # flake8-blind-except
+    "FBT",   # flake8-boolean-trap
+    "B",     # flake8-bugbear
+    "A",     # flake8-builtins
+    "COM",   # flake8-commas
+    "C4",    # flake8-comprehensions
+    # "CPY",  # flake8-copyright -> only possible with preview mode
+    "DTZ",   # flake8-datetimez
+    "T10",   # flake8-debugger
+    # "DJ",    # flake8-django -> Not relevant
+    "EM",    # flake8-errmsg
+    "EXE",   # flake8-executable
+    "FIX",   # flake8-fixme
+    # "FA",    # flake8-future-annotations -> A lot of changes
+    "INT",   # flake8-gettext
+    "ISC",   # flake8-implicit-str-concat
+    "ICN",   # flake8-import-conventions
+    "G",     # flake8-logging-format
+    "INP",   # flake8-no-pep420
+    "PIE",   # flake8-pie
+    "T20",   # flake8-print
+    "PYI",   # flake8-pyi
+    "PT",    # flake8-pytest-style
+    "Q",     # flake8-quotes
+    "RSE",   # flake8-raise
+    "RET",   # flake8-return
+    "SLF",   # flake8-self
+    "SLOT",  # flake8-slots
+    "SIM",   # flake8-simplify
+    "TID",   # flake8-tidy-imports
+    "ARG",   # flake8-unused-arguments
+    "PTH",   # flake8-use-pathlib
+    "FLY",   # flynt
+    "I",     # isort
+    "C90",   # mccabe
+    # "NPY",   # Numpy specific rules -> Not relevant
+    # "PD",    # Pandas vet -> Not relevant
+    "N",     # PEP8 naming
+    "PERF",  # Perflint
+    "E",     # pycodestyle, error
+    "W",     # pycodestyle, warning
+    # "DOC",   # pydoclint  -> only possible with preview mode
+    # "D",     # pydocstyle -> A lot of changes
+    "F",     # pyflakes
+    "PGH",   # pygrep-hooks
+    "PL",    # pylint
+    "FURB",  # refurb
+    "RUF",   # Ruff-specific rules
+    "TRY",   # tryceratops
+]
+ignore = [
+    "ANN101",   # Missing type annotation for `self` in method
+    "SIM118",   # Use `key in dict` instead of `key in dict.keys()`
+    "G004",     # logging-f-string
+    "ISC001",   # Implicitly concatenated string literals on one line
+    "PLR0913",  # Too many arguments in function definition
+    "COM812",   # The formatter enforces consistent use of trailing commas, making the rule redundant
+]
+
+
+[tool.ruff.lint.per-file-ignores]
+"{test}/*" = ["ANN", "S101", "ARG001", "PL"]
+"{notebooks}/*" = ["ANN", "E501", "E402", "INP", "T20"]
+
+
+[tool.ruff.format]
+# Like Black, use double quotes for strings.
+quote-style = "double"
+
+# Like Black, indent with spaces, rather than tabs.
+indent-style = "space"
+
+# Like Black, respect magic trailing commas.
+skip-magic-trailing-comma = false
+
+# Like Black, automatically detect the appropriate line ending.
+line-ending = "auto"
+
+# Enable auto-formatting of code examples in docstrings. Markdown,
+# reStructuredText code/literal blocks and doctests are all supported.
+#
+# This is currently disabled by default, but it is planned for this
+# to be opt-out in the future.
+docstring-code-format = true
+
+# Set the line length limit used when formatting code snippets in
+# docstrings.
+#
+# This only has an effect when the `docstring-code-format` setting is
+# enabled.
+docstring-code-line-length = "dynamic"
+
+
+[tool.mypy]
+ignore_missing_imports = true

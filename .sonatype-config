@@ -1,0 +1,11 @@
+iq:
+    # public ID for an existing app in IQ Server, usually the repo name
+    PublicApplication: com.abnamro.betl.sourcing
+    PublicId: com.abnamro.betl.sourcing
+    # possible stages [develop, build, stage-release, release, operate]
+    Stage: build
+    Server: https://p-nexus-iq.development.nl.eu.abnamro.com:8443
+
+# application:
+#     # Override VS Code User / Workspace setting for excluding development dependencies for this Application
+#     IncludeDev: false

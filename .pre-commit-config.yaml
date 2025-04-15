@@ -1,0 +1,21 @@
+repos:
+  - repo: local
+    hooks:
+      - id: ruff
+        name: ruff lint
+        entry: ruff check
+        files: ^(src|test|notebooks|scripts)/.*\.py$
+        language: python
+        types: [file, python]
+      - id: ruff
+        name: ruff format
+        entry: ruff format
+        files: ^(src|test|notebook|scripts)/.*\.py$
+        language: python
+        types: [ file, python ]
+      - id: mypy
+        name: mypy
+        entry: mypy
+        files: ^(src|scripts)/.*\.py$
+        language: python
+        types: [ file, python ]

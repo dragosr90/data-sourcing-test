@@ -1,0 +1,79 @@
+
+# Example from https://dev.azure.com/cbsp-abnamro/GRD0001045/_wiki/wikis/PITA%20templates/11804/python?anchor=yaml-template
+
+trigger:
+  branches:
+    include:
+      - refs/heads/feature/*
+      - refs/heads/main
+
+
+parameters:
+- name: run_nexus_lc_scan_prerelease
+  type: boolean
+  default: false # Nexus Issue, Blocked to build application
+- name: run_fortify_scan_prerelease
+  type: boolean
+  default: true
+- name: run_sonar_scan_prerelease
+  type: boolean
+  default: true
+- name: run_publishing_prerelease
+  type: boolean
+  default: true
+
+
+  # PIPE team shares the read-only variable group: `Abnamro.Coesd.VariableGroup.GlobalVars`
+  # this variable group needs to be included in every pipeline.
+  # These are referenced in your pipeline yaml.
+variables:
+  - group: Abnamro.Coesd.VariableGroup.GlobalVars
+  - group: TeamVars.BETL
+
+resources:
+  repositories:
+    - repository: pipetemplates
+      type: git
+      name: GRD0001045/pita-pipeline-templates
+  containers:
+    - container: python
+      image: 'pita/aab-python-pipenv:3.11'
+      endpoint: 'nx3-build-images-sc'
+
+
+stages:
+  - stage: CI
+    jobs:
+      - job: LintAndFormatWithPrecommit
+        workspace:
+          clean: all
+        pool:
+          name: Private Pool Docker
+          demands:
+            - docker
+        steps:
+        - template: /blocks/python/lint-with-precommit.yml@pipetemplates
+          parameters:
+            target: python
+            path_precommit_requirements_file: requirements_pre-commit.txt
+            path_precommit_config_file: .pre-commit-config.yaml
+      - template: flows/python.yml@pipetemplates
+        parameters:
+          nexus_lc_name: 'com.abnamro.betl.sourcing'
+          artifact_name: 'betl_etl_sourcing'
+          fortify_project_name: 'com.abnamro.betl/sourcing'
+          test_requirements_files: ["requirements_test.txt"]                # optional; installs a list of additional requirements.txt files, (syntax: ["dev.txt", "test.txt"])
+          precommit_requirements_file: requirements_pre-commit.txt          # Optional; provide an additional requirements.txt location which is loaded for pre-commit works like ruff linting. Default: ''
+          ruff_lint_breaking: true                                          # optional; Allow users of flow to make ruff linting step breaking. Default: false;
+          requirements_files: ["requirements.txt"]                          # optional; requirements.txt location, Default: ['$(Build.SourcesDirectory)/requirements.txt']
+          run_nexus_lc_scan_prerelease: false                               # ${{ parameters.run_nexus_lc_scan_prerelease }}
+          run_fortify_scan_prerelease: ${{ parameters.run_fortify_scan_prerelease }}
+          run_publishing_prerelease: ${{ parameters.run_publishing_prerelease }}
+          run_packaging_prerelease: true
+          run_sonar_scan_prerelease: ${{ parameters.run_sonar_scan_prerelease }}
+          pyspark: true                                                     # optional; Default: false. If your project is using pyspark dependencies, please set it to 'true'.
+          source_location: src                                              # optional; Default: 'src', package folder location.
+          tests_location: test                                              # optional; Default: 'tests'. Unit test source code files(test_*.py) folder name.
+          versioning: "generate"
+          version_file: "setup.cfg"
+          pyspark_version: 3.5.3                                            # optional; pyspark version number. Default: 3.2.1
