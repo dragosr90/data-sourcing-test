@@ -1,0 +1,19 @@
+target: dist_{{ RUN_MONTH }}.tgt_ssf_cf_x_col
+  
+sources:
+  - alias: SSF_CF_X_COL
+    source: enrich_{{ RUN_MONTH }}.enrich_ssf_cf_x_col
+
+expressions:
+  reporting_date: SSF_CF_X_COL.reporting_date
+  delivery_entity_orig: SSF_CF_X_COL.delivery_entity
+  delivery_entity: SSF_CF_X_COL.delivery_entity
+  collateralidentifier: SSF_CF_X_COL.collateralidentifier
+  collateral_agmt_id: SSF_CF_X_COL.collateral_agmt_id
+  tine_collateral_agmt_id: SSF_CF_X_COL.tine_collateral_agmt_id
+  ar_id: SSF_CF_X_COL.ar_id
+  plnplindicator: SSF_CF_X_COL.plnplindicator
+  ar_exp_type: SSF_CF_X_COL.ar_exp_type
+  b4_eligible: SSF_CF_X_COL.b4_eligible
+  b4_std_eligible: SSF_CF_X_COL.b4_std_eligible
+  dep_to_cash_col_flag: SSF_CF_X_COL.dep_to_cash_col_flag
