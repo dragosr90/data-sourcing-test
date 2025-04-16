@@ -1,17 +1,964 @@
-(bsrc-etl-v) PS C:\Users\B25712\bsrc-etl-venv\bsrc-etl> pytest test/test_transform/test_validate.py
-================================================================================================== test session starts ===================================================================================================
-platform win32 -- Python 3.10.11, pytest-8.3.3, pluggy-1.5.0
-rootdir: C:\Users\B25712\bsrc-etl-venv\bsrc-etl
-configfile: pyproject.toml
-plugins: cov-6.0.0, mock-3.14.0
-collected 0 items / 1 error
+ "TBL_B": {"c1": "c1", "c5": "c5"},
+                                "TBL_C": {"c1": "c_not_existing", "c5": "c8"},
+                            },
+                        }
+                    }
+                ],
+                False,
+                [
+                    "Problem with expression(s):",
+                    "c_not_existing: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column or function parameter with name `c_not_existing` cannot be resolved. Did you mean one of the following? [`c2c`, `c6`, `c8`].",  # noqa: E501
+                ],
+            ),
+            # Wrong column mapping Union
+            (
+                [
+                    {
+                        "source": "source_tbl_A",
+                        "alias": "TBL_A",
+                        "columns": ["c1", "c2", "c3", "c4"],
+                    },
+                    {
+                        "source": "source_tbl_B",
+                        "alias": "TBL_B",
+                        "columns": ["c1", "c5", "c7"],
+                    },
+                    {
+                        "source": "source_tbl_C",
+                        "alias": "TBL_C",
+                        "columns": ["c2c", "c6", "c8"],
+                    },
+                ],
+                [
+                    {
+                        "union": {
+                            "source": "TBL_B",
+                            "alias": "TABLE_B_C",
+                            "column_mapping": {
+                                "TBL_B": {"c1": "c1", "c5": "c5"},
+                                "TBL_C": {"c1_wrng": "c2c", "c5": "c8"},
+                            },
+                        }
+                    }
+                ],
+                False,
+                [
+                    "Column mapping names are not identical: [['c1', 'c5'], ['c1_wrng', 'c5']]"  # noqa: E501
+                ],
+            ),
+            # Happy flow filter
+            (
+                [
+                    {"alias": "TBL_D", "columns": ["a", "b", "c"]},
+                    {"alias": "TBL_E", "columns": ["a", "d", "e"]},
+                ],
+                [{"filter": {"conditions": ["TBL_D.a > 0", "TBL_E.d IS NOT NULL"]}}],
+                True,
+                [
+                    "Filter conditions validated successfully"
+                ],
+            ),
+            # Filter with invalid column reference
+            (
+                [
+                    {"alias": "TBL_D", "columns": ["a", "b", "c"]},
+                    {"alias": "TBL_E", "columns": ["a", "d", "e"]},
+                ],
+                [
+                    {
+                        "filter": {
+                            "conditions": ["TBL_D.x > 0"]  # x doesn't exist
+                        }
+                    }
+                ],
+                False,
+                [
+                    "Problem with expression(s):",
+                    "filter_condition_0: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column or function parameter with name `TBL_D`.`x` cannot be resolved. Did you mean one of the following? [`TBL_D`.`a`, `TBL_E`.`a`, `TBL_D`.`b`, `TBL_D`.`c`, `TBL_E`.`d`],",  # noqa: E501
+                ],
+            ),
+            # Filter with computed variable
+            (
+                [
+                    {"alias": "TBL_D", "columns": ["a", "b", "c"]},
+                ],
+                [
+                    {
+                        "add_variables": {
+                            "source": "TBL_D",
+                            "column_mapping": {"sum_ab": "TBL_D.a + TBL_D.b"},
+                        }
+                    },
+                    {"filter": {"conditions": ["sum_ab > 10"]}},
+                ],
+                True,
+                [
+                    "Variables validated successfully",
+                    "Filter conditions validated successfully",
+                    "Transformations validated successfully"
+                ],
+            ),
+        ],
+    )
+    def test_validate_transformations(
+        spark_session, sources, transformations, output, expected_logging, caplog
+    ):
+        logic = {"sources": sources, "transformations": transformations}
+>       assert Transformations(spark_session, logic).validate() == output
+E       AssertionError: assert False == True
+E        +  where False = validate()
+E        +    where validate = <src.validate.transformations.Transformations object at 0x000001D230D9FE80>.validate
+E        +      where <src.validate.transformations.Transformations object at 0x000001D230D9FE80> = Transformations(<pyspark.sql.session.SparkSession object at 0x000001D230DC9CC0>, {'sources': [{'alias': 'TBL_D', 'columns': ['a', 'b', 'c']}, {'alias': 'TBL_E', 'columns': ['a', 'd', 'e']}], 'transformations': [{'filter': {'conditions': ['TBL_D.a > 0', 'TBL_E.d IS NOT NULL']}}]})
 
-========================================================================================================= ERRORS ========================================================================================================= 
-_________________________________________________________________________________ ERROR collecting test/test_transform/test_validate.py __________________________________________________________________________________ 
-test/test_transform/test_validate.py::test_validate_sources: in "parametrize" the number of names (3):
-  ('sources', 'validation_output', 'expected_logging')
-must be equal to the number of values (4):
-  ([{'alias': 'TBL_D', 'columns': ['a', 'b', 'c']}, {'alias': 'TBL_E', 'columns': ['a', 'd', 'e']}], [{'filter': {'conditions': ['TBL_D.a > 0', 'TBL_E.d IS NOT NULL']}}], True, ['Filter conditions validated successfully'])
+test\test_transform\test_validate.py:447: AssertionError
+-------------------------------------------------------------------------------------------------- Captured stdout call --------------------------------------------------------------------------------------------------
+2025-04-16 14:29:45 [ERROR] validate_initial_source:  Initial source should be specified
+2025-04-16 14:29:45 [ERROR] validate_initial_source:  Initial source should be specified
+--------------------------------------------------------------------------------------------------- Captured log call ---------------------------------------------------------------------------------------------------- 
+ERROR    betl_src_poc_logger:transformations.py:76 Initial source should be specified
+__________________________________________________________________ test_validate_transformations[sources13-transformations13-False-expected_logging13] ___________________________________________________________________ 
+
+spark_session = <pyspark.sql.session.SparkSession object at 0x000001D230DC9CC0>, sources = [{'alias': 'TBL_D', 'columns': ['a', 'b', 'c']}, {'alias': 'TBL_E', 'columns': ['a', 'd', 'e']}]
+transformations = [{'filter': {'conditions': ['TBL_D.x > 0']}}], output = False
+expected_logging = ['Problem with expression(s):', 'filter_condition_0: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column or function paramete...ot be resolved. Did you mean one of the following? [`TBL_D`.`a`, `TBL_E`.`a`, `TBL_D`.`b`, `TBL_D`.`c`, `TBL_E`.`d`],']
+caplog = <_pytest.logging.LogCaptureFixture object at 0x000001D230DD5B10>
+
+    @pytest.mark.parametrize(
+        ("sources", "transformations", "output", "expected_logging"),
+        [
+            (
+                # Input `sources`` list
+                [{"alias": "TBLA", "columns": ["a", "b"]}],
+                # Input `joins`` list
+                [
+                    {
+                        "join": {
+                            "left_source": "TBLA",
+                            "right_source": "TBLB",
+                            "condition": ["TBLA.b = TBLB.c"],
+                        }
+                    }
+                ],
+                # Output of validation should be False
+                False,
+                # Expected logging from input above
+                [
+                    "Problem with join",
+                    "No Right TBLB.",
+                    "Available alias: ['TBLA']",
+                ],
+            ),
+            (
+                # Input `sources`` list
+                [{"alias": "TBLB", "columns": ["a", "b"]}],
+                # Input `joins`` list
+                [
+                    {
+                        "join": {
+                            "left_source": "TBLA",
+                            "right_source": "TBLB",
+                            "condition": ["TBLA.a = TBLB.b"],
+                        }
+                    }
+                ],
+                # Output of validation should be False
+                False,
+                # Expected logging from input above
+                [
+                    "Problem with join",
+                    "No Left TBLA.",
+                    "Available alias: ['TBLB']",
+                ],
+            ),
+            (
+                # Correct input `sources`` list
+                [
+                    {"alias": "TBL_D", "columns": ["a", "b", "c"]},
+                    {"alias": "TBL_E", "columns": ["a", "d", "e"]},
+                ],
+                # Correct Input `joins`` list
+                [
+                    {
+                        "join": {
+                            "left_source": "TBL_D",
+                            "right_source": "TBL_E",
+                            "condition": ["TBL_D.a = TBL_E.a"],
+                            "how": "left",
+                        }
+                    }
+                ],
+                # Output of validation should be True
+                True,
+                # Expected logging from input above
+                [
+                    "Join condition expressions validated successfully",
+                    "Joins validated successfully",
+                    "Transformations validated successfully",
+                ],
+            ),
+            (
+                # Correct input `sources`` list
+                [
+                    {"alias": "TBL_D", "columns": ["a", "b", "c"]},
+                    {"alias": "TBL_E", "columns": ["a", "d", "e"]},
+                ],
+                # Wrong join
+                [
+                    {
+                        "join": {
+                            "left_source": "TBL_D",
+                            "right_source": "TBL_E",
+                            "condition": ["TBL_D.a = TBL_E.a"],
+                            "how": "error_join",
+                        }
+                    }
+                ],
+                # Output of validation should be False
+                False,
+                # Expected logging from input above
+                [
+                    "Join condition expressions validated successfully",
+                    "Problem with join",
+                    "how option 'error_join' is not a valid option",
+                    "Possible values for 'how': ['inner', 'cross', 'outer', 'full', 'fullouter', 'full_outer', 'left', 'leftouter', 'left_outer', 'right', 'rightouter', 'right_outer', 'semi', 'leftsemi', 'left_semi', 'anti', 'leftanti', 'left_anti']",  # noqa: E501
+                ],
+            ),
+            (
+                # Correct input `sources`` list
+                [
+                    {"alias": "TBL_D", "columns": ["a", "b", "c"]},
+                    {"alias": "TBL_E", "columns": ["a", "d", "e"]},
+                ],
+                # No valid transformation steps
+                [
+                    {
+                        "no_join": {
+                            "left_source": "TBL_D",
+                            "right_source": "TBL_E",
+                            "condition": ["TBL_D.a = TBL_E.a"],
+                            "how": "error_join",
+                        }
+                    }
+                ],
+                # Output of validation should be False
+                False,
+                # Expected logging from input above
+                [
+                    "Structure of transformation steps is incorrect",
+                    "Expected sections: ['join', 'add_variables', 'aggregation', 'pivot', 'union']",  # noqa: E501
+                    "Received sections: ['no_join']",
+                ],
+            ),
+            (
+                # Correct input `sources`` list
+                [
+                    {"alias": "TBL_D", "columns": ["a", "b", "c"]},
+                    {"alias": "TBL_E", "columns": ["a", "d", "e"]},
+                ],
+                # Valid variable step
+                [
+                    {
+                        "add_variables": {
+                            "source": "TBL_D",
+                            "column_mapping": {
+                                "var_concat_cols": "TBL_D.a || TBL_E.e",
+                            },
+                        }
+                    }
+                ],
+                # Output of validation should be False
+                True,
+                # Expected logging from input above
+                [
+                    "Variables validated successfully",
+                    "Transformations validated successfully",
+                ],
+            ),
+            (
+                # Correct input `sources`` list
+                [
+                    {"alias": "TBL_D", "columns": ["a", "b"]},
+                    {"alias": "TBL_E", "columns": ["a", "d"]},
+                ],
+                # UnValid variable step
+                [
+                    {
+                        "add_variables": {
+                            "source": "TBL_D",
+                            "column_mapping": {
+                                "var_concat_cols": "TBL_D.a2 || TBL_E.e2",
+                            },
+                        }
+                    }
+                ],
+                # Output of validation should be False
+                False,
+                # Expected logging from input above
+                [
+                    "Problem with expression(s):",
+                    "TBL_D.a2 || TBL_E.e2: "
+                    "[UNRESOLVED_COLUMN.WITH_SUGGESTION] A column or function parameter "
+                    "with name `TBL_D`.`a2` cannot be resolved. Did you mean one of the "
+                    "following? [`TBL_D`.`a`, `TBL_E`.`a`, `TBL_D`.`b`, `TBL_E`.`d`].",
+                ],
+            ),
+            (
+                # Correct input `sources`` list
+                [
+                    {"alias": "TBL_D", "columns": ["a", "b"]},
+                    {"alias": "TBL_E", "columns": ["a", "d"]},
+                ],
+                # Empty transformation step
+                None,
+                # Output of validation should be True
+                True,
+                # Expected logging from input above
+                [
+                    "No transformation steps included",
+                ],
+            ),
+            (
+                # Happy flow Union
+                [
+                    {
+                        "source": "source_tbl_A",
+                        "alias": "TBL_A",
+                        "columns": ["c1", "c2", "c3", "c4"],
+                    },
+                    {
+                        "source": "source_tbl_B",
+                        "alias": "TBL_B",
+                        "columns": ["c1", "c5", "c7"],
+                    },
+                    {
+                        "source": "source_tbl_C",
+                        "alias": "TBL_C",
+                        "columns": ["c2c", "c6", "c8"],
+                    },
+                ],
+                [
+                    {
+                        "union": {
+                            "source": "TBL_B",
+                            "alias": "TABLE_B_C",
+                            "column_mapping": {
+                                "TBL_B": {"c1": "c1", "c5": "c5"},
+                                "TBL_C": {"c1": "c2c", "c5": "c8"},
+                            },
+                        }
+                    }
+                ],
+                True,
+                [
+                    "Union expressions validated successfully",
+                    "Transformations validated successfully",
+                ],
+            ),
+            # No Existing source table Union
+            (
+                [
+                    {
+                        "source": "source_tbl_A",
+                        "alias": "TBL_A",
+                        "columns": ["c1", "c2", "c3", "c4"],
+                    },
+                    {
+                        "source": "source_tbl_B",
+                        "alias": "TBL_B",
+                        "columns": ["c1", "c5", "c7"],
+                    },
+                    {
+                        "source": "source_tbl_C",
+                        "alias": "TBL_C",
+                        "columns": ["c2c", "c6", "c8"],
+                    },
+                ],
+                [
+                    {
+                        "union": {
+                            "source": "TBL_B",
+                            "alias": "TABLE_B_C",
+                            "column_mapping": {
+                                "TBL_B": {"c1": "c1", "c5": "c5"},
+                                "TBL_D": {"c1": "c2c", "c5": "c8"},
+                            },
+                        }
+                    }
+                ],
+                False,
+                ["Source table(s) ['TBL_D'] in TABLE_B_C not loaded."],
+            ),
+            # No Existing column Union
+            (
+                [
+                    {
+                        "source": "source_tbl_A",
+                        "alias": "TBL_A",
+                        "columns": ["c1", "c2", "c3", "c4"],
+                    },
+                    {
+                        "source": "source_tbl_B",
+                        "alias": "TBL_B",
+                        "columns": ["c1", "c5", "c7"],
+                    },
+                    {
+                        "source": "source_tbl_C",
+                        "alias": "TBL_C",
+                        "columns": ["c2c", "c6", "c8"],
+                    },
+                ],
+                [
+                    {
+                        "union": {
+                            "source": "TBL_B",
+                            "alias": "TABLE_B_C",
+                            "column_mapping": {
+                                "TBL_B": {"c1": "c1", "c5": "c5"},
+                                "TBL_C": {"c1": "c_not_existing", "c5": "c8"},
+                            },
+                        }
+                    }
+                ],
+                False,
+                [
+                    "Problem with expression(s):",
+                    "c_not_existing: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column or function parameter with name `c_not_existing` cannot be resolved. Did you mean one of the following? [`c2c`, `c6`, `c8`].",  # noqa: E501
+                ],
+            ),
+            # Wrong column mapping Union
+            (
+                [
+                    {
+                        "source": "source_tbl_A",
+                        "alias": "TBL_A",
+                        "columns": ["c1", "c2", "c3", "c4"],
+                    },
+                    {
+                        "source": "source_tbl_B",
+                        "alias": "TBL_B",
+                        "columns": ["c1", "c5", "c7"],
+                    },
+                    {
+                        "source": "source_tbl_C",
+                        "alias": "TBL_C",
+                        "columns": ["c2c", "c6", "c8"],
+                    },
+                ],
+                [
+                    {
+                        "union": {
+                            "source": "TBL_B",
+                            "alias": "TABLE_B_C",
+                            "column_mapping": {
+                                "TBL_B": {"c1": "c1", "c5": "c5"},
+                                "TBL_C": {"c1_wrng": "c2c", "c5": "c8"},
+                            },
+                        }
+                    }
+                ],
+                False,
+                [
+                    "Column mapping names are not identical: [['c1', 'c5'], ['c1_wrng', 'c5']]"  # noqa: E501
+                ],
+            ),
+            # Happy flow filter
+            (
+                [
+                    {"alias": "TBL_D", "columns": ["a", "b", "c"]},
+                    {"alias": "TBL_E", "columns": ["a", "d", "e"]},
+                ],
+                [{"filter": {"conditions": ["TBL_D.a > 0", "TBL_E.d IS NOT NULL"]}}],
+                True,
+                [
+                    "Filter conditions validated successfully"
+                ],
+            ),
+            # Filter with invalid column reference
+            (
+                [
+                    {"alias": "TBL_D", "columns": ["a", "b", "c"]},
+                    {"alias": "TBL_E", "columns": ["a", "d", "e"]},
+                ],
+                [
+                    {
+                        "filter": {
+                            "conditions": ["TBL_D.x > 0"]  # x doesn't exist
+                        }
+                    }
+                ],
+                False,
+                [
+                    "Problem with expression(s):",
+                    "filter_condition_0: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column or function parameter with name `TBL_D`.`x` cannot be resolved. Did you mean one of the following? [`TBL_D`.`a`, `TBL_E`.`a`, `TBL_D`.`b`, `TBL_D`.`c`, `TBL_E`.`d`],",  # noqa: E501
+                ],
+            ),
+            # Filter with computed variable
+            (
+                [
+                    {"alias": "TBL_D", "columns": ["a", "b", "c"]},
+                ],
+                [
+                    {
+                        "add_variables": {
+                            "source": "TBL_D",
+                            "column_mapping": {"sum_ab": "TBL_D.a + TBL_D.b"},
+                        }
+                    },
+                    {"filter": {"conditions": ["sum_ab > 10"]}},
+                ],
+                True,
+                [
+                    "Variables validated successfully",
+                    "Filter conditions validated successfully",
+                    "Transformations validated successfully"
+                ],
+            ),
+        ],
+    )
+    def test_validate_transformations(
+        spark_session, sources, transformations, output, expected_logging, caplog
+    ):
+        logic = {"sources": sources, "transformations": transformations}
+        assert Transformations(spark_session, logic).validate() == output
+>       assert caplog.messages == expected_logging
+E       AssertionError: assert ['Initial sou...be specified'] == ['Problem wit...TBL_E`.`d`],']
+E
+E         At index 0 diff: 'Initial source should be specified' != 'Problem with expression(s):'
+E         Right contains one more item: 'filter_condition_0: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column or function parameter with name `TBL_D`.`x` cannot be resolved. Did you mean one of the following? [`TBL_D`.`a`, `TBL_E`.`a`, `TBL_D`.`b`, `TBL_D`.`c`, `TBL_E`.`d`],'
+E         Use -v to get more diff
+
+test\test_transform\test_validate.py:448: AssertionError
+-------------------------------------------------------------------------------------------------- Captured stdout call -------------------------------------------------------------------------------------------------- 
+2025-04-16 14:29:45 [ERROR] validate_initial_source:  Initial source should be specified
+2025-04-16 14:29:45 [ERROR] validate_initial_source:  Initial source should be specified
+--------------------------------------------------------------------------------------------------- Captured log call ---------------------------------------------------------------------------------------------------- 
+ERROR    betl_src_poc_logger:transformations.py:76 Initial source should be specified
+___________________________________________________________________ test_validate_transformations[sources14-transformations14-True-expected_logging14] ___________________________________________________________________ 
+
+spark_session = <pyspark.sql.session.SparkSession object at 0x000001D230DC9CC0>, sources = [{'alias': 'TBL_D', 'columns': ['a', 'b', 'c']}]
+transformations = [{'add_variables': {'column_mapping': {'sum_ab': 'TBL_D.a + TBL_D.b'}, 'source': 'TBL_D'}}, {'filter': {'conditions': ['sum_ab > 10']}}], output = True
+expected_logging = ['Variables validated successfully', 'Filter conditions validated successfully', 'Transformations validated successfully'], caplog = <_pytest.logging.LogCaptureFixture object at 0x000001D230DC89A0>   
+
+    @pytest.mark.parametrize(
+        ("sources", "transformations", "output", "expected_logging"),
+        [
+            (
+                # Input `sources`` list
+                [{"alias": "TBLA", "columns": ["a", "b"]}],
+                # Input `joins`` list
+                [
+                    {
+                        "join": {
+                            "left_source": "TBLA",
+                            "right_source": "TBLB",
+                            "condition": ["TBLA.b = TBLB.c"],
+                        }
+                    }
+                ],
+                # Output of validation should be False
+                False,
+                # Expected logging from input above
+                [
+                    "Problem with join",
+                    "No Right TBLB.",
+                    "Available alias: ['TBLA']",
+                ],
+            ),
+            (
+                # Input `sources`` list
+                [{"alias": "TBLB", "columns": ["a", "b"]}],
+                # Input `joins`` list
+                [
+                    {
+                        "join": {
+                            "left_source": "TBLA",
+                            "right_source": "TBLB",
+                            "condition": ["TBLA.a = TBLB.b"],
+                        }
+                    }
+                ],
+                # Output of validation should be False
+                False,
+                # Expected logging from input above
+                [
+                    "Problem with join",
+                    "No Left TBLA.",
+                    "Available alias: ['TBLB']",
+                ],
+            ),
+            (
+                # Correct input `sources`` list
+                [
+                    {"alias": "TBL_D", "columns": ["a", "b", "c"]},
+                    {"alias": "TBL_E", "columns": ["a", "d", "e"]},
+                ],
+                # Correct Input `joins`` list
+                [
+                    {
+                        "join": {
+                            "left_source": "TBL_D",
+                            "right_source": "TBL_E",
+                            "condition": ["TBL_D.a = TBL_E.a"],
+                            "how": "left",
+                        }
+                    }
+                ],
+                # Output of validation should be True
+                True,
+                # Expected logging from input above
+                [
+                    "Join condition expressions validated successfully",
+                    "Joins validated successfully",
+                    "Transformations validated successfully",
+                ],
+            ),
+            (
+                # Correct input `sources`` list
+                [
+                    {"alias": "TBL_D", "columns": ["a", "b", "c"]},
+                    {"alias": "TBL_E", "columns": ["a", "d", "e"]},
+                ],
+                # Wrong join
+                [
+                    {
+                        "join": {
+                            "left_source": "TBL_D",
+                            "right_source": "TBL_E",
+                            "condition": ["TBL_D.a = TBL_E.a"],
+                            "how": "error_join",
+                        }
+                    }
+                ],
+                # Output of validation should be False
+                False,
+                # Expected logging from input above
+                [
+                    "Join condition expressions validated successfully",
+                    "Problem with join",
+                    "how option 'error_join' is not a valid option",
+                    "Possible values for 'how': ['inner', 'cross', 'outer', 'full', 'fullouter', 'full_outer', 'left', 'leftouter', 'left_outer', 'right', 'rightouter', 'right_outer', 'semi', 'leftsemi', 'left_semi', 'anti', 'leftanti', 'left_anti']",  # noqa: E501
+                ],
+            ),
+            (
+                # Correct input `sources`` list
+                [
+                    {"alias": "TBL_D", "columns": ["a", "b", "c"]},
+                    {"alias": "TBL_E", "columns": ["a", "d", "e"]},
+                ],
+                # No valid transformation steps
+                [
+                    {
+                        "no_join": {
+                            "left_source": "TBL_D",
+                            "right_source": "TBL_E",
+                            "condition": ["TBL_D.a = TBL_E.a"],
+                            "how": "error_join",
+                        }
+                    }
+                ],
+                # Output of validation should be False
+                False,
+                # Expected logging from input above
+                [
+                    "Structure of transformation steps is incorrect",
+                    "Expected sections: ['join', 'add_variables', 'aggregation', 'pivot', 'union']",  # noqa: E501
+                    "Received sections: ['no_join']",
+                ],
+            ),
+            (
+                # Correct input `sources`` list
+                [
+                    {"alias": "TBL_D", "columns": ["a", "b", "c"]},
+                    {"alias": "TBL_E", "columns": ["a", "d", "e"]},
+                ],
+                # Valid variable step
+                [
+                    {
+                        "add_variables": {
+                            "source": "TBL_D",
+                            "column_mapping": {
+                                "var_concat_cols": "TBL_D.a || TBL_E.e",
+                            },
+                        }
+                    }
+                ],
+                # Output of validation should be False
+                True,
+                # Expected logging from input above
+                [
+                    "Variables validated successfully",
+                    "Transformations validated successfully",
+                ],
+            ),
+            (
+                # Correct input `sources`` list
+                [
+                    {"alias": "TBL_D", "columns": ["a", "b"]},
+                    {"alias": "TBL_E", "columns": ["a", "d"]},
+                ],
+                # UnValid variable step
+                [
+                    {
+                        "add_variables": {
+                            "source": "TBL_D",
+                            "column_mapping": {
+                                "var_concat_cols": "TBL_D.a2 || TBL_E.e2",
+                            },
+                        }
+                    }
+                ],
+                # Output of validation should be False
+                False,
+                # Expected logging from input above
+                [
+                    "Problem with expression(s):",
+                    "TBL_D.a2 || TBL_E.e2: "
+                    "[UNRESOLVED_COLUMN.WITH_SUGGESTION] A column or function parameter "
+                    "with name `TBL_D`.`a2` cannot be resolved. Did you mean one of the "
+                    "following? [`TBL_D`.`a`, `TBL_E`.`a`, `TBL_D`.`b`, `TBL_E`.`d`].",
+                ],
+            ),
+            (
+                # Correct input `sources`` list
+                [
+                    {"alias": "TBL_D", "columns": ["a", "b"]},
+                    {"alias": "TBL_E", "columns": ["a", "d"]},
+                ],
+                # Empty transformation step
+                None,
+                # Output of validation should be True
+                True,
+                # Expected logging from input above
+                [
+                    "No transformation steps included",
+                ],
+            ),
+            (
+                # Happy flow Union
+                [
+                    {
+                        "source": "source_tbl_A",
+                        "alias": "TBL_A",
+                        "columns": ["c1", "c2", "c3", "c4"],
+                    },
+                    {
+                        "source": "source_tbl_B",
+                        "alias": "TBL_B",
+                        "columns": ["c1", "c5", "c7"],
+                    },
+                    {
+                        "source": "source_tbl_C",
+                        "alias": "TBL_C",
+                        "columns": ["c2c", "c6", "c8"],
+                    },
+                ],
+                [
+                    {
+                        "union": {
+                            "source": "TBL_B",
+                            "alias": "TABLE_B_C",
+                            "column_mapping": {
+                                "TBL_B": {"c1": "c1", "c5": "c5"},
+                                "TBL_C": {"c1": "c2c", "c5": "c8"},
+                            },
+                        }
+                    }
+                ],
+                True,
+                [
+                    "Union expressions validated successfully",
+                    "Transformations validated successfully",
+                ],
+            ),
+            # No Existing source table Union
+            (
+                [
+                    {
+                        "source": "source_tbl_A",
+                        "alias": "TBL_A",
+                        "columns": ["c1", "c2", "c3", "c4"],
+                    },
+                    {
+                        "source": "source_tbl_B",
+                        "alias": "TBL_B",
+                        "columns": ["c1", "c5", "c7"],
+                    },
+                    {
+                        "source": "source_tbl_C",
+                        "alias": "TBL_C",
+                        "columns": ["c2c", "c6", "c8"],
+                    },
+                ],
+                [
+                    {
+                        "union": {
+                            "source": "TBL_B",
+                            "alias": "TABLE_B_C",
+                            "column_mapping": {
+                                "TBL_B": {"c1": "c1", "c5": "c5"},
+                                "TBL_D": {"c1": "c2c", "c5": "c8"},
+                            },
+                        }
+                    }
+                ],
+                False,
+                ["Source table(s) ['TBL_D'] in TABLE_B_C not loaded."],
+            ),
+            # No Existing column Union
+            (
+                [
+                    {
+                        "source": "source_tbl_A",
+                        "alias": "TBL_A",
+                        "columns": ["c1", "c2", "c3", "c4"],
+                    },
+                    {
+                        "source": "source_tbl_B",
+                        "alias": "TBL_B",
+                        "columns": ["c1", "c5", "c7"],
+                    },
+                    {
+                        "source": "source_tbl_C",
+                        "alias": "TBL_C",
+                        "columns": ["c2c", "c6", "c8"],
+                    },
+                ],
+                [
+                    {
+                        "union": {
+                            "source": "TBL_B",
+                            "alias": "TABLE_B_C",
+                            "column_mapping": {
+                                "TBL_B": {"c1": "c1", "c5": "c5"},
+                                "TBL_C": {"c1": "c_not_existing", "c5": "c8"},
+                            },
+                        }
+                    }
+                ],
+                False,
+                [
+                    "Problem with expression(s):",
+                    "c_not_existing: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column or function parameter with name `c_not_existing` cannot be resolved. Did you mean one of the following? [`c2c`, `c6`, `c8`].",  # noqa: E501
+                ],
+            ),
+            # Wrong column mapping Union
+            (
+                [
+                    {
+                        "source": "source_tbl_A",
+                        "alias": "TBL_A",
+                        "columns": ["c1", "c2", "c3", "c4"],
+                    },
+                    {
+                        "source": "source_tbl_B",
+                        "alias": "TBL_B",
+                        "columns": ["c1", "c5", "c7"],
+                    },
+                    {
+                        "source": "source_tbl_C",
+                        "alias": "TBL_C",
+                        "columns": ["c2c", "c6", "c8"],
+                    },
+                ],
+                [
+                    {
+                        "union": {
+                            "source": "TBL_B",
+                            "alias": "TABLE_B_C",
+                            "column_mapping": {
+                                "TBL_B": {"c1": "c1", "c5": "c5"},
+                                "TBL_C": {"c1_wrng": "c2c", "c5": "c8"},
+                            },
+                        }
+                    }
+                ],
+                False,
+                [
+                    "Column mapping names are not identical: [['c1', 'c5'], ['c1_wrng', 'c5']]"  # noqa: E501
+                ],
+            ),
+            # Happy flow filter
+            (
+                [
+                    {"alias": "TBL_D", "columns": ["a", "b", "c"]},
+                    {"alias": "TBL_E", "columns": ["a", "d", "e"]},
+                ],
+                [{"filter": {"conditions": ["TBL_D.a > 0", "TBL_E.d IS NOT NULL"]}}],
+                True,
+                [
+                    "Filter conditions validated successfully"
+                ],
+            ),
+            # Filter with invalid column reference
+            (
+                [
+                    {"alias": "TBL_D", "columns": ["a", "b", "c"]},
+                    {"alias": "TBL_E", "columns": ["a", "d", "e"]},
+                ],
+                [
+                    {
+                        "filter": {
+                            "conditions": ["TBL_D.x > 0"]  # x doesn't exist
+                        }
+                    }
+                ],
+                False,
+                [
+                    "Problem with expression(s):",
+                    "filter_condition_0: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column or function parameter with name `TBL_D`.`x` cannot be resolved. Did you mean one of the following? [`TBL_D`.`a`, `TBL_E`.`a`, `TBL_D`.`b`, `TBL_D`.`c`, `TBL_E`.`d`],",  # noqa: E501
+                ],
+            ),
+            # Filter with computed variable
+            (
+                [
+                    {"alias": "TBL_D", "columns": ["a", "b", "c"]},
+                ],
+                [
+                    {
+                        "add_variables": {
+                            "source": "TBL_D",
+                            "column_mapping": {"sum_ab": "TBL_D.a + TBL_D.b"},
+                        }
+                    },
+                    {"filter": {"conditions": ["sum_ab > 10"]}},
+                ],
+                True,
+                [
+                    "Variables validated successfully",
+                    "Filter conditions validated successfully",
+                    "Transformations validated successfully"
+                ],
+            ),
+        ],
+    )
+    def test_validate_transformations(
+        spark_session, sources, transformations, output, expected_logging, caplog
+    ):
+        logic = {"sources": sources, "transformations": transformations}
+>       assert Transformations(spark_session, logic).validate() == output
+
+test\test_transform\test_validate.py:447:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _  
+src\validate\transformations.py:188: in validate
+    self.validate_transformation_step(
+src\validate\transformations.py:221: in validate_transformation_step
+    kwgs = get_required_arguments(tf, self, f_name)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _  
+
+tf = {'filter': {'conditions': ['sum_ab > 10']}}, obj = <src.validate.transformations.Transformations object at 0x000001D230DCA260>, func_name = 'validate_filter'
+
+    def get_required_arguments(tf: dict, obj: object, func_name: str) -> dict:
+>       tf_func = getattr(obj, func_name)
+E       AttributeError: 'Transformations' object has no attribute 'validate_filter'. Did you mean: 'validate_pivot'?
+
+src\utils\sources_util.py:173: AttributeError
+-------------------------------------------------------------------------------------------------- Captured stdout call -------------------------------------------------------------------------------------------------- 
+2025-04-16 14:29:46 [INFO] validate_add_variables:  Variables validated successfully
+2025-04-16 14:29:46 [INFO] validate_add_variables:  Variables validated successfully
+-------------------------------------------------------------------------------------------------- Captured stderr call -------------------------------------------------------------------------------------------------- 
+
+--------------------------------------------------------------------------------------------------- Captured log call ---------------------------------------------------------------------------------------------------- 
+INFO     betl_src_poc_logger:transformations.py:344 Variables validated successfully
 
 ---------- coverage: platform win32, python 3.10.11-final-0 ----------
 Name                                            Stmts   Miss  Cover   Missing
@@ -32,7 +979,7 @@ src\transform\__init__.py                           0      0   100%
 src\transform\table_write_and_comment.py           58     58     0%   7-199
 src\transform\transform_business_logic_sql.py       6      6     0%   5-24
 src\utils\__init__.py                               0      0   100%
-src\utils\alias_util.py                            13     10    23%   14-19, 58-78, 101-109
+src\utils\alias_util.py                            13      6    54%   14-19, 101-109
 src\utils\export_parquet.py                        14     14     0%   9-51
 src\utils\get_catalog.py                            5      5     0%   6-20
 src\utils\get_dbutils.py                            0      0   100%
@@ -40,21 +987,22 @@ src\utils\logging_util.py                           6      0   100%
 src\utils\parameter_utils.py                       26     26     0%   6-124
 src\utils\parse_yaml.py                            12     12     0%   9-31
 src\utils\process_logging.py                       13     13     0%   9-60
-src\utils\sources_util.py                          38     28    26%   40, 57, 72, 86, 99-103, 113, 135-138, 146-160, 164-169, 173-175
+src\utils\sources_util.py                          38      4    89%   57, 72, 113, 160
 src\utils\table_schema.py                           3      3     0%   8-16
 src\validate\__init__.py                            0      0   100%
-src\validate\base.py                                4      2    50%   6-7
-src\validate\expressions.py                        24     20    17%   22-25, 29-64
+src\validate\base.py                                4      0   100%
+src\validate\expressions.py                        24      9    62%   33-54
 src\validate\run_all.py                             7      7     0%   11-44
-src\validate\sources.py                            29     24    17%   12-13, 25-51, 54-67
-src\validate\transformations.py                   167    148    11%   47-49, 52-70, 73-78, 95-144, 148-156, 159-211, 219-222, 234-244, 255-272, 282-292, 302-329, 337-345, 354-383, 403, 424-434, 454-465
-src\validate\validate_sql.py                       50     46     8%   20-54, 66-86, 109-115
-src\validate\yaml.py                               18     14    22%   8, 11-33
+src\validate\sources.py                            29      0   100%
+src\validate\transformations.py                   167     35    79%   96, 111-112, 282-292, 302-329, 403, 454-465
+src\validate\validate_sql.py                       50      2    96%   36, 78
+src\validate\yaml.py                               18      0   100%
 -----------------------------------------------------------------------------
-TOTAL                                             769    690    10%
+TOTAL                                             769    454    41%
 Coverage HTML written to dir htmlcov
 
 ================================================================================================ short test summary info ================================================================================================= 
-ERROR test/test_transform/test_validate.py - Failed: test/test_transform/test_validate.py::test_validate_sources: in "parametrize" the number of names (3):
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
-==================================================================================================== 1 error in 1.39s ==================================================================================================== 
+FAILED test/test_transform/test_validate.py::test_validate_transformations[sources4-transformations4-False-expected_logging4] - assert ['Structure o... ['no_join']"] == ['Structure o... ['no_join']"]
+FAILED test/test_transform/test_validate.py::test_validate_transformations[sources12-transformations12-True-expected_logging12] - AssertionError: assert False == True
+FAILED test/test_transform/test_validate.py::test_validate_transformations[sources13-transformations13-False-expected_logging13] - AssertionError: assert ['Initial sou...be specified'] == ['Problem wit...TBL_E`.`d`],'] 
+FAILED test/test_transform/test_validate.py::test_validate_transformations[sources14-transformations14-True-expected_logging14] - AttributeError: 'Transformations' object has no attribute 'validate_filter'. Did you mean: 'validate_pivot'?
