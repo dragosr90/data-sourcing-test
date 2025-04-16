@@ -55,6 +55,7 @@ class Transformations(BaseValidate):
             "aggregation",
             "pivot",
             "union",
+            "filter",
         ]
         if self.transformations:
             for tf in self.transformations:
@@ -382,6 +383,31 @@ class Transformations(BaseValidate):
         return True
 
 
+def validate_filter(
+    self,  # noqa: ANN001
+    available_sources: list,
+    conditions: list[str],
+    available_variables: list[str] | None = None,
+) -> bool:
+    """Validate filter conditions.
+
+    Args:
+        self: self
+        available_sources (list): List of available sources
+        conditions (list[str]): List of filter conditions
+        available_variables: List of available variables
+
+    Returns:
+        bool: True if conditions are valid, False otherwise
+    """
+    if not validate_filter_conditions(
+        self.spark, available_sources, conditions, available_variables
+    ):
+        return False
+    logger.info("Filter conditions validated successfully")
+    return True
+
+
 def validate_join_conditions(
     spark: SparkSession,
     sources: list[dict[str, str | list[str]]],
@@ -409,3 +435,34 @@ def validate_join_conditions(
         logger.debug("Join condition expressions validated successfully")
         return True
     return False
+
+
+def validate_filter_conditions(
+    spark: SparkSession,
+    sources: list[dict[str, str | list[str]]],
+    conditions: list[str],
+    available_variables: list[str] | None = None,
+) -> bool:
+    """Validate that filter conditions can be executed on the available sources.
+
+    Args:
+        spark: SparkSession to use for validation
+        sources: List of source dictionaries with alias and columns
+        conditions: List of condition strings
+        available_variables: List of available variables
+
+    Returns:
+        bool: True if all conditions are valid, False otherwise
+    """
+    if not conditions:
+        logger.warning("No filter conditions provided")
+        return True
+    if not validate_sql_expressions(
+        spark,
+        sources,
+        {f"filter_condition_{i}": cond for i, cond in enumerate(conditions)},
+        extra_cols=available_variables,
+    ):
+        return False
+    logger.info("Filter conditions validated successfully")
+    return True
