@@ -170,7 +170,7 @@ def sources_joins():
             # Expected logging from input above
             [
                 "Structure of transformation steps is incorrect",
-                "Expected sections: ['join', 'add_variables', 'aggregation', 'pivot', 'union']",  # noqa: E501
+                "Expected sections: ['join', 'add_variables', 'aggregation', 'pivot', 'union', 'filter']",  # noqa: E501
                 "Received sections: ['no_join']",
             ],
         ),
@@ -384,6 +384,56 @@ def sources_joins():
             False,
             [
                 "Column mapping names are not identical: [['c1', 'c5'], ['c1_wrng', 'c5']]"  # noqa: E501
+            ],
+        ),
+        # Happy flow filter
+        (
+            [
+                {"alias": "TBL_D", "columns": ["a", "b", "c"]},
+                {"alias": "TBL_E", "columns": ["a", "d", "e"]},
+            ],
+            [{"filter": {"conditions": ["TBL_D.a > 0", "TBL_E.d IS NOT NULL"]}}],
+            True,
+            ["Filter conditions validated successfully"],
+        ),
+        # Filter with invalid column reference
+        (
+            [
+                {"alias": "TBL_D", "columns": ["a", "b", "c"]},
+                {"alias": "TBL_E", "columns": ["a", "d", "e"]},
+            ],
+            [
+                {
+                    "filter": {
+                        "conditions": ["TBL_D.x > 0"]  # x doesn't exist
+                    }
+                }
+            ],
+            False,
+            [
+                "Problem with expression(s):",
+                "filter_condition_0: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column or function parameter with name `TBL_D`.`x` cannot be resolved. Did you mean one of the following? [`TBL_D`.`a`, `TBL_E`.`a`, `TBL_D`.`b`, `TBL_D`.`c`, `TBL_E`.`d`],",  # noqa: E501
+            ],
+        ),
+        # Filter with computed variable
+        (
+            [
+                {"alias": "TBL_D", "columns": ["a", "b", "c"]},
+            ],
+            [
+                {
+                    "add_variables": {
+                        "source": "TBL_D",
+                        "column_mapping": {"sum_ab": "TBL_D.a + TBL_D.b"},
+                    }
+                },
+                {"filter": {"conditions": ["sum_ab > 10"]}},
+            ],
+            True,
+            [
+                "Variables validated successfully",
+                "Filter conditions validated successfully",
+                "Transformations validated successfully",
             ],
         ),
     ],
