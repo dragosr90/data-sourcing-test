@@ -1,0 +1,60 @@
+(bsrc-etl-v) PS C:\Users\B25712\bsrc-etl-venv\bsrc-etl> pytest test/test_transform/test_validate.py
+================================================================================================== test session starts ===================================================================================================
+platform win32 -- Python 3.10.11, pytest-8.3.3, pluggy-1.5.0
+rootdir: C:\Users\B25712\bsrc-etl-venv\bsrc-etl
+configfile: pyproject.toml
+plugins: cov-6.0.0, mock-3.14.0
+collected 0 items / 1 error
+
+========================================================================================================= ERRORS ========================================================================================================= 
+_________________________________________________________________________________ ERROR collecting test/test_transform/test_validate.py __________________________________________________________________________________ 
+test/test_transform/test_validate.py::test_validate_sources: in "parametrize" the number of names (3):
+  ('sources', 'validation_output', 'expected_logging')
+must be equal to the number of values (4):
+  ([{'alias': 'TBL_D', 'columns': ['a', 'b', 'c']}, {'alias': 'TBL_E', 'columns': ['a', 'd', 'e']}], [{'filter': {'conditions': ['TBL_D.a > 0', 'TBL_E.d IS NOT NULL']}}], True, ['Filter conditions validated successfully'])
+
+---------- coverage: platform win32, python 3.10.11-final-0 ----------
+Name                                            Stmts   Miss  Cover   Missing
+-----------------------------------------------------------------------------
+src\__init__.py                                     0      0   100%
+src\config\__init__.py                              0      0   100%
+src\config\constants.py                             1      0   100%
+src\config\schema.py                                4      2    50%   51-52
+src\dq\__init__.py                                  0      0   100%
+src\dq\dq_validation.py                           141    141     0%   13-486
+src\extract\__init__.py                             0      0   100%
+src\extract\master_data_sql.py                     96     77    20%   27-29, 33-34, 38, 55-101, 112-114, 124-126, 150, 184-193, 232-244, 257-272, 293-323
+src\month_setup\__init__.py                         0      0   100%
+src\month_setup\dial_derive_snapshotdate.py        32     32     0%   8-85
+src\month_setup\metadata_log_tables.py              1      1     0%   18
+src\month_setup\setup_new_month.py                  1      1     0%   9
+src\transform\__init__.py                           0      0   100%
+src\transform\table_write_and_comment.py           58     58     0%   7-199
+src\transform\transform_business_logic_sql.py       6      6     0%   5-24
+src\utils\__init__.py                               0      0   100%
+src\utils\alias_util.py                            13     10    23%   14-19, 58-78, 101-109
+src\utils\export_parquet.py                        14     14     0%   9-51
+src\utils\get_catalog.py                            5      5     0%   6-20
+src\utils\get_dbutils.py                            0      0   100%
+src\utils\logging_util.py                           6      0   100%
+src\utils\parameter_utils.py                       26     26     0%   6-124
+src\utils\parse_yaml.py                            12     12     0%   9-31
+src\utils\process_logging.py                       13     13     0%   9-60
+src\utils\sources_util.py                          38     28    26%   40, 57, 72, 86, 99-103, 113, 135-138, 146-160, 164-169, 173-175
+src\utils\table_schema.py                           3      3     0%   8-16
+src\validate\__init__.py                            0      0   100%
+src\validate\base.py                                4      2    50%   6-7
+src\validate\expressions.py                        24     20    17%   22-25, 29-64
+src\validate\run_all.py                             7      7     0%   11-44
+src\validate\sources.py                            29     24    17%   12-13, 25-51, 54-67
+src\validate\transformations.py                   167    148    11%   47-49, 52-70, 73-78, 95-144, 148-156, 159-211, 219-222, 234-244, 255-272, 282-292, 302-329, 337-345, 354-383, 403, 424-434, 454-465
+src\validate\validate_sql.py                       50     46     8%   20-54, 66-86, 109-115
+src\validate\yaml.py                               18     14    22%   8, 11-33
+-----------------------------------------------------------------------------
+TOTAL                                             769    690    10%
+Coverage HTML written to dir htmlcov
+
+================================================================================================ short test summary info ================================================================================================= 
+ERROR test/test_transform/test_validate.py - Failed: test/test_transform/test_validate.py::test_validate_sources: in "parametrize" the number of names (3):
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
+==================================================================================================== 1 error in 1.39s ==================================================================================================== 
