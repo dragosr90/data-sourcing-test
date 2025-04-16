@@ -49,12 +49,15 @@ class GetIntegratedData:
             for source in self.sources
         }
 
-    def transform_data(self, data_dict: dict[str, DataFrame]) -> DataFrame:
+    def transform_data(self, data_dict: dict[str, DataFrame]) -> DataFrame:  # noqa: C901
         """Join all data from `data_dict` according to config in business_logic."""
         # If there are no transformations, return first table
         first_table = next(iter(data_dict.values()))
         if not self.transformations:
             return first_table
+
+        # Initialize transformed_data with first table
+        transformed_data = first_table
 
         # Get Integrated dataset from sequential list of transformations
         for tf in self.transformations:
@@ -79,6 +82,10 @@ class GetIntegratedData:
 
             if tf_step == "pivot":
                 transformed_data = self.pivot(transformed_data, **kwgs)
+
+            # Added the new filter condition
+            if tf_step == "filter":
+                transformed_data = self.filter(transformed_data, **kwgs)
 
             if tf_step == "union":
                 data_union_keys = list(tf["union"]["column_mapping"].keys())[1:]
@@ -235,6 +242,34 @@ class GetIntegratedData:
             for d, k in zip(input_dataframes, keys_unions)
         ]
         return reduce(DataFrame.unionAll, data_frames).alias(alias)
+
+    @staticmethod
+    def filter(data: DataFrame, conditions: list[str]) -> DataFrame:
+        """Filter a dataframe based on one or more conditions.
+
+        Args:
+            data (DataFrame): Input DataFrame
+            conditions (list[str]): List of condition strings to filter by
+
+        Returns:
+            DataFrame: Filtered DataFrame
+        """
+        if not conditions:
+            logger.warning(
+                "No filter conditions provided, returning original dataframe"
+            )
+            return data
+
+        filtered_df = data
+        for condition in conditions:
+            filtered_df = filtered_df.filter(condition)
+            # Log the number of rows filtered out for monitoring
+            input_count = data.count()
+            output_count = filtered_df.count()
+            logger.info(
+                f"Filter condition '{condition}' reduced rows from {input_count} to {output_count}"  # noqa: E501
+            )
+        return filtered_df
 
 
 def parse_join_condition(
