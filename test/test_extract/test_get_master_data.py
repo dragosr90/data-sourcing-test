@@ -255,3 +255,40 @@ def test_pivot_data(spark_session, get_integrated_data_mock):
         ),
     )
     assert_df_equality(result, expected_output)
+
+
+def test_filter_transformation(spark_session):
+    """Test filter transformation step in GetIntegratedData."""
+    # Create test data
+    source_data = {
+        "source_tbl_A": [
+            (1, "keep", 10),
+            (2, "discard", 20),
+            (3, "keep", 30),
+        ],
+    }
+    # Create source dataframes and register as temp views
+    spark_session.createDataFrame(
+        source_data["source_tbl_A"], schema=["c1", "c2", "c3"]
+    ).createOrReplaceTempView("source_tbl_A")
+    # Define business logic with filter transformation
+    business_logic_dict = {
+        "sources": [
+            {
+                "source": "source_tbl_A",
+                "alias": "TBL_A",
+                "columns": ["c1", "c2", "c3"],
+            }
+        ],
+        "transformations": [{"filter": {"conditions": ["TBL_A.c2 = 'keep'"]}}],
+    }
+    # Get integrated data with filter applied
+    result = GetIntegratedData(
+        spark_session,
+        business_logic=business_logic_dict,
+    ).get_integrated_data()
+    # Check that only rows with c2='keep' are in the result
+    expected_output = spark_session.createDataFrame(
+        [(1, "keep", 10), (3, "keep", 30)], schema=["c1", "c2", "c3"]
+    ).alias("TBL_A")
+    assert_df_equality(result, expected_output, ignore_column_order=True)
