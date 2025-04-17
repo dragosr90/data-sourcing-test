@@ -1,3 +1,138 @@
+(bsrc-etl-v) PS C:\Users\B25712\bsrc-etl-venv\bsrc-etl> pytest test/test_extract/test_get_master_data.py
+================================================================================================== test session starts ===================================================================================================
+platform win32 -- Python 3.10.11, pytest-8.3.3, pluggy-1.5.0
+rootdir: C:\Users\B25712\bsrc-etl-venv\bsrc-etl
+configfile: pyproject.toml
+plugins: cov-6.0.0, mock-3.14.0
+collected 8 items
+
+test\test_extract\test_get_master_data.py .......F                                                                                                                                                                  [100%]
+
+======================================================================================================== FAILURES ======================================================================================================== 
+_______________________________________________________________________________________________ test_filter_transformation _______________________________________________________________________________________________ 
+
+spark_session = <pyspark.sql.session.SparkSession object at 0x0000023FFED11990>
+
+    def test_filter_transformation(spark_session):
+        """Test filter transformation step in GetIntegratedData."""
+        # Create test data
+        source_data = {
+            "source_tbl_A": [
+                (1, "keep", 10),
+                (2, "discard", 20),
+                (3, "keep", 30),
+            ],
+        }
+        # Create source dataframes and register as temp views
+        spark_session.createDataFrame(
+            source_data["source_tbl_A"], schema=["c1", "c2", "c3"]
+        ).createOrReplaceTempView("source_tbl_A")
+        # Define business logic with filter transformation
+        business_logic_dict = {
+            "sources": [
+                {
+                    "source": "source_tbl_A",
+                    "alias": "TBL_A",
+                    "columns": ["c1", "c2", "c3"],
+                }
+            ],
+            "transformations": [
+                {
+                    "join": {
+                        "left_source": "TBL_A",
+                        "right_source": "TBL_A",
+                        "condition": ["TBL_A.c1 = TBL_A.c1"],
+                        "how": "inner",
+                    }
+                },
+                {"filter": {"conditions": ["TBL_A.c2 = 'keep'"]}},
+            ],
+        }
+        # Get integrated data with filter applied
+        result = GetIntegratedData(
+            spark_session,
+            business_logic=business_logic_dict,
+>       ).get_integrated_data()
+
+test\test_extract\test_get_master_data.py:299:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _  
+src\extract\master_data_sql.py:34: in get_integrated_data
+    return self.transform_data(data_dict=data_dict)
+src\extract\master_data_sql.py:74: in transform_data
+    transformed_data = self.join(
+src\extract\master_data_sql.py:114: in join
+    return data_.join(
+..\bsrc-etl-v\lib\site-packages\pyspark\sql\dataframe.py:2493: in join
+    jdf = self._jdf.join(other._jdf, on, how)
+..\bsrc-etl-v\lib\site-packages\py4j\java_gateway.py:1322: in __call__
+    return_value = get_return_value(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _  
+
+a = ('xro1210', <py4j.clientserver.JavaClient object at 0x0000023FFED13CD0>, 'o1206', 'join'), kw = {}, converted = AnalysisException()
+
+    def deco(*a: Any, **kw: Any) -> Any:
+        try:
+            return f(*a, **kw)
+        except Py4JJavaError as e:
+            converted = convert_exception(e.java_exception)
+            if not isinstance(converted, UnknownException):
+                # Hide where the exception came from that shows a non-Pythonic
+                # JVM exception message.
+>               raise converted from None
+E               pyspark.errors.exceptions.captured.AnalysisException: [AMBIGUOUS_REFERENCE] Reference `TBL_A`.`c1` is ambiguous, could be: [`TBL_A`.`c1`, `TBL_A`.`c1`].; line 1 pos 0
+
+..\bsrc-etl-v\lib\site-packages\pyspark\errors\exceptions\captured.py:185: AnalysisException
+-------------------------------------------------------------------------------------------------- Captured stderr call -------------------------------------------------------------------------------------------------- 
+25/04/17 10:26:03 WARN Column: Constructing trivially true equals predicate, ''TBL_A.c1 = 'TBL_A.c1'. Perhaps you need to use aliases.
+
+---------- coverage: platform win32, python 3.10.11-final-0 ----------
+Name                                            Stmts   Miss  Cover   Missing
+-----------------------------------------------------------------------------
+src\__init__.py                                     0      0   100%
+src\config\__init__.py                              0      0   100%
+src\config\constants.py                             1      0   100%
+src\config\schema.py                                4      2    50%   51-52
+src\dq\__init__.py                                  0      0   100%
+src\dq\dq_validation.py                           141    141     0%   13-486
+src\extract\__init__.py                             0      0   100%
+src\extract\master_data_sql.py                     96     24    75%   78, 81, 84, 88, 91-93, 99, 124-126, 150, 257-272, 311-312
+src\month_setup\__init__.py                         0      0   100%
+src\month_setup\dial_derive_snapshotdate.py        32     32     0%   8-85
+src\month_setup\metadata_log_tables.py              1      1     0%   18
+src\month_setup\setup_new_month.py                  1      1     0%   9
+src\transform\__init__.py                           0      0   100%
+src\transform\table_write_and_comment.py           58     58     0%   7-199
+src\transform\transform_business_logic_sql.py       6      6     0%   5-24
+src\utils\__init__.py                               0      0   100%
+src\utils\alias_util.py                            13      6    54%   14-19, 101-109
+src\utils\export_parquet.py                        14     14     0%   9-51
+src\utils\get_catalog.py                            5      5     0%   6-20
+src\utils\get_dbutils.py                            0      0   100%
+src\utils\logging_util.py                           6      0   100%
+src\utils\parameter_utils.py                       26     26     0%   6-124
+src\utils\parse_yaml.py                            12     12     0%   9-31
+src\utils\process_logging.py                       13     13     0%   9-60
+src\utils\sources_util.py                          38     21    45%   40, 57, 72, 86, 99-103, 113, 135-138, 146-160, 166, 169
+src\utils\table_schema.py                           3      3     0%   8-16
+src\validate\__init__.py                            0      0   100%
+src\validate\base.py                                4      4     0%   4-7
+src\validate\expressions.py                        24     24     0%   13-64
+src\validate\run_all.py                             7      7     0%   11-44
+src\validate\sources.py                            29     29     0%   7-67
+src\validate\transformations.py                   170    170     0%   16-467
+src\validate\validate_sql.py                       50     50     0%   12-115
+src\validate\yaml.py                               18     18     0%   3-33
+-----------------------------------------------------------------------------
+TOTAL                                             772    667    14%
+Coverage HTML written to dir htmlcov
+
+================================================================================================ short test summary info ================================================================================================= 
+FAILED test/test_extract/test_get_master_data.py::test_filter_transformation - pyspark.errors.exceptions.captured.AnalysisException: [AMBIGUOUS_REFERENCE] Reference `TBL_A`.`c1` is ambiguous, could be: [`TBL_A`.`c1`, `TBL_A`.`c1`].; line 1 pos 0
+========================================================================================= 1 failed, 7 passed in 71.54s (0:01:11) ========================================================================================= 
+(bsrc-etl-v) PS C:\Users\B25712\bsrc-etl-venv\bsrc-etl> SUCCESS: The process with PID 11420 (child process of PID 23688) has been terminated.
+SUCCESS: The process with PID 23688 (child process of PID 21576) has been terminated.
+SUCCESS: The process with PID 21576 (child process of PID 25548) has been terminated.
+
 (bsrc-etl-v) PS C:\Users\B25712\bsrc-etl-venv\bsrc-etl> pytest test/test_transform/test_validate.py
 ================================================================================================== test session starts ===================================================================================================
 platform win32 -- Python 3.10.11, pytest-8.3.3, pluggy-1.5.0
@@ -8,12 +143,12 @@ collected 47 items
 
 test\test_transform\test_validate.py ............FFF................................                                                                                                                                [100%]
 
-======================================================================================================== FAILURES ======================================================================================================== 
+======================================================================================================== FAILURES ========================================================================================================
 ___________________________________________________________________ test_validate_transformations[sources12-transformations12-True-expected_logging12] ___________________________________________________________________ 
 
-spark_session = <pyspark.sql.session.SparkSession object at 0x00000211D6BF7D60>, sources = [{'alias': 'TBL_D', 'columns': ['a', 'b', 'c']}, {'alias': 'TBL_E', 'columns': ['a', 'd', 'e']}]
-transformations = [{'filter': {'conditions': ['TBL_D.a > 0', 'TBL_E.d IS NOT NULL']}}], output = True, expected_logging = ['Filter conditions validated successfully']
-caplog = <_pytest.logging.LogCaptureFixture object at 0x00000211D62DA5F0>
+spark_session = <pyspark.sql.session.SparkSession object at 0x0000014C330F38E0>, sources = [{'alias': 'TBL_D', 'columns': ['a', 'b', 'c']}, {'alias': 'TBL_E', 'columns': ['a', 'd', 'e']}]
+transformations = [{'filter': {'conditions': ['TBL_D.a > 0', 'TBL_E.d IS NOT NULL'], 'source': 'TBL_D'}}], output = True, expected_logging = ['Filter conditions validated successfully']
+caplog = <_pytest.logging.LogCaptureFixture object at 0x0000014C330E6980>
 
     @pytest.mark.parametrize(
         ("sources", "transformations", "output", "expected_logging"),
@@ -359,7 +494,14 @@ caplog = <_pytest.logging.LogCaptureFixture object at 0x00000211D62DA5F0>
                     {"alias": "TBL_D", "columns": ["a", "b", "c"]},
                     {"alias": "TBL_E", "columns": ["a", "d", "e"]},
                 ],
-                [{"filter": {"conditions": ["TBL_D.a > 0", "TBL_E.d IS NOT NULL"]}}],
+                [
+                    {
+                        "filter": {
+                            "source": "TBL_D",
+                            "conditions": ["TBL_D.a > 0", "TBL_E.d IS NOT NULL"],
+                        }
+                    }
+                ],
                 True,
                 ["Filter conditions validated successfully"],
             ),
@@ -372,7 +514,8 @@ caplog = <_pytest.logging.LogCaptureFixture object at 0x00000211D62DA5F0>
                 [
                     {
                         "filter": {
-                            "conditions": ["TBL_D.x > 0"]  # x doesn't exist
+                            "source": "TBL_D",
+                            "conditions": ["TBL_D.x > 0"],  # x doesn't exist
                         }
                     }
                 ],
@@ -412,21 +555,21 @@ caplog = <_pytest.logging.LogCaptureFixture object at 0x00000211D62DA5F0>
 >       assert Transformations(spark_session, logic).validate() == output
 E       AssertionError: assert False == True
 E        +  where False = validate()
-E        +    where validate = <src.validate.transformations.Transformations object at 0x00000211D62DA020>.validate
-E        +      where <src.validate.transformations.Transformations object at 0x00000211D62DA020> = Transformations(<pyspark.sql.session.SparkSession object at 0x00000211D6BF7D60>, {'sources': [{'alias': 'TBL_D', 'columns': ['a', 'b', 'c']}, {'alias': 'TBL_E', 'columns': ['a', 'd', 'e']}], 'transformations': [{'filter': {'conditions': ['TBL_D.a > 0', 'TBL_E.d IS NOT NULL']}}]})
+E        +    where validate = <src.validate.transformations.Transformations object at 0x0000014C330E4B50>.validate
+E        +      where <src.validate.transformations.Transformations object at 0x0000014C330E4B50> = Transformations(<pyspark.sql.session.SparkSession object at 0x0000014C330F38E0>, {'sources': [{'alias': 'TBL_D', 'columns': ['a', 'b', 'c']}, {'alias': 'TBL_E', 'columns': ['a', 'd', 'e']}], 'transformations': [{'filter': {'conditions': ['TBL_D.a > 0', 'TBL_E.d IS NOT NULL'], 'source': 'TBL_D'}}]})
 
-test\test_transform\test_validate.py:445: AssertionError
+test\test_transform\test_validate.py:453: AssertionError
 -------------------------------------------------------------------------------------------------- Captured stdout call -------------------------------------------------------------------------------------------------- 
-2025-04-16 14:56:09 [ERROR] validate_initial_source:  Initial source should be specified
-2025-04-16 14:56:09 [ERROR] validate_initial_source:  Initial source should be specified
+2025-04-17 10:27:03 [ERROR] validate_initial_source:  Initial source should be specified
+2025-04-17 10:27:03 [ERROR] validate_initial_source:  Initial source should be specified
 --------------------------------------------------------------------------------------------------- Captured log call ---------------------------------------------------------------------------------------------------- 
 ERROR    betl_src_poc_logger:transformations.py:76 Initial source should be specified
 __________________________________________________________________ test_validate_transformations[sources13-transformations13-False-expected_logging13] ___________________________________________________________________ 
 
-spark_session = <pyspark.sql.session.SparkSession object at 0x00000211D6BF7D60>, sources = [{'alias': 'TBL_D', 'columns': ['a', 'b', 'c']}, {'alias': 'TBL_E', 'columns': ['a', 'd', 'e']}]
-transformations = [{'filter': {'conditions': ['TBL_D.x > 0']}}], output = False
+spark_session = <pyspark.sql.session.SparkSession object at 0x0000014C330F38E0>, sources = [{'alias': 'TBL_D', 'columns': ['a', 'b', 'c']}, {'alias': 'TBL_E', 'columns': ['a', 'd', 'e']}]
+transformations = [{'filter': {'conditions': ['TBL_D.x > 0'], 'source': 'TBL_D'}}], output = False
 expected_logging = ['Problem with expression(s):', 'filter_condition_0: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column or function paramete...ot be resolved. Did you mean one of the following? [`TBL_D`.`a`, `TBL_E`.`a`, `TBL_D`.`b`, `TBL_D`.`c`, `TBL_E`.`d`],']
-caplog = <_pytest.logging.LogCaptureFixture object at 0x00000211D6347520>
+caplog = <_pytest.logging.LogCaptureFixture object at 0x0000014C327F1C30>
 
     @pytest.mark.parametrize(
         ("sources", "transformations", "output", "expected_logging"),
@@ -772,7 +915,14 @@ caplog = <_pytest.logging.LogCaptureFixture object at 0x00000211D6347520>
                     {"alias": "TBL_D", "columns": ["a", "b", "c"]},
                     {"alias": "TBL_E", "columns": ["a", "d", "e"]},
                 ],
-                [{"filter": {"conditions": ["TBL_D.a > 0", "TBL_E.d IS NOT NULL"]}}],
+                [
+                    {
+                        "filter": {
+                            "source": "TBL_D",
+                            "conditions": ["TBL_D.a > 0", "TBL_E.d IS NOT NULL"],
+                        }
+                    }
+                ],
                 True,
                 ["Filter conditions validated successfully"],
             ),
@@ -785,7 +935,8 @@ caplog = <_pytest.logging.LogCaptureFixture object at 0x00000211D6347520>
                 [
                     {
                         "filter": {
-                            "conditions": ["TBL_D.x > 0"]  # x doesn't exist
+                            "source": "TBL_D",
+                            "conditions": ["TBL_D.x > 0"],  # x doesn't exist
                         }
                     }
                 ],
@@ -830,17 +981,17 @@ E         At index 0 diff: 'Initial source should be specified' != 'Problem with
 E         Right contains one more item: 'filter_condition_0: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column or function parameter with name `TBL_D`.`x` cannot be resolved. Did you mean one of the following? [`TBL_D`.`a`, `TBL_E`.`a`, `TBL_D`.`b`, `TBL_D`.`c`, `TBL_E`.`d`],'
 E         Use -v to get more diff
 
-test\test_transform\test_validate.py:446: AssertionError
--------------------------------------------------------------------------------------------------- Captured stdout call -------------------------------------------------------------------------------------------------- 
-2025-04-16 14:56:10 [ERROR] validate_initial_source:  Initial source should be specified
-2025-04-16 14:56:10 [ERROR] validate_initial_source:  Initial source should be specified
+test\test_transform\test_validate.py:454: AssertionError
+-------------------------------------------------------------------------------------------------- Captured stdout call --------------------------------------------------------------------------------------------------
+2025-04-17 10:27:03 [ERROR] validate_initial_source:  Initial source should be specified
+2025-04-17 10:27:03 [ERROR] validate_initial_source:  Initial source should be specified
 --------------------------------------------------------------------------------------------------- Captured log call ---------------------------------------------------------------------------------------------------- 
 ERROR    betl_src_poc_logger:transformations.py:76 Initial source should be specified
 ___________________________________________________________________ test_validate_transformations[sources14-transformations14-True-expected_logging14] ___________________________________________________________________ 
 
-spark_session = <pyspark.sql.session.SparkSession object at 0x00000211D6BF7D60>, sources = [{'alias': 'TBL_D', 'columns': ['a', 'b', 'c']}]
+spark_session = <pyspark.sql.session.SparkSession object at 0x0000014C330F38E0>, sources = [{'alias': 'TBL_D', 'columns': ['a', 'b', 'c']}]
 transformations = [{'add_variables': {'column_mapping': {'sum_ab': 'TBL_D.a + TBL_D.b'}, 'source': 'TBL_D'}}, {'filter': {'conditions': ['sum_ab > 10']}}], output = True
-expected_logging = ['Variables validated successfully', 'Filter conditions validated successfully', 'Transformations validated successfully'], caplog = <_pytest.logging.LogCaptureFixture object at 0x00000211D62D9570>
+expected_logging = ['Variables validated successfully', 'Filter conditions validated successfully', 'Transformations validated successfully'], caplog = <_pytest.logging.LogCaptureFixture object at 0x0000014C327CA6E0>   
 
     @pytest.mark.parametrize(
         ("sources", "transformations", "output", "expected_logging"),
@@ -1186,7 +1337,14 @@ expected_logging = ['Variables validated successfully', 'Filter conditions valid
                     {"alias": "TBL_D", "columns": ["a", "b", "c"]},
                     {"alias": "TBL_E", "columns": ["a", "d", "e"]},
                 ],
-                [{"filter": {"conditions": ["TBL_D.a > 0", "TBL_E.d IS NOT NULL"]}}],
+                [
+                    {
+                        "filter": {
+                            "source": "TBL_D",
+                            "conditions": ["TBL_D.a > 0", "TBL_E.d IS NOT NULL"],
+                        }
+                    }
+                ],
                 True,
                 ["Filter conditions validated successfully"],
             ),
@@ -1199,7 +1357,8 @@ expected_logging = ['Variables validated successfully', 'Filter conditions valid
                 [
                     {
                         "filter": {
-                            "conditions": ["TBL_D.x > 0"]  # x doesn't exist
+                            "source": "TBL_D",
+                            "conditions": ["TBL_D.x > 0"],  # x doesn't exist
                         }
                     }
                 ],
@@ -1236,30 +1395,31 @@ expected_logging = ['Variables validated successfully', 'Filter conditions valid
         spark_session, sources, transformations, output, expected_logging, caplog
     ):
         logic = {"sources": sources, "transformations": transformations}
->       assert Transformations(spark_session, logic).validate() == output
+        assert Transformations(spark_session, logic).validate() == output
+>       assert caplog.messages == expected_logging
+E       AssertionError: assert ['Variables v...successfully'] == ['Variables v...successfully']
+E
+E         At index 2 diff: 'Filter conditions validated successfully' != 'Transformations validated successfully'
+E         Left contains one more item: 'Transformations validated successfully'
+E         Use -v to get more diff
 
-test\test_transform\test_validate.py:445:
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _  
-src\validate\transformations.py:188: in validate
-    self.validate_transformation_step(
-src\validate\transformations.py:221: in validate_transformation_step
-    kwgs = get_required_arguments(tf, self, f_name)
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _  
-
-tf = {'filter': {'conditions': ['sum_ab > 10']}}, obj = <src.validate.transformations.Transformations object at 0x00000211D62DB910>, func_name = 'validate_filter'
-
-    def get_required_arguments(tf: dict, obj: object, func_name: str) -> dict:
->       tf_func = getattr(obj, func_name)
-E       AttributeError: 'Transformations' object has no attribute 'validate_filter'. Did you mean: 'validate_pivot'?
-
-src\utils\sources_util.py:173: AttributeError
+test\test_transform\test_validate.py:454: AssertionError
 -------------------------------------------------------------------------------------------------- Captured stdout call -------------------------------------------------------------------------------------------------- 
-2025-04-16 14:56:11 [INFO] validate_add_variables:  Variables validated successfully
-2025-04-16 14:56:11 [INFO] validate_add_variables:  Variables validated successfully
+2025-04-17 10:27:05 [INFO] validate_add_variables:  Variables validated successfully
+2025-04-17 10:27:05 [INFO] validate_add_variables:  Variables validated successfully
+2025-04-17 10:27:06 [INFO] validate_filter_conditions:  Filter conditions validated successfully
+2025-04-17 10:27:06 [INFO] validate_filter_conditions:  Filter conditions validated successfully
+2025-04-17 10:27:06 [INFO] validate_filter:  Filter conditions validated successfully
+2025-04-17 10:27:06 [INFO] validate_filter:  Filter conditions validated successfully
+2025-04-17 10:27:06 [INFO] validate:  Transformations validated successfully
+2025-04-17 10:27:06 [INFO] validate:  Transformations validated successfully
 -------------------------------------------------------------------------------------------------- Captured stderr call -------------------------------------------------------------------------------------------------- 
 
 --------------------------------------------------------------------------------------------------- Captured log call ---------------------------------------------------------------------------------------------------- 
 INFO     betl_src_poc_logger:transformations.py:344 Variables validated successfully
+INFO     betl_src_poc_logger:transformations.py:466 Filter conditions validated successfully
+INFO     betl_src_poc_logger:transformations.py:406 Filter conditions validated successfully
+INFO     betl_src_poc_logger:transformations.py:210 Transformations validated successfully
 
 ---------- coverage: platform win32, python 3.10.11-final-0 ----------
 Name                                            Stmts   Miss  Cover   Missing
@@ -1295,18 +1455,18 @@ src\validate\base.py                                4      0   100%
 src\validate\expressions.py                        24      9    62%   33-54
 src\validate\run_all.py                             7      7     0%   11-44
 src\validate\sources.py                            29      0   100%
-src\validate\transformations.py                   170     38    78%   96, 111-112, 282-292, 302-329, 403-408, 457-468
+src\validate\transformations.py                   170     31    82%   96, 111-112, 282-292, 302-329, 405, 457-458, 465
 src\validate\validate_sql.py                       50      2    96%   36, 78
 src\validate\yaml.py                               18      0   100%
 -----------------------------------------------------------------------------
-TOTAL                                             772    457    41%
+TOTAL                                             772    450    42%
 Coverage HTML written to dir htmlcov
 
-================================================================================================ short test summary info ================================================================================================= 
+================================================================================================ short test summary info =================================================================================================
 FAILED test/test_transform/test_validate.py::test_validate_transformations[sources12-transformations12-True-expected_logging12] - AssertionError: assert False == True
 FAILED test/test_transform/test_validate.py::test_validate_transformations[sources13-transformations13-False-expected_logging13] - AssertionError: assert ['Initial sou...be specified'] == ['Problem wit...TBL_E`.`d`],'] 
-FAILED test/test_transform/test_validate.py::test_validate_transformations[sources14-transformations14-True-expected_logging14] - AttributeError: 'Transformations' object has no attribute 'validate_filter'. Did you mean: 'validate_pivot'?
-======================================================================================== 3 failed, 44 passed in 123.87s (0:02:03) ======================================================================================== 
-(bsrc-etl-v) PS C:\Users\B25712\bsrc-etl-venv\bsrc-etl> SUCCESS: The process with PID 21048 (child process of PID 12096) has been terminated.
-SUCCESS: The process with PID 12096 (child process of PID 20412) has been terminated.
-SUCCESS: The process with PID 20412 (child process of PID 4276) has been terminated.
+FAILED test/test_transform/test_validate.py::test_validate_transformations[sources14-transformations14-True-expected_logging14] - AssertionError: assert ['Variables v...successfully'] == ['Variables v...successfully']  
+======================================================================================== 3 failed, 44 passed in 127.77s (0:02:07) ======================================================================================== 
+(bsrc-etl-v) PS C:\Users\B25712\bsrc-etl-venv\bsrc-etl> SUCCESS: The process with PID 1112 (child process of PID 23612) has been terminated.
+SUCCESS: The process with PID 23612 (child process of PID 23256) has been terminated.
+SUCCESS: The process with PID 23256 (child process of PID 24456) has been terminated.
