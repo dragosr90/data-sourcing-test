@@ -392,9 +392,20 @@ def sources_joins():
                 {"alias": "TBL_D", "columns": ["a", "b", "c"]},
                 {"alias": "TBL_E", "columns": ["a", "d", "e"]},
             ],
-            [{"filter": {"conditions": ["TBL_D.a > 0", "TBL_E.d IS NOT NULL"]}}],
+            [
+                {
+                    "filter": {
+                        "source": "TBL_D",
+                        "conditions": ["TBL_D.a > 0", "TBL_E.d IS NOT NULL"],
+                    }
+                }
+            ],
             True,
-            ["Filter conditions validated successfully"],
+            [
+                "Filter conditions validated successfully",
+                "Filter conditions validated successfully",
+                "Transformations validated successfully",
+            ],
         ),
         # Filter with invalid column reference
         (
@@ -405,14 +416,15 @@ def sources_joins():
             [
                 {
                     "filter": {
-                        "conditions": ["TBL_D.x > 0"]  # x doesn't exist
+                        "source": "TBL_D",
+                        "conditions": ["TBL_D.x > 0"],  # x doesn't exist
                     }
                 }
             ],
             False,
             [
                 "Problem with expression(s):",
-                "filter_condition_0: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column or function parameter with name `TBL_D`.`x` cannot be resolved. Did you mean one of the following? [`TBL_D`.`a`, `TBL_E`.`a`, `TBL_D`.`b`, `TBL_D`.`c`, `TBL_E`.`d`],",  # noqa: E501
+                "TBL_D.x > 0: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column or function parameter with name `TBL_D`.`x` cannot be resolved. Did you mean one of the following? [`TBL_D`.`a`, `TBL_D`.`b`, `TBL_D`.`c`, `TBL_E`.`a`, `TBL_E`.`d`].",  # noqa: E501
             ],
         ),
         # Filter with computed variable
@@ -432,6 +444,7 @@ def sources_joins():
             True,
             [
                 "Variables validated successfully",
+                "Filter conditions validated successfully",
                 "Filter conditions validated successfully",
                 "Transformations validated successfully",
             ],
