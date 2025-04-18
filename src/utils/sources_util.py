@@ -156,13 +156,15 @@ def update_variables(variables: list[str], tf: dict | None) -> list[str]:
                 *variables,
                 *list(tf["add_variables"]["column_mapping"].keys()),
             ]
+        if tf_step == "filter":
+            return variables
         return variables
     return []
 
 
 def get_source(tf: dict[str, dict[str, str]]) -> str | None:
     tf_step: str = next(iter(tf))
-    if tf_step in ["aggregation", "pivot", "union", "add_variables"]:
+    if tf_step in ["aggregation", "pivot", "union", "add_variables", "filter"]:
         return tf[tf_step].get("source")
     if tf_step == "join":
         return tf[tf_step].get("left_source")
