@@ -63,6 +63,26 @@ def aggregation_in_sources_format(
     }
 
 
+def join_in_sources_format(
+    alias: str, updated_sources: list[dict[str, str | list[str]]]
+) -> dict[str, str | list[str]]:
+    available_columns = sorted({c for s in updated_sources for c in s["columns"]})
+    return {
+        "alias": alias,
+        "columns": available_columns,
+    }
+
+
+def add_variables_in_sources_format(
+    alias: str, updated_sources: list[dict[str, str | list[str]]]
+) -> dict[str, str | list[str]]:
+    available_columns = sorted({c for s in updated_sources for c in s["columns"]})
+    return {
+        "alias": alias,
+        "columns": available_columns,
+    }
+
+
 def pivot_in_sources_format(
     alias: str,
     group_cols: list[str],
@@ -135,31 +155,46 @@ def update_sources(
     tf_func = globals()[f"{tf_step}_in_sources_format"]
     # Only pass the arguments that are required for the formatting functions
     arg_names = list(inspect.signature(tf_func).parameters)
+    kwgs = {k: v for k, v in tf[tf_step].items() if k in arg_names}
+    if tf_step in ["join", "add_variables"]:
+        # If there is a join or add_variables, we can use all columns
+        # From the updated_sources from all previous transformation steps
+        return (
+            keep_unique_sources(
+                [tf_func(updated_sources=input_sources, **kwgs)],
+                input_sources,
+            )
+            if "alias" in kwgs
+            else input_sources
+        )
+    # If there is a pivot, union or aggregation we can use
+    # the new generated columns from the corresponding functions
     return keep_unique_sources(
-        [tf_func(**{k: v for k, v in tf[tf_step].items() if k in arg_names})],
+        [tf_func(**kwgs)],
         input_sources,
     )
 
 
 def update_variables(variables: list[str], tf: dict | None) -> list[str]:
     """Update variable list based on transformation step."""
-    if tf:
-        tf_step = next(iter(tf))
-        if tf[tf_step].get("left_source") or tf_step in [
-            "pivot",
-            "union",
-            "aggregation",
-        ]:
-            return []
-        if tf_step == "add_variables":
-            return [
-                *variables,
-                *list(tf["add_variables"]["column_mapping"].keys()),
-            ]
-        if tf_step == "filter":
-            return variables
-        return variables
-    return []
+    if not tf:
+        return []
+    tf_step = next(iter(tf))
+    # Reset variables if left_source is specified or for certain operations
+    if tf[tf_step].get("left_source") or tf_step in [
+        "pivot",
+        "union",
+        "aggregation",
+    ]:
+        return []
+    # Add new variables for add_variables step
+    if tf_step == "add_variables":
+        return [
+            *variables,
+            *list(tf["add_variables"]["column_mapping"].keys()),
+        ]
+    # Default: preserve existing variables (includes "filter" and other steps)
+    return variables
 
 
 def get_source(tf: dict[str, dict[str, str]]) -> str | None:
