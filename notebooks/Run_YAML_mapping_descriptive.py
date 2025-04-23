@@ -5,7 +5,7 @@ import sys
 
 import pandas as pd
 
-from pyspark.sql.utils import Analysis
+from pyspark.sql.utils import AnalysisException  # Fixed typo from Analysis to AnalysisException
 from py4j.protocol import Py4JError
 from src.extract.master_data_sql import GetIntegratedData
 from src.transform.table_write_and_comment import write_and_comment
@@ -14,6 +14,9 @@ from src.utils.get_catalog import get_catalog
 from src.utils.parameter_utils import parse_delivery_entity
 from src.utils.parse_yaml import parse_yaml
 from src.validate.run_all import validate_business_logic_mapping
+
+# Constants
+MAX_DISPLAY_CATEGORIES = 20  # Maximum number of distinct values to display for a column
 
 user = (
     dbutils.notebook.entry_point.getDbutils().notebook().getContext().userName().get()
@@ -190,7 +193,6 @@ data = GetIntegratedData(spark, business_logic_dict).get_integrated_data()
 # COMMAND ----------
 
 # DBTITLE 1,Apply filter impact analysis
-MAX_DISPLAY_CATEGORIES = 20 # Max no. of distinct values to display for a column
 if "transformations" in business_logic_dict:
     filter_transformations = [
         d["filter"] for d in business_logic_dict["transformations"] if "filter" in d.keys()
@@ -206,19 +208,21 @@ if "transformations" in business_logic_dict:
             sample_columns = data.columns[:10]
 
             for col in sample_columns:
-                distinct_count = data.select(col).distinct().count()
-                if 1 < distinct_count <= MAX_DISPLAY_CATEGORIES:
-                    print(f"\nDistribution by {col}:")
-                    try:
-                        display(data.groupBy(col).count().orderBy("count", ascending=False))
-                        break
-                    except (AnalysisException, Py4JError, ValueError) as exc:
-                        print(f"Could not display distribution for column {col}: {exc}")
-                        continue
-        except (AnalysisException, Py4JError) as exc:
-            print(f"Could not analyze column {col}: {exc}")
-            continue
-    
+                try:
+                    distinct_count = data.select(col).distinct().count()
+                    if 1 < distinct_count <= MAX_DISPLAY_CATEGORIES:
+                        print(f"\nDistribution by {col}:")
+                        try:
+                            display(data.groupBy(col).count().orderBy("count", ascending=False))
+                            break
+                        except (AnalysisException, Py4JError, ValueError) as exc:
+                            print(f"Could not display distribution for column {col}: {exc}")
+                            continue
+                except (AnalysisException, Py4JError) as exc:
+                    print(f"Could not analyze column {col}: {exc}")
+                    continue
+        except (AnalysisException, Py4JError, ValueError) as exc:
+            print(f"Error analyzing column distributions: {exc}")
 
         if total_rows > 0:
             limit_rows = min(5, total_rows)
