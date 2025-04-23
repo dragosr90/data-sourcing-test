@@ -195,12 +195,11 @@ class Transformations(BaseValidate):
             )
 
             # Update available variables and sources after last transformation step
-            if tf_step in ["aggregation", "pivot", "union"]:
-                updated_sources = update_sources(
-                    input_sources=updated_sources, tf=tf, tf_step=tf_step
-                )
-                # Update 'data dictionary' with new aliases
-                self.sources = keep_unique_sources(updated_sources, self.sources)
+            updated_sources = update_sources(
+                input_sources=updated_sources, tf=tf, tf_step=tf_step
+            )
+            # Update 'data dictionary' with new aliases
+            self.sources = keep_unique_sources(updated_sources, self.sources)
 
             # If left source is specified, drop all updated variables
             # If tf_step in aggregation, pivot, union, drop all variables
@@ -352,9 +351,14 @@ class Transformations(BaseValidate):
         available_variables: list[str] | None = None,
     ) -> bool:
         union_source_tables = column_mapping.keys()
-        source_tables = [source["alias"] for source in available_sources]
-        if not set(union_source_tables).issubset(set(source_tables)):
-            error_tables = list(set(union_source_tables) - set(source_tables))
+
+        available_sources = keep_unique_sources(
+            available_sources,
+            [s for s in self.sources if s["alias"] in union_source_tables],
+        )
+        available_source_tables = [s["alias"] for s in available_sources]
+        if not set(union_source_tables).issubset(set(available_source_tables)):
+            error_tables = list(set(union_source_tables) - set(available_source_tables))
             logger.error(f"Source table(s) {error_tables} in {alias} not loaded.")
             return False
         target_column_names = [list(v.keys()) for v in column_mapping.values()]
@@ -382,30 +386,31 @@ class Transformations(BaseValidate):
         logger.info("Union expressions validated successfully")
         return True
 
+    def validate_filter(
+        self,
+        available_sources: list,
+        conditions: list[str],
+        available_variables: list[str] | None = None,
+        source: str | None = None,  # noqa: ARG002
+    ) -> bool:
+        """Validate filter conditions.
 
-def validate_filter(
-    self,  # noqa: ANN001
-    available_sources: list,
-    conditions: list[str],
-    available_variables: list[str] | None = None,
-) -> bool:
-    """Validate filter conditions.
+        Args:
+            self: self
+            available_sources (list): List of available sources
+            conditions (list[str]): List of filter conditions
+            available_variables: List of available variables
+            source: Optional source for the filter
 
-    Args:
-        self: self
-        available_sources (list): List of available sources
-        conditions (list[str]): List of filter conditions
-        available_variables: List of available variables
-
-    Returns:
-        bool: True if conditions are valid, False otherwise
-    """
-    if not validate_filter_conditions(
-        self.spark, available_sources, conditions, available_variables
-    ):
-        return False
-    logger.info("Filter conditions validated successfully")
-    return True
+        Returns:
+            bool: True if conditions are valid, False otherwise
+        """
+        if not validate_filter_conditions(
+            self.spark, available_sources, conditions, available_variables
+        ):
+            return False
+        logger.info("Filter conditions validated successfully")
+        return True
 
 
 def validate_join_conditions(
