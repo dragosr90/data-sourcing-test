@@ -100,13 +100,13 @@ def pivot_in_sources_format(
 
 def filter_in_sources_format(
     conditions: list[str],
-    source: str | None = None,
+    alias: str | None = None,
 ) -> dict[str, str | list[str]]:
     """Get filter transformation step in sources format.
 
     Args:
-        source (str | None, optional): Source alias for filtered data. Defaults to None.
         conditions (list[str]): List of filter conditions
+        alias (str | None, optional): Alias for filtered data. Defaults to None.
 
     Returns:
         dict[str, str | list[str]]: Filter in sources format dictionary
@@ -114,7 +114,7 @@ def filter_in_sources_format(
     # A filter doesn't change the schema or alias,
     # so simply return the original source reference
     return {
-        "alias": source if source else "filtered_data",
+        "alias": alias if alias else "filtered_data",
         "filter_conditions": conditions,
     }
 
