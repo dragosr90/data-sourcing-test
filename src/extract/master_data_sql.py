@@ -6,7 +6,7 @@ from pyspark.sql.column import Column
 from pyspark.sql.functions import col, expr
 
 from src.utils.logging_util import get_logger
-from src.utils.sources_util import get_required_arguments, get_source
+from src.utils.sources_util import get_source
 
 logger = get_logger()
 
@@ -49,7 +49,7 @@ class GetIntegratedData:
             for source in self.sources
         }
 
-    def transform_data(self, data_dict: dict[str, DataFrame]) -> DataFrame:  # noqa: C901
+    def transform_data(self, data_dict: dict[str, DataFrame]) -> DataFrame:
         """Join all data from `data_dict` according to config in business_logic."""
         # If there are no transformations, return first table
         first_table = next(iter(data_dict.values()))
@@ -61,44 +61,69 @@ class GetIntegratedData:
 
         # Get Integrated dataset from sequential list of transformations
         for tf in self.transformations:
+            # Get the transformation type and parameters
             tf_step = next(iter(tf))
+            tf_params = tf[tf_step]
 
             # Check if new starting source is specified
             # If not, keep the already existing transformed_data
             new_source = get_source(tf)
             if new_source:
                 transformed_data = data_dict[new_source]
-
-            kwgs = get_required_arguments(tf, self, tf_step)
-            if tf_step == "join":
-                transformed_data = self.join(
-                    data=transformed_data, data_dict=data_dict, **kwgs
-                )
-            if tf_step == "add_variables":
-                transformed_data = self.add_variables(transformed_data, **kwgs)
-
-            if tf_step == "aggregation":
-                transformed_data = self.aggregation(transformed_data, **kwgs)
-
-            if tf_step == "pivot":
-                transformed_data = self.pivot(transformed_data, **kwgs)
-
-            # Added the new filter condition
-            if tf_step == "filter":
-                transformed_data = self.filter(transformed_data, **kwgs)
-
-            if tf_step == "union":
-                data_union_keys = list(tf["union"]["column_mapping"].keys())[1:]
-                union_dataframes = [data_dict[k] for k in data_union_keys]
-                transformed_data = self.union(
-                    transformed_data, union_dataframes, **kwgs
-                )
-
-            # Add alias to original source data dictionary
-            if tf[tf_step].get("alias"):
-                data_dict[tf[tf_step]["alias"]] = transformed_data
-
+            # Apply the transformation
+            transformed_data = self._apply_transformation(
+                tf_step=tf_step,
+                tf_params=tf_params,
+                transformed_data=transformed_data,
+                data_dict=data_dict,
+            )
+            # Add alias to original source data dictionary if specified
+            if tf_params.get("alias"):
+                data_dict[tf_params["alias"]] = transformed_data
         return transformed_data
+
+    def _apply_transformation(
+        self,
+        tf_step: str | tuple,
+        tf_params: dict,
+        transformed_data: DataFrame,
+        data_dict: dict[str, DataFrame],
+    ) -> DataFrame:
+        """Apply a specific transformation step to the data.
+
+        Args:
+            tf_step (str | tuple): Type of transformation (join, add_variables, etc.)
+            tf_params (dict): Parameters for the transformation
+            transformed_data (DataFrame): Current state of the data
+            data_dict (dict[str, DataFrame]): Dictionary of all available data sources
+
+        Returns:
+            DataFrame: Data after applying the transformation
+        """
+        # If tf_step is a tuple, extract the actual step name (like "join")
+        actual_step = tf_step[0] if isinstance(tf_step, tuple) else tf_step
+        # Apply the appropriate transformation based on type
+        result = transformed_data  # Default to unchanged data
+
+        if actual_step == "join":
+            # For join, need to pass data_dict
+            result = self.join(data=transformed_data, data_dict=data_dict, **tf_params)
+        elif actual_step == "add_variables":
+            result = self.add_variables(transformed_data, **tf_params)
+        elif actual_step == "aggregation":
+            result = self.aggregation(transformed_data, **tf_params)
+        elif actual_step == "pivot":
+            result = self.pivot(transformed_data, **tf_params)
+        elif actual_step == "filter":
+            result = self.filter(transformed_data, **tf_params)
+        elif actual_step == "union":
+            data_union_keys = list(tf_params["column_mapping"].keys())[1:]
+            union_dataframes = [data_dict[k] for k in data_union_keys]
+            result = self.union(transformed_data, union_dataframes, **tf_params)
+        else:
+            # This should never happen as we validate transformation types
+            logger.warning(f"Unknown transformation type: {tf_step}")
+        return result
 
     @staticmethod
     def join(
@@ -239,17 +264,22 @@ class GetIntegratedData:
                     for col_name, col_expr in column_mapping[k].items()
                 ]
             )
-            for d, k in zip(input_dataframes, keys_unions)
+            for d, k in zip(input_dataframes, keys_unions, strict=False)
         ]
         return reduce(DataFrame.unionAll, data_frames).alias(alias)
 
     @staticmethod
-    def filter(data: DataFrame, conditions: list[str]) -> DataFrame:
+    def filter(
+        data: DataFrame, conditions: list[str], *, log_reductions: bool = False
+    ) -> DataFrame:
         """Filter a dataframe based on one or more conditions.
 
         Args:
             data (DataFrame): Input DataFrame
             conditions (list[str]): List of condition strings to filter by
+            log_reductions (bool, optional): Whether to log row counts before
+                and after filtering. Defaults to False as counting
+                is an expensive operation.
 
         Returns:
             DataFrame: Filtered DataFrame
@@ -262,13 +292,19 @@ class GetIntegratedData:
 
         filtered_df = data
         for condition in conditions:
+            # Optionally log row counts for monitoring
+            if log_reductions:
+                input_count = filtered_df.count()
+            # Apply the filter condition
             filtered_df = filtered_df.filter(condition)
-            # Log the number of rows filtered out for monitoring
-            input_count = data.count()
-            output_count = filtered_df.count()
-            logger.info(
-                f"Filter condition '{condition}' reduced rows from {input_count} to {output_count}"  # noqa: E501
-            )
+            # Optionally log the reduction in rows
+            if log_reductions:
+                output_count = filtered_df.count()
+                logger.info(
+                    f"Filter condition '{condition}' reduced rows from {input_count} to {output_count}"  # noqa: E501
+                )
+            else:
+                logger.debug(f"Applied filter condition: '{condition}'")
         return filtered_df
 
 
@@ -321,3 +357,4 @@ def parse_join_condition(
         f"{conditions}"
     )
     raise ValueError(msg)
+
