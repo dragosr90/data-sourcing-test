@@ -269,43 +269,55 @@ class GetIntegratedData:
         return reduce(DataFrame.unionAll, data_frames).alias(alias)
 
     @staticmethod
-    def filter(
-        data: DataFrame, conditions: list[str], *, log_reductions: bool = False
-    ) -> DataFrame:
-        """Filter a dataframe based on one or more conditions.
+def filter(
+    data: DataFrame, 
+    conditions: list[str], 
+    *, 
+    log_reductions: bool = False,
+    alias: str | None = None
+) -> DataFrame:
+    """Filter a dataframe based on one or more conditions.
 
-        Args:
-            data (DataFrame): Input DataFrame
-            conditions (list[str]): List of condition strings to filter by
-            log_reductions (bool, optional): Whether to log row counts before
-                and after filtering. Defaults to False as counting
-                is an expensive operation.
+    Args:
+        data (DataFrame): Input DataFrame
+        conditions (list[str]): List of condition strings to filter by
+        log_reductions (bool, optional): Whether to log row counts before
+            and after filtering. Defaults to False as counting
+            is an expensive operation.
+        alias (str | None, optional): Alias for the filtered DataFrame.
+            Defaults to None.
 
-        Returns:
-            DataFrame: Filtered DataFrame
-        """
-        if not conditions:
-            logger.warning(
-                "No filter conditions provided, returning original dataframe"
-            )
-            return data
+    Returns:
+        DataFrame: Filtered DataFrame
+    """
+    if not conditions:
+        logger.warning(
+            "No filter conditions provided, returning original dataframe"
+        )
+        return data.alias(alias) if alias else data
 
-        filtered_df = data
-        for condition in conditions:
-            # Optionally log row counts for monitoring
-            if log_reductions:
-                input_count = filtered_df.count()
-            # Apply the filter condition
-            filtered_df = filtered_df.filter(condition)
-            # Optionally log the reduction in rows
-            if log_reductions:
-                output_count = filtered_df.count()
-                logger.info(
-                    f"Filter condition '{condition}' reduced rows from {input_count} to {output_count}"  # noqa: E501
-                )
-            else:
-                logger.debug(f"Applied filter condition: '{condition}'")
-        return filtered_df
+    filtered_df = data
+    
+    # Only count once at the beginning if log_reductions is True
+    if log_reductions:
+        input_count = filtered_df.count()
+    
+    # Apply all filter conditions
+    for condition in conditions:
+        # Apply the filter condition
+        filtered_df = filtered_df.filter(condition)
+        # Log the applied condition (always)
+        logger.debug(f"Applied filter condition: '{condition}'")
+    
+    # Only count once at the end and log the reduction if log_reductions is True
+    if log_reductions:
+        output_count = filtered_df.count()
+        logger.info(
+            f"Filter conditions reduced rows from {input_count} to {output_count}"
+        )
+    
+    # Return the DataFrame with alias if specified
+    return filtered_df.alias(alias) if alias else filtered_df
 
 
 def parse_join_condition(
