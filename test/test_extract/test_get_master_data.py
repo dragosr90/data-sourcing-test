@@ -292,3 +292,96 @@ def test_filter_transformation(spark_session):
         [(1, "keep", 10), (3, "keep", 30)], schema=["c1", "c2", "c3"]
     ).alias("TBL_A")
     assert_df_equality(result, expected_output, ignore_column_order=True)
+
+def test_filter_log_reductions(spark_session, caplog):
+    """Test filter method with log_reductions parameter."""
+    from src.extract.master_data_sql import GetIntegratedData
+    
+    # Set logging level to ensure we capture debug messages
+    caplog.set_level(logging.DEBUG)
+    
+    # Set up test data
+    test_data = [(1, "keep", 10), (2, "discard", 20), (3, "keep", 30)]
+    df = spark_session.createDataFrame(test_data, ["id", "status", "value"])
+    
+    # Create a minimal valid business_logic dictionary with an empty sources list
+    minimal_business_logic = {"sources": []}
+    
+    # Create an instance of GetIntegratedData
+    git = GetIntegratedData(spark_session, minimal_business_logic)
+    
+    # Test with log_reductions=False (default)
+    caplog.clear()
+    conditions = ["status = 'keep'"]
+    result_false = git.filter(df, conditions)
+    
+    # Verify result
+    assert result_false.count() == 2
+    assert "keep" in [row.status for row in result_false.collect()]
+    assert "discard" not in [row.status for row in result_false.collect()]
+    
+    # Verify logging - should only have debug messages
+    debug_logs = [msg for msg in caplog.messages if "Applied filter condition" in msg]
+    assert len(debug_logs) == 1
+    assert not any("reduced rows from" in msg for msg in caplog.messages)
+    
+    # Test with log_reductions=True
+    caplog.clear()
+    result_true = git.filter(df, conditions, log_reductions=True)
+    
+    # Verify result (should be the same)
+    assert result_true.count() == 2
+    
+    # Verify logging - should include row count info
+    assert any("Applied filter condition" in msg for msg in caplog.messages)
+    assert any("Filter conditions reduced rows from 3 to 2" in msg for msg in caplog.messages)
+    
+    # Test with multiple conditions
+    caplog.clear()
+    multi_conditions = ["status = 'keep'", "value > 15"]
+    result_multi = git.filter(df, multi_conditions, log_reductions=True)
+    
+    # Verify result
+    assert result_multi.count() == 1
+    assert all(row.value > 15 and row.status == "keep" for row in result_multi.collect())
+    
+    # Verify logging for multiple conditions
+    debug_logs = [msg for msg in caplog.messages if "Applied filter condition" in msg]
+    assert len(debug_logs) == 2  # One for each condition
+    assert any("Filter conditions reduced rows from 3 to 1" in msg for msg in caplog.messages)
+    
+    # Test with no conditions
+    caplog.clear()
+    result_no_conditions = git.filter(df, [], log_reductions=True)
+    
+    # Verify result and warning
+    assert result_no_conditions.count() == 3
+    assert any("No filter conditions provided, returning original dataframe" in msg for msg in caplog.messages)
+    
+    # Test with alias parameter using mocking
+    test_alias = "FILTERED_DF"
+    
+    # Create a new test that uses mocking to verify the alias method is called correctly
+    with patch('pyspark.sql.DataFrame.alias') as mock_alias:
+        # Set up the mock to return a DataFrame so the rest of the method works
+        mock_filtered_df = df.filter("status = 'keep'")
+        mock_alias.return_value = mock_filtered_df
+        
+        # Call the filter method with the alias parameter
+        git.filter(df, ["status = 'keep'"], alias=test_alias)
+        
+        # Verify the alias method was called with the correct parameter
+        mock_alias.assert_called_once_with(test_alias)
+    
+    # Test with both log_reductions and alias using mocking
+    caplog.clear()
+    with patch('pyspark.sql.DataFrame.alias') as mock_alias:
+        # Set up the mock to return a DataFrame so the rest of the method works
+        mock_filtered_df = df.filter("status = 'keep'")
+        mock_alias.return_value = mock_filtered_df
+        
+        # Call the filter method with both parameters
+        git.filter(df, ["status = 'keep'"], log_reductions=True, alias=test_alias)
+        
+        # Verify the alias method was called with the correct parameter
+        mock_alias.assert_called_once_with(test_alias)
