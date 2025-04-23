@@ -98,6 +98,27 @@ def pivot_in_sources_format(
     }
 
 
+def filter_in_sources_format(
+    conditions: list[str],
+    source: str | None = None,
+) -> dict[str, str | list[str]]:
+    """Get filter transformation step in sources format.
+
+    Args:
+        source (str | None, optional): Source alias for filtered data. Defaults to None.
+        conditions (list[str]): List of filter conditions
+
+    Returns:
+        dict[str, str | list[str]]: Filter in sources format dictionary
+    """
+    # A filter doesn't change the schema or alias,
+    # so simply return the original source reference
+    return {
+        "alias": source if source else "filtered_data",
+        "filter_conditions": conditions,
+    }
+
+
 def keep_unique_sources(
     input_sources: list[dict[str, str | list[str]]],
     reference_sources: list[dict[str, str | list[str]]],
@@ -210,3 +231,4 @@ def get_required_arguments(tf: dict, obj: object, func_name: str) -> dict:
     tf_func = getattr(obj, func_name)
     arg_names = list(inspect.signature(tf_func).parameters)
     return {k: v for k, v in tf[next(iter(tf))].items() if k in arg_names}
+
