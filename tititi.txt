@@ -8,10 +8,10 @@ collected 9 items
 
 test\test_extract\test_get_master_data.py ........F                                                                                                                                                                 [100%]
 
-======================================================================================================== FAILURES ======================================================================================================== 
-_______________________________________________________________________________________________ test_filter_log_reductions _______________________________________________________________________________________________ 
+======================================================================================================== FAILURES ========================================================================================================
+_______________________________________________________________________________________________ test_filter_log_reductions _______________________________________________________________________________________________
 
-spark_session = <pyspark.sql.session.SparkSession object at 0x000001BB6D49B640>, caplog = <_pytest.logging.LogCaptureFixture object at 0x000001BB6D49AD10>
+spark_session = <pyspark.sql.session.SparkSession object at 0x000001FEA8F2F8B0>, caplog = <_pytest.logging.LogCaptureFixture object at 0x000001FEA8F2EF20>
 
     def test_filter_log_reductions(spark_session, caplog):
         """Test filter method with log_reductions parameter."""
@@ -20,30 +20,45 @@ spark_session = <pyspark.sql.session.SparkSession object at 0x000001BB6D49B640>,
         # Set up test data
         test_data = [(1, "keep", 10), (2, "discard", 20), (3, "keep", 30)]
         df = spark_session.createDataFrame(test_data, ["id", "status", "value"])
+        # Create a minimal valid business_logic dictionary with an empty sources list
+        minimal_business_logic = {"sources": []}
         # Create an instance of GetIntegratedData
-        # (using empty business_logic as filter will be called directly)
->       git = GetIntegratedData(spark_session, {})
+        git = GetIntegratedData(spark_session, minimal_business_logic)
+        # Test with log_reductions=False (default)
+        caplog.clear()
+        conditions = ["status = 'keep'"]
+        result_false = git.filter(df, conditions)
+        # Verify result
+        assert result_false.count() == 2
+        assert "keep" in [row.status for row in result_false.collect()]
+        assert "discard" not in [row.status for row in result_false.collect()]
+        # Verify logging - should only have debug messages
+        debug_logs = [msg for msg in caplog.messages if "Applied filter condition" in msg]
+        assert len(debug_logs) == 1
+        assert not any("reduced rows from" in msg for msg in caplog.messages)
+        # Test with log_reductions=True
+        caplog.clear()
+        result_true = git.filter(df, conditions, log_reductions=True)
+        # Verify result
+        assert result_true.count() == 2
+        # Verify logging - should include row count info
+        assert any("Applied filter condition" in msg for msg in caplog.messages)
+>       assert any(
+            "Filter conditions reducede rows from 3 to 2" in msg for msg in caplog.messages
+        )
+E       assert False
+E        +  where False = any(<generator object test_filter_log_reductions.<locals>.<genexpr> at 0x000001FEA99D95B0>)
 
-test\test_extract\test_get_master_data.py:308:
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _  
+test\test_extract\test_get_master_data.py:329: AssertionError
+-------------------------------------------------------------------------------------------------- Captured stdout call -------------------------------------------------------------------------------------------------- 
+2025-04-23 15:29:59 [INFO] filter:  Filter conditions reduced rows from 3 to 2
+2025-04-23 15:29:59 [INFO] filter:  Filter conditions reduced rows from 3 to 2
+-------------------------------------------------------------------------------------------------- Captured stderr call -------------------------------------------------------------------------------------------------- 
 
-self = <src.extract.master_data_sql.GetIntegratedData object at 0x000001BB6D499DE0>, spark = <pyspark.sql.session.SparkSession object at 0x000001BB6D49B640>, business_logic = {}
-
-    def __init__(
-        self,
-        spark: SparkSession,
-        business_logic: dict,
-    ) -> None:
-        """
-        Args:
-            spark (SparkSession): Spark session
-            business_logic (dict): Configuration for data processing
-        """
-        self.spark = spark
->       self.sources = business_logic["sources"]
-E       KeyError: 'sources'
-
-src\extract\master_data_sql.py:28: KeyError
+--------------------------------------------------------------------------------------------------- Captured log call ---------------------------------------------------------------------------------------------------- 
+DEBUG    betl_src_poc_logger:master_data_sql.py:302 Applied filter condition: 'status = 'keep''
+DEBUG    betl_src_poc_logger:master_data_sql.py:302 Applied filter condition: 'status = 'keep''
+INFO     betl_src_poc_logger:master_data_sql.py:306 Filter conditions reduced rows from 3 to 2
 
 ---------- coverage: platform win32, python 3.10.11-final-0 ----------
 Name                                            Stmts   Miss  Cover   Missing
@@ -57,7 +72,7 @@ src\config\schema.py                                4      2    50%   51-52
 src\dq\__init__.py                                  0      0   100%
 src\dq\dq_validation.py                           141    141     0%   13-486
 src\extract\__init__.py                             0      0   100%
-src\extract\master_data_sql.py                    105     33    69%   82, 111-125, 149-151, 175, 287-309, 348-349
+src\extract\master_data_sql.py                    105     22    79%   82, 111-125, 149-151, 175, 288-291, 348-349
 src\month_setup\__init__.py                         0      0   100%
 src\month_setup\dial_derive_snapshotdate.py        32     32     0%   8-85
 src\month_setup\metadata_log_tables.py              1      1     0%   18
@@ -89,12 +104,12 @@ src\validate\transformations.py                   170    170     0%   16-473
 src\validate\validate_sql.py                       50     50     0%   12-115
 src\validate\yaml.py                               18     18     0%   3-33
 -----------------------------------------------------------------------------
-TOTAL                                             931    826    11%
+TOTAL                                             931    815    12%
 Coverage HTML written to dir htmlcov
 
 ================================================================================================ short test summary info ================================================================================================= 
-FAILED test/test_extract/test_get_master_data.py::test_filter_log_reductions - KeyError: 'sources'
-========================================================================================= 1 failed, 8 passed in 80.05s (0:01:20) ========================================================================================= 
-(bsrc-etl-venv) PS C:\Users\B25712\bsrc-etl-venv\bsrc-etl> SUCCESS: The process with PID 17604 (child process of PID 12156) has been terminated.
-SUCCESS: The process with PID 12156 (child process of PID 12664) has been terminated.
-SUCCESS: The process with PID 12664 (child process of PID 10256) has been terminated.
+FAILED test/test_extract/test_get_master_data.py::test_filter_log_reductions - assert False
+========================================================================================= 1 failed, 8 passed in 96.09s (0:01:36) ========================================================================================= 
+(bsrc-etl-venv) PS C:\Users\B25712\bsrc-etl-venv\bsrc-etl> SUCCESS: The process with PID 7648 (child process of PID 17636) has been terminated.
+SUCCESS: The process with PID 17636 (child process of PID 9784) has been terminated.
+SUCCESS: The process with PID 9784 (child process of PID 12796) has been terminated.
