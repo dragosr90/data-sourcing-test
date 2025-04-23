@@ -278,9 +278,9 @@ def test_filter_transformation(spark_session):
                 "source": "source_tbl_A",
                 "alias": "TBL_A",
                 "columns": ["c1", "c2", "c3"],
+                "filter": "c2 = 'keep'",
             }
         ],
-        "transformations": [{"filter": {"conditions": ["TBL_A.c2 = 'keep'"]}}],
     }
     # Get integrated data with filter applied
     result = GetIntegratedData(
