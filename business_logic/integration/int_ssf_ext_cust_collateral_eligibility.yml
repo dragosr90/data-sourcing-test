@@ -38,6 +38,12 @@ transformations:
       condition:
         - TDIAL_GOLD.delivery_entity = TDIAL_GOLD.delivery_entity
       how: inner
+  - filter:
+      source: TDIAL_GOLD
+      conditions:
+        - TDIAL_GOLD.delivery_entity IS NOT NULL
+        - TCT_COLL_ELIG.delivery_entity IS NOT NULL
+      log_reductions: true
   - add_variables:
       column_mapping:
         match_up: case when INSTR(TDIAL_GOLD.rollup,TCT_COLL_ELIG.GLOBAL_UNIT_ID) > 0 then '1' else '2' end
@@ -64,6 +70,11 @@ transformations:
           pl_indicator: TCT_COLL_ELIG_STAR.pl_indicator
           eligible: TCT_COLL_ELIG_STAR.eligible
           match_up: cast('VALID' as string)
+  - filter:
+      conditions:
+        - TCT_COLL_ELIG_UNION.match_up in ('1', 'VALID')
+        - TCT_COLL_ELIG_UNION.eligible IS NOT NULL
+      log_reductions: true
 
   
 expressions:
@@ -76,6 +87,3 @@ expressions:
   pl_indicator: TCT_COLL_ELIG_UNION.pl_indicator
   eligible: TCT_COLL_ELIG_UNION.eligible
   match_up: TCT_COLL_ELIG_UNION.match_up
-
-filter_target: 
-  - match_up in ('1', 'VALID')
