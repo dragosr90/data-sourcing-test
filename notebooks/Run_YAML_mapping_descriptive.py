@@ -79,7 +79,7 @@ display(pd.DataFrame(business_logic_dict["sources"]).fillna(""))
 # DBTITLE 1,Joins
 if (
     "transformations" in business_logic_dict
-    and "join" in business_logic_dict["transformations"][0]
+    and any("join" in tf for tf in business_logic_dict["transformations"])
 ):
     display(
         pd.DataFrame(
@@ -90,15 +90,45 @@ if (
             ]
         )
     )
+else:
+    print("No join transformations found")
+
+# COMMAND ----------
+
+# DBTITLE 1,Transformations (with filter)
+if "transformations" in business_logic_dict:
+    filter_transformations = [
+        d["filter"] for d in business_logic_dict["transformations"] if "filter" in d
+    ]
+    if filter_transformations:
+        print(f"Found {len(filter_transformations)} filter transformation(s)")
+
+        # Create a df for better visualization
+        filter_data = []
+        for i, filter_config in enumerate(filter_transformations, 1):
+            for j, condition in enumerate(filter_config.get('conditions', []), 1):
+                filter_data.append(
+                    {'Filter #': i,
+                     'Condition #': j,
+                     'Condition': condition,
+                     'Source': filter_config.get('source', 'Previous result'),
+                     'Log Reductions': filter_config.get('log_reductions', False)
+                    })
+        if filter_data:
+            display(pd.DataFrame(filter_data))
+        else:
+            print("No filter transformations found.")
 
 # COMMAND ----------
 
 # DBTITLE 1,Aggregation
 if (
     "transformations" in business_logic_dict
-    and "aggregation" in business_logic_dict["transformations"][-1]
+    and any("aggregation" in tf for tf in business_logic_dict["transformations"])
 ):
-    display(pd.DataFrame([business_logic_dict["transformations"][-1]["aggregation"]]))
+    display(pd.DataFrame([d["aggregation"] for d in business_logic_dict["transformations"] if "aggregation" in d]))
+else:
+    print("No aggregation transformations found.")
 
 # COMMAND ----------
 
@@ -109,6 +139,31 @@ if "variables" in business_logic_dict:
         .reset_index()
         .rename(columns={"index": "Variable Name", 0: "Expression"})
     )
+
+# COMMAND ----------
+
+# DBTITLE 1,Add variables (from transformations)
+if (
+    "transformations" in business_logic_dict
+    and any("add_variables" in tf for tf in business_logic_dict["transformations"])
+):
+    add_variables_data = []
+
+    for i, tf in enumerate(business_logic_dict["transformations"]):
+        if "add_variables" in tf:
+            for var_name, expression in tf["add_variables"].get("column_mapping", {}).items():
+                add_variables_data.append({
+                    "Variable Name": var_name,
+                    "Expression": expression,
+                    "Source": tf["add_variables"].get("source", "Previous result")
+                })
+
+    if add_variables_data:
+        display(pd.DataFrame(add_variables_data))
+    else:
+        print("No add_variables transformations found.")
+else:
+    print("No add_variables transformations found.")
 
 # COMMAND ----------
 
@@ -128,6 +183,38 @@ validate_business_logic_mapping(spark, business_logic_dict)
 
 # DBTITLE 1,Load sources and apply filters and joins
 data = GetIntegratedData(spark, business_logic_dict).get_integrated_data()
+
+
+# COMMAND ----------
+
+# DBTITLE 1,Apply filter impact analysis
+if "transformations" in business_logic_dict:
+    filter_transformations = [
+        d["filter"] for d in business_logic_dict["transformations"] if "filter" in d.keys()
+    ]
+    if filter_transformations:
+        print("Filter Impact Analysis:")
+        print("============================")
+
+        total_rows = data.count()
+        print(f"Final row count after all filters: {total_rows:,}")
+
+        try:
+            sample_columns = data.columns[:10]
+
+            for col in sample_columns:
+                distinct_count = data.select(col).distinct().count()
+                if 1 < distinct_count <= 20:
+                    print(f"\nDistribution by {col}:")
+                    display(data.groupBy(col).count().orderBy("count", ascending=False))
+                    break
+        except Exception as e:
+            pass
+
+        if total_rows > 0:
+            limit_rows = min(5, total_rows)
+            print(f"\nSample of {limit_rows} rows that passed all filters:")
+            display(data.limit(limit_rows))
 
 # COMMAND ----------
 
