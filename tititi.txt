@@ -1,156 +1,333 @@
-(bsrc-etl-2-venv) PS C:\Users\B25712\bsrc-etl-venv\bsrc-etl> pre-commit run --all-files
-ruff lint................................................................Passed
-ruff format..............................................................Passed
-mypy.....................................................................Passed
-(bsrc-etl-2-venv) PS C:\Users\B25712\bsrc-etl-venv\bsrc-etl> git add .
-(bsrc-etl-2-venv) PS C:\Users\B25712\bsrc-etl-venv\bsrc-etl> git commit -m "Added reviewed updates_v6"
-ruff lint................................................................Passed
-ruff format..............................................................Passed
-mypy.....................................................................Passed
-[feature/add-filter-inside-transformations 84f3cd9] Added reviewed updates_v6
- 6 files changed, 417 insertions(+), 48 deletions(-)
-(bsrc-etl-2-venv) PS C:\Users\B25712\bsrc-etl-venv\bsrc-etl> git push origin feature/add-filter-inside-transformations
-Enumerating objects: 31, done.
-Counting objects: 100% (31/31), done.
-Delta compression using up to 4 threads
-Compressing objects: 100% (16/16), done.
-Writing objects: 100% (16/16), 6.68 KiB | 207.00 KiB/s, done.
-Total 16 (delta 12), reused 0 (delta 0), pack-reused 0 (from 0)
-remote: Analyzing objects... (16/16) (31 ms)
-remote: Validating commits... (1/1) done (1 ms)
-remote: Checking for restricted file names...  done (1 ms)
-remote: Storing packfile... done (30 ms)
-remote: Storing index... done (90 ms)
-remote: Updating refs... done (213 ms)
-To https://dev.azure.com/cbsp-abnamro/GRD0001018/_git/bsrc-etl
- * [new branch]      feature/add-filter-inside-transformations -> feature/add-filter-inside-transformations
-(bsrc-etl-2-venv) PS C:\Users\B25712\bsrc-etl-venv\bsrc-etl> git reflog
-1f2b8e4 HEAD@{16}: pull origin main: Merge made by the 'ort' strategy.
-162cd61 HEAD@{17}: commit: Implemented all changes from PR review
-277c1ea (tag: 0.1.0-rc11595205) HEAD@{18}: commit: Added filter possibility inside the transformations
-d2cd2b1 (tag: 0.1.0-rc11551269, origin/feature/distribution, main) HEAD@{19}: checkout: moving from main to feature/add-filter-transformations
-d2cd2b1 (tag: 0.1.0-rc11551269, origin/feature/distribution, main) HEAD@{20}: pull: Fast-forward
-f207023 HEAD@{21}: checkout: moving from d2cd2b13acc249ddfa112ae36035a482470cf76a to main
-d2cd2b1 (tag: 0.1.0-rc11551269, origin/feature/distribution, main) HEAD@{22}: checkout: moving from feature/yaml_table_handling_happy to origin/main
-cf9aa39 (tag: 0.1.0-rc11533617, origin/feature/yaml_table_handling_happy, feature/yaml_table_handling_happy) HEAD@{23}: checkout: moving from main to feature/yaml_table_handling_happy
-f207023 HEAD@{24}: pull: Fast-forward
-dd3f4fa (tag: 0.1.0-rc11310562) HEAD@{25}: checkout: moving from feature/yaml_table_handling_happy to main
-cf9aa39 (tag: 0.1.0-rc11533617, origin/feature/yaml_table_handling_happy, feature/yaml_table_handling_happy) HEAD@{26}: checkout: moving from feature/derivative-flattening to feature/yaml_table_handling_happy   
-8d678dd (tag: 0.1.0-rc11524678, origin/feature/derivative-flattening, feature/derivative-flattening) HEAD@{27}: checkout: moving from feature/yaml_table_handling_happy to feature/derivative-flattening
-cf9aa39 (tag: 0.1.0-rc11533617, origin/feature/yaml_table_handling_happy, feature/yaml_table_handling_happy) HEAD@{28}: commit: Implemented all changes from PR review
-:...skipping...
-84f3cd9 (HEAD -> feature/add-filter-inside-transformations, origin/feature/add-filter-inside-transformations) HEAD@{0}: commit: Added reviewed updates_v6
-4e87111 (origin/main, origin/HEAD) HEAD@{1}: pull origin main: Fast-forward
-d2cd2b1 (tag: 0.1.0-rc11551269, origin/feature/distribution, main) HEAD@{2}: checkout: moving from feature/add-filter-transformations to feature/add-filter-inside-transformations
-98204fc (origin/feature/add-filter-transformations, feature/add-filter-transformations) HEAD@{3}: pull origin feature/add-filter-transformations: Merge made by the 'ort' strategy.
-bdd47f7 HEAD@{4}: commit: Add reviewed files v5
-ef9d70b (working-version) HEAD@{5}: reset: moving to ef9d70b
-f965de0 HEAD@{6}: checkout: moving from working-version to feature/add-filter-transformations
-ef9d70b (working-version) HEAD@{7}: checkout: moving from feature/add-filter-transformations to working-version
-f965de0 HEAD@{8}: pull origin feature/add-filter-transformations: Merge made by the 'ort' strategy.
-52bbd42 HEAD@{9}: commit (amend): Fixed reviewed files_v4
-71f0199 HEAD@{10}: commit: Fixed reviewed files_v3
-4d21cfc HEAD@{11}: commit (merge): Fixed all reviews after push origin feature
-957be22 HEAD@{12}: reset: moving to HEAD
-957be22 HEAD@{13}: commit: Added all reviewed updates
-d4c5271 HEAD@{14}: pull origin main: Merge made by the 'ort' strategy.
-289ee24 (tag: 0.1.0-rc11635551) HEAD@{15}: commit: Implemented PR review updates after main pull_v2
-1f2b8e4 HEAD@{16}: pull origin main: Merge made by the 'ort' strategy.
-162cd61 HEAD@{17}: commit: Implemented all changes from PR review
-277c1ea (tag: 0.1.0-rc11595205) HEAD@{18}: commit: Added filter possibility inside the transformations
-d2cd2b1 (tag: 0.1.0-rc11551269, origin/feature/distribution, main) HEAD@{19}: checkout: moving from main to feature/add-filter-transformations
-d2cd2b1 (tag: 0.1.0-rc11551269, origin/feature/distribution, main) HEAD@{20}: pull: Fast-forward
-f207023 HEAD@{21}: checkout: moving from d2cd2b13acc249ddfa112ae36035a482470cf76a to main
-d2cd2b1 (tag: 0.1.0-rc11551269, origin/feature/distribution, main) HEAD@{22}: checkout: moving from feature/yaml_table_handling_happy to origin/main
-cf9aa39 (tag: 0.1.0-rc11533617, origin/feature/yaml_table_handling_happy, feature/yaml_table_handling_happy) HEAD@{23}: checkout: moving from main to feature/yaml_table_handling_happy
-f207023 HEAD@{24}: pull: Fast-forward
-dd3f4fa (tag: 0.1.0-rc11310562) HEAD@{25}: checkout: moving from feature/yaml_table_handling_happy to main
-cf9aa39 (tag: 0.1.0-rc11533617, origin/feature/yaml_table_handling_happy, feature/yaml_table_handling_happy) HEAD@{26}: checkout: moving from feature/derivative-flattening to feature/yaml_table_handling_happy   
-8d678dd (tag: 0.1.0-rc11524678, origin/feature/derivative-flattening, feature/derivative-flattening) HEAD@{27}: checkout: moving from feature/yaml_table_handling_happy to feature/derivative-flattening
-cf9aa39 (tag: 0.1.0-rc11533617, origin/feature/yaml_table_handling_happy, feature/yaml_table_handling_happy) HEAD@{28}: commit: Implemented all changes from PR review
-c176a88 HEAD@{29}: pull origin main: Merge made by the 'ort' strategy.
-:...skipping...
-84f3cd9 (HEAD -> feature/add-filter-inside-transformations, origin/feature/add-filter-inside-transformations) HEAD@{0}: commit: Added reviewed updates_v6
-4e87111 (origin/main, origin/HEAD) HEAD@{1}: pull origin main: Fast-forward
-d2cd2b1 (tag: 0.1.0-rc11551269, origin/feature/distribution, main) HEAD@{2}: checkout: moving from feature/add-filter-transformations to feature/add-filter-inside-transformations
-98204fc (origin/feature/add-filter-transformations, feature/add-filter-transformations) HEAD@{3}: pull origin feature/add-filter-transformations: Merge made by the 'ort' strategy.
-bdd47f7 HEAD@{4}: commit: Add reviewed files v5
-ef9d70b (working-version) HEAD@{5}: reset: moving to ef9d70b
-f965de0 HEAD@{6}: checkout: moving from working-version to feature/add-filter-transformations
-ef9d70b (working-version) HEAD@{7}: checkout: moving from feature/add-filter-transformations to working-version
-f965de0 HEAD@{8}: pull origin feature/add-filter-transformations: Merge made by the 'ort' strategy.
-52bbd42 HEAD@{9}: commit (amend): Fixed reviewed files_v4
-71f0199 HEAD@{10}: commit: Fixed reviewed files_v3
-4d21cfc HEAD@{11}: commit (merge): Fixed all reviews after push origin feature
-957be22 HEAD@{12}: reset: moving to HEAD
-957be22 HEAD@{13}: commit: Added all reviewed updates
-d4c5271 HEAD@{14}: pull origin main: Merge made by the 'ort' strategy.
-289ee24 (tag: 0.1.0-rc11635551) HEAD@{15}: commit: Implemented PR review updates after main pull_v2
-1f2b8e4 HEAD@{16}: pull origin main: Merge made by the 'ort' strategy.
-162cd61 HEAD@{17}: commit: Implemented all changes from PR review
-277c1ea (tag: 0.1.0-rc11595205) HEAD@{18}: commit: Added filter possibility inside the transformations
-d2cd2b1 (tag: 0.1.0-rc11551269, origin/feature/distribution, main) HEAD@{19}: checkout: moving from main to feature/add-filter-transformations
-d2cd2b1 (tag: 0.1.0-rc11551269, origin/feature/distribution, main) HEAD@{20}: pull: Fast-forward
-f207023 HEAD@{21}: checkout: moving from d2cd2b13acc249ddfa112ae36035a482470cf76a to main
-d2cd2b1 (tag: 0.1.0-rc11551269, origin/feature/distribution, main) HEAD@{22}: checkout: moving from feature/yaml_table_handling_happy to origin/main
-cf9aa39 (tag: 0.1.0-rc11533617, origin/feature/yaml_table_handling_happy, feature/yaml_table_handling_happy) HEAD@{23}: checkout: moving from main to feature/yaml_table_handling_happy
-f207023 HEAD@{24}: pull: Fast-forward
-dd3f4fa (tag: 0.1.0-rc11310562) HEAD@{25}: checkout: moving from feature/yaml_table_handling_happy to main
-cf9aa39 (tag: 0.1.0-rc11533617, origin/feature/yaml_table_handling_happy, feature/yaml_table_handling_happy) HEAD@{26}: checkout: moving from feature/derivative-flattening to feature/yaml_table_handling_happy   
-8d678dd (tag: 0.1.0-rc11524678, origin/feature/derivative-flattening, feature/derivative-flattening) HEAD@{27}: checkout: moving from feature/yaml_table_handling_happy to feature/derivative-flattening
-cf9aa39 (tag: 0.1.0-rc11533617, origin/feature/yaml_table_handling_happy, feature/yaml_table_handling_happy) HEAD@{28}: commit: Implemented all changes from PR review
-c176a88 HEAD@{29}: pull origin main: Merge made by the 'ort' strategy.
-77a3c0b (tag: 0.1.0-rc11509987) HEAD@{30}: checkout: moving from feature/delivery_entity_standardization to feature/yaml_table_handling_happy
-7f3f60a (tag: 0.1.0-rc11511619, origin/feature/delivery_entity_standardization, feature/delivery_entity_standardization) HEAD@{31}: commit: Added /spark-warehouse/ to gitignore try 2
-687489b (tag: 0.1.0-rc11510213) HEAD@{32}: checkout: moving from feature/yaml_table_handling_happy to feature/delivery_entity_standardization
-77a3c0b (tag: 0.1.0-rc11509987) HEAD@{33}: checkout: moving from feature/delivery_entity_standardization to feature/yaml_table_handling_happy
-687489b (tag: 0.1.0-rc11510213) HEAD@{34}: commit: Removed /spark-warehouse/ folder from repo
-4ef6044 (tag: 0.1.0-rc11509639) HEAD@{35}: checkout: moving from feature/yaml_table_handling_happy to feature/delivery_entity_standardization
-77a3c0b (tag: 0.1.0-rc11509987) HEAD@{36}: commit: Updated gitignore for /spark-warehouse/ & updated both YAML notebooks to use actual standardized source system
-6091e56 (tag: 0.1.0-rc11504288) HEAD@{37}: checkout: moving from feature/delivery_entity_standardization to feature/yaml_table_handling_happy
-4ef6044 (tag: 0.1.0-rc11509639) HEAD@{38}: commit: Add spark-warehouse/ folder to gitignore
-6368ec7 (tag: 0.1.0-rc11504278) HEAD@{39}: checkout: moving from feature/yaml_table_handling_happy to feature/delivery_entity_standardization
-6091e56 (tag: 0.1.0-rc11504288) HEAD@{40}: commit: Added table handling functionality if structure changes
-:...skipping...
-84f3cd9 (HEAD -> feature/add-filter-inside-transformations, origin/feature/add-filter-inside-transformations) HEAD@{0}: commit: Added reviewed updates_v6
-4e87111 (origin/main, origin/HEAD) HEAD@{1}: pull origin main: Fast-forward
-d2cd2b1 (tag: 0.1.0-rc11551269, origin/feature/distribution, main) HEAD@{2}: checkout: moving from feature/add-filter-transformations to feature/add-filter-inside-transformations
-98204fc (origin/feature/add-filter-transformations, feature/add-filter-transformations) HEAD@{3}: pull origin feature/add-filter-transformations: Merge made by the 'ort' strategy.
-bdd47f7 HEAD@{4}: commit: Add reviewed files v5
-ef9d70b (working-version) HEAD@{5}: reset: moving to ef9d70b
-f965de0 HEAD@{6}: checkout: moving from working-version to feature/add-filter-transformations
-ef9d70b (working-version) HEAD@{7}: checkout: moving from feature/add-filter-transformations to working-version
-f965de0 HEAD@{8}: pull origin feature/add-filter-transformations: Merge made by the 'ort' strategy.
-52bbd42 HEAD@{9}: commit (amend): Fixed reviewed files_v4
-71f0199 HEAD@{10}: commit: Fixed reviewed files_v3
-4d21cfc HEAD@{11}: commit (merge): Fixed all reviews after push origin feature
-957be22 HEAD@{12}: reset: moving to HEAD
-957be22 HEAD@{13}: commit: Added all reviewed updates
-d4c5271 HEAD@{14}: pull origin main: Merge made by the 'ort' strategy.
-289ee24 (tag: 0.1.0-rc11635551) HEAD@{15}: commit: Implemented PR review updates after main pull_v2
-1f2b8e4 HEAD@{16}: pull origin main: Merge made by the 'ort' strategy.
-162cd61 HEAD@{17}: commit: Implemented all changes from PR review
-277c1ea (tag: 0.1.0-rc11595205) HEAD@{18}: commit: Added filter possibility inside the transformations
-d2cd2b1 (tag: 0.1.0-rc11551269, origin/feature/distribution, main) HEAD@{19}: checkout: moving from main to feature/add-filter-transformations
-d2cd2b1 (tag: 0.1.0-rc11551269, origin/feature/distribution, main) HEAD@{20}: pull: Fast-forward
-f207023 HEAD@{21}: checkout: moving from d2cd2b13acc249ddfa112ae36035a482470cf76a to main
-d2cd2b1 (tag: 0.1.0-rc11551269, origin/feature/distribution, main) HEAD@{22}: checkout: moving from feature/yaml_table_handling_happy to origin/main
-cf9aa39 (tag: 0.1.0-rc11533617, origin/feature/yaml_table_handling_happy, feature/yaml_table_handling_happy) HEAD@{23}: checkout: moving from main to feature/yaml_table_handling_happy
-f207023 HEAD@{24}: pull: Fast-forward
-dd3f4fa (tag: 0.1.0-rc11310562) HEAD@{25}: checkout: moving from feature/yaml_table_handling_happy to main
-cf9aa39 (tag: 0.1.0-rc11533617, origin/feature/yaml_table_handling_happy, feature/yaml_table_handling_happy) HEAD@{26}: checkout: moving from feature/derivative-flattening to feature/yaml_table_handling_happy   
-8d678dd (tag: 0.1.0-rc11524678, origin/feature/derivative-flattening, feature/derivative-flattening) HEAD@{27}: checkout: moving from feature/yaml_table_handling_happy to feature/derivative-flattening
-cf9aa39 (tag: 0.1.0-rc11533617, origin/feature/yaml_table_handling_happy, feature/yaml_table_handling_happy) HEAD@{28}: commit: Implemented all changes from PR review
-c176a88 HEAD@{29}: pull origin main: Merge made by the 'ort' strategy.
-77a3c0b (tag: 0.1.0-rc11509987) HEAD@{30}: checkout: moving from feature/delivery_entity_standardization to feature/yaml_table_handling_happy
-7f3f60a (tag: 0.1.0-rc11511619, origin/feature/delivery_entity_standardization, feature/delivery_entity_standardization) HEAD@{31}: commit: Added /spark-warehouse/ to gitignore try 2
-687489b (tag: 0.1.0-rc11510213) HEAD@{32}: checkout: moving from feature/yaml_table_handling_happy to feature/delivery_entity_standardization
-77a3c0b (tag: 0.1.0-rc11509987) HEAD@{33}: checkout: moving from feature/delivery_entity_standardization to feature/yaml_table_handling_happy
-687489b (tag: 0.1.0-rc11510213) HEAD@{34}: commit: Removed /spark-warehouse/ folder from repo
-4ef6044 (tag: 0.1.0-rc11509639) HEAD@{35}: checkout: moving from feature/yaml_table_handling_happy to feature/delivery_entity_standardization
-77a3c0b (tag: 0.1.0-rc11509987) HEAD@{36}: commit: Updated gitignore for /spark-warehouse/ & updated both YAML notebooks to use actual standardized source system
-6091e56 (tag: 0.1.0-rc11504288) HEAD@{37}: checkout: moving from feature/delivery_entity_standardization to feature/yaml_table_handling_happy
-4ef6044 (tag: 0.1.0-rc11509639) HEAD@{38}: commit: Add spark-warehouse/ folder to gitignore
-6368ec7 (tag: 0.1.0-rc11504278) HEAD@{39}: checkout: moving from feature/yaml_table_handling_happy to feature/delivery_entity_standardization
-6091e56 (tag: 0.1.0-rc11504288) HEAD@{40}: commit: Added table handling functionality if structure changes
-7820cf4 (tag: 0.1.0-rc11408179, feature/delivery_entity_standard) HEAD@{41}: checkout: moving from feature/delivery_entity_standardization to feature/yaml_table_handling_happy
+(bsrc-etl-2-venv) PS C:\Users\B25712\bsrc-etl-venv\bsrc-etl> pytest test/test_transform/test_write_and_comment.py
+============================================================================================== test session starts ===============================================================================================
+platform win32 -- Python 3.10.11, pytest-8.3.3, pluggy-1.5.0
+rootdir: C:\Users\B25712\bsrc-etl-venv\bsrc-etl
+configfile: pyproject.toml
+plugins: cov-6.0.0, mock-3.14.0
+collected 27 items
+
+test\test_transform\test_write_and_comment.py ......FF...................                                                                                                                                   [100%]
+
+==================================================================================================== FAILURES ==================================================================================================== 
+____________________________________________ test_transformation_dict_to_string[transformation_dict6-- Filter:\n  - TBL_A.col01 > 10\n  - TBL_B.col02 IS NOT NULL\n] _____________________________________________ 
+
+transformation_dict = {'filter': {'conditions': ['TBL_A.col01 > 10', 'TBL_B.col02 IS NOT NULL']}}, output_string = '- Filter:\n  - TBL_A.col01 > 10\n  - TBL_B.col02 IS NOT NULL\n'
+
+    @pytest.mark.parametrize(
+        ("transformation_dict", "output_string"),
+        [
+            (  # One join condition
+                {
+                    "join": {
+                        "left_source": "TBL_D",
+                        "right_source": "TBL_E",
+                        "condition": ["TBL_D.a = TBL_E.b"],
+                        "how": "left",
+                    },
+                },
+                "- Join (left):\nTBL_D.a = TBL_E.b",
+            ),
+            (  # Multiple join conditions
+                {
+                    "join": {
+                        "left_source": "TBL_D",
+                        "right_source": "TBL_E",
+                        "condition": ["TBL_D.a = TBL_E.b", "TBL_D.f||TBL_D.g = TBL_E.e"],
+                        "how": "left",
+                    },
+                },
+                "- Join (left):\n"
+                "  - TBL_D.a = TBL_E.b\n"
+                "  - TBL_D.f||TBL_D.g = TBL_E.e",
+            ),
+            (  # Aggregation
+                {
+                    "aggregation": {
+                        "group": ["TBL_D.a"],
+                        "column_mapping": {"count_TBL_E_b": "count(TBL_E.b)"},
+                    }
+                },
+                "- Aggregate:\n"
+                "  - group by ['TBL_D.a']\n"
+                "  - count_TBL_E_b = count(TBL_E.b)\n",
+            ),
+            (  # Pivot
+                {
+                    "pivot": {
+                        "group_cols": ["TBL_A.col01", "TBL_A.col02"],
+                        "pivot_col": "TBL_B.col04",
+                        "pivot_value_col": "TBL_A.col03",
+                        "column_mapping": {"X": "min", "Y": "avg", "Z": "first"},
+                    }
+                },
+                "- Pivot:\n"
+                "  - group by ['TBL_A.col01', 'TBL_A.col02']\n"
+                "  - pivot column TBL_B.col04\n"
+                "  - values from column TBL_A.col03\n"
+                "  - using values:\n"
+                "    - min(X)\n"
+                "    - avg(Y)\n"
+                "    - first(Z)\n",
+            ),
+            # Add Variables
+            (
+                {
+                    "add_variables": {
+                        "column_mapping": {
+                            "NewCol01": "TBLA.col1",
+                            "NewCol02": "cast(TBLB.col2 as string)",
+                            "NewCol03": "TBLA.col3 + TBLC.col03",
+                        },
+                    }
+                },
+                "- Variable:\n"
+                "  - NewCol01 = TBLA.col1\n"
+                "  - NewCol02 = cast(TBLB.col2 as string)\n"
+                "  - NewCol03 = TBLA.col3 + TBLC.col03\n",
+            ),
+            # Union
+            (
+                {
+                    "union": {
+                        "alias": "TABLE_A_B",
+                        "column_mapping": {
+                            "TABLE_A": {"c01_ab": "c01a", "c02_ab": "c02a"},
+                            "TABLE_B": {"c01_ab": "c01b", "c02_ab": "c02b"},
+                        },
+                    }
+                },
+                "- Union:\n"
+                "  - TABLE_A_B:\n"
+                "    - c01a as c01_ab, c02a as c02_ab FROM TABLE_A\n"
+                "    - c01b as c01_ab, c02b as c02_ab FROM TABLE_B",
+            ),
+            # Filter without alias
+            (
+                {"filter": {"conditions": ["TBL_A.col01 > 10", "TBL_B.col02 IS NOT NULL"]}},
+                "- Filter:\n  - TBL_A.col01 > 10\n  - TBL_B.col02 IS NOT NULL\n",
+            ),
+            # Filter with alias
+            (
+                {
+                    "filter": {
+                        "conditions": ["TBL_A.col01 > 10", "TBL_B.col02 IS NOT NULL"],
+                        "alias": "FILTERED_DATA",
+                    }
+                },
+                "- Filter (alias: FILTERED_DATA):\n  - TBL_A.col01 > 10\n  - TBL_B.col02 IS NOT NULL\n",  # noqa: E501
+            ),
+        ],
+    )
+    def test_transformation_dict_to_string(transformation_dict, output_string):
+>       assert transformation_dict_to_string(tf=transformation_dict) == output_string
+E       AssertionError: assert '- Filter:\n ...IS NOT NULL\n' == '- Filter:\n ...IS NOT NULL\n'
+E
+E           - Filter:
+E         -   - TBL_A.col01 > 10
+E         ? -
+E         +  - TBL_A.col01 > 10
+E         -   - TBL_B.col02 IS NOT NULL
+E         ? -
+E         +  - TBL_B.col02 IS NOT NULL
+
+test\test_transform\test_write_and_comment.py:167: AssertionError
+_________________________________ test_transformation_dict_to_string[transformation_dict7-- Filter (alias: FILTERED_DATA):\n  - TBL_A.col01 > 10\n  - TBL_B.col02 IS NOT NULL\n] _________________________________ 
+
+transformation_dict = {'filter': {'alias': 'FILTERED_DATA', 'conditions': ['TBL_A.col01 > 10', 'TBL_B.col02 IS NOT NULL']}}
+output_string = '- Filter (alias: FILTERED_DATA):\n  - TBL_A.col01 > 10\n  - TBL_B.col02 IS NOT NULL\n'
+
+    @pytest.mark.parametrize(
+        ("transformation_dict", "output_string"),
+        [
+            (  # One join condition
+                {
+                    "join": {
+                        "left_source": "TBL_D",
+                        "right_source": "TBL_E",
+                        "condition": ["TBL_D.a = TBL_E.b"],
+                        "how": "left",
+                    },
+                },
+                "- Join (left):\nTBL_D.a = TBL_E.b",
+            ),
+            (  # Multiple join conditions
+                {
+                    "join": {
+                        "left_source": "TBL_D",
+                        "right_source": "TBL_E",
+                        "condition": ["TBL_D.a = TBL_E.b", "TBL_D.f||TBL_D.g = TBL_E.e"],
+                        "how": "left",
+                    },
+                },
+                "- Join (left):\n"
+                "  - TBL_D.a = TBL_E.b\n"
+                "  - TBL_D.f||TBL_D.g = TBL_E.e",
+            ),
+            (  # Aggregation
+                {
+                    "aggregation": {
+                        "group": ["TBL_D.a"],
+                        "column_mapping": {"count_TBL_E_b": "count(TBL_E.b)"},
+                    }
+                },
+                "- Aggregate:\n"
+                "  - group by ['TBL_D.a']\n"
+                "  - count_TBL_E_b = count(TBL_E.b)\n",
+            ),
+            (  # Pivot
+                {
+                    "pivot": {
+                        "group_cols": ["TBL_A.col01", "TBL_A.col02"],
+                        "pivot_col": "TBL_B.col04",
+                        "pivot_value_col": "TBL_A.col03",
+                        "column_mapping": {"X": "min", "Y": "avg", "Z": "first"},
+                    }
+                },
+                "- Pivot:\n"
+                "  - group by ['TBL_A.col01', 'TBL_A.col02']\n"
+                "  - pivot column TBL_B.col04\n"
+                "  - values from column TBL_A.col03\n"
+                "  - using values:\n"
+                "    - min(X)\n"
+                "    - avg(Y)\n"
+                "    - first(Z)\n",
+            ),
+            # Add Variables
+            (
+                {
+                    "add_variables": {
+                        "column_mapping": {
+                            "NewCol01": "TBLA.col1",
+                            "NewCol02": "cast(TBLB.col2 as string)",
+                            "NewCol03": "TBLA.col3 + TBLC.col03",
+                        },
+                    }
+                },
+                "- Variable:\n"
+                "  - NewCol01 = TBLA.col1\n"
+                "  - NewCol02 = cast(TBLB.col2 as string)\n"
+                "  - NewCol03 = TBLA.col3 + TBLC.col03\n",
+            ),
+            # Union
+            (
+                {
+                    "union": {
+                        "alias": "TABLE_A_B",
+                        "column_mapping": {
+                            "TABLE_A": {"c01_ab": "c01a", "c02_ab": "c02a"},
+                            "TABLE_B": {"c01_ab": "c01b", "c02_ab": "c02b"},
+                        },
+                    }
+                },
+                "- Union:\n"
+                "  - TABLE_A_B:\n"
+                "    - c01a as c01_ab, c02a as c02_ab FROM TABLE_A\n"
+                "    - c01b as c01_ab, c02b as c02_ab FROM TABLE_B",
+            ),
+            # Filter without alias
+            (
+                {"filter": {"conditions": ["TBL_A.col01 > 10", "TBL_B.col02 IS NOT NULL"]}},
+                "- Filter:\n  - TBL_A.col01 > 10\n  - TBL_B.col02 IS NOT NULL\n",
+            ),
+            # Filter with alias
+            (
+                {
+                    "filter": {
+                        "conditions": ["TBL_A.col01 > 10", "TBL_B.col02 IS NOT NULL"],
+                        "alias": "FILTERED_DATA",
+                    }
+                },
+                "- Filter (alias: FILTERED_DATA):\n  - TBL_A.col01 > 10\n  - TBL_B.col02 IS NOT NULL\n",  # noqa: E501
+            ),
+        ],
+    )
+    def test_transformation_dict_to_string(transformation_dict, output_string):
+>       assert transformation_dict_to_string(tf=transformation_dict) == output_string
+E       AssertionError: assert '- Filter (al...IS NOT NULL\n' == '- Filter (al...IS NOT NULL\n'
+E
+E           - Filter (alias: FILTERED_DATA):
+E         -   - TBL_A.col01 > 10
+E         ? -
+E         +  - TBL_A.col01 > 10
+E         -   - TBL_B.col02 IS NOT NULL
+E         ? -
+E         +  - TBL_B.col02 IS NOT NULL
+
+test\test_transform\test_write_and_comment.py:167: AssertionError
+================================================================================================ warnings summary ================================================================================================ 
+..\bsrc-etl-2-venv\lib\site-packages\holidays\deprecations\v1_incompatibility.py:40
+  C:\Users\B25712\bsrc-etl-venv\bsrc-etl-2-venv\lib\site-packages\holidays\deprecations\v1_incompatibility.py:40: FutureIncompatibilityWarning:
+
+  This is a future version incompatibility warning from Holidays v0.62
+  to inform you about an upcoming change in our API versioning strategy that may affect your
+  project's dependencies. Starting from version 1.0 onwards, we will be following a loose form of
+  Semantic Versioning (SemVer, https://semver.org) to provide clearer communication regarding any
+  potential breaking changes.
+
+  This means that while we strive to maintain backward compatibility, there might be occasional
+  updates that introduce breaking changes to our API. To ensure the stability of your projects,
+  we highly recommend pinning the version of our API that you rely on. You can pin your current
+  holidays v0.x dependency (e.g., holidays==0.62) or limit it (e.g., holidays<1.0) in order to
+  avoid potentially unwanted upgrade to the version 1.0 when it's released (ETA 2025Q1-Q2).
+
+  If you have any questions or concerns regarding this change, please don't hesitate to reach out
+  to us via https://github.com/vacanza/holidays/discussions/1800.
+
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+
+---------- coverage: platform win32, python 3.10.11-final-0 ----------
+Name                                            Stmts   Miss  Cover   Missing
+-----------------------------------------------------------------------------
+src\__init__.py                                     0      0   100%
+src\config\__init__.py                              0      0   100%
+src\config\constants.py                             1      0   100%
+src\config\exceptions.py                           12     12     0%   6-21
+src\config\process.py                               4      4     0%   7-10
+src\config\schema.py                                4      4     0%   3-52
+src\dq\__init__.py                                  0      0   100%
+src\dq\dq_validation.py                           141    132     6%   47-112, 166-181, 197-249, 265-286, 318-350, 372-392, 414-486
+src\extract\__init__.py                             0      0   100%
+src\extract\master_data_sql.py                    105     85    19%   27-29, 33-34, 38, 55-83, 104-126, 137-139, 149-151, 175, 209-218, 257-269, 293-320, 341-371
+src\month_setup\__init__.py                         0      0   100%
+src\month_setup\dial_derive_snapshotdate.py        32     27    16%   12-18, 28-37, 47-50, 69-85
+src\month_setup\metadata_log_tables.py              1      0   100%
+src\month_setup\setup_new_month.py                  1      1     0%   9
+src\staging\__init__.py                             0      0   100%
+src\staging\extract_dial_data.py                   98     98     0%   17-557
+src\staging\status.py                              15     15     0%   4-30
+src\transform\__init__.py                           0      0   100%
+src\transform\table_write_and_comment.py           63      0   100%
+src\transform\transform_business_logic_sql.py       6      6     0%   5-24
+src\utils\__init__.py                               0      0   100%
+src\utils\alias_util.py                            13     13     0%   10-109
+src\utils\export_parquet.py                        11     11     0%   9-49
+src\utils\get_catalog.py                            5      5     0%   6-20
+src\utils\get_dbutils.py                            2      2     0%   4-6
+src\utils\logging_util.py                           6      0   100%
+src\utils\parameter_utils.py                       26     26     0%   5-123
+src\utils\parse_yaml.py                            12     12     0%   9-31
+src\utils\process_logging.py                       13     13     0%   9-60
+src\utils\sources_util.py                          52     39    25%   40, 57, 69-70, 79-80, 92, 117-121, 133, 146-150, 160, 182-199, 207-224, 228-233, 237-239
+src\utils\table_logging.py                         10     10     0%   8-40
+src\utils\table_schema.py                           3      3     0%   8-16
+src\validate\__init__.py                            0      0   100%
+src\validate\base.py                                4      4     0%   4-7
+src\validate\expressions.py                        24     24     0%   13-64
+src\validate\run_all.py                             7      7     0%   11-44
+src\validate\sources.py                            29     29     0%   7-67
+src\validate\transformations.py                   170    170     0%   16-473
+src\validate\validate_sql.py                       50     50     0%   12-115
+src\validate\yaml.py                               18     18     0%   3-33
+-----------------------------------------------------------------------------
+TOTAL                                             938    820    13%
+Coverage HTML written to dir htmlcov
+
+============================================================================================ short test summary info =============================================================================================
+FAILED test/test_transform/test_write_and_comment.py::test_transformation_dict_to_string[transformation_dict6-- Filter:\n  - TBL_A.col01 > 10\n  - TBL_B.col02 IS NOT NULL\n] - AssertionError: assert '- Filter:\n ...IS NOT NULL\n' == '- Filter:\n ...IS NOT NULL\n'
+FAILED test/test_transform/test_write_and_comment.py::test_transformation_dict_to_string[transformation_dict7-- Filter (alias: FILTERED_DATA):\n  - TBL_A.col01 > 10\n  - TBL_B.col02 IS NOT NULL\n] - AssertionError: assert '- Filter (al...IS NOT NULL\n' == '- Filter (al...IS NOT NULL\n'
+==================================================================================== 2 failed, 25 passed, 1 warning in 21.53s ==================================================================================== 
+(bsrc-etl-2-venv) PS C:\Users\B25712\bsrc-etl-venv\bsrc-etl> SUCCESS: The process with PID 16788 (child process of PID 1884) has been terminated.
+SUCCESS: The process with PID 1884 (child process of PID 18564) has been terminated.
+SUCCESS: The process with PID 18564 (child process of PID 17420) has been terminated.
