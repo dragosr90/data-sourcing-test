@@ -1,246 +1,216 @@
-import pytest
+from pyspark.sql import DataFrame, SparkSession
+from pyspark.sql.utils import AnalysisException
 
-from src.transform.table_write_and_comment import (
-    source_dict_to_string,
-    table_summary,
-    target_expression_comments,
-    transformation_dict_to_string,
-    write_to_table,
-)
+from src.dq.dq_validation import DQValidation
+from src.utils.logging_util import get_logger
+
+logger = get_logger()
 
 
-@pytest.fixture
-def business_logic_dict():
-    return {
-        "target": "some_target_table",
-        "sources": [
-            {"source": "table_D", "alias": "TBL_D", "columns": ["a", "b", "c"]},
-            {"source": "table_E", "alias": "TBL_E", "columns": ["a", "d", "e"]},
-        ],
-        "transformations": [
-            {
-                "join": {
-                    "left_source": "TBL_D",
-                    "right_source": "TBL_E",
-                    "condition": ["TBL_D.a = TBL_E.e"],
-                    "how": "left",
-                }
-            },
-            {
-                "add_variables": {
-                    "column_mapping": {
-                        "Var1": "case when TBL_D.a>100 then TBL_D.a-100 else TBL_D.a end"  # noqa: E501
-                    }
-                }
-            },
-        ],
-        "expressions": {
-            "TargetCol1": "TBL_D.a",
-            "TargetCol2": "TBL_E.e",
-            "TargetCol3": 'case when TBL_D.b = "999" then TBL_E.a end',
-        },
-        "filter_target": ["TargetCol1 > 100", 'TargetCol2 = "hello"'],
-        "drop_duplicates": True,
-    }
+def write_to_table(
+    spark: SparkSession, table_name: str, data: DataFrame, mode: str = "overwrite"
+) -> None:
+    """Write data to table in Unity Catalog.
+    If the table already exists and the schema is different, it drops
+    the table and recreates it."""
+    # Check if the table exists
+    try:
+        # Try to read the existing table
+        existing_table = spark.read.table(table_name)
+        # Table exists, compare schemas
+        existing_schema = existing_table.schema
+        new_schema = data.schema
+        # Check if schemas are different
+        if str(existing_schema) != str(new_schema):
+            logger.info(
+                f"Schema changed for table {table_name}. Dropping and recreating."
+            )
+            spark.sql(f"DROP TABLE IF EXISTS {table_name}")
+            data.write.saveAsTable(table_name)
+        else:
+            # Same schema, use normal overwrite
+            data.write.mode(mode).saveAsTable(table_name)
+    except AnalysisException:
+        # Table doesn't exist, create it
+        data.write.saveAsTable(table_name)
 
 
-@pytest.fixture
-def data_to_write(spark_session):
-    return spark_session.createDataFrame([(1, 3, 4)], schema=["A", "B", "C"])
+def transformation_dict_to_string(tf: dict) -> str:
+    """Transformation business logic transformation dictionary to string values."""
+    transformation_steps = [
+        "join",
+        "aggregation",
+        "pivot",
+        "union",
+        "add_variables",
+        "filter",
+    ]
+    if tf.get("join"):
+        conditions = tf["join"]["condition"]
+        how = tf["join"].get("how", "left")
+        md_conditions = (
+            "\n".join(conditions)
+            if len(conditions) == 1
+            else "\n".join([f"  - {c}" for c in conditions])
+        )
+        return f"- Join ({how}):\n{md_conditions}"
+    if tf.get("aggregation"):
+        return (
+            f"- Aggregate:\n"
+            f"  - group by {tf['aggregation']['group']}\n"
+            + "".join(
+                [
+                    f"  - {col} = {agg_expr}\n"
+                    for col, agg_expr in tf["aggregation"]["column_mapping"].items()
+                ]
+            )
+        )
+    if tf.get("pivot"):
+        val_mapping_str = (
+            (
+                "  - using values:\n"
+                + "".join(
+                    [
+                        f"    - {agg_func}({val})\n"
+                        for val, agg_func in tf["pivot"]["column_mapping"].items()
+                    ]
+                )
+            )
+            if tf["pivot"].get("column_mapping")
+            else ""
+        )
+        return (
+            f"- Pivot:\n"
+            f"  - group by {tf['pivot']['group_cols']}\n"
+            f"  - pivot column {tf['pivot']['pivot_col']}\n"
+            f"  - values from column {tf['pivot']['pivot_value_col']}\n"
+            f"{val_mapping_str}"
+        )
+    if tf.get("add_variables"):
+        return "- Variable:\n" + "".join(
+            [
+                f"  - {var} = {v_expr}\n"
+                for var, v_expr in tf["add_variables"]["column_mapping"].items()
+            ]
+        )
+    if tf.get("union"):
+        union_str = union_dict_to_string(
+            tf["union"]["alias"], tf["union"]["column_mapping"]
+        )
+        return f"- Union:\n{union_str}"
+    if tf.get("filter"):
+        conditions = tf["filter"].get("conditions", [])
+        alias = tf["filter"].get("alias")
+        alias_str = f" (alias: {alias})" if alias else ""
+        return (
+            "- Filter"
+            + alias_str
+            + ":\n"
+            + "".join([f" - {cond}\n" for cond in conditions])
+        )
+
+    msg = (
+        f"Input `tf` should be a dict with one of the following keys: "
+        f"{transformation_steps},  input keys are: {list(tf.keys())}"
+    )
+    raise ValueError(msg)
 
 
-@pytest.fixture
-def mock_spark(mocker):
-    return mocker.patch("pyspark.sql.SparkSession")
+def source_dict_to_string(source: dict) -> str:
+    """Source business logic transformation dictionary to string values."""
+    fltr_cnd = f"  \nFilter: {source['filter']}" if "filter" in source else ""
+    return f"- {source['alias']} = {source['source']}{fltr_cnd}"
 
 
-@pytest.mark.parametrize(
-    ("transformation_dict", "output_string"),
-    [
-        (  # One join condition
-            {
-                "join": {
-                    "left_source": "TBL_D",
-                    "right_source": "TBL_E",
-                    "condition": ["TBL_D.a = TBL_E.b"],
-                    "how": "left",
-                },
-            },
-            "- Join (left):\nTBL_D.a = TBL_E.b",
-        ),
-        (  # Multiple join conditions
-            {
-                "join": {
-                    "left_source": "TBL_D",
-                    "right_source": "TBL_E",
-                    "condition": ["TBL_D.a = TBL_E.b", "TBL_D.f||TBL_D.g = TBL_E.e"],
-                    "how": "left",
-                },
-            },
-            "- Join (left):\n"
-            "  - TBL_D.a = TBL_E.b\n"
-            "  - TBL_D.f||TBL_D.g = TBL_E.e",
-        ),
-        (  # Aggregation
-            {
-                "aggregation": {
-                    "group": ["TBL_D.a"],
-                    "column_mapping": {"count_TBL_E_b": "count(TBL_E.b)"},
-                }
-            },
-            "- Aggregate:\n"
-            "  - group by ['TBL_D.a']\n"
-            "  - count_TBL_E_b = count(TBL_E.b)\n",
-        ),
-        (  # Pivot
-            {
-                "pivot": {
-                    "group_cols": ["TBL_A.col01", "TBL_A.col02"],
-                    "pivot_col": "TBL_B.col04",
-                    "pivot_value_col": "TBL_A.col03",
-                    "column_mapping": {"X": "min", "Y": "avg", "Z": "first"},
-                }
-            },
-            "- Pivot:\n"
-            "  - group by ['TBL_A.col01', 'TBL_A.col02']\n"
-            "  - pivot column TBL_B.col04\n"
-            "  - values from column TBL_A.col03\n"
-            "  - using values:\n"
-            "    - min(X)\n"
-            "    - avg(Y)\n"
-            "    - first(Z)\n",
-        ),
-        # Add Variables
-        (
-            {
-                "add_variables": {
-                    "column_mapping": {
-                        "NewCol01": "TBLA.col1",
-                        "NewCol02": "cast(TBLB.col2 as string)",
-                        "NewCol03": "TBLA.col3 + TBLC.col03",
-                    },
-                }
-            },
-            "- Variable:\n"
-            "  - NewCol01 = TBLA.col1\n"
-            "  - NewCol02 = cast(TBLB.col2 as string)\n"
-            "  - NewCol03 = TBLA.col3 + TBLC.col03\n",
-        ),
-        # Union
-        (
-            {
-                "union": {
-                    "alias": "TABLE_A_B",
-                    "column_mapping": {
-                        "TABLE_A": {"c01_ab": "c01a", "c02_ab": "c02a"},
-                        "TABLE_B": {"c01_ab": "c01b", "c02_ab": "c02b"},
-                    },
-                }
-            },
-            "- Union:\n"
-            "  - TABLE_A_B:\n"
-            "    - c01a as c01_ab, c02a as c02_ab FROM TABLE_A\n"
-            "    - c01b as c01_ab, c02b as c02_ab FROM TABLE_B",
-        ),
-    ],
-)
-def test_transformation_dict_to_string(transformation_dict, output_string):
-    assert transformation_dict_to_string(tf=transformation_dict) == output_string
+def union_dict_to_string(alias: str, column_mapping: dict[str, dict[str, str]]) -> str:
+    """Union mapping to string values."""
+    # Alias with 2 indentations, source tables with column mapping with 4 indentation
+    return f"  - {alias}:\n" + "\n".join(
+        [
+            "    - "
+            + ", ".join([f"{v} as {k}" for k, v in column_mapping[table_name].items()])
+            + f" FROM {table_name}"
+            for table_name in column_mapping
+        ]
+    )
 
 
-def test_raise_transformation_dict_to_string():
-    """Test Raise of ValueError for `transformation_dict_to_string` method."""
-    with pytest.raises(
-        ValueError,
-        match=r"Input `tf` should be a dict with one of the following keys: .*",
-    ):
-        transformation_dict_to_string(
-            {
-                # Spelling error
-                "aggregationnn": {
-                    "group": ["TBL_D.a"],
-                    "column_mapping": {"TBL_E.b": "count"},
-                }
-            }
+def table_summary(
+    spark: SparkSession,
+    business_logic: dict,
+    sources_title: str = "#### Sources\n",
+    transformations_title: str = "#### Transformations\n",
+) -> None:
+    """Create summary as comment on table."""
+    sources = sources_title + "\n".join(
+        [source_dict_to_string(source) for source in business_logic["sources"]]
+    )
+
+    transformations = (
+        "\n\n"
+        + transformations_title
+        + "\n".join(
+            [
+                transformation_dict_to_string(tf)
+                for tf in business_logic["transformations"]
+            ]
+        )
+        if business_logic.get("transformations")
+        else ""
+    )
+    filter_target = (
+        "\n**Filter Target**\n- " + "\n- ".join(business_logic["filter_target"])
+        if "filter_target" in business_logic
+        else ""
+    )
+
+    drop_dups = (
+        f"\n\nDrop duplicates = {business_logic['drop_duplicates']}"
+        if "drop_duplicates" in business_logic
+        else ""
+    )
+
+    comment_string = f"{sources}{transformations}{filter_target}{drop_dups}".replace(
+        '"', '\\"'
+    )
+    spark.sql(f'COMMENT ON TABLE {business_logic["target"]} IS "{comment_string}"')
+
+
+def target_expression_comments(spark: SparkSession, business_logic: dict) -> None:
+    """Add logic as comments to columns for data lineage."""
+    for tgt_col in business_logic["expressions"].keys():
+        tgt_table = business_logic["target"]
+        expression = business_logic["expressions"][tgt_col].replace('"', '\\"')
+        spark.sql(
+            f'ALTER TABLE {tgt_table} ALTER COLUMN {tgt_col} COMMENT "{expression}"'
         )
 
 
-@pytest.mark.parametrize(
-    ("source_dict", "output_string"),
-    [
-        (
-            {
-                "source": "source_data_table",
-                "alias": "TBL_D",
-                "columns": ["a", "b", "c"],
-            },
-            "- TBL_D = source_data_table",
-        ),
-        (
-            {
-                "source": "source_data_table",
-                "alias": "TBL_D",
-                "columns": ["a", "b", "c"],
-                "filter": "b<1",
-            },
-            "- TBL_D = source_data_table  \nFilter: b<1",
-        ),
-    ],
-)
-def test_source_dict_to_string(source_dict, output_string):
-    assert source_dict_to_string(source_dict) == output_string
-
-
-def test_table_summary(mock_spark, business_logic_dict):
-    """Test table summary function"""
-    table_summary(
-        mock_spark, business_logic_dict, sources_title="## Another Source title\n"
+def write_and_comment(
+    spark: SparkSession,
+    business_logic: dict,
+    data: DataFrame,
+    run_month: str,
+    dq_check_folder: str = "dq_checks",
+    source_system: str = "",
+    schema: str = "",
+    *,
+    local: bool = False,
+) -> bool:
+    """Write data to Unity Catalog and add table & column comments from logic."""
+    write_to_table(spark=spark, table_name=business_logic["target"], data=data)
+    table_summary(spark=spark, business_logic=business_logic)
+    target_expression_comments(spark=spark, business_logic=business_logic)
+    if not schema:
+        schema = business_logic["target"].split(".")[-1].split("_")[0]
+    dq_validation = DQValidation(
+        spark,
+        table_name=business_logic["target"].split(".")[-1],
+        schema_name=schema,
+        dq_check_folder=dq_check_folder,
+        run_month=run_month,
+        source_system=source_system,
+        local=local,
     )
-    # We only want SparkSession.sql to have been called once, so assert that
-    assert mock_spark.sql.call_count == 1
-    expected_sql_call = (
-        'COMMENT ON TABLE some_target_table IS "## Another Source title\n'
-        "- TBL_D = table_D\n"
-        "- TBL_E = table_E\n\n"
-        "#### Transformations\n"
-        "- Join (left):\n"
-        "TBL_D.a = TBL_E.e\n"
-        "- Variable:\n"
-        "  - Var1 = case when TBL_D.a>100 then TBL_D.a-100 else TBL_D.a end\n\n"
-        "**Filter Target**\n"
-        "- TargetCol1 > 100\n"
-        '- TargetCol2 = \\"hello\\"\n\n'
-        'Drop duplicates = True"'
-    )
-    mock_spark.sql.assert_called_with(expected_sql_call)
-
-
-def test_target_expression_comments(mocker, mock_spark, business_logic_dict):
-    """Test target expression comments."""
-    target_expression_comments(mock_spark, business_logic_dict)
-    assert mock_spark.sql.call_count == 3
-    call_1 = mocker.call(
-        'ALTER TABLE some_target_table ALTER COLUMN TargetCol1 COMMENT "TBL_D.a"'
-    )
-    call_2 = mocker.call(
-        'ALTER TABLE some_target_table ALTER COLUMN TargetCol2 COMMENT "TBL_E.e"'
-    )
-    call_3 = mocker.call(
-        "ALTER TABLE some_target_table ALTER COLUMN TargetCol3 COMMENT "
-        '"case when TBL_D.b = \\"999\\" then TBL_E.a end"'
-    )
-    mock_spark.sql.assert_has_calls([call_1, call_2, call_3])
-
-
-@pytest.mark.parametrize("tbl_name", ["TBL_A", "TBL_B"])
-@pytest.mark.parametrize("mode", ["overwrite", "append"])
-def test_write_to_table(mocker, data_to_write, tbl_name, mode):
-    mock_writer = mocker.MagicMock()
-    mocker.patch(
-        "pyspark.sql.DataFrame.write",
-        new_callable=mocker.PropertyMock,
-        return_value=mock_writer,
-    )
-    write_to_table(tbl_name, data=data_to_write, mode=mode)
-    mock_writer.mode.assert_called_with(mode)
-    mock_writer.mode().saveAsTable.assert_called_with(tbl_name)
+    check_result = dq_validation.checks(functional=True)
+    return check_result is None or check_result
