@@ -1,115 +1,156 @@
-(bsrc-etl-venv) PS C:\Users\B25712\bsrc-etl-venv\bsrc-etl> pytest test/test_extract/test_get_master_data.py
-================================================================================================== test session starts ===================================================================================================
-platform win32 -- Python 3.10.11, pytest-8.3.3, pluggy-1.5.0
-rootdir: C:\Users\B25712\bsrc-etl-venv\bsrc-etl
-configfile: pyproject.toml
-plugins: cov-6.0.0, mock-3.14.0
-collected 9 items
-
-test\test_extract\test_get_master_data.py ........F                                                                                                                                                                 [100%]
-
-======================================================================================================== FAILURES ========================================================================================================
-_______________________________________________________________________________________________ test_filter_log_reductions _______________________________________________________________________________________________
-
-spark_session = <pyspark.sql.session.SparkSession object at 0x000001FEA8F2F8B0>, caplog = <_pytest.logging.LogCaptureFixture object at 0x000001FEA8F2EF20>
-
-    def test_filter_log_reductions(spark_session, caplog):
-        """Test filter method with log_reductions parameter."""
-        # Set logging level to ensure capturing debug messages
-        caplog.set_level(logging.DEBUG)
-        # Set up test data
-        test_data = [(1, "keep", 10), (2, "discard", 20), (3, "keep", 30)]
-        df = spark_session.createDataFrame(test_data, ["id", "status", "value"])
-        # Create a minimal valid business_logic dictionary with an empty sources list
-        minimal_business_logic = {"sources": []}
-        # Create an instance of GetIntegratedData
-        git = GetIntegratedData(spark_session, minimal_business_logic)
-        # Test with log_reductions=False (default)
-        caplog.clear()
-        conditions = ["status = 'keep'"]
-        result_false = git.filter(df, conditions)
-        # Verify result
-        assert result_false.count() == 2
-        assert "keep" in [row.status for row in result_false.collect()]
-        assert "discard" not in [row.status for row in result_false.collect()]
-        # Verify logging - should only have debug messages
-        debug_logs = [msg for msg in caplog.messages if "Applied filter condition" in msg]
-        assert len(debug_logs) == 1
-        assert not any("reduced rows from" in msg for msg in caplog.messages)
-        # Test with log_reductions=True
-        caplog.clear()
-        result_true = git.filter(df, conditions, log_reductions=True)
-        # Verify result
-        assert result_true.count() == 2
-        # Verify logging - should include row count info
-        assert any("Applied filter condition" in msg for msg in caplog.messages)
->       assert any(
-            "Filter conditions reducede rows from 3 to 2" in msg for msg in caplog.messages
-        )
-E       assert False
-E        +  where False = any(<generator object test_filter_log_reductions.<locals>.<genexpr> at 0x000001FEA99D95B0>)
-
-test\test_extract\test_get_master_data.py:329: AssertionError
--------------------------------------------------------------------------------------------------- Captured stdout call -------------------------------------------------------------------------------------------------- 
-2025-04-23 15:29:59 [INFO] filter:  Filter conditions reduced rows from 3 to 2
-2025-04-23 15:29:59 [INFO] filter:  Filter conditions reduced rows from 3 to 2
--------------------------------------------------------------------------------------------------- Captured stderr call -------------------------------------------------------------------------------------------------- 
-
---------------------------------------------------------------------------------------------------- Captured log call ---------------------------------------------------------------------------------------------------- 
-DEBUG    betl_src_poc_logger:master_data_sql.py:302 Applied filter condition: 'status = 'keep''
-DEBUG    betl_src_poc_logger:master_data_sql.py:302 Applied filter condition: 'status = 'keep''
-INFO     betl_src_poc_logger:master_data_sql.py:306 Filter conditions reduced rows from 3 to 2
-
----------- coverage: platform win32, python 3.10.11-final-0 ----------
-Name                                            Stmts   Miss  Cover   Missing
------------------------------------------------------------------------------
-src\__init__.py                                     0      0   100%
-src\config\__init__.py                              0      0   100%
-src\config\constants.py                             1      0   100%
-src\config\exceptions.py                           12     12     0%   6-21
-src\config\process.py                               4      4     0%   7-10
-src\config\schema.py                                4      2    50%   51-52
-src\dq\__init__.py                                  0      0   100%
-src\dq\dq_validation.py                           141    141     0%   13-486
-src\extract\__init__.py                             0      0   100%
-src\extract\master_data_sql.py                    105     22    79%   82, 111-125, 149-151, 175, 288-291, 348-349
-src\month_setup\__init__.py                         0      0   100%
-src\month_setup\dial_derive_snapshotdate.py        32     32     0%   8-85
-src\month_setup\metadata_log_tables.py              1      1     0%   18
-src\month_setup\setup_new_month.py                  1      1     0%   9
-src\staging\__init__.py                             0      0   100%
-src\staging\extract_dial_data.py                   99     99     0%   17-560
-src\staging\status.py                              15     15     0%   4-30
-src\transform\__init__.py                           0      0   100%
-src\transform\table_write_and_comment.py           58     58     0%   7-199
-src\transform\transform_business_logic_sql.py       6      6     0%   5-24
-src\utils\__init__.py                               0      0   100%
-src\utils\alias_util.py                            13      6    54%   14-19, 101-109
-src\utils\export_parquet.py                        11     11     0%   9-49
-src\utils\get_catalog.py                            5      5     0%   6-20
-src\utils\get_dbutils.py                            2      2     0%   4-6
-src\utils\logging_util.py                           6      0   100%
-src\utils\parameter_utils.py                       26     26     0%   5-123
-src\utils\parse_yaml.py                            12     12     0%   9-31
-src\utils\process_logging.py                       13     13     0%   9-60
-src\utils\sources_util.py                          49     32    35%   40, 57, 69-70, 79-80, 92, 116, 127, 140-144, 154, 176-193, 201-218, 224, 227, 231-233
-src\utils\table_logging.py                         10     10     0%   8-40
-src\utils\table_schema.py                           3      3     0%   8-16
-src\validate\__init__.py                            0      0   100%
-src\validate\base.py                                4      4     0%   4-7
-src\validate\expressions.py                        24     24     0%   13-64
-src\validate\run_all.py                             7      7     0%   11-44
-src\validate\sources.py                            29     29     0%   7-67
-src\validate\transformations.py                   170    170     0%   16-473
-src\validate\validate_sql.py                       50     50     0%   12-115
-src\validate\yaml.py                               18     18     0%   3-33
------------------------------------------------------------------------------
-TOTAL                                             931    815    12%
-Coverage HTML written to dir htmlcov
-
-================================================================================================ short test summary info ================================================================================================= 
-FAILED test/test_extract/test_get_master_data.py::test_filter_log_reductions - assert False
-========================================================================================= 1 failed, 8 passed in 96.09s (0:01:36) ========================================================================================= 
-(bsrc-etl-venv) PS C:\Users\B25712\bsrc-etl-venv\bsrc-etl> SUCCESS: The process with PID 7648 (child process of PID 17636) has been terminated.
-SUCCESS: The process with PID 17636 (child process of PID 9784) has been terminated.
-SUCCESS: The process with PID 9784 (child process of PID 12796) has been terminated.
+(bsrc-etl-2-venv) PS C:\Users\B25712\bsrc-etl-venv\bsrc-etl> pre-commit run --all-files
+ruff lint................................................................Passed
+ruff format..............................................................Passed
+mypy.....................................................................Passed
+(bsrc-etl-2-venv) PS C:\Users\B25712\bsrc-etl-venv\bsrc-etl> git add .
+(bsrc-etl-2-venv) PS C:\Users\B25712\bsrc-etl-venv\bsrc-etl> git commit -m "Added reviewed updates_v6"
+ruff lint................................................................Passed
+ruff format..............................................................Passed
+mypy.....................................................................Passed
+[feature/add-filter-inside-transformations 84f3cd9] Added reviewed updates_v6
+ 6 files changed, 417 insertions(+), 48 deletions(-)
+(bsrc-etl-2-venv) PS C:\Users\B25712\bsrc-etl-venv\bsrc-etl> git push origin feature/add-filter-inside-transformations
+Enumerating objects: 31, done.
+Counting objects: 100% (31/31), done.
+Delta compression using up to 4 threads
+Compressing objects: 100% (16/16), done.
+Writing objects: 100% (16/16), 6.68 KiB | 207.00 KiB/s, done.
+Total 16 (delta 12), reused 0 (delta 0), pack-reused 0 (from 0)
+remote: Analyzing objects... (16/16) (31 ms)
+remote: Validating commits... (1/1) done (1 ms)
+remote: Checking for restricted file names...  done (1 ms)
+remote: Storing packfile... done (30 ms)
+remote: Storing index... done (90 ms)
+remote: Updating refs... done (213 ms)
+To https://dev.azure.com/cbsp-abnamro/GRD0001018/_git/bsrc-etl
+ * [new branch]      feature/add-filter-inside-transformations -> feature/add-filter-inside-transformations
+(bsrc-etl-2-venv) PS C:\Users\B25712\bsrc-etl-venv\bsrc-etl> git reflog
+1f2b8e4 HEAD@{16}: pull origin main: Merge made by the 'ort' strategy.
+162cd61 HEAD@{17}: commit: Implemented all changes from PR review
+277c1ea (tag: 0.1.0-rc11595205) HEAD@{18}: commit: Added filter possibility inside the transformations
+d2cd2b1 (tag: 0.1.0-rc11551269, origin/feature/distribution, main) HEAD@{19}: checkout: moving from main to feature/add-filter-transformations
+d2cd2b1 (tag: 0.1.0-rc11551269, origin/feature/distribution, main) HEAD@{20}: pull: Fast-forward
+f207023 HEAD@{21}: checkout: moving from d2cd2b13acc249ddfa112ae36035a482470cf76a to main
+d2cd2b1 (tag: 0.1.0-rc11551269, origin/feature/distribution, main) HEAD@{22}: checkout: moving from feature/yaml_table_handling_happy to origin/main
+cf9aa39 (tag: 0.1.0-rc11533617, origin/feature/yaml_table_handling_happy, feature/yaml_table_handling_happy) HEAD@{23}: checkout: moving from main to feature/yaml_table_handling_happy
+f207023 HEAD@{24}: pull: Fast-forward
+dd3f4fa (tag: 0.1.0-rc11310562) HEAD@{25}: checkout: moving from feature/yaml_table_handling_happy to main
+cf9aa39 (tag: 0.1.0-rc11533617, origin/feature/yaml_table_handling_happy, feature/yaml_table_handling_happy) HEAD@{26}: checkout: moving from feature/derivative-flattening to feature/yaml_table_handling_happy   
+8d678dd (tag: 0.1.0-rc11524678, origin/feature/derivative-flattening, feature/derivative-flattening) HEAD@{27}: checkout: moving from feature/yaml_table_handling_happy to feature/derivative-flattening
+cf9aa39 (tag: 0.1.0-rc11533617, origin/feature/yaml_table_handling_happy, feature/yaml_table_handling_happy) HEAD@{28}: commit: Implemented all changes from PR review
+:...skipping...
+84f3cd9 (HEAD -> feature/add-filter-inside-transformations, origin/feature/add-filter-inside-transformations) HEAD@{0}: commit: Added reviewed updates_v6
+4e87111 (origin/main, origin/HEAD) HEAD@{1}: pull origin main: Fast-forward
+d2cd2b1 (tag: 0.1.0-rc11551269, origin/feature/distribution, main) HEAD@{2}: checkout: moving from feature/add-filter-transformations to feature/add-filter-inside-transformations
+98204fc (origin/feature/add-filter-transformations, feature/add-filter-transformations) HEAD@{3}: pull origin feature/add-filter-transformations: Merge made by the 'ort' strategy.
+bdd47f7 HEAD@{4}: commit: Add reviewed files v5
+ef9d70b (working-version) HEAD@{5}: reset: moving to ef9d70b
+f965de0 HEAD@{6}: checkout: moving from working-version to feature/add-filter-transformations
+ef9d70b (working-version) HEAD@{7}: checkout: moving from feature/add-filter-transformations to working-version
+f965de0 HEAD@{8}: pull origin feature/add-filter-transformations: Merge made by the 'ort' strategy.
+52bbd42 HEAD@{9}: commit (amend): Fixed reviewed files_v4
+71f0199 HEAD@{10}: commit: Fixed reviewed files_v3
+4d21cfc HEAD@{11}: commit (merge): Fixed all reviews after push origin feature
+957be22 HEAD@{12}: reset: moving to HEAD
+957be22 HEAD@{13}: commit: Added all reviewed updates
+d4c5271 HEAD@{14}: pull origin main: Merge made by the 'ort' strategy.
+289ee24 (tag: 0.1.0-rc11635551) HEAD@{15}: commit: Implemented PR review updates after main pull_v2
+1f2b8e4 HEAD@{16}: pull origin main: Merge made by the 'ort' strategy.
+162cd61 HEAD@{17}: commit: Implemented all changes from PR review
+277c1ea (tag: 0.1.0-rc11595205) HEAD@{18}: commit: Added filter possibility inside the transformations
+d2cd2b1 (tag: 0.1.0-rc11551269, origin/feature/distribution, main) HEAD@{19}: checkout: moving from main to feature/add-filter-transformations
+d2cd2b1 (tag: 0.1.0-rc11551269, origin/feature/distribution, main) HEAD@{20}: pull: Fast-forward
+f207023 HEAD@{21}: checkout: moving from d2cd2b13acc249ddfa112ae36035a482470cf76a to main
+d2cd2b1 (tag: 0.1.0-rc11551269, origin/feature/distribution, main) HEAD@{22}: checkout: moving from feature/yaml_table_handling_happy to origin/main
+cf9aa39 (tag: 0.1.0-rc11533617, origin/feature/yaml_table_handling_happy, feature/yaml_table_handling_happy) HEAD@{23}: checkout: moving from main to feature/yaml_table_handling_happy
+f207023 HEAD@{24}: pull: Fast-forward
+dd3f4fa (tag: 0.1.0-rc11310562) HEAD@{25}: checkout: moving from feature/yaml_table_handling_happy to main
+cf9aa39 (tag: 0.1.0-rc11533617, origin/feature/yaml_table_handling_happy, feature/yaml_table_handling_happy) HEAD@{26}: checkout: moving from feature/derivative-flattening to feature/yaml_table_handling_happy   
+8d678dd (tag: 0.1.0-rc11524678, origin/feature/derivative-flattening, feature/derivative-flattening) HEAD@{27}: checkout: moving from feature/yaml_table_handling_happy to feature/derivative-flattening
+cf9aa39 (tag: 0.1.0-rc11533617, origin/feature/yaml_table_handling_happy, feature/yaml_table_handling_happy) HEAD@{28}: commit: Implemented all changes from PR review
+c176a88 HEAD@{29}: pull origin main: Merge made by the 'ort' strategy.
+:...skipping...
+84f3cd9 (HEAD -> feature/add-filter-inside-transformations, origin/feature/add-filter-inside-transformations) HEAD@{0}: commit: Added reviewed updates_v6
+4e87111 (origin/main, origin/HEAD) HEAD@{1}: pull origin main: Fast-forward
+d2cd2b1 (tag: 0.1.0-rc11551269, origin/feature/distribution, main) HEAD@{2}: checkout: moving from feature/add-filter-transformations to feature/add-filter-inside-transformations
+98204fc (origin/feature/add-filter-transformations, feature/add-filter-transformations) HEAD@{3}: pull origin feature/add-filter-transformations: Merge made by the 'ort' strategy.
+bdd47f7 HEAD@{4}: commit: Add reviewed files v5
+ef9d70b (working-version) HEAD@{5}: reset: moving to ef9d70b
+f965de0 HEAD@{6}: checkout: moving from working-version to feature/add-filter-transformations
+ef9d70b (working-version) HEAD@{7}: checkout: moving from feature/add-filter-transformations to working-version
+f965de0 HEAD@{8}: pull origin feature/add-filter-transformations: Merge made by the 'ort' strategy.
+52bbd42 HEAD@{9}: commit (amend): Fixed reviewed files_v4
+71f0199 HEAD@{10}: commit: Fixed reviewed files_v3
+4d21cfc HEAD@{11}: commit (merge): Fixed all reviews after push origin feature
+957be22 HEAD@{12}: reset: moving to HEAD
+957be22 HEAD@{13}: commit: Added all reviewed updates
+d4c5271 HEAD@{14}: pull origin main: Merge made by the 'ort' strategy.
+289ee24 (tag: 0.1.0-rc11635551) HEAD@{15}: commit: Implemented PR review updates after main pull_v2
+1f2b8e4 HEAD@{16}: pull origin main: Merge made by the 'ort' strategy.
+162cd61 HEAD@{17}: commit: Implemented all changes from PR review
+277c1ea (tag: 0.1.0-rc11595205) HEAD@{18}: commit: Added filter possibility inside the transformations
+d2cd2b1 (tag: 0.1.0-rc11551269, origin/feature/distribution, main) HEAD@{19}: checkout: moving from main to feature/add-filter-transformations
+d2cd2b1 (tag: 0.1.0-rc11551269, origin/feature/distribution, main) HEAD@{20}: pull: Fast-forward
+f207023 HEAD@{21}: checkout: moving from d2cd2b13acc249ddfa112ae36035a482470cf76a to main
+d2cd2b1 (tag: 0.1.0-rc11551269, origin/feature/distribution, main) HEAD@{22}: checkout: moving from feature/yaml_table_handling_happy to origin/main
+cf9aa39 (tag: 0.1.0-rc11533617, origin/feature/yaml_table_handling_happy, feature/yaml_table_handling_happy) HEAD@{23}: checkout: moving from main to feature/yaml_table_handling_happy
+f207023 HEAD@{24}: pull: Fast-forward
+dd3f4fa (tag: 0.1.0-rc11310562) HEAD@{25}: checkout: moving from feature/yaml_table_handling_happy to main
+cf9aa39 (tag: 0.1.0-rc11533617, origin/feature/yaml_table_handling_happy, feature/yaml_table_handling_happy) HEAD@{26}: checkout: moving from feature/derivative-flattening to feature/yaml_table_handling_happy   
+8d678dd (tag: 0.1.0-rc11524678, origin/feature/derivative-flattening, feature/derivative-flattening) HEAD@{27}: checkout: moving from feature/yaml_table_handling_happy to feature/derivative-flattening
+cf9aa39 (tag: 0.1.0-rc11533617, origin/feature/yaml_table_handling_happy, feature/yaml_table_handling_happy) HEAD@{28}: commit: Implemented all changes from PR review
+c176a88 HEAD@{29}: pull origin main: Merge made by the 'ort' strategy.
+77a3c0b (tag: 0.1.0-rc11509987) HEAD@{30}: checkout: moving from feature/delivery_entity_standardization to feature/yaml_table_handling_happy
+7f3f60a (tag: 0.1.0-rc11511619, origin/feature/delivery_entity_standardization, feature/delivery_entity_standardization) HEAD@{31}: commit: Added /spark-warehouse/ to gitignore try 2
+687489b (tag: 0.1.0-rc11510213) HEAD@{32}: checkout: moving from feature/yaml_table_handling_happy to feature/delivery_entity_standardization
+77a3c0b (tag: 0.1.0-rc11509987) HEAD@{33}: checkout: moving from feature/delivery_entity_standardization to feature/yaml_table_handling_happy
+687489b (tag: 0.1.0-rc11510213) HEAD@{34}: commit: Removed /spark-warehouse/ folder from repo
+4ef6044 (tag: 0.1.0-rc11509639) HEAD@{35}: checkout: moving from feature/yaml_table_handling_happy to feature/delivery_entity_standardization
+77a3c0b (tag: 0.1.0-rc11509987) HEAD@{36}: commit: Updated gitignore for /spark-warehouse/ & updated both YAML notebooks to use actual standardized source system
+6091e56 (tag: 0.1.0-rc11504288) HEAD@{37}: checkout: moving from feature/delivery_entity_standardization to feature/yaml_table_handling_happy
+4ef6044 (tag: 0.1.0-rc11509639) HEAD@{38}: commit: Add spark-warehouse/ folder to gitignore
+6368ec7 (tag: 0.1.0-rc11504278) HEAD@{39}: checkout: moving from feature/yaml_table_handling_happy to feature/delivery_entity_standardization
+6091e56 (tag: 0.1.0-rc11504288) HEAD@{40}: commit: Added table handling functionality if structure changes
+:...skipping...
+84f3cd9 (HEAD -> feature/add-filter-inside-transformations, origin/feature/add-filter-inside-transformations) HEAD@{0}: commit: Added reviewed updates_v6
+4e87111 (origin/main, origin/HEAD) HEAD@{1}: pull origin main: Fast-forward
+d2cd2b1 (tag: 0.1.0-rc11551269, origin/feature/distribution, main) HEAD@{2}: checkout: moving from feature/add-filter-transformations to feature/add-filter-inside-transformations
+98204fc (origin/feature/add-filter-transformations, feature/add-filter-transformations) HEAD@{3}: pull origin feature/add-filter-transformations: Merge made by the 'ort' strategy.
+bdd47f7 HEAD@{4}: commit: Add reviewed files v5
+ef9d70b (working-version) HEAD@{5}: reset: moving to ef9d70b
+f965de0 HEAD@{6}: checkout: moving from working-version to feature/add-filter-transformations
+ef9d70b (working-version) HEAD@{7}: checkout: moving from feature/add-filter-transformations to working-version
+f965de0 HEAD@{8}: pull origin feature/add-filter-transformations: Merge made by the 'ort' strategy.
+52bbd42 HEAD@{9}: commit (amend): Fixed reviewed files_v4
+71f0199 HEAD@{10}: commit: Fixed reviewed files_v3
+4d21cfc HEAD@{11}: commit (merge): Fixed all reviews after push origin feature
+957be22 HEAD@{12}: reset: moving to HEAD
+957be22 HEAD@{13}: commit: Added all reviewed updates
+d4c5271 HEAD@{14}: pull origin main: Merge made by the 'ort' strategy.
+289ee24 (tag: 0.1.0-rc11635551) HEAD@{15}: commit: Implemented PR review updates after main pull_v2
+1f2b8e4 HEAD@{16}: pull origin main: Merge made by the 'ort' strategy.
+162cd61 HEAD@{17}: commit: Implemented all changes from PR review
+277c1ea (tag: 0.1.0-rc11595205) HEAD@{18}: commit: Added filter possibility inside the transformations
+d2cd2b1 (tag: 0.1.0-rc11551269, origin/feature/distribution, main) HEAD@{19}: checkout: moving from main to feature/add-filter-transformations
+d2cd2b1 (tag: 0.1.0-rc11551269, origin/feature/distribution, main) HEAD@{20}: pull: Fast-forward
+f207023 HEAD@{21}: checkout: moving from d2cd2b13acc249ddfa112ae36035a482470cf76a to main
+d2cd2b1 (tag: 0.1.0-rc11551269, origin/feature/distribution, main) HEAD@{22}: checkout: moving from feature/yaml_table_handling_happy to origin/main
+cf9aa39 (tag: 0.1.0-rc11533617, origin/feature/yaml_table_handling_happy, feature/yaml_table_handling_happy) HEAD@{23}: checkout: moving from main to feature/yaml_table_handling_happy
+f207023 HEAD@{24}: pull: Fast-forward
+dd3f4fa (tag: 0.1.0-rc11310562) HEAD@{25}: checkout: moving from feature/yaml_table_handling_happy to main
+cf9aa39 (tag: 0.1.0-rc11533617, origin/feature/yaml_table_handling_happy, feature/yaml_table_handling_happy) HEAD@{26}: checkout: moving from feature/derivative-flattening to feature/yaml_table_handling_happy   
+8d678dd (tag: 0.1.0-rc11524678, origin/feature/derivative-flattening, feature/derivative-flattening) HEAD@{27}: checkout: moving from feature/yaml_table_handling_happy to feature/derivative-flattening
+cf9aa39 (tag: 0.1.0-rc11533617, origin/feature/yaml_table_handling_happy, feature/yaml_table_handling_happy) HEAD@{28}: commit: Implemented all changes from PR review
+c176a88 HEAD@{29}: pull origin main: Merge made by the 'ort' strategy.
+77a3c0b (tag: 0.1.0-rc11509987) HEAD@{30}: checkout: moving from feature/delivery_entity_standardization to feature/yaml_table_handling_happy
+7f3f60a (tag: 0.1.0-rc11511619, origin/feature/delivery_entity_standardization, feature/delivery_entity_standardization) HEAD@{31}: commit: Added /spark-warehouse/ to gitignore try 2
+687489b (tag: 0.1.0-rc11510213) HEAD@{32}: checkout: moving from feature/yaml_table_handling_happy to feature/delivery_entity_standardization
+77a3c0b (tag: 0.1.0-rc11509987) HEAD@{33}: checkout: moving from feature/delivery_entity_standardization to feature/yaml_table_handling_happy
+687489b (tag: 0.1.0-rc11510213) HEAD@{34}: commit: Removed /spark-warehouse/ folder from repo
+4ef6044 (tag: 0.1.0-rc11509639) HEAD@{35}: checkout: moving from feature/yaml_table_handling_happy to feature/delivery_entity_standardization
+77a3c0b (tag: 0.1.0-rc11509987) HEAD@{36}: commit: Updated gitignore for /spark-warehouse/ & updated both YAML notebooks to use actual standardized source system
+6091e56 (tag: 0.1.0-rc11504288) HEAD@{37}: checkout: moving from feature/delivery_entity_standardization to feature/yaml_table_handling_happy
+4ef6044 (tag: 0.1.0-rc11509639) HEAD@{38}: commit: Add spark-warehouse/ folder to gitignore
+6368ec7 (tag: 0.1.0-rc11504278) HEAD@{39}: checkout: moving from feature/yaml_table_handling_happy to feature/delivery_entity_standardization
+6091e56 (tag: 0.1.0-rc11504288) HEAD@{40}: commit: Added table handling functionality if structure changes
+7820cf4 (tag: 0.1.0-rc11408179, feature/delivery_entity_standard) HEAD@{41}: checkout: moving from feature/delivery_entity_standardization to feature/yaml_table_handling_happy
