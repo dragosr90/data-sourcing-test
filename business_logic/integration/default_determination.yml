@@ -1,0 +1,111 @@
+target: int_{{ RUN_MONTH }}.default_determination_{{ DELIVERY_ENTITY }}
+
+sources:
+  - alias: SSF_FACILITY_ROLLUP
+    columns:
+    - DeliveryEntity
+    - LocalFacilityIdentifier
+    - ParentCreditFacility
+    - HighestExistingFacility
+    source: int_{{ RUN_MONTH }}.ssf_facility_rollup_{{ DELIVERY_ENTITY }}
+  - alias: SSF_CF
+    columns:
+    - DeliveryEntity
+    - LocalFacilityIdentifier
+    - Default
+    - DefaultDate
+    - DefaultEndDate
+    - NonperformingEndDate
+    - NonperformingStartDate
+    - PerformingIndicator
+    source: stg_{{ RUN_MONTH }}.ssf_{{ DELIVERY_ENTITY }}_cf
+  - alias: SSF_CFXCP
+    columns:
+    - DeliveryEntity
+    - LocalFacilityIdentifier
+    - CounterpartyID
+    source: stg_{{ RUN_MONTH }}.ssf_{{ DELIVERY_ENTITY }}_cfxcp
+  - alias: SSF_COUNTERPARTY
+    columns: 
+    - DeliveryEntity
+    - CounterpartyID
+    - GlobalFacilityIdentifier
+    source: stg_{{ RUN_MONTH }}.ssf_cp
+
+transformations:
+  - join:
+      left_source: SSF_FACILITY_ROLLUP
+      right_source: SSF_CF
+      condition:
+      - SSF_FACILITY_ROLLUP.DeliveryEntity = SSF_CF.DeliveryEntity
+      - SSF_FACILITY_ROLLUP.LocalFacilityIdentifier = SSF_CF.LocalFacilityIdentifier
+      how: left
+      alias: FACILITY_CF_JOIN
+  - join:
+      left_source: FACILITY_CF_JOIN
+      right_source: SSF_CFXCP
+      condition:
+      - SSF_CF.DeliveryEntity = SSF_CFXCP.DeliveryEntity
+      - SSF_CF.LocalFacilityIdentifier = SSF_CFXCP.LocalFacilityIdentifier
+      how: left
+      alias: FACILITY_CF_CFXCP_JOIN
+  - join:
+      left_source: FACILITY_CF_CFXCP_JOIN
+      right_source: SSF_COUNTERPARTY
+      condition:
+      - SSF_CFXCP.DeliveryEntity = SSF_COUNTERPARTY.DeliveryEntity
+      - SSF_CFXCP.CounterpartyID = SSF_COUNTERPARTY.CounterpartyID
+      how: left
+  - add_variables:
+      var_is_default_filled: case when SSF_CF.Default is not null and SSF_CF.Default = 'Y' then TRUE else FALSE end
+      var_default_case: case when var_is_default_filled then 'ssf_{{ DELIVERY_ENTITY }}_cp' else null end
+      var_cpty_source: case when var_is_default_filled then 'stg_{{ RUN_MONTH }}.ssf_{{ DELIVERY_ENTITY }}_cf' else 'Joined rollup (int_{{ RUN_MONTH }}.ssf_facility_rollup_{{ DELIVERY_ENTITY }} and CF (stg_{{ RUN_MONTH }}.ssf_{{ DELIVERY_ENTITY }}_cf))' end
+  - join:
+      right_source: SSF_COUNTERPARTY
+      condition:
+      - SSF_CFXCP.DeliveryEntity = SSF_COUNTERPARTY.DeliveryEntity
+      - SSF_CFXCP.CounterpartyID = SSF_COUNTERPARTY.CounterpartyID
+      how: left
+
+expressions:
+  DeliveryEntity: SSF_CF.DeliveryEntity
+  LocalID: case
+           when SSF_CF.Default = 'Y' then SSF_CF.Default
+           else SSF_COUNTERPARTY.Default
+          end
+  # Default attributes
+  Default: case
+           when SSF_CF.Default = 'Y' then SSF_CF.Default
+           else SSF_COUNTERPARTY.Default
+          end
+  DefaultDate: case
+           when SSF_CF.Default = 'Y' then SSF_CF.DefaultDate
+           else SSF_COUNTERPARTY.DefaultDate
+          end
+  DefaultEndDate: case
+           when SSF_CF.Default = 'Y' then SSF_CF.DefaultEndDate
+           else SSF_COUNTERPARTY.DefaultEndDate
+          end
+  PerformingIndicator: case
+           when SSF_CF.Default = 'Y' then SSF_CF.PerformingIndicator
+           else SSF_COUNTERPARTY.PerformingIndicator
+          end
+  NonperformingStartDate: case
+           when SSF_CF.Default = 'Y' then SSF_CF.NonperformingStartDate
+           else SSF_COUNTERPARTY.NonperformingStartDate
+          end
+  NonperformingEndDate: case
+           when SSF_CF.Default = 'Y' then SSF_CF.NonperformingEndDate
+           else SSF_COUNTERPARTY.NonperformingEndDate
+          end
+  DefaultCase: case
+              when SSF_CF.Default = 'Y' then 'ssf_{{ DELIVERY_ENTITY }}_cp'
+              else null
+            end
+
+drop_duplicates: true
+
+filter_target:
+- DeliveryEntity = '{{ DELIVERY_ENTITY }}'
+
+    
