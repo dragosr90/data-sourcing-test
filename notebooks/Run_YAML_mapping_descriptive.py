@@ -4,13 +4,15 @@ import os
 import sys
 
 import pandas as pd
-
-from pyspark.sql.utils import AnalysisException  # Fixed typo from Analysis to AnalysisException
 from py4j.protocol import Py4JError
+from pyspark.sql.utils import (
+    AnalysisException,  # Fixed typo from Analysis to AnalysisException
+)
+
 from src.extract.master_data_sql import GetIntegratedData
 from src.transform.table_write_and_comment import write_and_comment
 from src.transform.transform_business_logic_sql import transform_business_logic_sql
-from src.utils.get_catalog import get_catalog
+from src.utils.get_env import get_catalog
 from src.utils.parameter_utils import parse_delivery_entity
 from src.utils.parse_yaml import parse_yaml
 from src.validate.run_all import validate_business_logic_mapping
@@ -82,9 +84,8 @@ display(pd.DataFrame(business_logic_dict["sources"]).fillna(""))
 # COMMAND ----------
 
 # DBTITLE 1,Joins
-if (
-    "transformations" in business_logic_dict
-    and any("join" in tf for tf in business_logic_dict["transformations"])
+if "transformations" in business_logic_dict and any(
+    "join" in tf for tf in business_logic_dict["transformations"]
 ):
     display(
         pd.DataFrame(
@@ -113,12 +114,14 @@ if "transformations" in business_logic_dict:
         for i, filter_config in enumerate(filter_transformations, 1):
             for j, condition in enumerate(filter_config.get("conditions", []), 1):
                 filter_data.append(
-                    {"Filter #": i,
-                     "Condition #": j,
-                     "Condition": condition,
-                     "Source": filter_config.get("source", "Previous result"),
-                     "Log Reductions": filter_config.get("log_reductions", False)
-                    })
+                    {
+                        "Filter #": i,
+                        "Condition #": j,
+                        "Condition": condition,
+                        "Source": filter_config.get("source", "Previous result"),
+                        "Log Reductions": filter_config.get("log_reductions", False),
+                    }
+                )
         if filter_data:
             display(pd.DataFrame(filter_data))
         else:
@@ -127,11 +130,18 @@ if "transformations" in business_logic_dict:
 # COMMAND ----------
 
 # DBTITLE 1,Aggregation
-if (
-    "transformations" in business_logic_dict
-    and any("aggregation" in tf for tf in business_logic_dict["transformations"])
+if "transformations" in business_logic_dict and any(
+    "aggregation" in tf for tf in business_logic_dict["transformations"]
 ):
-    display(pd.DataFrame([d["aggregation"] for d in business_logic_dict["transformations"] if "aggregation" in d]))
+    display(
+        pd.DataFrame(
+            [
+                d["aggregation"]
+                for d in business_logic_dict["transformations"]
+                if "aggregation" in d
+            ]
+        )
+    )
 else:
     print("No aggregation transformations found.")
 
@@ -148,20 +158,23 @@ if "variables" in business_logic_dict:
 # COMMAND ----------
 
 # DBTITLE 1,Add variables (from transformations)
-if (
-    "transformations" in business_logic_dict
-    and any("add_variables" in tf for tf in business_logic_dict["transformations"])
+if "transformations" in business_logic_dict and any(
+    "add_variables" in tf for tf in business_logic_dict["transformations"]
 ):
     add_variables_data = []
 
     for tf in business_logic_dict["transformations"]:
         if "add_variables" in tf:
-            for var_name, expression in tf["add_variables"].get("column_mapping", {}).items():
-                add_variables_data.append({
-                    "Variable Name": var_name,
-                    "Expression": expression,
-                    "Source": tf["add_variables"].get("source", "Previous result")
-                })
+            for var_name, expression in (
+                tf["add_variables"].get("column_mapping", {}).items()
+            ):
+                add_variables_data.append(
+                    {
+                        "Variable Name": var_name,
+                        "Expression": expression,
+                        "Source": tf["add_variables"].get("source", "Previous result"),
+                    }
+                )
 
     if add_variables_data:
         display(pd.DataFrame(add_variables_data))
@@ -195,7 +208,9 @@ data = GetIntegratedData(spark, business_logic_dict).get_integrated_data()
 # DBTITLE 1,Apply filter impact analysis
 if "transformations" in business_logic_dict:
     filter_transformations = [
-        d["filter"] for d in business_logic_dict["transformations"] if "filter" in d.keys()
+        d["filter"]
+        for d in business_logic_dict["transformations"]
+        if "filter" in d.keys()
     ]
     if filter_transformations:
         print("Filter Impact Analysis:")
@@ -213,10 +228,16 @@ if "transformations" in business_logic_dict:
                     if 1 < distinct_count <= MAX_DISPLAY_CATEGORIES:
                         print(f"\nDistribution by {col}:")
                         try:
-                            display(data.groupBy(col).count().orderBy("count", ascending=False))
+                            display(
+                                data.groupBy(col)
+                                .count()
+                                .orderBy("count", ascending=False)
+                            )
                             break
                         except (AnalysisException, Py4JError, ValueError) as exc:
-                            print(f"Could not display distribution for column {col}: {exc}")
+                            print(
+                                f"Could not display distribution for column {col}: {exc}"
+                            )
                             continue
                 except (AnalysisException, Py4JError) as exc:
                     print(f"Could not analyze column {col}: {exc}")
