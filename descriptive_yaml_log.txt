@@ -1,27 +1,30 @@
-11:
-Validate YAML
-validate_business_logic_mapping(spark, business_logic_dict)
+12:
+Load sources and apply filters and joins
+data = GetIntegratedData(spark, business_logic_dict).get_integrated_data()
 
-2025-04-29 09:40:27 [INFO] validate:  YAML format validated successfully
-2025-04-29 09:40:30 [INFO] validate:  Sources validated successfully
-2025-04-29 09:40:31 [INFO] validate_join:  Joins validated successfully
-2025-04-29 09:40:31 [INFO] validate_join:  Joins validated successfully
-2025-04-29 09:40:32 [INFO] validate_join:  Joins validated successfully
-2025-04-29 09:40:32 [INFO] validate_add_variables:  Variables validated successfully
-2025-04-29 09:40:32 [INFO] validate:  Transformations validated successfully
-2025-04-29 09:40:33 [ERROR] validate_sql_expressions:  Problem with expression(s):
-2025-04-29 09:40:33 [ERROR] validate_sql_expressions:  case when FACILITY_CF_CFXCP_JOIN.Default = 'Y' then FACILITY_CF_CFXCP_JOIN.LocalFacilityIdentifier else SSF_COUNTERPARTY.GlobalCounterpartyIdentifier end: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `FACILITY_CF_CFXCP_JOIN`.`Default` cannot be resolved. Did you mean one of the following? [`SSF_COUNTERPARTY`.`Default`, `SSF_COUNTERPARTY`.`DefaultDate`, `is_default_filled`, `SSF_COUNTERPARTY`.`DefaultEndDate`, `cpty_source`]. SQLSTATE: 42703
 
-case when FACILITY_CF_CFXCP_JOIN.Default = 'Y' then FACILITY_CF_CFXCP_JOIN.Default else SSF_COUNTERPARTY.Default end: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `FACILITY_CF_CFXCP_JOIN`.`Default` cannot be resolved. Did you mean one of the following? [`SSF_COUNTERPARTY`.`Default`, `SSF_COUNTERPARTY`.`DefaultDate`, `is_default_filled`, `SSF_COUNTERPARTY`.`DefaultEndDate`, `cpty_source`]. SQLSTATE: 42703
-
-case when FACILITY_CF_CFXCP_JOIN.Default = 'Y' then FACILITY_CF_CFXCP_JOIN.DefaultDate else SSF_COUNTERPARTY.DefaultDate end: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `FACILITY_CF_CFXCP_JOIN`.`Default` cannot be resolved. Did you mean one of the following? [`SSF_COUNTERPARTY`.`Default`, `SSF_COUNTERPARTY`.`DefaultDate`, `is_default_filled`, `SSF_COUNTERPARTY`.`DefaultEndDate`, `cpty_source`]. SQLSTATE: 42703
-
-case when FACILITY_CF_CFXCP_JOIN.Default = 'Y' then FACILITY_CF_CFXCP_JOIN.DefaultEndDate else SSF_COUNTERPARTY.DefaultEndDate end: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `FACILITY_CF_CFXCP_JOIN`.`Default` cannot be resolved. Did you mean one of the following? [`SSF_COUNTERPARTY`.`Default`, `SSF_COUNTERPARTY`.`DefaultDate`, `is_default_filled`, `SSF_COUNTERPARTY`.`DefaultEndDate`, `cpty_source`]. SQLSTATE: 42703
-
-case when FACILITY_CF_CFXCP_JOIN.Default = 'Y' then FACILITY_CF_CFXCP_JOIN.PerformingIndicator else SSF_COUNTERPARTY.PerformingIndicator end: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `FACILITY_CF_CFXCP_JOIN`.`Default` cannot be resolved. Did you mean one of the following? [`SSF_COUNTERPARTY`.`Default`, `SSF_COUNTERPARTY`.`DefaultDate`, `is_default_filled`, `SSF_COUNTERPARTY`.`DefaultEndDate`, `cpty_source`]. SQLSTATE: 42703
-
-case when FACILITY_CF_CFXCP_JOIN.Default = 'Y' then FACILITY_CF_CFXCP_JOIN.NonperformingStartDate else SSF_COUNTERPARTY.NonperformingStartDate end: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `FACILITY_CF_CFXCP_JOIN`.`Default` cannot be resolved. Did you mean one of the following? [`SSF_COUNTERPARTY`.`Default`, `SSF_COUNTERPARTY`.`DefaultDate`, `is_default_filled`, `SSF_COUNTERPARTY`.`DefaultEndDate`, `cpty_source`]. SQLSTATE: 42703
-
-case when FACILITY_CF_CFXCP_JOIN.Default = 'Y' then FACILITY_CF_CFXCP_JOIN.NonperformingEndDate else SSF_COUNTERPARTY.NonperformingEndDate end: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `FACILITY_CF_CFXCP_JOIN`.`Default` cannot be resolved. Did you mean one of the following? [`SSF_COUNTERPARTY`.`Default`, `SSF_COUNTERPARTY`.`DefaultDate`, `is_default_filled`, `SSF_COUNTERPARTY`.`DefaultEndDate`, `cpty_source`]. SQLSTATE: 42703
-
-case when FACILITY_CF_CFXCP_JOIN.Default = 'Y' then 'ssf_ihubbe1_cf' else null end: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `FACILITY_CF_CFXCP_JOIN`.`Default` cannot be resolved. Did you mean one of the following? [`SSF_COUNTERPARTY`.`Default`, `SSF_COUNTERPARTY`.`DefaultDate`, `is_default_filled`, `SSF_COUNTERPARTY`.`DefaultEndDate`, `cpty_source`]. SQLSTATE: 42703
+TypeError: GetIntegratedData.join() got an unexpected keyword argument 'alias'
+File <command-6358367925471435>, line 1
+----> 1 data = GetIntegratedData(spark, business_logic_dict).get_integrated_data()
+File /Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/src/extract/master_data_sql.py:34, in GetIntegratedData.get_integrated_data(self)
+     32 """Get integrated dataset by reading, filtering, joining and aggregating."""
+     33 data_dict = self.read_source_data()
+---> 34 return self.transform_data(data_dict=data_dict)
+File /Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/src/extract/master_data_sql.py:74, in GetIntegratedData.transform_data(self, data_dict)
+     72     transformed_data = data_dict[new_source]
+     73 # Apply the transformation
+---> 74 transformed_data = self._apply_transformation(
+     75     tf_step=tf_step,
+     76     tf_params=tf_params,
+     77     transformed_data=transformed_data,
+     78     data_dict=data_dict,
+     79 )
+     80 # Add alias to original source data dictionary if specified
+     81 if tf_params.get("alias"):
+File /Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/src/extract/master_data_sql.py:110, in GetIntegratedData._apply_transformation(self, tf_step, tf_params, transformed_data, data_dict)
+    106 result = transformed_data  # Default to unchanged data
+    108 if actual_step == "join":
+    109     # For join, need to pass data_dict
+--> 110     result = self.join(data=transformed_data, data_dict=data_dict, **tf_params)
+    111 elif actual_step == "add_variables":
+    112     result = self.add_variables(transformed_data, **tf_params)
