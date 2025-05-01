@@ -1,30 +1,69 @@
-12:
-Load sources and apply filters and joins
-data = GetIntegratedData(spark, business_logic_dict).get_integrated_data()
+4:Sources
 
+display(pd.DataFrame(business_logic_dict["sources"]).fillna(""))
 
-TypeError: GetIntegratedData.join() got an unexpected keyword argument 'alias'
-File <command-6358367925471435>, line 1
-----> 1 data = GetIntegratedData(spark, business_logic_dict).get_integrated_data()
-File /Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/src/extract/master_data_sql.py:34, in GetIntegratedData.get_integrated_data(self)
-     32 """Get integrated dataset by reading, filtering, joining and aggregating."""
-     33 data_dict = self.read_source_data()
----> 34 return self.transform_data(data_dict=data_dict)
-File /Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/src/extract/master_data_sql.py:74, in GetIntegratedData.transform_data(self, data_dict)
-     72     transformed_data = data_dict[new_source]
-     73 # Apply the transformation
----> 74 transformed_data = self._apply_transformation(
-     75     tf_step=tf_step,
-     76     tf_params=tf_params,
-     77     transformed_data=transformed_data,
-     78     data_dict=data_dict,
-     79 )
-     80 # Add alias to original source data dictionary if specified
-     81 if tf_params.get("alias"):
-File /Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/src/extract/master_data_sql.py:110, in GetIntegratedData._apply_transformation(self, tf_step, tf_params, transformed_data, data_dict)
-    106 result = transformed_data  # Default to unchanged data
-    108 if actual_step == "join":
-    109     # For join, need to pass data_dict
---> 110     result = self.join(data=transformed_data, data_dict=data_dict, **tf_params)
-    111 elif actual_step == "add_variables":
-    112     result = self.add_variables(transformed_data, **tf_params)
+2025-05-01 13:31:14 [INFO] send_command:  Exception while sending command.
+Traceback (most recent call last):
+  File "/databricks/spark/python/pyspark/sql/pandas/serializers.py", line 338, in _create_array
+    return pa.Array.from_pandas(
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "pyarrow/array.pxi", line 1116, in pyarrow.lib.Array.from_pandas
+  File "pyarrow/array.pxi", line 340, in pyarrow.lib.array
+  File "pyarrow/array.pxi", line 86, in pyarrow.lib._ndarray_to_array
+  File "pyarrow/error.pxi", line 91, in pyarrow.lib.check_status
+pyarrow.lib.ArrowInvalid: cannot mix list and non-list, non-null values
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/databricks/python/lib/python3.11/site-packages/IPython/core/interactiveshell.py", line 3526, in run_code
+    exec(code_obj, self.user_global_ns, self.user_ns)
+  File "/home/spark-aa36e436-6184-49e8-970f-60/.ipykernel/403884/command-6358367925471427-462370576", line 1, in <module>
+    display(pd.DataFrame(business_logic_dict["sources"]).fillna(""))
+  File "/databricks/python_shell/lib/dbruntime/display.py", line 162, in display
+    self.display(self.sparkSession.createDataFrame(input))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/databricks/spark/python/pyspark/sql/connect/session.py", line 588, in createDataFrame
+    ser._create_batch(
+  File "/databricks/spark/python/pyspark/sql/pandas/serializers.py", line 400, in _create_batch
+    arrs = [
+           ^
+  File "/databricks/spark/python/pyspark/sql/pandas/serializers.py", line 401, in <listcomp>
+    self._create_array(s, arrow_type, spark_type) for s, arrow_type, spark_type in series
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/databricks/spark/python/pyspark/sql/pandas/serializers.py", line 366, in _create_array
+    raise PySparkValueError(error_msg % (series.dtype, series.name, arrow_type)) from e
+pyspark.errors.exceptions.base.PySparkValueError: Exception thrown when converting pandas.Series (object) with name 'columns' to Arrow Array (None).
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/databricks/spark/python/lib/py4j-0.10.9.7-src.zip/py4j/clientserver.py", line 528, in send_command
+    self.socket.sendall(command.encode("utf-8"))
+ConnectionResetError: [Errno 104] Connection reset by peer
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/databricks/spark/python/lib/py4j-0.10.9.7-src.zip/py4j/java_gateway.py", line 1038, in send_command
+    response = connection.send_command(command)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/databricks/spark/python/lib/py4j-0.10.9.7-src.zip/py4j/clientserver.py", line 531, in send_command
+    raise Py4JNetworkError(
+py4j.protocol.Py4JNetworkError: Error while sending
+PySparkValueError: Exception thrown when converting pandas.Series (object) with name 'columns' to Arrow Array (None).
+File /databricks/spark/python/pyspark/sql/pandas/serializers.py:338, in ArrowStreamPandasSerializer._create_array(self, series, arrow_type, spark_type, arrow_cast)
+    337 try:
+--> 338     return pa.Array.from_pandas(
+    339         series, mask=mask, type=arrow_type, safe=self._safecheck
+    340     )
+    341 except pa.lib.ArrowInvalid:
+File /databricks/spark/python/pyspark/sql/pandas/serializers.py:366, in ArrowStreamPandasSerializer._create_array(self, series, arrow_type, spark_type, arrow_cast)
+    359 if self._safecheck:
+    360     error_msg = error_msg + (
+    361         " It can be caused by overflows or other "
+    362         "unsafe conversions warned by Arrow. Arrow safe type check "
+    363         "can be disabled by using SQL config "
+    364         "`spark.sql.execution.pandas.convertToArrowArraySafely`."
+    365     )
+--> 366 raise PySparkValueError(error_msg % (series.dtype, series.name, arrow_type)) from e
