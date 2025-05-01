@@ -1,0 +1,114 @@
+target: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_dummy_facility
+
+sources:
+  - alias: SSF_CA
+    filter: CreditFacility is null
+    source: stg_{{ RUN_MONTH }}.ssf_{{ DELIVERY_ENTITY }}_ca
+  - alias: SSF_PR
+    filter: coalesce(DebitCreditIndicator,'D') = 'D' and CarryingAmountTransactionAmount>1
+    source: stg_{{ RUN_MONTH }}.ssf_{{ DELIVERY_ENTITY }}_pr
+
+transformations:
+  - join:
+      left_source: SSF_PR
+      right_source: SSF_CA
+      condition:
+        - SSF_PR.ArrangementIdentifier  = SSF_CA.ArrangementIdentifier 
+      how: inner
+
+expressions:
+  DeliveryEntity: SSF_PR.DeliveryEntity
+  ReportingDate: SSF_PR.ReportingDate
+  AccruedFeesAmountDebitCreditIndicator: cast(null as string)
+  AccruedFeesAmountReportingAmount: cast(null as string)
+  AccruedFeesAmountReportingCurrency: cast(null as string)
+  AccruedFeesAmountTransactionAmount: cast(null as string)
+  AccruedFeesAmountTransactionCurrency: cast(null as string)
+  AlternativeLocalReferenceIdentifier: SSF_CA.ArrangementIdentifier
+  ApprovedLossGivenDefaultRatingDate: cast(null as string)
+  ArrangementParticipationType: cast(null as string)
+  BaselIIProductType: SSF_PR.BaselIIProductType
+  BookType: 'BB'
+  BorrowingBaseReportingAmount: cast(null as string)
+  BorrowingBaseReportingCurrency: cast(null as string)
+  BorrowingBaseTransactionAmount: cast(null as string)
+  BorrowingBaseTransactionCurrency: cast(null as string)
+  BusinessSegment: SSF_PR.BusinessSegment
+  ContractStatus: SSF_PR.ContractStatus
+  ContractStatusDate: SSF_PR.ContractStatusDate
+  CreditAgreement: cast(null as string)
+  CreditAssessmentForDrawDownUnderUnadvisedCreditLimitIndicator: cast(null as string)
+  CreditConversionFactor: cast(null as string)
+  CreditLimitReportingAmount: cast(null as string)
+  CreditLimitReportingCurrency: SSF_PR.CarryingAmountReportingCurrency
+  CreditLimitTransactionAmount: cast(null as string)
+  CreditLimitTransactionCurrency: SSF_PR.CarryingAmountTransactionCurrency
+  CreditProductProgramSegment: cast(null as string)
+  Default: SSF_CA.Default
+  DefaultDate: SSF_CA.DefaultDate
+  DefaultEndDate: SSF_CA.DefaultEndDate
+  DownturnLossGivenDefault: cast(null as string)
+  EADAmountBeforeApplicationOfConservatismReportingAmount: cast(null as string)
+  EADAmountBeforeApplicationOfConservatismReportingCurrency: cast(null as string)
+  EADAmountBeforeApplicationOfConservatismTransactionAmount: cast(null as string)
+  EADAmountBeforeApplicationOfConservatismTransactionCurrency: cast(null as string)
+  EADModelCode: cast(null as string)
+  ELBEPercentageBeforeApplicationOfConservatism: cast(null as string)
+  ExemptionFromAdvancedInternalRatingBasedApproach: SSF_PR.ExemptionFromAdvancedInternalRatingBasedApproach
+  ExposureAtDefaultReportingAmount: cast(null as string)
+  ExposureAtDefaultReportingCurrency: cast(null as string)
+  FacilityType: 'Dummy'
+  Forborne: cast(null as string) # Check how to use from cafbm
+  ForborneDate: cast(null as string)  # Check how to use from cafbm
+  GlobalFacilityIdentifier: cast(null as string)
+  HighQualityIndicator: cast(null as string)
+  Ifrs9RiskStage: SSF_CA.Ifrs9RiskStage
+  IncomeProducingRealEstateFinance: cast(null as string)
+  InfrastructuralSupportingFactor: cast(null as string)
+  InsuredFlag: cast(null as string)
+  LandAcquisitionDevelopmentAndConstructionExposureFinance: cast(null as string)
+  LGDMarginOfConservatism: cast(null as string)
+  LGDModelCode: cast(null as string)
+  LGDPercentageBeforeConservatism: cast(null as string)
+  LGDType: cast(null as string)
+  LoanLossAllowanceRcoa: cast(null as string)
+  LoanLossAllowanceReportingAmount: cast(null as string)
+  LoanLossAllowanceReportingCurrency: cast(null as string)
+  LoanLossAllowanceTransactionAmount: cast(null as string)
+  LoanLossAllowanceTransactionCurrency: cast(null as string)
+  LocalFacilityIdentifier: concat('CF/',SSF_CA.ArrangementIdentifier)
+  LocalReferenceIdentifier: cast(null as string)
+  LossGivenDefaultClass: cast(null as string)
+  MaturityDate: case when SSF_PR.BaselIIProductType='134' then  DATEADD(day, 1,  SSF_CA.ReportingDate) 
+                        else DATEADD(year, 1,  SSF_CA.ReportingDate) 
+                  end
+  NonperformingEndDate: SSF_CA.NonperformingEndDate
+  NonperformingStartDate: SSF_CA.NonperformingStartDate
+  ParentCreditFacility: cast(null as string)
+  ParentCreditFacilitySourceSystemIdentifier: cast(null as string)
+  PDMarginOfConservatism: cast(null as string)
+  PDModelCode: cast(null as string)
+  PDPercentageBeforeConservatism: cast(null as string)
+  PensionerFlag: cast(null as string)
+  PerformingIndicator: SSF_CA.PerformingIndicator
+  PlNplIndicator: SSF_CA.PlNplIndicator
+  ProbabilityOfDefault: cast(null as string)
+  ProductProgram: cast(null as string)
+  ProjectFinancePhaseIndicator: cast(null as string)
+  ReportingEntity: SSF_PR.ReportingEntity
+  Revolving: 1
+  RiskWeightedExposureApproach: cast(null as string)
+  SourceSystemIdentifier: SSF_PR.SourceSystemIdentifier
+  SpecialisedLendingType: cast(null as string)
+  ThroughTheCycleLossGivenDefault: cast(null as string)
+  TradeDate: SSF_PR.TradeDate
+  TypeOfCommitment: 'N'
+  UnadvisedCreditLimitReportingAmount: cast(null as string)
+  UnadvisedCreditLimitReportingCurrency: cast(null as string)
+  UnadvisedCreditLimitTransactionAmount: cast(null as string)
+  UnadvisedCreditLimitTransactionCurrency: cast(null as string)
+  UndrawnRcoa: cast(null as string)
+  UndrawnReportingAmount: cast(null as string)
+  UndrawnReportingCurrency: SSF_PR.CarryingAmountReportingCurrency
+  UndrawnTransactionAmount: cast(null as string)
+  UndrawnTransactionCurrency: SSF_PR.CarryingAmountTransactionCurrency
