@@ -1,4 +1,4 @@
-target: int_{{ RUN_MONTH }}.default_determination_{{ DELIVERY_ENTITY }}
+target: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_integrated_facility
 
 sources:
   - alias: SSF_CF
@@ -105,6 +105,100 @@ sources:
     - HighestExistingFacility
     source: int_{{ RUN_MONTH }}.ssf_facility_rollup_{{ DELIVERY_ENTITY }}
   - alias: SSF_DUMMY_FACILITY
+    columns:
+    - DeliveryEntity
+    - LocalFacilityIdentifier
+    - Default
+    - DefaultDate
+    - DefaultEndDate
+    - NonperformingEndDate
+    - NonperformingStartDate
+    - PerformingIndicator
+    - ReportingDate
+    - AccruedFeesAmountDebitCreditIndicator
+    - AccruedFeesAmountReportingAmount
+    - AccruedFeesAmountReportingCurrency
+    - AccruedFeesAmountTransactionAmount
+    - AccruedFeesAmountTransactionCurrency
+    - AlternativeLocalReferenceIdentifier
+    - ApprovedLossGivenDefaultRatingDate
+    - ArrangementParticipationType
+    - BaselIIProductType
+    - BookType
+    - BorrowingBaseReportingAmount
+    - BorrowingBaseReportingCurrency
+    - BorrowingBaseTransactionAmount
+    - BorrowingBaseTransactionCurrency
+    - BusinessSegment
+    - ContractStatus
+    - ContractStatusDate
+    - CreditAgreement
+    - CreditAssessmentForDrawDownUnderUnadvisedCreditLimitIndicator
+    - CreditConversionFactor
+    - CreditLimitReportingAmount
+    - CreditLimitReportingCurrency
+    - CreditLimitTransactionAmount
+    - CreditLimitTransactionCurrency
+    - CreditProductProgramSegment
+    - DownturnLossGivenDefault
+    - EADAmountBeforeApplicationOfConservatismReportingAmount
+    - EADAmountBeforeApplicationOfConservatismReportingCurrency
+    - EADAmountBeforeApplicationOfConservatismTransactionAmount
+    - EADAmountBeforeApplicationOfConservatismTransactionCurrency
+    - EADModelCode
+    - ELBEPercentageBeforeApplicationOfConservatism
+    - ExemptionFromAdvancedInternalRatingBasedApproach
+    - ExposureAtDefaultReportingAmount
+    - ExposureAtDefaultReportingCurrency
+    - FacilityType
+    - Forborne
+    - ForborneDate
+    - GlobalFacilityIdentifier
+    - HighQualityIndicator
+    - Ifrs9RiskStage
+    - IncomeProducingRealEstateFinance
+    - InfrastructuralSupportingFactor
+    - InsuredFlag
+    - LandAcquisitionDevelopmentAndConstructionExposureFinance
+    - LGDMarginOfConservatism
+    - LGDModelCode
+    - LGDPercentageBeforeConservatism
+    - LGDType
+    - LoanLossAllowanceRcoa
+    - LoanLossAllowanceReportingAmount
+    - LoanLossAllowanceReportingCurrency
+    - LoanLossAllowanceTransactionAmount
+    - LoanLossAllowanceTransactionCurrency
+    - LocalReferenceIdentifier
+    - LossGivenDefaultClass
+    - MaturityDate
+    - ParentCreditFacility
+    - ParentCreditFacilitySourceSystemIdentifier
+    - PDMarginOfConservatism
+    - PDModelCode
+    - PDPercentageBeforeConservatism
+    - PensionerFlag
+    - PlNplIndicator
+    - ProbabilityOfDefault
+    - ProductProgram
+    - ProjectFinancePhaseIndicator
+    - ReportingEntity
+    - Revolving
+    - RiskWeightedExposureApproach
+    - SourceSystemIdentifier
+    - SpecialisedLendingType
+    - ThroughTheCycleLossGivenDefault
+    - TradeDate
+    - TypeOfCommitment
+    - UnadvisedCreditLimitReportingAmount
+    - UnadvisedCreditLimitReportingCurrency
+    - UnadvisedCreditLimitTransactionAmount
+    - UnadvisedCreditLimitTransactionCurrency
+    - UndrawnRcoa
+    - UndrawnReportingAmount
+    - UndrawnReportingCurrency
+    - UndrawnTransactionAmount
+    - UndrawnTransactionCurrency
     source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_dummy_facility
 
 transformations:
