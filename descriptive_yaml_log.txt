@@ -1,8 +1,30 @@
-11:
-Validate YAML
-validate_business_logic_mapping(spark, business_logic_dict)
+12:
+Load sources and apply filters and joins
 
-2025-05-02 11:45:56 [INFO] validate:  YAML format validated successfully
-2025-05-02 11:45:59 [INFO] validate:  Sources validated successfully
-2025-05-02 11:45:59 [ERROR] validate_initial_source:  Initial source should be specified
-False
+data = GetIntegratedData(spark, business_logic_dict).get_integrated_data()
+
+TypeError: GetIntegratedData.union() got an unexpected keyword argument 'source'
+File <command-6358367925471435>, line 1
+----> 1 data = GetIntegratedData(spark, business_logic_dict).get_integrated_data()
+File /Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/src/extract/master_data_sql.py:34, in GetIntegratedData.get_integrated_data(self)
+     32 """Get integrated dataset by reading, filtering, joining and aggregating."""
+     33 data_dict = self.read_source_data()
+---> 34 return self.transform_data(data_dict=data_dict)
+File /Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/src/extract/master_data_sql.py:74, in GetIntegratedData.transform_data(self, data_dict)
+     72     transformed_data = data_dict[new_source]
+     73 # Apply the transformation
+---> 74 transformed_data = self._apply_transformation(
+     75     tf_step=tf_step,
+     76     tf_params=tf_params,
+     77     transformed_data=transformed_data,
+     78     data_dict=data_dict,
+     79 )
+     80 # Add alias to original source data dictionary if specified
+     81 if tf_params.get("alias"):
+File /Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/src/extract/master_data_sql.py:122, in GetIntegratedData._apply_transformation(self, tf_step, tf_params, transformed_data, data_dict)
+    120     data_union_keys = list(tf_params["column_mapping"].keys())[1:]
+    121     union_dataframes = [data_dict[k] for k in data_union_keys]
+--> 122     result = self.union(transformed_data, union_dataframes, **tf_params)
+    123 else:
+    124     # This should never happen as we validate transformation types
+    125     logger.warning(f"Unknown transformation type: {tf_step}")
