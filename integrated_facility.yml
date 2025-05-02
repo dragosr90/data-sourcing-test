@@ -1,18 +1,12 @@
 target: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_integrated_facility
 
 sources:
-  - alias: SSF_CF
+  - alias: UNIFIED_FACILITIES
     columns:
     - DeliveryEntity
     - LocalFacilityIdentifier
     - ParentCreditFacility
-    source: stg_{{ RUN_MONTH }}.ssf_{{ DELIVERY_ENTITY }}_cf
-  - alias: SSF_DUMMY_FACILITY
-    columns:
-    - DeliveryEntity
-    - LocalFacilityIdentifier
-    - ParentCreditFacility
-    source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_dummy_facility
+    source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_unified_facilities
   - alias: SSF_FACILITY_ROLLUP
     columns:
     - DeliveryEntity
@@ -23,46 +17,27 @@ sources:
     source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_facility_rollup
 
 transformations:
-  # Step 1: Start with a transformation that uses SSF_CF as the initial source
-  - add_variables:
-      left_source: SSF_CF  # This establishes SSF_CF as the initial source
-      column_mapping:
-        temp_marker: "1"  # Add a temporary marker column
-
-  # Step 2: Use union to combine SSF_CF and SSF_DUMMY_FACILITY
-  - union:
-      alias: UNIFIED_DATA
-      column_mapping:
-        SSF_CF:  # First source is the transformed SSF_CF with temp_marker
-          DeliveryEntity: DeliveryEntity
-          LocalFacilityIdentifier: LocalFacilityIdentifier
-          ParentCreditFacility: ParentCreditFacility
-        SSF_DUMMY_FACILITY:  # Second source
-          DeliveryEntity: DeliveryEntity
-          LocalFacilityIdentifier: LocalFacilityIdentifier
-          ParentCreditFacility: ParentCreditFacility
-  
-  # Step 3: Join with FACILITY_ROLLUP
+  # Join UNIFIED_FACILITIES with SSF_FACILITY_ROLLUP
   - join:
-      left_source: UNIFIED_DATA
+      left_source: UNIFIED_FACILITIES
       right_source: SSF_FACILITY_ROLLUP
       condition:
-        - UNIFIED_DATA.LocalFacilityIdentifier = SSF_FACILITY_ROLLUP.LocalFacilityIdentifier
-        - UNIFIED_DATA.DeliveryEntity = SSF_FACILITY_ROLLUP.DeliveryEntity
+        - UNIFIED_FACILITIES.LocalFacilityIdentifier = SSF_FACILITY_ROLLUP.LocalFacilityIdentifier
+        - UNIFIED_FACILITIES.DeliveryEntity = SSF_FACILITY_ROLLUP.DeliveryEntity
       how: left
   
-  # Step 4: Filter for SubFacilityFlag = 0
+  # Filter for SubFacilityFlag = 0
   - filter:
       conditions:
         - SSF_FACILITY_ROLLUP.SubFacilityFlag = 0 OR SSF_FACILITY_ROLLUP.SubFacilityFlag IS NULL
 
 expressions:
-  # Core columns from UNIFIED_DATA (union of CF and DUMMY_FACILITY)
-  DeliveryEntity: UNIFIED_DATA.DeliveryEntity
-  LocalFacilityIdentifier: UNIFIED_DATA.LocalFacilityIdentifier
-  ParentCreditFacility: UNIFIED_DATA.ParentCreditFacility
+  # Columns from UNIFIED_FACILITIES
+  DeliveryEntity: UNIFIED_FACILITIES.DeliveryEntity
+  LocalFacilityIdentifier: UNIFIED_FACILITIES.LocalFacilityIdentifier
+  ParentCreditFacility: UNIFIED_FACILITIES.ParentCreditFacility
   
-  # Facility rollup columns
+  # Columns from SSF_FACILITY_ROLLUP
   HighestExistingFacility: SSF_FACILITY_ROLLUP.HighestExistingFacility
   HighestFacilityExplained: SSF_FACILITY_ROLLUP.HighestFacilityExplained
   SubFacilityFlag: SSF_FACILITY_ROLLUP.SubFacilityFlag
