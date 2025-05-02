@@ -205,8 +205,8 @@ transformations:
   - aggregation:
       group: [HighestExistingFacility]
       column_mapping:
-        DeliveryEntity: first(DeliveryEntity)
-        HighestExistingFacility: first(HighestExistingFacility)
+        DeliveryEntity: first(SSF_FACILITY_ROLLUP.DeliveryEntity)
+        HighestExistingFacility: first(SSF_FACILITY_ROLLUP.HighestExistingFacility)
       source: SSF_FACILITY_ROLLUP
       alias: DISTINCT_HIGHEST_FACILITIES
   - join:
