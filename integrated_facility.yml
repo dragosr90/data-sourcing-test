@@ -30,6 +30,7 @@ transformations:
   - filter:
       conditions:
         - SSF_FACILITY_ROLLUP.SubFacilityFlag = 0 OR SSF_FACILITY_ROLLUP.SubFacilityFlag IS NULL
+      log_reductions: true
 
 expressions:
   # Columns from UNIFIED_FACILITIES
