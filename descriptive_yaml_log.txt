@@ -1,4 +1,5 @@
-11:Validate YAML
+11:
+Validate YAML
 validate_business_logic_mapping(spark, business_logic_dict)
 
 2025-05-01 13:53:07 [INFO] validate:  YAML format validated successfully
