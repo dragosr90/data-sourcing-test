@@ -1,8 +1,8 @@
-target: int_{{ RUN_MONTH }}.ssf_facility_rollup_{{ DELIVERY_ENTITY }}
+target: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_facility_rollup
 
 sources:
   - alias: CF1
-    filter: ParentCreditFacility<>LocalFacilityIdentifier
+    #filter: ParentCreditFacility<>LocalFacilityIdentifier
     source: stg_{{ RUN_MONTH }}.ssf_{{ DELIVERY_ENTITY }}_cf
   - alias: CF2
     source: stg_{{ RUN_MONTH }}.ssf_{{ DELIVERY_ENTITY }}_cf
@@ -43,5 +43,6 @@ expressions:
                                     when CF2.ParentCreditFacility is not null then 'level 2 parent not found'
                                     when CF2.LocalFacilityIdentifier is not null then 'level 1 parent found'
                                     when CF1.ParentCreditFacility is not null then 'level 1 parent not found'
+                                    when CF1.ParentCreditFacility is null then 'level 0 parent found'
                               end
   SubFacilityFlag: case when CF2.LocalFacilityIdentifier is not null then 1 else 0 end
