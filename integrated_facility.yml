@@ -51,18 +51,18 @@ transformations:
   - filter:
       source: FINAL_DATA
       conditions:
-        - FINAL_DATA.SSF_FACILITY_ROLLUP.SubFacilityFlag = 0 OR FINAL_DATA.SSF_FACILITY_ROLLUP.SubFacilityFlag IS NULL
+        - SSF_FACILITY_ROLLUP.SubFacilityFlag = 0 OR SSF_FACILITY_ROLLUP.SubFacilityFlag IS NULL
 
 expressions:
   # Core columns from UNIFIED_DATA (union of CF and DUMMY_FACILITY)
-  DeliveryEntity: FINAL_DATA.UNIFIED_DATA.DeliveryEntity
-  LocalFacilityIdentifier: FINAL_DATA.UNIFIED_DATA.LocalFacilityIdentifier
-  ParentCreditFacility: FINAL_DATA.UNIFIED_DATA.ParentCreditFacility
+  DeliveryEntity: UNIFIED_DATA.DeliveryEntity
+  LocalFacilityIdentifier: UNIFIED_DATA.LocalFacilityIdentifier
+  ParentCreditFacility: UNIFIED_DATA.ParentCreditFacility
   
   # Facility rollup columns
-  HighestExistingFacility: FINAL_DATA.SSF_FACILITY_ROLLUP.HighestExistingFacility
-  HighestFacilityExplained: FINAL_DATA.SSF_FACILITY_ROLLUP.HighestFacilityExplained
-  SubFacilityFlag: FINAL_DATA.SSF_FACILITY_ROLLUP.SubFacilityFlag
+  HighestExistingFacility: SSF_FACILITY_ROLLUP.HighestExistingFacility
+  HighestFacilityExplained: SSF_FACILITY_ROLLUP.HighestFacilityExplained
+  SubFacilityFlag: SSF_FACILITY_ROLLUP.SubFacilityFlag
 
 drop_duplicates: true
 
