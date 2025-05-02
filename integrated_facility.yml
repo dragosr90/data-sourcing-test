@@ -22,6 +22,9 @@ sources:
     - SubFacilityFlag
     source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_facility_rollup
 
+# Add the initial_source parameter to specify the starting point
+initial_source: SSF_CF
+
 transformations:
   # Step 1: Union CF and DUMMY_FACILITY to get the base data
   - union:
