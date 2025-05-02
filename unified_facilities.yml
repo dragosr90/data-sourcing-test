@@ -14,14 +14,16 @@ sources:
     - ParentCreditFacility
     source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_dummy_facility
 
-# We start with a simple filter on SSF_CF to establish it as the initial source
+# Start with a join to set SSF_CF as the initial source
 transformations:
-  - filter:
-      left_source: SSF_CF
-      conditions:
-        - 1=1  # Always true condition
-  
-  # Then union with SSF_DUMMY_FACILITY
+  - join:
+      left_source: SSF_CF  # This establishes SSF_CF as the initial source
+      right_source: SSF_DUMMY_FACILITY
+      condition:
+        - 1 = 0  # This creates an empty result, which we'll union with both sources
+      how: left
+      
+  # Now use union to combine them properly
   - union:
       alias: UNIFIED_FACILITIES
       column_mapping:
