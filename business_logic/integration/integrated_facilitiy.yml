@@ -502,5 +502,6 @@ expressions:
   UndrawnTransactionCurrency: COMBINED_FACILITIES.UndrawnTransactionCurrency
   HighestExistingFacility: SSF_FACILITY_ROLLUP.HighestExistingFacility
   HighestFacilityExplained: SSF_FACILITY_ROLLUP.HighestFacilityExplained
+  SubFacilityFlag: SSF_FACILITY_ROLLUP.SubFacilityFlag
 
 drop_duplicates: true
