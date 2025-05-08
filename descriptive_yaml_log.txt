@@ -1,29 +1,271 @@
 12:
-Load sources and apply filters and joins
+Validate YAML
 
-data = GetIntegratedData(spark, business_logic_dict).get_integrated_data()
+validate_business_logic_mapping(spark, business_logic_dict)
 
-TypeError: GetIntegratedData.filter() got an unexpected keyword argument 'source'
-File <command-6358367925471435>, line 1
-----> 1 data = GetIntegratedData(spark, business_logic_dict).get_integrated_data()
-File /Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/src/extract/master_data_sql.py:34, in GetIntegratedData.get_integrated_data(self)
-     32 """Get integrated dataset by reading, filtering, joining and aggregating."""
-     33 data_dict = self.read_source_data()
----> 34 return self.transform_data(data_dict=data_dict)
-File /Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/src/extract/master_data_sql.py:74, in GetIntegratedData.transform_data(self, data_dict)
-     72     transformed_data = data_dict[new_source]
-     73 # Apply the transformation
----> 74 transformed_data = self._apply_transformation(
-     75     tf_step=tf_step,
-     76     tf_params=tf_params,
-     77     transformed_data=transformed_data,
-     78     data_dict=data_dict,
-     79 )
-     80 # Add alias to original source data dictionary if specified
-     81 if tf_params.get("alias"):
-File /Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/src/extract/master_data_sql.py:118, in GetIntegratedData._apply_transformation(self, tf_step, tf_params, transformed_data, data_dict)
-    116     result = self.pivot(transformed_data, **tf_params)
-    117 elif actual_step == "filter":
---> 118     result = self.filter(transformed_data, **tf_params)
-    119 elif actual_step == "union":
-    120     data_union_keys = list(tf_params["column_mapping"].keys())[1:]
+2025-05-08 08:41:34 [INFO] validate:  YAML format validated successfully
+2025-05-08 08:41:35 [ERROR] validate:  Problem with table/columns for source {'alias': 'INT_FACILITY', 'columns': ['DeliveryEntity', 'LocalFacilityIdentifier', 'GlobalFacilityIdentifier', 'Default', 'DefaultDate', 'DefaultEndDate', 'NonperformingEndDate', 'NonperformingStartDate', 'PerformingIndicator', 'CounterpartyID'], 'source': 'int_202412.ihubfr1_integrated_facility'}
+Traceback (most recent call last):
+  File "/Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/src/validate/sources.py", line 40, in validate
+    .take(1)
+     ^^^^^^^
+  File "/databricks/spark/python/pyspark/sql/connect/dataframe.py", line 660, in take
+    return self.limit(num).collect()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/databricks/spark/python/pyspark/sql/connect/dataframe.py", line 1892, in collect
+    table, schema = self._to_table()
+                    ^^^^^^^^^^^^^^^^
+  File "/databricks/spark/python/pyspark/sql/connect/dataframe.py", line 1971, in _to_table
+    table, schema, self._execution_info = self._session.client.to_table(
+                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/databricks/spark/python/pyspark/sql/connect/client/core.py", line 1014, in to_table
+    table, schema, metrics, observed_metrics, _ = self._execute_and_fetch(req, observations)
+                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/databricks/spark/python/pyspark/sql/connect/client/core.py", line 1761, in _execute_and_fetch
+    for response in self._execute_and_fetch_as_iterator(
+  File "/databricks/spark/python/pyspark/sql/connect/client/core.py", line 1737, in _execute_and_fetch_as_iterator
+    self._handle_error(error)
+  File "/databricks/spark/python/pyspark/sql/connect/client/core.py", line 2053, in _handle_error
+    self._handle_rpc_error(error)
+  File "/databricks/spark/python/pyspark/sql/connect/client/core.py", line 2155, in _handle_rpc_error
+    raise convert_exception(
+pyspark.errors.exceptions.connect.AnalysisException: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `CounterpartyID` cannot be resolved. Did you mean one of the following? [`TradeDate`, `ContractStatus`, `Default`, `Forborne`, `InsuredFlag`]. SQLSTATE: 42703; line 1 pos 0;
+'GlobalLimit 1
++- 'LocalLimit 1
+   +- 'SubqueryAlias INT_FACILITY
+      +- 'Project [DeliveryEntity#287424, LocalFacilityIdentifier#287426, GlobalFacilityIdentifier#287471, Default#287427, DefaultDate#287428, DefaultEndDate#287429, NonperformingEndDate#287430, NonperformingStartDate#287431, PerformingIndicator#287432, 'CounterpartyID]
+         +- SubqueryAlias bsrc_d.int_202412.ihubfr1_integrated_facility
+            +- Relation bsrc_d.int_202412.ihubfr1_integrated_facility[DeliveryEntity#287424,ReportingDate#287425,LocalFacilityIdentifier#287426,Default#287427,DefaultDate#287428,DefaultEndDate#287429,NonperformingEndDate#287430,NonperformingStartDate#287431,PerformingIndicator#287432,AccruedFeesAmountDebitCreditIndicator#287433,AccruedFeesAmountReportingAmount#287434,AccruedFeesAmountReportingCurrency#287435,AccruedFeesAmountTransactionAmount#287436,AccruedFeesAmountTransactionCurrency#287437,AlternativeLocalReferenceIdentifier#287438,ApprovedLossGivenDefaultRatingDate#287439,ArrangementParticipationType#287440,BaselIIProductType#287441,BookType#287442,BorrowingBaseReportingAmount#287443,BorrowingBaseReportingCurrency#287444,BorrowingBaseTransactionAmount#287445,BorrowingBaseTransactionCurrency#287446,BusinessSegment#287447L,... 72 more fields] parquet
+
+
+JVM stacktrace:
+org.apache.spark.sql.catalyst.ExtendedAnalysisException
+	at org.apache.spark.sql.errors.QueryCompilationErrors$.unresolvedAttributeError(QueryCompilationErrors.scala:454)
+	at org.apache.spark.sql.catalyst.analysis.CheckAnalysis.org$apache$spark$sql$catalyst$analysis$CheckAnalysis$$failUnresolvedAttribute(CheckAnalysis.scala:171)
+	at org.apache.spark.sql.catalyst.analysis.CheckAnalysis.$anonfun$checkAnalysis0$8(CheckAnalysis.scala:356)
+	at org.apache.spark.sql.catalyst.analysis.CheckAnalysis.$anonfun$checkAnalysis0$8$adapted(CheckAnalysis.scala:341)
+	at org.apache.spark.sql.catalyst.trees.TreeNode.foreachUp(TreeNode.scala:293)
+	at org.apache.spark.sql.catalyst.analysis.CheckAnalysis.$anonfun$checkAnalysis0$7(CheckAnalysis.scala:341)
+	at org.apache.spark.sql.catalyst.analysis.CheckAnalysis.$anonfun$checkAnalysis0$7$adapted(CheckAnalysis.scala:341)
+	at scala.collection.immutable.Stream.foreach(Stream.scala:533)
+	at org.apache.spark.sql.catalyst.analysis.CheckAnalysis.$anonfun$checkAnalysis0$2(CheckAnalysis.scala:341)
+	at org.apache.spark.sql.catalyst.analysis.CheckAnalysis.$anonfun$checkAnalysis0$2$adapted(CheckAnalysis.scala:216)
+	at org.apache.spark.sql.catalyst.trees.TreeNode.foreachUp(TreeNode.scala:293)
+	at org.apache.spark.sql.catalyst.trees.TreeNode.$anonfun$foreachUp$1(TreeNode.scala:292)
+	at org.apache.spark.sql.catalyst.trees.TreeNode.$anonfun$foreachUp$1$adapted(TreeNode.scala:292)
+	at scala.collection.Iterator.foreach(Iterator.scala:943)
+	at scala.collection.Iterator.foreach$(Iterator.scala:943)
+	at scala.collection.AbstractIterator.foreach(Iterator.scala:1431)
+	at scala.collection.IterableLike.foreach(IterableLike.scala:74)
+	at scala.collection.IterableLike.foreach$(IterableLike.scala:73)
+	at scala.collection.AbstractIterable.foreach(Iterable.scala:56)
+	at org.apache.spark.sql.catalyst.trees.TreeNode.foreachUp(TreeNode.scala:292)
+	at org.apache.spark.sql.catalyst.trees.TreeNode.$anonfun$foreachUp$1(TreeNode.scala:292)
+	at org.apache.spark.sql.catalyst.trees.TreeNode.$anonfun$foreachUp$1$adapted(TreeNode.scala:292)
+	at scala.collection.Iterator.foreach(Iterator.scala:943)
+	at scala.collection.Iterator.foreach$(Iterator.scala:943)
+	at scala.collection.AbstractIterator.foreach(Iterator.scala:1431)
+	at scala.collection.IterableLike.foreach(IterableLike.scala:74)
+	at scala.collection.IterableLike.foreach$(IterableLike.scala:73)
+	at scala.collection.AbstractIterable.foreach(Iterable.scala:56)
+	at org.apache.spark.sql.catalyst.trees.TreeNode.foreachUp(TreeNode.scala:292)
+	at org.apache.spark.sql.catalyst.trees.TreeNode.$anonfun$foreachUp$1(TreeNode.scala:292)
+	at org.apache.spark.sql.catalyst.trees.TreeNode.$anonfun$foreachUp$1$adapted(TreeNode.scala:292)
+	at scala.collection.Iterator.foreach(Iterator.scala:943)
+	at scala.collection.Iterator.foreach$(Iterator.scala:943)
+	at scala.collection.AbstractIterator.foreach(Iterator.scala:1431)
+	at scala.collection.IterableLike.foreach(IterableLike.scala:74)
+	at scala.collection.IterableLike.foreach$(IterableLike.scala:73)
+	at scala.collection.AbstractIterable.foreach(Iterable.scala:56)
+	at org.apache.spark.sql.catalyst.trees.TreeNode.foreachUp(TreeNode.scala:292)
+	at org.apache.spark.sql.catalyst.analysis.CheckAnalysis.checkAnalysis0(CheckAnalysis.scala:216)
+	at org.apache.spark.sql.catalyst.analysis.CheckAnalysis.checkAnalysis0$(CheckAnalysis.scala:198)
+	at org.apache.spark.sql.catalyst.analysis.Analyzer.checkAnalysis0(Analyzer.scala:369)
+	at org.apache.spark.sql.catalyst.analysis.CheckAnalysis.$anonfun$checkAnalysis$1(CheckAnalysis.scala:186)
+	at scala.runtime.java8.JFunction0$mcV$sp.apply(JFunction0$mcV$sp.java:23)
+	at com.databricks.spark.util.FrameProfiler$.record(FrameProfiler.scala:94)
+	at org.apache.spark.sql.catalyst.analysis.CheckAnalysis.checkAnalysis(CheckAnalysis.scala:174)
+	at org.apache.spark.sql.catalyst.analysis.CheckAnalysis.checkAnalysis$(CheckAnalysis.scala:174)
+	at org.apache.spark.sql.catalyst.analysis.Analyzer.checkAnalysis(Analyzer.scala:369)
+	at org.apache.spark.sql.catalyst.analysis.Analyzer.$anonfun$executeAndCheck$2(Analyzer.scala:424)
+	at scala.runtime.java8.JFunction0$mcV$sp.apply(JFunction0$mcV$sp.java:23)
+	at org.apache.spark.sql.catalyst.QueryPlanningTracker$.withTracker(QueryPlanningTracker.scala:194)
+	at org.apache.spark.sql.catalyst.analysis.Analyzer.$anonfun$executeAndCheck$1(Analyzer.scala:424)
+	at org.apache.spark.sql.catalyst.plans.logical.AnalysisHelper$.markInAnalyzer(AnalysisHelper.scala:443)
+	at org.apache.spark.sql.catalyst.analysis.Analyzer.executeAndCheck(Analyzer.scala:421)
+	at org.apache.spark.sql.execution.QueryExecution.$anonfun$analyzed$1(QueryExecution.scala:290)
+	at com.databricks.spark.util.FrameProfiler$.record(FrameProfiler.scala:94)
+	at org.apache.spark.sql.catalyst.QueryPlanningTracker.measurePhase(QueryPlanningTracker.scala:489)
+	at org.apache.spark.sql.execution.QueryExecution.$anonfun$executePhase$5(QueryExecution.scala:653)
+	at org.apache.spark.sql.execution.SQLExecution$.withExecutionPhase(SQLExecution.scala:144)
+	at org.apache.spark.sql.execution.QueryExecution.$anonfun$executePhase$4(QueryExecution.scala:653)
+	at org.apache.spark.sql.execution.QueryExecution$.withInternalError(QueryExecution.scala:1219)
+	at org.apache.spark.sql.execution.QueryExecution.$anonfun$executePhase$2(QueryExecution.scala:652)
+	at com.databricks.util.LexicalThreadLocal$Handle.runWith(LexicalThreadLocal.scala:63)
+	at org.apache.spark.sql.execution.QueryExecution.$anonfun$executePhase$1(QueryExecution.scala:648)
+	at org.apache.spark.sql.SparkSession.withActive(SparkSession.scala:1210)
+	at org.apache.spark.sql.execution.QueryExecution.executePhase(QueryExecution.scala:648)
+	at org.apache.spark.sql.execution.QueryExecution.analyzed$lzycompute(QueryExecution.scala:284)
+	at org.apache.spark.sql.execution.QueryExecution.analyzed(QueryExecution.scala:283)
+	at org.apache.spark.sql.execution.QueryExecution.assertAnalyzed(QueryExecution.scala:265)
+	at org.apache.spark.sql.Dataset$.$anonfun$ofRows$4(Dataset.scala:172)
+	at org.apache.spark.sql.SparkSession.withActive(SparkSession.scala:1210)
+	at org.apache.spark.sql.SparkSession.$anonfun$withActiveAndFrameProfiler$1(SparkSession.scala:1217)
+	at com.databricks.spark.util.FrameProfiler$.record(FrameProfiler.scala:94)
+	at org.apache.spark.sql.SparkSession.withActiveAndFrameProfiler(SparkSession.scala:1217)
+	at org.apache.spark.sql.Dataset$.ofRows(Dataset.scala:167)
+	at org.apache.spark.sql.connect.execution.SparkConnectPlanExecution.handlePlan(SparkConnectPlanExecution.scala:106)
+	at org.apache.spark.sql.connect.execution.ExecuteThreadRunner.handlePlan(ExecuteThreadRunner.scala:356)
+	at org.apache.spark.sql.connect.execution.ExecuteThreadRunner.$anonfun$executeInternal$1(ExecuteThreadRunner.scala:281)
+	at org.apache.spark.sql.connect.execution.ExecuteThreadRunner.$anonfun$executeInternal$1$adapted(ExecuteThreadRunner.scala:210)
+	at org.apache.spark.sql.connect.service.SessionHolder.$anonfun$withSession$2(SessionHolder.scala:392)
+	at org.apache.spark.sql.SparkSession.withActive(SparkSession.scala:1210)
+	at org.apache.spark.sql.connect.service.SessionHolder.$anonfun$withSession$1(SessionHolder.scala:392)
+	at org.apache.spark.JobArtifactSet$.withActiveJobArtifactState(JobArtifactSet.scala:97)
+	at org.apache.spark.sql.artifact.ArtifactManager.$anonfun$withResources$1(ArtifactManager.scala:84)
+	at org.apache.spark.util.Utils$.withContextClassLoader(Utils.scala:240)
+	at org.apache.spark.sql.artifact.ArtifactManager.withResources(ArtifactManager.scala:83)
+	at org.apache.spark.sql.connect.service.SessionHolder.withSession(SessionHolder.scala:391)
+	at org.apache.spark.sql.connect.execution.ExecuteThreadRunner.executeInternal(ExecuteThreadRunner.scala:210)
+	at org.apache.spark.sql.connect.execution.ExecuteThreadRunner.org$apache$spark$sql$connect$execution$ExecuteThreadRunner$$execute(ExecuteThreadRunner.scala:125)
+	at org.apache.spark.sql.connect.execution.ExecuteThreadRunner$ExecutionThread.$anonfun$run$2(ExecuteThreadRunner.scala:592)
+	at scala.runtime.java8.JFunction0$mcV$sp.apply(JFunction0$mcV$sp.java:23)
+	at com.databricks.unity.UCSEphemeralState$Handle.runWith(UCSEphemeralState.scala:51)
+	at com.databricks.unity.HandleImpl.runWith(UCSHandle.scala:104)
+	at com.databricks.unity.HandleImpl.$anonfun$runWithAndClose$1(UCSHandle.scala:109)
+	at scala.util.Using$.resource(Using.scala:269)
+	at com.databricks.unity.HandleImpl.runWithAndClose(UCSHandle.scala:108)
+	at org.apache.spark.sql.connect.execution.ExecuteThreadRunner$ExecutionThread.run(ExecuteThreadRunner.scala:592)
+2025-05-08 08:41:35 [ERROR] validate:  [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `CounterpartyID` cannot be resolved. Did you mean one of the following? [`TradeDate`, `ContractStatus`, `Default`, `Forborne`, `InsuredFlag`]. SQLSTATE: 42703
+Traceback (most recent call last):
+  File "/Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/src/validate/sources.py", line 40, in validate
+    .take(1)
+     ^^^^^^^
+  File "/databricks/spark/python/pyspark/sql/connect/dataframe.py", line 660, in take
+    return self.limit(num).collect()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/databricks/spark/python/pyspark/sql/connect/dataframe.py", line 1892, in collect
+    table, schema = self._to_table()
+                    ^^^^^^^^^^^^^^^^
+  File "/databricks/spark/python/pyspark/sql/connect/dataframe.py", line 1971, in _to_table
+    table, schema, self._execution_info = self._session.client.to_table(
+                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/databricks/spark/python/pyspark/sql/connect/client/core.py", line 1014, in to_table
+    table, schema, metrics, observed_metrics, _ = self._execute_and_fetch(req, observations)
+                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/databricks/spark/python/pyspark/sql/connect/client/core.py", line 1761, in _execute_and_fetch
+    for response in self._execute_and_fetch_as_iterator(
+  File "/databricks/spark/python/pyspark/sql/connect/client/core.py", line 1737, in _execute_and_fetch_as_iterator
+    self._handle_error(error)
+  File "/databricks/spark/python/pyspark/sql/connect/client/core.py", line 2053, in _handle_error
+    self._handle_rpc_error(error)
+  File "/databricks/spark/python/pyspark/sql/connect/client/core.py", line 2155, in _handle_rpc_error
+    raise convert_exception(
+pyspark.errors.exceptions.connect.AnalysisException: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `CounterpartyID` cannot be resolved. Did you mean one of the following? [`TradeDate`, `ContractStatus`, `Default`, `Forborne`, `InsuredFlag`]. SQLSTATE: 42703; line 1 pos 0;
+'GlobalLimit 1
++- 'LocalLimit 1
+   +- 'SubqueryAlias INT_FACILITY
+      +- 'Project [DeliveryEntity#287424, LocalFacilityIdentifier#287426, GlobalFacilityIdentifier#287471, Default#287427, DefaultDate#287428, DefaultEndDate#287429, NonperformingEndDate#287430, NonperformingStartDate#287431, PerformingIndicator#287432, 'CounterpartyID]
+         +- SubqueryAlias bsrc_d.int_202412.ihubfr1_integrated_facility
+            +- Relation bsrc_d.int_202412.ihubfr1_integrated_facility[DeliveryEntity#287424,ReportingDate#287425,LocalFacilityIdentifier#287426,Default#287427,DefaultDate#287428,DefaultEndDate#287429,NonperformingEndDate#287430,NonperformingStartDate#287431,PerformingIndicator#287432,AccruedFeesAmountDebitCreditIndicator#287433,AccruedFeesAmountReportingAmount#287434,AccruedFeesAmountReportingCurrency#287435,AccruedFeesAmountTransactionAmount#287436,AccruedFeesAmountTransactionCurrency#287437,AlternativeLocalReferenceIdentifier#287438,ApprovedLossGivenDefaultRatingDate#287439,ArrangementParticipationType#287440,BaselIIProductType#287441,BookType#287442,BorrowingBaseReportingAmount#287443,BorrowingBaseReportingCurrency#287444,BorrowingBaseTransactionAmount#287445,BorrowingBaseTransactionCurrency#287446,BusinessSegment#287447L,... 72 more fields] parquet
+
+
+JVM stacktrace:
+org.apache.spark.sql.catalyst.ExtendedAnalysisException
+	at org.apache.spark.sql.errors.QueryCompilationErrors$.unresolvedAttributeError(QueryCompilationErrors.scala:454)
+	at org.apache.spark.sql.catalyst.analysis.CheckAnalysis.org$apache$spark$sql$catalyst$analysis$CheckAnalysis$$failUnresolvedAttribute(CheckAnalysis.scala:171)
+	at org.apache.spark.sql.catalyst.analysis.CheckAnalysis.$anonfun$checkAnalysis0$8(CheckAnalysis.scala:356)
+	at org.apache.spark.sql.catalyst.analysis.CheckAnalysis.$anonfun$checkAnalysis0$8$adapted(CheckAnalysis.scala:341)
+	at org.apache.spark.sql.catalyst.trees.TreeNode.foreachUp(TreeNode.scala:293)
+	at org.apache.spark.sql.catalyst.analysis.CheckAnalysis.$anonfun$checkAnalysis0$7(CheckAnalysis.scala:341)
+	at org.apache.spark.sql.catalyst.analysis.CheckAnalysis.$anonfun$checkAnalysis0$7$adapted(CheckAnalysis.scala:341)
+	at scala.collection.immutable.Stream.foreach(Stream.scala:533)
+	at org.apache.spark.sql.catalyst.analysis.CheckAnalysis.$anonfun$checkAnalysis0$2(CheckAnalysis.scala:341)
+	at org.apache.spark.sql.catalyst.analysis.CheckAnalysis.$anonfun$checkAnalysis0$2$adapted(CheckAnalysis.scala:216)
+	at org.apache.spark.sql.catalyst.trees.TreeNode.foreachUp(TreeNode.scala:293)
+	at org.apache.spark.sql.catalyst.trees.TreeNode.$anonfun$foreachUp$1(TreeNode.scala:292)
+	at org.apache.spark.sql.catalyst.trees.TreeNode.$anonfun$foreachUp$1$adapted(TreeNode.scala:292)
+	at scala.collection.Iterator.foreach(Iterator.scala:943)
+	at scala.collection.Iterator.foreach$(Iterator.scala:943)
+	at scala.collection.AbstractIterator.foreach(Iterator.scala:1431)
+	at scala.collection.IterableLike.foreach(IterableLike.scala:74)
+	at scala.collection.IterableLike.foreach$(IterableLike.scala:73)
+	at scala.collection.AbstractIterable.foreach(Iterable.scala:56)
+	at org.apache.spark.sql.catalyst.trees.TreeNode.foreachUp(TreeNode.scala:292)
+	at org.apache.spark.sql.catalyst.trees.TreeNode.$anonfun$foreachUp$1(TreeNode.scala:292)
+	at org.apache.spark.sql.catalyst.trees.TreeNode.$anonfun$foreachUp$1$adapted(TreeNode.scala:292)
+	at scala.collection.Iterator.foreach(Iterator.scala:943)
+	at scala.collection.Iterator.foreach$(Iterator.scala:943)
+	at scala.collection.AbstractIterator.foreach(Iterator.scala:1431)
+	at scala.collection.IterableLike.foreach(IterableLike.scala:74)
+	at scala.collection.IterableLike.foreach$(IterableLike.scala:73)
+	at scala.collection.AbstractIterable.foreach(Iterable.scala:56)
+	at org.apache.spark.sql.catalyst.trees.TreeNode.foreachUp(TreeNode.scala:292)
+	at org.apache.spark.sql.catalyst.trees.TreeNode.$anonfun$foreachUp$1(TreeNode.scala:292)
+	at org.apache.spark.sql.catalyst.trees.TreeNode.$anonfun$foreachUp$1$adapted(TreeNode.scala:292)
+	at scala.collection.Iterator.foreach(Iterator.scala:943)
+	at scala.collection.Iterator.foreach$(Iterator.scala:943)
+	at scala.collection.AbstractIterator.foreach(Iterator.scala:1431)
+	at scala.collection.IterableLike.foreach(IterableLike.scala:74)
+	at scala.collection.IterableLike.foreach$(IterableLike.scala:73)
+	at scala.collection.AbstractIterable.foreach(Iterable.scala:56)
+	at org.apache.spark.sql.catalyst.trees.TreeNode.foreachUp(TreeNode.scala:292)
+	at org.apache.spark.sql.catalyst.analysis.CheckAnalysis.checkAnalysis0(CheckAnalysis.scala:216)
+	at org.apache.spark.sql.catalyst.analysis.CheckAnalysis.checkAnalysis0$(CheckAnalysis.scala:198)
+	at org.apache.spark.sql.catalyst.analysis.Analyzer.checkAnalysis0(Analyzer.scala:369)
+	at org.apache.spark.sql.catalyst.analysis.CheckAnalysis.$anonfun$checkAnalysis$1(CheckAnalysis.scala:186)
+	at scala.runtime.java8.JFunction0$mcV$sp.apply(JFunction0$mcV$sp.java:23)
+	at com.databricks.spark.util.FrameProfiler$.record(FrameProfiler.scala:94)
+	at org.apache.spark.sql.catalyst.analysis.CheckAnalysis.checkAnalysis(CheckAnalysis.scala:174)
+	at org.apache.spark.sql.catalyst.analysis.CheckAnalysis.checkAnalysis$(CheckAnalysis.scala:174)
+	at org.apache.spark.sql.catalyst.analysis.Analyzer.checkAnalysis(Analyzer.scala:369)
+	at org.apache.spark.sql.catalyst.analysis.Analyzer.$anonfun$executeAndCheck$2(Analyzer.scala:424)
+	at scala.runtime.java8.JFunction0$mcV$sp.apply(JFunction0$mcV$sp.java:23)
+	at org.apache.spark.sql.catalyst.QueryPlanningTracker$.withTracker(QueryPlanningTracker.scala:194)
+	at org.apache.spark.sql.catalyst.analysis.Analyzer.$anonfun$executeAndCheck$1(Analyzer.scala:424)
+	at org.apache.spark.sql.catalyst.plans.logical.AnalysisHelper$.markInAnalyzer(AnalysisHelper.scala:443)
+	at org.apache.spark.sql.catalyst.analysis.Analyzer.executeAndCheck(Analyzer.scala:421)
+	at org.apache.spark.sql.execution.QueryExecution.$anonfun$analyzed$1(QueryExecution.scala:290)
+	at com.databricks.spark.util.FrameProfiler$.record(FrameProfiler.scala:94)
+	at org.apache.spark.sql.catalyst.QueryPlanningTracker.measurePhase(QueryPlanningTracker.scala:489)
+	at org.apache.spark.sql.execution.QueryExecution.$anonfun$executePhase$5(QueryExecution.scala:653)
+	at org.apache.spark.sql.execution.SQLExecution$.withExecutionPhase(SQLExecution.scala:144)
+	at org.apache.spark.sql.execution.QueryExecution.$anonfun$executePhase$4(QueryExecution.scala:653)
+	at org.apache.spark.sql.execution.QueryExecution$.withInternalError(QueryExecution.scala:1219)
+	at org.apache.spark.sql.execution.QueryExecution.$anonfun$executePhase$2(QueryExecution.scala:652)
+	at com.databricks.util.LexicalThreadLocal$Handle.runWith(LexicalThreadLocal.scala:63)
+	at org.apache.spark.sql.execution.QueryExecution.$anonfun$executePhase$1(QueryExecution.scala:648)
+	at org.apache.spark.sql.SparkSession.withActive(SparkSession.scala:1210)
+	at org.apache.spark.sql.execution.QueryExecution.executePhase(QueryExecution.scala:648)
+	at org.apache.spark.sql.execution.QueryExecution.analyzed$lzycompute(QueryExecution.scala:284)
+	at org.apache.spark.sql.execution.QueryExecution.analyzed(QueryExecution.scala:283)
+	at org.apache.spark.sql.execution.QueryExecution.assertAnalyzed(QueryExecution.scala:265)
+	at org.apache.spark.sql.Dataset$.$anonfun$ofRows$4(Dataset.scala:172)
+	at org.apache.spark.sql.SparkSession.withActive(SparkSession.scala:1210)
+	at org.apache.spark.sql.SparkSession.$anonfun$withActiveAndFrameProfiler$1(SparkSession.scala:1217)
+	at com.databricks.spark.util.FrameProfiler$.record(FrameProfiler.scala:94)
+	at org.apache.spark.sql.SparkSession.withActiveAndFrameProfiler(SparkSession.scala:1217)
+	at org.apache.spark.sql.Dataset$.ofRows(Dataset.scala:167)
+	at org.apache.spark.sql.connect.execution.SparkConnectPlanExecution.handlePlan(SparkConnectPlanExecution.scala:106)
+	at org.apache.spark.sql.connect.execution.ExecuteThreadRunner.handlePlan(ExecuteThreadRunner.scala:356)
+	at org.apache.spark.sql.connect.execution.ExecuteThreadRunner.$anonfun$executeInternal$1(ExecuteThreadRunner.scala:281)
+	at org.apache.spark.sql.connect.execution.ExecuteThreadRunner.$anonfun$executeInternal$1$adapted(ExecuteThreadRunner.scala:210)
+	at org.apache.spark.sql.connect.service.SessionHolder.$anonfun$withSession$2(SessionHolder.scala:392)
+	at org.apache.spark.sql.SparkSession.withActive(SparkSession.scala:1210)
+	at org.apache.spark.sql.connect.service.SessionHolder.$anonfun$withSession$1(SessionHolder.scala:392)
+	at org.apache.spark.JobArtifactSet$.withActiveJobArtifactState(JobArtifactSet.scala:97)
+	at org.apache.spark.sql.artifact.ArtifactManager.$anonfun$withResources$1(ArtifactManager.scala:84)
+	at org.apache.spark.util.Utils$.withContextClassLoader(Utils.scala:240)
+	at org.apache.spark.sql.artifact.ArtifactManager.withResources(ArtifactManager.scala:83)
+	at org.apache.spark.sql.connect.service.SessionHolder.withSession(SessionHolder.scala:391)
+	at org.apache.spark.sql.connect.execution.ExecuteThreadRunner.executeInternal(ExecuteThreadRunner.scala:210)
+	at org.apache.spark.sql.connect.execution.ExecuteThreadRunner.org$apache$spark$sql$connect$execution$ExecuteThreadRunner$$execute(ExecuteThreadRunner.scala:125)
+	at org.apache.spark.sql.connect.execution.ExecuteThreadRunner$ExecutionThread.$anonfun$run$2(ExecuteThreadRunner.scala:592)
+	at scala.runtime.java8.JFunction0$mcV$sp.apply(JFunction0$mcV$sp.java:23)
+	at com.databricks.unity.UCSEphemeralState$Handle.runWith(UCSEphemeralState.scala:51)
+	at com.databricks.unity.HandleImpl.runWith(UCSHandle.scala:104)
+	at com.databricks.unity.HandleImpl.$anonfun$runWithAndClose$1(UCSHandle.scala:109)
+	at scala.util.Using$.resource(Using.scala:269)
+	at com.databricks.unity.HandleImpl.runWithAndClose(UCSHandle.scala:108)
+	at org.apache.spark.sql.connect.execution.ExecuteThreadRunner$ExecutionThread.run(ExecuteThreadRunner.scala:592)
+False
