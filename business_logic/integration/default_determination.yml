@@ -12,7 +12,6 @@ sources:
     - NonperformingEndDate
     - NonperformingStartDate
     - PerformingIndicator
-    - CounterpartyID
     source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_integrated_facility
   - alias: INT_CPXCF
     columns:
