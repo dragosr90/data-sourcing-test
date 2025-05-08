@@ -408,6 +408,7 @@ transformations:
 
 expressions:
   DeliveryEntity: COMBINED_FACILITIES.DeliveryEntity
+  ReportingDate: COMBINED_FACILITIES.ReportingDate
   LocalFacilityIdentifier: COMBINED_FACILITIES.LocalFacilityIdentifier
   Default: COMBINED_FACILITIES.Default
   DefaultDate: COMBINED_FACILITIES.DefaultDate
@@ -415,7 +416,6 @@ expressions:
   NonperformingEndDate: COMBINED_FACILITIES.NonperformingEndDate
   NonperformingStartDate: COMBINED_FACILITIES.NonperformingStartDate
   PerformingIndicator: COMBINED_FACILITIES.PerformingIndicator
-  ReportingDate: COMBINED_FACILITIES.ReportingDate
   AccruedFeesAmountDebitCreditIndicator: COMBINED_FACILITIES.AccruedFeesAmountDebitCreditIndicator
   AccruedFeesAmountReportingAmount: COMBINED_FACILITIES.AccruedFeesAmountReportingAmount
   AccruedFeesAmountReportingCurrency: COMBINED_FACILITIES.AccruedFeesAmountReportingCurrency
