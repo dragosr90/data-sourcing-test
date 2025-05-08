@@ -1,4 +1,4 @@
-12:
+11:
 Validate YAML
 
 validate_business_logic_mapping(spark, business_logic_dict)
