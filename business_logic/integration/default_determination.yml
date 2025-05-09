@@ -15,6 +15,7 @@ sources:
     - NonperformingStartDate
     - PerformingIndicator
     - SubFacilityFlag
+    filter: SubFacilityFlag = 1
     source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_integrated_facility
   - alias: INT_CPXCF
     columns:
@@ -79,5 +80,12 @@ expressions:
                         then INT_FACILITY.NonperformingEndDate 
                         else SSF_CP.NonperformingEndDate 
                       end
+  HighestExistingFacility: INT_FACILITY.HighestExistingFacility
+  HighestFacilityExplained: INT_FACILITY.HighestFacilityExplained
+  DefaultInformationSource: case 
+                            when INT_FACILITY.Default is not null 
+                            then 'Default information delivered at Facility level' 
+                            else 'Default information delivered at Counterparty level' 
+                           end
 
 drop_duplicates: true
