@@ -9,9 +9,12 @@ sources:
     - Default
     - DefaultDate
     - DefaultEndDate
+    - HighestExistingFacility
+    - HighestFacilityExplained
     - NonperformingEndDate
     - NonperformingStartDate
     - PerformingIndicator
+    - SubFacilityFlag
     source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_integrated_facility
   - alias: INT_CPXCF
     columns:
@@ -23,10 +26,11 @@ sources:
   - alias: SSF_CP
     columns:
     - DeliveryEntity
-    - Counterparty
+    - GlobalCounterpartyIdentifier
     - Default
     - DefaultDate
     - DefaultEndDate
+    - LocalId
     - NonperformingEndDate
     - NonperformingStartDate
     - PerformingIndicator
@@ -38,13 +42,11 @@ transformations:
       right_source: INT_CPXCF
       condition:
         - INT_FACILITY.LocalFacilityIdentifier = INT_CPXCF.CreditFacility
-        - INT_FACILITY.DeliveryEntity = INT_CPXCF.DeliveryEntity
       how: left
   - join:
       right_source: SSF_CP
       condition:
-        - INT_CPXCF.ParticipatingCounterparty = SSF_CP.Counterparty
-        - INT_CPXCF.DeliveryEntity = SSF_CP.DeliveryEntity
+        - INT_CPXCF.ParticipatingCounterparty = SSF_CP.LocalId
       how: left
 
 expressions:
