@@ -1,12 +1,10 @@
-import re
 from functools import reduce
 
 from pyspark.sql import DataFrame, SparkSession
-from pyspark.sql.column import Column
 from pyspark.sql.functions import col, expr
 
 from src.utils.logging_util import get_logger
-from src.utils.sources_util import get_source
+from src.utils.sources_util import get_required_arguments, get_source
 
 logger = get_logger()
 
@@ -64,6 +62,7 @@ class GetIntegratedData:
             # Get the transformation type and parameters
             tf_step = next(iter(tf))
             tf_params = tf[tf_step]
+            tf_params_req = get_required_arguments(tf, self, tf_step)
 
             # Check if new starting source is specified
             # If not, keep the already existing transformed_data
@@ -73,7 +72,7 @@ class GetIntegratedData:
             # Apply the transformation
             transformed_data = self._apply_transformation(
                 tf_step=tf_step,
-                tf_params=tf_params,
+                tf_params=tf_params_req,
                 transformed_data=transformed_data,
                 data_dict=data_dict,
             )
@@ -133,14 +132,16 @@ class GetIntegratedData:
         right_source: str,
         left_source: str | None = None,
         how: str = "left",
+        alias: str | None = None,
     ) -> DataFrame:
-        join_conditions = [parse_join_condition(c) for c in condition]
+        join_conditions = [expr(c) for c in condition]
         data_ = data_dict[left_source] if left_source else data
-        return data_.join(
+        data_ = data_.join(
             data_dict[right_source],
             on=join_conditions,
             how=how,
         )
+        return data_.alias(alias) if alias else data_
 
     @staticmethod
     def add_variables(
@@ -269,104 +270,52 @@ class GetIntegratedData:
         return reduce(DataFrame.unionAll, data_frames).alias(alias)
 
     @staticmethod
-def filter(
-    data: DataFrame, 
-    conditions: list[str], 
-    *, 
-    log_reductions: bool = False,
-    alias: str | None = None
-) -> DataFrame:
-    """Filter a dataframe based on one or more conditions.
+    def filter(
+        data: DataFrame,
+        conditions: list[str],
+        *,
+        log_reductions: bool = False,
+        alias: str | None = None,
+    ) -> DataFrame:
+        """Filter a dataframe based on one or more conditions.
 
-    Args:
-        data (DataFrame): Input DataFrame
-        conditions (list[str]): List of condition strings to filter by
-        log_reductions (bool, optional): Whether to log row counts before
-            and after filtering. Defaults to False as counting
-            is an expensive operation.
-        alias (str | None, optional): Alias for the filtered DataFrame.
-            Defaults to None.
+        Args:
+            data (DataFrame): Input DataFrame
+            conditions (list[str]): List of condition strings to filter by
+            log_reductions (bool, optional): Whether to log row counts before
+                and after filtering. Defaults to False as counting
+                is an expensive operation.
+            alias (str | None, optional): Alias for the filtered DataFrame.
+                Defaults to None.
 
-    Returns:
-        DataFrame: Filtered DataFrame
-    """
-    if not conditions:
-        logger.warning(
-            "No filter conditions provided, returning original dataframe"
-        )
-        return data.alias(alias) if alias else data
+        Returns:
+            DataFrame: Filtered DataFrame
+        """
+        if not conditions:
+            logger.warning(
+                "No filter conditions provided, returning original dataframe"
+            )
+            return data.alias(alias) if alias else data
 
-    filtered_df = data
-    
-    # Only count once at the beginning if log_reductions is True
-    if log_reductions:
-        input_count = filtered_df.count()
-    
-    # Apply all filter conditions
-    for condition in conditions:
-        # Apply the filter condition
-        filtered_df = filtered_df.filter(condition)
-        # Log the applied condition (always)
-        logger.debug(f"Applied filter condition: '{condition}'")
-    
-    # Only count once at the end and log the reduction if log_reductions is True
-    if log_reductions:
-        output_count = filtered_df.count()
-        logger.info(
-            f"Filter conditions reduced rows from {input_count} to {output_count}"
-        )
-    
-    # Return the DataFrame with alias if specified
-    return filtered_df.alias(alias) if alias else filtered_df
+        filtered_df = data
 
+        # Only count once at the beginning if log_reductions is True
+        if log_reductions:
+            input_count = filtered_df.count()
 
-def parse_join_condition(
-    condition_str: str, pattern: str = "(CASE WHEN.*?END)"
-) -> Column:
-    """Parse join condition.
+        # Apply all filter conditions
+        for condition in conditions:
+            # Apply the filter condition
+            filtered_df = filtered_df.filter(condition)
+            # Log the applied condition (always)
+            logger.debug(f"Applied filter condition: '{condition}'")
 
-    Currently support for:
-        - CASE WHEN END on left, right or both sides of equal (=) sign.
-        - Statements with one equal sign
+        # Only count once at the end and log the reduction if log_reductions is True
+        if log_reductions:
+            output_count = filtered_df.count()
+            logger.info(
+                f"Filter conditions reduced rows from {input_count} to {output_count}"
+            )
 
-    Args:
-        condition_str (str): Condition to be parsed
-
-    Raises:
-        ValueError: If condition string is not supported with pattern
-
-    Returns:
-        Column: PySpark column with condition
-    """
-    conditions = re.findall(pattern, condition_str, re.IGNORECASE)
-    case_one_side = 1
-    case_two_sides = 2
-    no_case = 0
-    if len(conditions) == case_two_sides:
-        return expr(conditions[0]) == expr(conditions[1])
-    if len(conditions) == case_one_side:
-        pattern_left_case = f"{pattern} = (.*)"
-        pattern_right_case = f"(.*) = {pattern}"
-        if re.match(pattern_left_case, condition_str, re.IGNORECASE):
-            condition_ = re.search(
-                pattern_left_case, condition_str, re.IGNORECASE
-            ).groups()  # type: ignore[union-attr]
-        elif re.match(pattern_right_case, condition_str, re.IGNORECASE):
-            condition_ = re.search(
-                pattern_right_case, condition_str, re.IGNORECASE
-            ).groups()  # type: ignore[union-attr]
-        else:
-            msg = f"Seems like the input condition : {condition_str} is not correct"
-            raise ValueError(msg)
-        return expr(condition_[0]) == expr(condition_[1])
-    if len(conditions) == no_case:
-        return expr(condition_str.split("=")[0].strip()) == expr(
-            condition_str.split("=")[1].strip()
-        )
-    msg = (
-        f"Seems like the input condition : {condition_str} is not correct. "
-        f"Regex pattern split the condition in {len(conditions)}: "
-        f"{conditions}"
-    )
-    raise ValueError(msg)
-
+        # Return the DataFrame with alias if specified
+        return filtered_df.alias(alias) if alias else filtered_df
