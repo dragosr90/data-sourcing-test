@@ -1,220 +1,89 @@
-15:
-Show output for validation
+11:
+Validate YAML
 
+validate_business_logic_mapping(spark, business_logic_dict)
 
-display(transformed_data)
-
-2025-05-15 08:46:39 [INFO] send_command:  Exception while sending command.
-Traceback (most recent call last):
-  File "/databricks/python/lib/python3.11/site-packages/IPython/core/interactiveshell.py", line 3526, in run_code
-    exec(code_obj, self.user_global_ns, self.user_ns)
-  File "/home/spark-9be81862-8109-40df-8a29-52/.ipykernel/5480/command-5917078617746106-750212734", line 1, in <module>
-    display(transformed_data)
-  File "/databricks/python_shell/lib/dbruntime/display.py", line 143, in display
-    if input.isStreaming:
-       ^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/functools.py", line 1001, in __get__
-    val = self.func(instance)
-          ^^^^^^^^^^^^^^^^^^^
-  File "/databricks/spark/python/pyspark/sql/connect/dataframe.py", line 2017, in isStreaming
-    result = self._session.client._analyze(method="is_streaming", plan=query).is_streaming
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/databricks/spark/python/pyspark/sql/connect/client/core.py", line 1546, in _analyze
-    self._handle_error(error)
-  File "/databricks/spark/python/pyspark/sql/connect/client/core.py", line 2053, in _handle_error
-    self._handle_rpc_error(error)
-  File "/databricks/spark/python/pyspark/sql/connect/client/core.py", line 2155, in _handle_rpc_error
-    raise convert_exception(
-pyspark.errors.exceptions.connect.AnalysisException: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `var_months_since_approval` cannot be resolved. Did you mean one of the following? [`LastPerformingModel`, `L1_OVERRIDE_PD`, `L1_OVERRIDE_UCR`, `L2_OVERRIDE_PD`, `L2_OVERRIDE_UCR`]. SQLSTATE: 42703; line 1 pos 47;
-'Project [PD_RATING_ID#979513, COMPANY_ID#979514, RATING_STATUS#979515, RATING_PROVIDING_SYSTEM#979516, PD_MODEL_VERSION#979517, STAND_ALONE_RATING_PD#979518, STAND_ALONE_RATING_UCR#979519, COUNTRY_RISK_ADJUSTED_PD#979520, COUNTRY_RISK_ADJUSTED_UCR#979521, GROUP_SUPPORT_ADJUSTED_PD#979522, GROUP_SUPPORT_ADJUSTED_UCR#979523, L1_OVERRIDE_PD#979524, L1_OVERRIDE_UCR#979525, PROPOSED_PD#979526, PROPOSED_UCR#979527, L2_OVERRIDE_PD#979528, L2_OVERRIDE_UCR#979529, APPROVED_PD#979530, APPROVED_UCR#979531, PD_APPROVAL_DATE#979532, PD_EXPIRY_DATE#979533, FAIR_ID#979534, LBCDB_ID#979535, GBCDB_ID#979536, ... 23 more fields]
-+- 'Filter ((RATING_STATUS#979801 = ACTUAL) AND (('var_months_since_approval < 24) OR APPROVED_UCR#979817 IN (6,7,8)))
-   +- Project [PD_RATING_ID#979799 AS PD_RATING_ID#979513, COMPANY_ID#979800 AS COMPANY_ID#979514, RATING_STATUS#979801 AS RATING_STATUS#979515, RATING_PROVIDING_SYSTEM#979802 AS RATING_PROVIDING_SYSTEM#979516, PD_MODEL_VERSION#979803 AS PD_MODEL_VERSION#979517, STAND_ALONE_RATING_PD#979804 AS STAND_ALONE_RATING_PD#979518, STAND_ALONE_RATING_UCR#979805 AS STAND_ALONE_RATING_UCR#979519, COUNTRY_RISK_ADJUSTED_PD#979806 AS COUNTRY_RISK_ADJUSTED_PD#979520, COUNTRY_RISK_ADJUSTED_UCR#979807 AS COUNTRY_RISK_ADJUSTED_UCR#979521, GROUP_SUPPORT_ADJUSTED_PD#979808 AS GROUP_SUPPORT_ADJUSTED_PD#979522, GROUP_SUPPORT_ADJUSTED_UCR#979809 AS GROUP_SUPPORT_ADJUSTED_UCR#979523, L1_OVERRIDE_PD#979810 AS L1_OVERRIDE_PD#979524, L1_OVERRIDE_UCR#979811 AS L1_OVERRIDE_UCR#979525, PROPOSED_PD#979812 AS PROPOSED_PD#979526, PROPOSED_UCR#979813 AS PROPOSED_UCR#979527, L2_OVERRIDE_PD#979814 AS L2_OVERRIDE_PD#979528, L2_OVERRIDE_UCR#979815 AS L2_OVERRIDE_UCR#979529, APPROVED_PD#979816 AS APPROVED_PD#979530, APPROVED_UCR#979817 AS APPROVED_UCR#979531, PD_APPROVAL_DATE#979818 AS PD_APPROVAL_DATE#979532, PD_EXPIRY_DATE#979819 AS PD_EXPIRY_DATE#979533, FAIR_ID#979820 AS FAIR_ID#979534, LBCDB_ID#979821 AS LBCDB_ID#979535, GBCDB_ID#979822 AS GBCDB_ID#979536, ... 25 more fields]
-      +- Join LeftOuter, (((COMPANY_ID#979800 = COMPANY_ID#979938) AND (PORTFOLIO#979830 = PORTFOLIO#979968)) AND (BUSINESSLINE#979831 = BUSINESSLINE#979969))
-         :- Join LeftOuter, (((COMPANY_ID#979800 = COMPANY_ID#979846) AND (PORTFOLIO#979830 = PORTFOLIO#979876)) AND (BUSINESSLINE#979831 = BUSINESSLINE#979877))
-         :  :- SubqueryAlias DIAL_FAIR_PD_UCR
-         :  :  +- Project [PD_RATING_ID#979799, COMPANY_ID#979800, RATING_STATUS#979801, RATING_PROVIDING_SYSTEM#979802, PD_MODEL_VERSION#979803, STAND_ALONE_RATING_PD#979804, STAND_ALONE_RATING_UCR#979805, COUNTRY_RISK_ADJUSTED_PD#979806, COUNTRY_RISK_ADJUSTED_UCR#979807, GROUP_SUPPORT_ADJUSTED_PD#979808, GROUP_SUPPORT_ADJUSTED_UCR#979809, L1_OVERRIDE_PD#979810, L1_OVERRIDE_UCR#979811, PROPOSED_PD#979812, PROPOSED_UCR#979813, L2_OVERRIDE_PD#979814, L2_OVERRIDE_UCR#979815, APPROVED_PD#979816, APPROVED_UCR#979817, PD_APPROVAL_DATE#979818, PD_EXPIRY_DATE#979819, FAIR_ID#979820, LBCDB_ID#979821, GBCDB_ID#979822, ... 22 more fields]
-         :  :     +- SubqueryAlias bsrc_d.stg_202412.dial_fair_pd_ucr
-         :  :        +- Relation bsrc_d.stg_202412.dial_fair_pd_ucr[PD_RATING_ID#979799,COMPANY_ID#979800,RATING_STATUS#979801,RATING_PROVIDING_SYSTEM#979802,PD_MODEL_VERSION#979803,STAND_ALONE_RATING_PD#979804,STAND_ALONE_RATING_UCR#979805,COUNTRY_RISK_ADJUSTED_PD#979806,COUNTRY_RISK_ADJUSTED_UCR#979807,GROUP_SUPPORT_ADJUSTED_PD#979808,GROUP_SUPPORT_ADJUSTED_UCR#979809,L1_OVERRIDE_PD#979810,L1_OVERRIDE_UCR#979811,PROPOSED_PD#979812,PROPOSED_UCR#979813,L2_OVERRIDE_PD#979814,L2_OVERRIDE_UCR#979815,APPROVED_PD#979816,APPROVED_UCR#979817,PD_APPROVAL_DATE#979818,PD_EXPIRY_DATE#979819,FAIR_ID#979820,LBCDB_ID#979821,GBCDB_ID#979822,... 22 more fields] parquet
-         :  +- SubqueryAlias FALLBACK_MODELS
-         :     +- Aggregate [COMPANY_ID#979846, PORTFOLIO#979876, BUSINESSLINE#979877], [COMPANY_ID#979846, PORTFOLIO#979876, BUSINESSLINE#979877, first(PD_MODEL_VERSION#979849, false) AS fallback_model#819537]
-         :        +- SubqueryAlias HIST_ALL_RATINGS
-         :           +- Project [COMPANY_ID#979846, PD_MODEL_VERSION#979849, RATING_ID#979878, PORTFOLIO#979876, BUSINESSLINE#979877]
-         :              +- Filter (RATING_STATUS#979847 = ACTUAL)
-         :                 +- SubqueryAlias bsrc_d.stg_202412.dial_fair_pd_ucr
-         :                    +- Relation bsrc_d.stg_202412.dial_fair_pd_ucr[PD_RATING_ID#979845,COMPANY_ID#979846,RATING_STATUS#979847,RATING_PROVIDING_SYSTEM#979848,PD_MODEL_VERSION#979849,STAND_ALONE_RATING_PD#979850,STAND_ALONE_RATING_UCR#979851,COUNTRY_RISK_ADJUSTED_PD#979852,COUNTRY_RISK_ADJUSTED_UCR#979853,GROUP_SUPPORT_ADJUSTED_PD#979854,GROUP_SUPPORT_ADJUSTED_UCR#979855,L1_OVERRIDE_PD#979856,L1_OVERRIDE_UCR#979857,PROPOSED_PD#979858,PROPOSED_UCR#979859,L2_OVERRIDE_PD#979860,L2_OVERRIDE_UCR#979861,APPROVED_PD#979862,APPROVED_UCR#979863,PD_APPROVAL_DATE#979864,PD_EXPIRY_DATE#979865,FAIR_ID#979866,LBCDB_ID#979867,GBCDB_ID#979868,... 22 more fields] parquet
-         +- SubqueryAlias BEST_PERFORMING_MODELS
-            +- Aggregate [COMPANY_ID#979938, PORTFOLIO#979968, BUSINESSLINE#979969], [COMPANY_ID#979938, PORTFOLIO#979968, BUSINESSLINE#979969, first(PD_MODEL_VERSION#979941, false) AS last_performing_model#819539]
-               +- Join Inner, ((((COMPANY_ID#979892 = COMPANY_ID#979938) AND (PORTFOLIO#979922 = PORTFOLIO#979968)) AND (BUSINESSLINE#979923 = BUSINESSLINE#979969)) AND (most_recent_date#818763 = PD_APPROVAL_DATE#979956))
-                  :- SubqueryAlias MOST_RECENT_PERFORMING
-                  :  +- Aggregate [COMPANY_ID#979892, PORTFOLIO#979922, BUSINESSLINE#979923], [COMPANY_ID#979892, PORTFOLIO#979922, BUSINESSLINE#979923, max(PD_APPROVAL_DATE#979910) AS most_recent_date#818763]
-                  :     +- SubqueryAlias HIST_PERF_RATINGS
-                  :        +- Project [COMPANY_ID#979892, PD_MODEL_VERSION#979895, APPROVED_UCR#979909, PD_APPROVAL_DATE#979910, PORTFOLIO#979922, BUSINESSLINE#979923, RATING_ID#979924]
-                  :           +- Filter ((RATING_STATUS#979893 = ACTUAL) AND NOT APPROVED_UCR#979909 IN (6,7,8))
-                  :              +- SubqueryAlias bsrc_d.stg_202412.dial_fair_pd_ucr
-                  :                 +- Relation bsrc_d.stg_202412.dial_fair_pd_ucr[PD_RATING_ID#979891,COMPANY_ID#979892,RATING_STATUS#979893,RATING_PROVIDING_SYSTEM#979894,PD_MODEL_VERSION#979895,STAND_ALONE_RATING_PD#979896,STAND_ALONE_RATING_UCR#979897,COUNTRY_RISK_ADJUSTED_PD#979898,COUNTRY_RISK_ADJUSTED_UCR#979899,GROUP_SUPPORT_ADJUSTED_PD#979900,GROUP_SUPPORT_ADJUSTED_UCR#979901,L1_OVERRIDE_PD#979902,L1_OVERRIDE_UCR#979903,PROPOSED_PD#979904,PROPOSED_UCR#979905,L2_OVERRIDE_PD#979906,L2_OVERRIDE_UCR#979907,APPROVED_PD#979908,APPROVED_UCR#979909,PD_APPROVAL_DATE#979910,PD_EXPIRY_DATE#979911,FAIR_ID#979912,LBCDB_ID#979913,GBCDB_ID#979914,... 22 more fields] parquet
-                  +- SubqueryAlias HIST_PERF_RATINGS
-                     +- Project [COMPANY_ID#979938, PD_MODEL_VERSION#979941, APPROVED_UCR#979955, PD_APPROVAL_DATE#979956, PORTFOLIO#979968, BUSINESSLINE#979969, RATING_ID#979970]
-                        +- Filter ((RATING_STATUS#979939 = ACTUAL) AND NOT APPROVED_UCR#979955 IN (6,7,8))
-                           +- SubqueryAlias bsrc_d.stg_202412.dial_fair_pd_ucr
-                              +- Relation bsrc_d.stg_202412.dial_fair_pd_ucr[PD_RATING_ID#979937,COMPANY_ID#979938,RATING_STATUS#979939,RATING_PROVIDING_SYSTEM#979940,PD_MODEL_VERSION#979941,STAND_ALONE_RATING_PD#979942,STAND_ALONE_RATING_UCR#979943,COUNTRY_RISK_ADJUSTED_PD#979944,COUNTRY_RISK_ADJUSTED_UCR#979945,GROUP_SUPPORT_ADJUSTED_PD#979946,GROUP_SUPPORT_ADJUSTED_UCR#979947,L1_OVERRIDE_PD#979948,L1_OVERRIDE_UCR#979949,PROPOSED_PD#979950,PROPOSED_UCR#979951,L2_OVERRIDE_PD#979952,L2_OVERRIDE_UCR#979953,APPROVED_PD#979954,APPROVED_UCR#979955,PD_APPROVAL_DATE#979956,PD_EXPIRY_DATE#979957,FAIR_ID#979958,LBCDB_ID#979959,GBCDB_ID#979960,... 22 more fields] parquet
-
-
-JVM stacktrace:
-org.apache.spark.sql.catalyst.ExtendedAnalysisException
-	at org.apache.spark.sql.errors.QueryCompilationErrors$.unresolvedAttributeError(QueryCompilationErrors.scala:454)
-	at org.apache.spark.sql.catalyst.analysis.CheckAnalysis.org$apache$spark$sql$catalyst$analysis$CheckAnalysis$$failUnresolvedAttribute(CheckAnalysis.scala:171)
-	at org.apache.spark.sql.catalyst.analysis.CheckAnalysis.$anonfun$checkAnalysis0$8(CheckAnalysis.scala:356)
-	at org.apache.spark.sql.catalyst.analysis.CheckAnalysis.$anonfun$checkAnalysis0$8$adapted(CheckAnalysis.scala:341)
-	at org.apache.spark.sql.catalyst.trees.TreeNode.foreachUp(TreeNode.scala:293)
-	at org.apache.spark.sql.catalyst.trees.TreeNode.$anonfun$foreachUp$1(TreeNode.scala:292)
-	at org.apache.spark.sql.catalyst.trees.TreeNode.$anonfun$foreachUp$1$adapted(TreeNode.scala:292)
-	at scala.collection.Iterator.foreach(Iterator.scala:943)
-	at scala.collection.Iterator.foreach$(Iterator.scala:943)
-	at scala.collection.AbstractIterator.foreach(Iterator.scala:1431)
-	at scala.collection.IterableLike.foreach(IterableLike.scala:74)
-	at scala.collection.IterableLike.foreach$(IterableLike.scala:73)
-	at scala.collection.AbstractIterable.foreach(Iterable.scala:56)
-	at org.apache.spark.sql.catalyst.trees.TreeNode.foreachUp(TreeNode.scala:292)
-	at org.apache.spark.sql.catalyst.trees.TreeNode.$anonfun$foreachUp$1(TreeNode.scala:292)
-	at org.apache.spark.sql.catalyst.trees.TreeNode.$anonfun$foreachUp$1$adapted(TreeNode.scala:292)
-	at scala.collection.Iterator.foreach(Iterator.scala:943)
-	at scala.collection.Iterator.foreach$(Iterator.scala:943)
-	at scala.collection.AbstractIterator.foreach(Iterator.scala:1431)
-	at scala.collection.IterableLike.foreach(IterableLike.scala:74)
-	at scala.collection.IterableLike.foreach$(IterableLike.scala:73)
-	at scala.collection.AbstractIterable.foreach(Iterable.scala:56)
-	at org.apache.spark.sql.catalyst.trees.TreeNode.foreachUp(TreeNode.scala:292)
-	at org.apache.spark.sql.catalyst.trees.TreeNode.$anonfun$foreachUp$1(TreeNode.scala:292)
-	at org.apache.spark.sql.catalyst.trees.TreeNode.$anonfun$foreachUp$1$adapted(TreeNode.scala:292)
-	at scala.collection.Iterator.foreach(Iterator.scala:943)
-	at scala.collection.Iterator.foreach$(Iterator.scala:943)
-	at scala.collection.AbstractIterator.foreach(Iterator.scala:1431)
-	at scala.collection.IterableLike.foreach(IterableLike.scala:74)
-	at scala.collection.IterableLike.foreach$(IterableLike.scala:73)
-	at scala.collection.AbstractIterable.foreach(Iterable.scala:56)
-	at org.apache.spark.sql.catalyst.trees.TreeNode.foreachUp(TreeNode.scala:292)
-	at org.apache.spark.sql.catalyst.analysis.CheckAnalysis.$anonfun$checkAnalysis0$7(CheckAnalysis.scala:341)
-	at org.apache.spark.sql.catalyst.analysis.CheckAnalysis.$anonfun$checkAnalysis0$7$adapted(CheckAnalysis.scala:341)
-	at scala.collection.immutable.Stream.foreach(Stream.scala:533)
-	at org.apache.spark.sql.catalyst.analysis.CheckAnalysis.$anonfun$checkAnalysis0$2(CheckAnalysis.scala:341)
-	at org.apache.spark.sql.catalyst.analysis.CheckAnalysis.$anonfun$checkAnalysis0$2$adapted(CheckAnalysis.scala:216)
-	at org.apache.spark.sql.catalyst.trees.TreeNode.foreachUp(TreeNode.scala:293)
-	at org.apache.spark.sql.catalyst.trees.TreeNode.$anonfun$foreachUp$1(TreeNode.scala:292)
-	at org.apache.spark.sql.catalyst.trees.TreeNode.$anonfun$foreachUp$1$adapted(TreeNode.scala:292)
-	at scala.collection.Iterator.foreach(Iterator.scala:943)
-	at scala.collection.Iterator.foreach$(Iterator.scala:943)
-	at scala.collection.AbstractIterator.foreach(Iterator.scala:1431)
-	at scala.collection.IterableLike.foreach(IterableLike.scala:74)
-	at scala.collection.IterableLike.foreach$(IterableLike.scala:73)
-	at scala.collection.AbstractIterable.foreach(Iterable.scala:56)
-	at org.apache.spark.sql.catalyst.trees.TreeNode.foreachUp(TreeNode.scala:292)
-	at org.apache.spark.sql.catalyst.analysis.CheckAnalysis.checkAnalysis0(CheckAnalysis.scala:216)
-	at org.apache.spark.sql.catalyst.analysis.CheckAnalysis.checkAnalysis0$(CheckAnalysis.scala:198)
-	at org.apache.spark.sql.catalyst.analysis.Analyzer.checkAnalysis0(Analyzer.scala:369)
-	at org.apache.spark.sql.catalyst.analysis.CheckAnalysis.$anonfun$checkAnalysis$1(CheckAnalysis.scala:186)
-	at scala.runtime.java8.JFunction0$mcV$sp.apply(JFunction0$mcV$sp.java:23)
-	at com.databricks.spark.util.FrameProfiler$.record(FrameProfiler.scala:94)
-	at org.apache.spark.sql.catalyst.analysis.CheckAnalysis.checkAnalysis(CheckAnalysis.scala:174)
-	at org.apache.spark.sql.catalyst.analysis.CheckAnalysis.checkAnalysis$(CheckAnalysis.scala:174)
-	at org.apache.spark.sql.catalyst.analysis.Analyzer.checkAnalysis(Analyzer.scala:369)
-	at org.apache.spark.sql.catalyst.analysis.Analyzer.$anonfun$executeAndCheck$2(Analyzer.scala:424)
-	at scala.runtime.java8.JFunction0$mcV$sp.apply(JFunction0$mcV$sp.java:23)
-	at org.apache.spark.sql.catalyst.QueryPlanningTracker$.withTracker(QueryPlanningTracker.scala:194)
-	at org.apache.spark.sql.catalyst.analysis.Analyzer.$anonfun$executeAndCheck$1(Analyzer.scala:424)
-	at org.apache.spark.sql.catalyst.plans.logical.AnalysisHelper$.markInAnalyzer(AnalysisHelper.scala:443)
-	at org.apache.spark.sql.catalyst.analysis.Analyzer.executeAndCheck(Analyzer.scala:421)
-	at org.apache.spark.sql.execution.QueryExecution.$anonfun$analyzed$1(QueryExecution.scala:290)
-	at com.databricks.spark.util.FrameProfiler$.record(FrameProfiler.scala:94)
-	at org.apache.spark.sql.catalyst.QueryPlanningTracker.measurePhase(QueryPlanningTracker.scala:489)
-	at org.apache.spark.sql.execution.QueryExecution.$anonfun$executePhase$5(QueryExecution.scala:653)
-	at org.apache.spark.sql.execution.SQLExecution$.withExecutionPhase(SQLExecution.scala:144)
-	at org.apache.spark.sql.execution.QueryExecution.$anonfun$executePhase$4(QueryExecution.scala:653)
-	at org.apache.spark.sql.execution.QueryExecution$.withInternalError(QueryExecution.scala:1219)
-	at org.apache.spark.sql.execution.QueryExecution.$anonfun$executePhase$2(QueryExecution.scala:652)
-	at com.databricks.util.LexicalThreadLocal$Handle.runWith(LexicalThreadLocal.scala:63)
-	at org.apache.spark.sql.execution.QueryExecution.$anonfun$executePhase$1(QueryExecution.scala:648)
-	at org.apache.spark.sql.SparkSession.withActive(SparkSession.scala:1210)
-	at org.apache.spark.sql.execution.QueryExecution.executePhase(QueryExecution.scala:648)
-	at org.apache.spark.sql.execution.QueryExecution.analyzed$lzycompute(QueryExecution.scala:284)
-	at org.apache.spark.sql.execution.QueryExecution.analyzed(QueryExecution.scala:283)
-	at org.apache.spark.sql.connect.planner.SparkConnectPlanner.transformDeduplicate(SparkConnectPlanner.scala:1260)
-	at org.apache.spark.sql.connect.planner.SparkConnectPlanner.$anonfun$transformRelation$1(SparkConnectPlanner.scala:184)
-	at org.apache.spark.sql.connect.service.SessionHolder.$anonfun$usePlanCache$3(SessionHolder.scala:529)
-	at scala.Option.getOrElse(Option.scala:189)
-	at org.apache.spark.sql.connect.service.SessionHolder.usePlanCache(SessionHolder.scala:528)
-	at org.apache.spark.sql.connect.planner.SparkConnectPlanner.transformRelation(SparkConnectPlanner.scala:171)
-	at org.apache.spark.sql.connect.service.SparkConnectAnalyzeHandler.transformRelation$1(SparkConnectAnalyzeHandler.scala:76)
-	at org.apache.spark.sql.connect.service.SparkConnectAnalyzeHandler.process(SparkConnectAnalyzeHandler.scala:159)
-	at org.apache.spark.sql.connect.service.SparkConnectAnalyzeHandler.$anonfun$handle$3(SparkConnectAnalyzeHandler.scala:61)
-	at org.apache.spark.sql.connect.service.SparkConnectAnalyzeHandler.$anonfun$handle$3$adapted(SparkConnectAnalyzeHandler.scala:60)
-	at org.apache.spark.sql.connect.service.SessionHolder.$anonfun$withSession$2(SessionHolder.scala:392)
-	at org.apache.spark.sql.SparkSession.withActive(SparkSession.scala:1210)
-	at org.apache.spark.sql.connect.service.SessionHolder.$anonfun$withSession$1(SessionHolder.scala:392)
-	at org.apache.spark.JobArtifactSet$.withActiveJobArtifactState(JobArtifactSet.scala:97)
-	at org.apache.spark.sql.artifact.ArtifactManager.$anonfun$withResources$1(ArtifactManager.scala:84)
-	at org.apache.spark.util.Utils$.withContextClassLoader(Utils.scala:240)
-	at org.apache.spark.sql.artifact.ArtifactManager.withResources(ArtifactManager.scala:83)
-	at org.apache.spark.sql.connect.service.SessionHolder.withSession(SessionHolder.scala:391)
-	at org.apache.spark.sql.connect.service.SparkConnectAnalyzeHandler.$anonfun$handle$1(SparkConnectAnalyzeHandler.scala:60)
-	at org.apache.spark.sql.connect.service.SparkConnectAnalyzeHandler.$anonfun$handle$1$adapted(SparkConnectAnalyzeHandler.scala:45)
-	at com.databricks.spark.connect.logging.rpc.SparkConnectRpcMetricsCollectorUtils$.collectMetrics(SparkConnectRpcMetricsCollector.scala:268)
-	at org.apache.spark.sql.connect.service.SparkConnectAnalyzeHandler.handle(SparkConnectAnalyzeHandler.scala:44)
-	at org.apache.spark.sql.connect.service.SparkConnectService.analyzePlan(SparkConnectService.scala:104)
-	at org.apache.spark.connect.proto.SparkConnectServiceGrpc$MethodHandlers.invoke(SparkConnectServiceGrpc.java:801)
-	at grpc_shaded.io.grpc.stub.ServerCalls$UnaryServerCallHandler$UnaryServerCallListener.onHalfClose(ServerCalls.java:182)
-	at com.databricks.spark.connect.service.AuthenticationInterceptor$AuthenticatedServerCallListener.$anonfun$onHalfClose$1(AuthenticationInterceptor.scala:351)
-	at scala.runtime.java8.JFunction0$mcV$sp.apply(JFunction0$mcV$sp.java:23)
-	at com.databricks.unity.UCSEphemeralState$Handle.runWith(UCSEphemeralState.scala:51)
-	at com.databricks.unity.HandleImpl.runWith(UCSHandle.scala:104)
-	at com.databricks.spark.connect.service.RequestContext.$anonfun$runWith$3(RequestContext.scala:295)
-	at com.databricks.spark.connect.service.RequestContext$.com$databricks$spark$connect$service$RequestContext$$withLocalProperties(RequestContext.scala:504)
-	at com.databricks.spark.connect.service.RequestContext.$anonfun$runWith$2(RequestContext.scala:295)
-	at com.databricks.logging.AttributionContextTracing.$anonfun$withAttributionContext$1(AttributionContextTracing.scala:48)
-	at com.databricks.logging.AttributionContext$.$anonfun$withValue$1(AttributionContext.scala:276)
-	at scala.util.DynamicVariable.withValue(DynamicVariable.scala:62)
-	at com.databricks.logging.AttributionContext$.withValue(AttributionContext.scala:272)
-	at com.databricks.logging.AttributionContextTracing.withAttributionContext(AttributionContextTracing.scala:46)
-	at com.databricks.logging.AttributionContextTracing.withAttributionContext$(AttributionContextTracing.scala:43)
-	at com.databricks.spark.util.PublicDBLogging.withAttributionContext(DatabricksSparkUsageLogger.scala:30)
-	at com.databricks.spark.util.UniverseAttributionContextWrapper.withValue(AttributionContextUtils.scala:241)
-	at com.databricks.spark.connect.service.RequestContext.$anonfun$runWith$1(RequestContext.scala:294)
-	at com.databricks.spark.connect.service.RequestContext.withContext(RequestContext.scala:307)
-	at com.databricks.spark.connect.service.RequestContext.runWith(RequestContext.scala:287)
-	at com.databricks.spark.connect.service.AuthenticationInterceptor$AuthenticatedServerCallListener.onHalfClose(AuthenticationInterceptor.scala:351)
-	at grpc_shaded.io.grpc.PartialForwardingServerCallListener.onHalfClose(PartialForwardingServerCallListener.java:35)
-	at grpc_shaded.io.grpc.ForwardingServerCallListener.onHalfClose(ForwardingServerCallListener.java:23)
-	at grpc_shaded.io.grpc.ForwardingServerCallListener$SimpleForwardingServerCallListener.onHalfClose(ForwardingServerCallListener.java:40)
-	at grpc_shaded.io.grpc.internal.ServerCallImpl$ServerStreamListenerImpl.halfClosed(ServerCallImpl.java:351)
-	at grpc_shaded.io.grpc.internal.ServerImpl$JumpToApplicationThreadServerStreamListener$1HalfClosed.runInContext(ServerImpl.java:861)
-	at grpc_shaded.io.grpc.internal.ContextRunnable.run(ContextRunnable.java:37)
-	at grpc_shaded.io.grpc.internal.SerializingExecutor.run(SerializingExecutor.java:133)
-	at org.apache.spark.util.threads.SparkThreadLocalCapturingRunnable.$anonfun$run$1(SparkThreadLocalForwardingThreadPoolExecutor.scala:157)
-	at scala.runtime.java8.JFunction0$mcV$sp.apply(JFunction0$mcV$sp.java:23)
-	at com.databricks.spark.util.IdentityClaim$.withClaim(IdentityClaim.scala:48)
-	at org.apache.spark.util.threads.SparkThreadLocalCapturingHelper.$anonfun$runWithCaptured$4(SparkThreadLocalForwardingThreadPoolExecutor.scala:113)
-	at com.databricks.unity.UCSEphemeralState$Handle.runWith(UCSEphemeralState.scala:51)
-	at org.apache.spark.util.threads.SparkThreadLocalCapturingHelper.runWithCaptured(SparkThreadLocalForwardingThreadPoolExecutor.scala:112)
-	at org.apache.spark.util.threads.SparkThreadLocalCapturingHelper.runWithCaptured$(SparkThreadLocalForwardingThreadPoolExecutor.scala:89)
-	at org.apache.spark.util.threads.SparkThreadLocalCapturingRunnable.runWithCaptured(SparkThreadLocalForwardingThreadPoolExecutor.scala:154)
-	at org.apache.spark.util.threads.SparkThreadLocalCapturingRunnable.run(SparkThreadLocalForwardingThreadPoolExecutor.scala:157)
-	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
-	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
-	at java.lang.Thread.run(Thread.java:750)
-
-During handling of the above exception, another exception occurred:
-
-Traceback (most recent call last):
-  File "/databricks/spark/python/lib/py4j-0.10.9.7-src.zip/py4j/clientserver.py", line 528, in send_command
-    self.socket.sendall(command.encode("utf-8"))
-ConnectionResetError: [Errno 104] Connection reset by peer
-
-During handling of the above exception, another exception occurred:
-
-Traceback (most recent call last):
-  File "/databricks/spark/python/lib/py4j-0.10.9.7-src.zip/py4j/java_gateway.py", line 1038, in send_command
-    response = connection.send_command(command)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/databricks/spark/python/lib/py4j-0.10.9.7-src.zip/py4j/clientserver.py", line 531, in send_command
-    raise Py4JNetworkError(
-py4j.protocol.Py4JNetworkError: Error while sending
-[UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `var_months_since_approval` cannot be resolved. Did you mean one of the following? [`LastPerformingModel`, `L1_OVERRIDE_PD`, `L1_OVERRIDE_UCR`, `L2_OVERRIDE_PD`, `L2_OVERRIDE_UCR`]. SQLSTATE: 42703
+2025-05-15 13:24:49 [INFO] validate:  YAML format validated successfully
+2025-05-15 13:24:53 [INFO] validate:  Sources validated successfully
+2025-05-15 13:24:53 [INFO] validate_join:  Joins validated successfully
+KeyError: 'columns'
+File <command-6358367925471434>, line 1
+----> 1 validate_business_logic_mapping(spark, business_logic_dict)
+File /Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/src/validate/run_all.py:44, in validate_business_logic_mapping(spark, business_logic)
+     41         return cls(business_logic).validate()
+     42     return cls(spark, business_logic).validate()
+---> 44 return all(
+     45     _validate_logic_element(c, spark, business_logic)
+     46     for c in [
+     47         Yaml,
+     48         Sources,
+     49         Transformations,
+     50         Expressions,
+     51     ]
+     52 )
+File /Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/src/validate/run_all.py:45, in <genexpr>(.0)
+     41         return cls(business_logic).validate()
+     42     return cls(spark, business_logic).validate()
+     44 return all(
+---> 45     _validate_logic_element(c, spark, business_logic)
+     46     for c in [
+     47         Yaml,
+     48         Sources,
+     49         Transformations,
+     50         Expressions,
+     51     ]
+     52 )
+File /Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/src/validate/run_all.py:42, in validate_business_logic_mapping.<locals>._validate_logic_element(cls, spark, business_logic)
+     40 if cls.__name__.lower() == "yaml":
+     41     return cls(business_logic).validate()
+---> 42 return cls(spark, business_logic).validate()
+File /Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/src/validate/transformations.py:198, in Transformations.validate(self)
+    187 validations.append(
+    188     self.validate_transformation_step(
+    189         tf,
+   (...)
+    194     )
+    195 )
+    197 # Update available variables and sources after last transformation step
+--> 198 updated_sources = update_sources(
+    199     input_sources=updated_sources, tf=tf, tf_step=tf_step
+    200 )
+    201 # Update 'data dictionary' with new aliases
+    202 self.sources = keep_unique_sources(updated_sources, self.sources)
+File /Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/src/utils/sources_util.py:191, in update_sources(input_sources, tf, tf_step)
+    185 kwgs = {k: v for k, v in tf[tf_step].items() if k in arg_names}
+    186 if tf_step in ["join", "add_variables", "filter"]:
+    187     # If there is a join or add_variables, we can use all columns
+    188     # From the updated_sources from all previous transformation steps
+    189     return (
+    190         keep_unique_sources(
+--> 191             [tf_func(updated_sources=input_sources, **kwgs)],
+    192             input_sources,
+    193         )
+    194         if "alias" in kwgs
+    195         else input_sources
+    196     )
+    197 # If there is a pivot, union or aggregation we can use
+    198 # the new generated columns from the corresponding functions
+    199 return keep_unique_sources(
+    200     [tf_func(**kwgs)],
+    201     input_sources,
+    202 )
+File /Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/src/utils/sources_util.py:69, in join_in_sources_format(alias, updated_sources)
+     66 def join_in_sources_format(
+     67     alias: str, updated_sources: list[dict[str, str | list[str]]]
+     68 ) -> dict[str, str | list[str]]:
+---> 69     available_columns = sorted({c for s in updated_sources for c in s["columns"]})
+     70     return {
+     71         "alias": alias,
+     72         "columns": available_columns,
+     73     }
+File /Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/src/utils/sources_util.py:69, in <setcomp>(.0)
+     66 def join_in_sources_format(
+     67     alias: str, updated_sources: list[dict[str, str | list[str]]]
+     68 ) -> dict[str, str | list[str]]:
+---> 69     available_columns = sorted({c for s in updated_sources for c in s["columns"]})
+     70     return {
+     71         "alias": alias,
+     72         "columns": available_columns,
+     73     }
