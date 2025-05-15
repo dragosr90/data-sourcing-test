@@ -1,4 +1,4 @@
-target: int_202412.pd_ucr_actual
+target: int_{{ RUN_MONTH }}.pd_ucr_actual
 
 sources:
   - alias: DIAL_FAIR_PD_UCR
@@ -49,7 +49,7 @@ sources:
     - PROPOSER
     - APPROVER
     - LB_RATING_ID
-    source: stg_202412.dial_fair_pd_ucr
+    source: stg_{{ RUN_MONTH }}.dial_fair_pd_ucr
 
   - alias: HISTORICAL_RATINGS
     columns:
@@ -62,7 +62,21 @@ sources:
     - PORTFOLIO
     - BUSINESSLINE
     - RATING_ID
-    source: stg_202412.dial_fair_pd_ucr
+    source: stg_{{ RUN_MONTH }}.dial_fair_pd_ucr
+    filter: RATING_STATUS = 'ACTUAL'
+
+  - alias: HISTORICAL_RATINGS_FALLBACK
+    columns:
+    - PD_RATING_ID
+    - COMPANY_ID
+    - RATING_STATUS
+    - PD_MODEL_VERSION
+    - APPROVED_UCR
+    - PD_APPROVAL_DATE
+    - PORTFOLIO
+    - BUSINESSLINE
+    - RATING_ID
+    source: stg_{{ RUN_MONTH }}.dial_fair_pd_ucr
     filter: RATING_STATUS = 'ACTUAL'
 
 transformations:
@@ -70,21 +84,21 @@ transformations:
   - add_variables:
       source: DIAL_FAIR_PD_UCR
       column_mapping:
-        var_is_performing: case when APPROVED_UCR not in ('6', '7', '8') then TRUE else FALSE end
-        var_months_since_approval: months_between(current_date(), PD_APPROVAL_DATE)
+        var_is_performing: case when DIAL_FAIR_PD_UCR.APPROVED_UCR not in ('6', '7', '8') then TRUE else FALSE end
+        var_months_since_approval: months_between(current_date(), DIAL_FAIR_PD_UCR.PD_APPROVAL_DATE)
   
-  # Find most recent performing rating for each company+portfolio+businessline
+  # Create a temporary table to store the most recent performing ratings
   - aggregation:
       alias: PERFORMING_RATINGS
       source: HISTORICAL_RATINGS
       group:
-      - COMPANY_ID
-      - PORTFOLIO
-      - BUSINESSLINE
+      - HISTORICAL_RATINGS.COMPANY_ID
+      - HISTORICAL_RATINGS.PORTFOLIO
+      - HISTORICAL_RATINGS.BUSINESSLINE
       column_mapping:
-        most_recent_approval_date: max(case when APPROVED_UCR not in ('6', '7', '8') then PD_APPROVAL_DATE end)
+        most_recent_approval_date: max(case when HISTORICAL_RATINGS.APPROVED_UCR not in ('6', '7', '8') then HISTORICAL_RATINGS.PD_APPROVAL_DATE end)
 
-  # Get all performing ratings with the most recent approval date
+  # Get performing ratings with the most recent approval date
   - join:
       left_source: PERFORMING_RATINGS
       right_source: HISTORICAL_RATINGS
@@ -96,16 +110,16 @@ transformations:
       - PERFORMING_RATINGS.most_recent_approval_date = HISTORICAL_RATINGS.PD_APPROVAL_DATE
       - HISTORICAL_RATINGS.APPROVED_UCR not in ('6', '7', '8')
 
-  # Find the highest rating_id among the most recent performing ratings
+  # Find highest rating_id among most recent performing ratings
   - aggregation:
       alias: BEST_PERFORMING_RATINGS
       group:
-      - COMPANY_ID
-      - PORTFOLIO
-      - BUSINESSLINE
+      - HISTORICAL_RATINGS.COMPANY_ID
+      - HISTORICAL_RATINGS.PORTFOLIO
+      - HISTORICAL_RATINGS.BUSINESSLINE
       column_mapping:
-        highest_rating_id: max(RATING_ID)
-        last_performing_model: first(PD_MODEL_VERSION)
+        highest_rating_id: max(HISTORICAL_RATINGS.RATING_ID)
+        last_performing_model: first(HISTORICAL_RATINGS.PD_MODEL_VERSION)
 
   # Join back with original data
   - join:
@@ -120,14 +134,14 @@ transformations:
   # Fallback for records with no performing history - find lowest rating_id
   - aggregation:
       alias: FALLBACK_RATINGS
-      source: HISTORICAL_RATINGS
+      source: HISTORICAL_RATINGS_FALLBACK
       group:
-      - COMPANY_ID
-      - PORTFOLIO
-      - BUSINESSLINE
+      - HISTORICAL_RATINGS_FALLBACK.COMPANY_ID
+      - HISTORICAL_RATINGS_FALLBACK.PORTFOLIO
+      - HISTORICAL_RATINGS_FALLBACK.BUSINESSLINE
       column_mapping:
-        lowest_rating_id: min(RATING_ID)
-        fallback_model: first(PD_MODEL_VERSION)
+        lowest_rating_id: min(HISTORICAL_RATINGS_FALLBACK.RATING_ID)
+        fallback_model: first(HISTORICAL_RATINGS_FALLBACK.PD_MODEL_VERSION)
 
   # Join with fallback data
   - join:
@@ -189,12 +203,12 @@ expressions:
   # Last Performing Model logic - using CASE statement to handle all conditions
   LastPerformingModel: >
     CASE 
-      WHEN var_is_performing THEN PD_MODEL_VERSION 
+      WHEN var_is_performing THEN DIAL_FAIR_PD_UCR.PD_MODEL_VERSION 
       WHEN BEST_PERFORMING_RATINGS.last_performing_model IS NOT NULL THEN BEST_PERFORMING_RATINGS.last_performing_model 
       ELSE FALLBACK_RATINGS.fallback_model 
     END
 
 filter_target:
-  - RATING_STATUS = 'ACTUAL' AND (var_months_since_approval < 24 OR APPROVED_UCR IN ('6', '7', '8'))
+  - DIAL_FAIR_PD_UCR.RATING_STATUS = 'ACTUAL' AND (var_months_since_approval < 24 OR DIAL_FAIR_PD_UCR.APPROVED_UCR IN ('6', '7', '8'))
 
 drop_duplicates: true
