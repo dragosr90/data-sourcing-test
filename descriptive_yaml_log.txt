@@ -3,15 +3,16 @@ Validate YAML
 
 validate_business_logic_mapping(spark, business_logic_dict)
 
-2025-05-15 08:03:38 [INFO] validate:  YAML format validated successfully
-2025-05-15 08:03:41 [INFO] validate:  Sources validated successfully
-2025-05-15 08:03:42 [INFO] validate_add_variables:  Variables validated successfully
-2025-05-15 08:03:42 [INFO] validate_aggregation:  Aggregations validated successfully
-2025-05-15 08:03:42 [INFO] validate_join:  Joins validated successfully
-2025-05-15 08:03:43 [INFO] validate_aggregation:  Aggregations validated successfully
-2025-05-15 08:03:43 [INFO] validate_join:  Joins validated successfully
-2025-05-15 08:03:43 [ERROR] validate_sql_expressions:  Problem with expression(s):
-2025-05-15 08:03:43 [ERROR] validate_sql_expressions:  min(HISTORICAL_RATINGS.RATING_ID): [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `HISTORICAL_RATINGS`.`COMPANY_ID` cannot be resolved. Did you mean one of the following? [`BEST_PERFORMING_RATINGS`.`COMPANY_ID`, `DIAL_FAIR_PD_UCR`.`COMPANY_ID`, `DIAL_FAIR_PD_UCR`.`CS_ID`, `DIAL_FAIR_PD_UCR`.`FAIR_ID`, `DIAL_FAIR_PD_UCR`.`PARENT_COMPANY_ID`]. SQLSTATE: 42703
-first(HISTORICAL_RATINGS.PD_MODEL_VERSION): [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `HISTORICAL_RATINGS`.`COMPANY_ID` cannot be resolved. Did you mean one of the following? [`BEST_PERFORMING_RATINGS`.`COMPANY_ID`, `DIAL_FAIR_PD_UCR`.`COMPANY_ID`, `DIAL_FAIR_PD_UCR`.`CS_ID`, `DIAL_FAIR_PD_UCR`.`FAIR_ID`, `DIAL_FAIR_PD_UCR`.`PARENT_COMPANY_ID`]. SQLSTATE: 42703
-2025-05-15 08:03:43 [ERROR] validate_aggregation:  Issue with aggregated data FALLBACK_RATINGS
-2025-05-15 08:03:44 [INFO] validate_join:  Joins validated successfully
+2025-05-15 08:14:42 [INFO] validate:  YAML format validated successfully
+2025-05-15 08:14:46 [INFO] validate:  Sources validated successfully
+2025-05-15 08:14:46 [INFO] validate_add_variables:  Variables validated successfully
+2025-05-15 08:14:46 [INFO] validate_aggregation:  Aggregations validated successfully
+2025-05-15 08:14:47 [INFO] validate_join:  Joins validated successfully
+2025-05-15 08:14:47 [INFO] validate_aggregation:  Aggregations validated successfully
+2025-05-15 08:14:48 [INFO] validate_join:  Joins validated successfully
+2025-05-15 08:14:48 [ERROR] validate_sql_expressions:  Problem with expression(s):
+2025-05-15 08:14:48 [ERROR] validate_sql_expressions:  min(HISTORICAL_RATINGS_FALLBACK.RATING_ID): [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `HISTORICAL_RATINGS_FALLBACK`.`COMPANY_ID` cannot be resolved. Did you mean one of the following? [`DIAL_FAIR_PD_UCR`.`COMPANY_ID`, `BEST_PERFORMING_RATINGS`.`COMPANY_ID`, `DIAL_FAIR_PD_UCR`.`PARENT_COMPANY_ID`, `DIAL_FAIR_PD_UCR`.`FAIR_ID`, `DIAL_FAIR_PD_UCR`.`GRACE_ID`]. SQLSTATE: 42703
+first(HISTORICAL_RATINGS_FALLBACK.PD_MODEL_VERSION): [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `HISTORICAL_RATINGS_FALLBACK`.`COMPANY_ID` cannot be resolved. Did you mean one of the following? [`DIAL_FAIR_PD_UCR`.`COMPANY_ID`, `BEST_PERFORMING_RATINGS`.`COMPANY_ID`, `DIAL_FAIR_PD_UCR`.`PARENT_COMPANY_ID`, `DIAL_FAIR_PD_UCR`.`FAIR_ID`, `DIAL_FAIR_PD_UCR`.`GRACE_ID`]. SQLSTATE: 42703
+2025-05-15 08:14:48 [ERROR] validate_aggregation:  Issue with aggregated data FALLBACK_RATINGS
+2025-05-15 08:14:48 [INFO] validate_join:  Joins validated successfully
+False
