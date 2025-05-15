@@ -1,74 +1,9 @@
-4:
-Sources
+3:
+Validate YAML
 
+validate_business_logic_mapping(spark, business_logic_dict)
 
-display(pd.DataFrame(business_logic_dict["sources"]).fillna(""))
-
-2025-05-09 13:05:02 [INFO] send_command:  Exception while sending command.
-Traceback (most recent call last):
-  File "/databricks/spark/python/pyspark/sql/pandas/serializers.py", line 338, in _create_array
-    return pa.Array.from_pandas(
-           ^^^^^^^^^^^^^^^^^^^^^
-  File "pyarrow/array.pxi", line 1116, in pyarrow.lib.Array.from_pandas
-  File "pyarrow/array.pxi", line 340, in pyarrow.lib.array
-  File "pyarrow/array.pxi", line 86, in pyarrow.lib._ndarray_to_array
-  File "pyarrow/error.pxi", line 91, in pyarrow.lib.check_status
-pyarrow.lib.ArrowTypeError: Expected bytes, got a 'list' object
-
-The above exception was the direct cause of the following exception:
-
-Traceback (most recent call last):
-  File "/databricks/python/lib/python3.11/site-packages/IPython/core/interactiveshell.py", line 3526, in run_code
-    exec(code_obj, self.user_global_ns, self.user_ns)
-  File "/home/spark-4c40f168-fc13-42c8-b981-35/.ipykernel/29300/command-6358367925471427-462370576", line 1, in <module>
-    display(pd.DataFrame(business_logic_dict["sources"]).fillna(""))
-  File "/databricks/python_shell/lib/dbruntime/display.py", line 162, in display
-    self.display(self.sparkSession.createDataFrame(input))
-                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/databricks/spark/python/pyspark/sql/connect/session.py", line 588, in createDataFrame
-    ser._create_batch(
-  File "/databricks/spark/python/pyspark/sql/pandas/serializers.py", line 400, in _create_batch
-    arrs = [
-           ^
-  File "/databricks/spark/python/pyspark/sql/pandas/serializers.py", line 401, in <listcomp>
-    self._create_array(s, arrow_type, spark_type) for s, arrow_type, spark_type in series
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/databricks/spark/python/pyspark/sql/pandas/serializers.py", line 353, in _create_array
-    raise PySparkTypeError(error_msg % (series.dtype, series.name, arrow_type)) from e
-pyspark.errors.exceptions.base.PySparkTypeError: Exception thrown when converting pandas.Series (object) with name 'columns' to Arrow Array (None).
-
-During handling of the above exception, another exception occurred:
-
-Traceback (most recent call last):
-  File "/databricks/spark/python/lib/py4j-0.10.9.7-src.zip/py4j/clientserver.py", line 528, in send_command
-    self.socket.sendall(command.encode("utf-8"))
-ConnectionResetError: [Errno 104] Connection reset by peer
-
-During handling of the above exception, another exception occurred:
-
-Traceback (most recent call last):
-  File "/databricks/spark/python/lib/py4j-0.10.9.7-src.zip/py4j/java_gateway.py", line 1038, in send_command
-    response = connection.send_command(command)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/databricks/spark/python/lib/py4j-0.10.9.7-src.zip/py4j/clientserver.py", line 531, in send_command
-    raise Py4JNetworkError(
-py4j.protocol.Py4JNetworkError: Error while sending
-PySparkTypeError: Exception thrown when converting pandas.Series (object) with name 'columns' to Arrow Array (None).
-File /databricks/spark/python/pyspark/sql/pandas/serializers.py:338, in ArrowStreamPandasSerializer._create_array(self, series, arrow_type, spark_type, arrow_cast)
-    337 try:
---> 338     return pa.Array.from_pandas(
-    339         series, mask=mask, type=arrow_type, safe=self._safecheck
-    340     )
-    341 except pa.lib.ArrowInvalid:
-File /databricks/spark/python/pyspark/sql/pandas/serializers.py:353, in ArrowStreamPandasSerializer._create_array(self, series, arrow_type, spark_type, arrow_cast)
-    348 except TypeError as e:
-    349     error_msg = (
-    350         "Exception thrown when converting pandas.Series (%s) "
-    351         "with name '%s' to Arrow Array (%s)."
-    352     )
---> 353     raise PySparkTypeError(error_msg % (series.dtype, series.name, arrow_type)) from e
-    354 except ValueError as e:
-    355     error_msg = (
-    356         "Exception thrown when converting pandas.Series (%s) "
-    357         "with name '%s' to Arrow Array (%s)."
-    358     )
+2025-05-14 13:53:58 [INFO] validate:  YAML format validated successfully
+2025-05-14 13:54:00 [INFO] validate:  Sources validated successfully
+2025-05-14 13:54:00 [ERROR] validate_initial_source:  Initial source should be specified
+False
