@@ -3,87 +3,11 @@ Validate YAML
 
 validate_business_logic_mapping(spark, business_logic_dict)
 
-2025-05-15 13:24:49 [INFO] validate:  YAML format validated successfully
-2025-05-15 13:24:53 [INFO] validate:  Sources validated successfully
-2025-05-15 13:24:53 [INFO] validate_join:  Joins validated successfully
-KeyError: 'columns'
-File <command-6358367925471434>, line 1
-----> 1 validate_business_logic_mapping(spark, business_logic_dict)
-File /Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/src/validate/run_all.py:44, in validate_business_logic_mapping(spark, business_logic)
-     41         return cls(business_logic).validate()
-     42     return cls(spark, business_logic).validate()
----> 44 return all(
-     45     _validate_logic_element(c, spark, business_logic)
-     46     for c in [
-     47         Yaml,
-     48         Sources,
-     49         Transformations,
-     50         Expressions,
-     51     ]
-     52 )
-File /Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/src/validate/run_all.py:45, in <genexpr>(.0)
-     41         return cls(business_logic).validate()
-     42     return cls(spark, business_logic).validate()
-     44 return all(
----> 45     _validate_logic_element(c, spark, business_logic)
-     46     for c in [
-     47         Yaml,
-     48         Sources,
-     49         Transformations,
-     50         Expressions,
-     51     ]
-     52 )
-File /Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/src/validate/run_all.py:42, in validate_business_logic_mapping.<locals>._validate_logic_element(cls, spark, business_logic)
-     40 if cls.__name__.lower() == "yaml":
-     41     return cls(business_logic).validate()
----> 42 return cls(spark, business_logic).validate()
-File /Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/src/validate/transformations.py:198, in Transformations.validate(self)
-    187 validations.append(
-    188     self.validate_transformation_step(
-    189         tf,
-   (...)
-    194     )
-    195 )
-    197 # Update available variables and sources after last transformation step
---> 198 updated_sources = update_sources(
-    199     input_sources=updated_sources, tf=tf, tf_step=tf_step
-    200 )
-    201 # Update 'data dictionary' with new aliases
-    202 self.sources = keep_unique_sources(updated_sources, self.sources)
-File /Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/src/utils/sources_util.py:191, in update_sources(input_sources, tf, tf_step)
-    185 kwgs = {k: v for k, v in tf[tf_step].items() if k in arg_names}
-    186 if tf_step in ["join", "add_variables", "filter"]:
-    187     # If there is a join or add_variables, we can use all columns
-    188     # From the updated_sources from all previous transformation steps
-    189     return (
-    190         keep_unique_sources(
---> 191             [tf_func(updated_sources=input_sources, **kwgs)],
-    192             input_sources,
-    193         )
-    194         if "alias" in kwgs
-    195         else input_sources
-    196     )
-    197 # If there is a pivot, union or aggregation we can use
-    198 # the new generated columns from the corresponding functions
-    199 return keep_unique_sources(
-    200     [tf_func(**kwgs)],
-    201     input_sources,
-    202 )
-File /Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/src/utils/sources_util.py:69, in join_in_sources_format(alias, updated_sources)
-     66 def join_in_sources_format(
-     67     alias: str, updated_sources: list[dict[str, str | list[str]]]
-     68 ) -> dict[str, str | list[str]]:
----> 69     available_columns = sorted({c for s in updated_sources for c in s["columns"]})
-     70     return {
-     71         "alias": alias,
-     72         "columns": available_columns,
-     73     }
-File /Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/src/utils/sources_util.py:69, in <setcomp>(.0)
-     66 def join_in_sources_format(
-     67     alias: str, updated_sources: list[dict[str, str | list[str]]]
-     68 ) -> dict[str, str | list[str]]:
----> 69     available_columns = sorted({c for s in updated_sources for c in s["columns"]})
-     70     return {
-     71         "alias": alias,
-     72         "columns": available_columns,
-     73     }
+2025-05-15 13:48:33 [INFO] validate:  YAML format validated successfully
+2025-05-15 13:48:35 [INFO] validate:  Sources validated successfully
+2025-05-15 13:48:36 [INFO] validate_join:  Joins validated successfully
+2025-05-15 13:48:37 [ERROR] validate_sql_expressions:  Problem with expression(s):
+2025-05-15 13:48:37 [ERROR] validate_sql_expressions:  DUMMY_CPXCF.CounterpartyRole: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `DUMMY_CPXCF`.`CounterpartyRole` cannot be resolved. Did you mean one of the following? [`DUMMY_CPXCF`.`CurrentAccount`, `DUMMY_CPXCF`.`DeliveryEntity`, `DUMMY_CPXCF`.`ReportingDate`, `DUMMY_CPXCF`.`SourceSystemIdentifier`, `DUMMY_CPXCF`.`LocalFacilityIdentifier`]. SQLSTATE: 42703
+DUMMY_CPXCF.ParticipatingCounterparty: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `DUMMY_CPXCF`.`ParticipatingCounterparty` cannot be resolved. Did you mean one of the following? [`DUMMY_CPXCF`.`ReportingDate`, `DUMMY_CPXCF`.`CurrentAccount`, `DUMMY_CPXCF`.`DeliveryEntity`, `DUMMY_CPXCF`.`LocalFacilityIdentifier`, `DUMMY_CPXCF`.`SourceSystemIdentifier`]. SQLSTATE: 42703
+DUMMY_CPXCF.ParticipatingCounterpartySourceSystemIdentifier: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `DUMMY_CPXCF`.`ParticipatingCounterpartySourceSystemIdentifier` cannot be resolved. Did you mean one of the following? [`DUMMY_CPXCF`.`CurrentAccountSourceSystemIdentifier`, `DUMMY_CPXCF`.`SourceSystemIdentifier`, `DUMMY_CPXCF`.`AlternativeLocalReferenceIdentifier`, `CreditFacilitySourceSystemIdentifier`, `DUMMY_CPXCF`.`LocalFacilityIdentifier`]. SQLSTATE: 42703
+False
