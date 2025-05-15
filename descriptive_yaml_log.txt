@@ -3,14 +3,20 @@ Validate YAML
 
 validate_business_logic_mapping(spark, business_logic_dict)
 
-2025-05-15 08:21:22 [INFO] validate:  YAML format validated successfully
-2025-05-15 08:21:26 [INFO] validate:  Sources validated successfully
-2025-05-15 08:21:27 [INFO] validate_add_variables:  Variables validated successfully
-2025-05-15 08:21:27 [INFO] validate_aggregation:  Aggregations validated successfully
-2025-05-15 08:21:27 [INFO] validate_join:  Joins validated successfully
-2025-05-15 08:21:28 [INFO] validate_aggregation:  Aggregations validated successfully
-2025-05-15 08:21:28 [ERROR] validate_sql_expressions:  Problem with expression(s):
-2025-05-15 08:21:28 [ERROR] validate_sql_expressions:  first(HIST_ALL_RATINGS.PD_MODEL_VERSION): [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `HIST_ALL_RATINGS`.`COMPANY_ID` cannot be resolved. Did you mean one of the following? [`HIST_PERF_RATINGS`.`COMPANY_ID`, `HIST_PERF_RATINGS`.`RATING_ID`, `HIST_PERF_RATINGS`.`PORTFOLIO`, `HIST_PERF_RATINGS`.`APPROVED_UCR`, `HIST_PERF_RATINGS`.`BUSINESSLINE`]. SQLSTATE: 42703
-2025-05-15 08:21:28 [ERROR] validate_aggregation:  Issue with aggregated data FALLBACK_MODELS
-2025-05-15 08:21:28 [INFO] validate_join:  Joins validated successfully
-2025-05-15 08:21:29 [INFO] validate_join:  Joins validated successfully
+2025-05-15 08:27:35 [INFO] validate:  YAML format validated successfully
+2025-05-15 08:27:38 [INFO] validate:  Sources validated successfully
+2025-05-15 08:27:38 [INFO] validate_add_variables:  Variables validated successfully
+2025-05-15 08:27:39 [INFO] validate_aggregation:  Aggregations validated successfully
+2025-05-15 08:27:39 [INFO] validate_aggregation:  Aggregations validated successfully
+2025-05-15 08:27:39 [INFO] validate_join:  Joins validated successfully
+2025-05-15 08:27:40 [INFO] validate_aggregation:  Aggregations validated successfully
+2025-05-15 08:27:40 [INFO] validate_join:  Joins validated successfully
+2025-05-15 08:27:41 [INFO] validate_join:  Joins validated successfully
+2025-05-15 08:27:41 [INFO] validate:  Transformations validated successfully
+2025-05-15 08:27:58 [ERROR] validate_sql_expressions:  Problem with expression(s):
+2025-05-15 08:27:58 [ERROR] validate_sql_expressions:  CASE 
+  WHEN var_is_performing THEN DIAL_FAIR_PD_UCR.PD_MODEL_VERSION 
+  WHEN BEST_PERFORMING_MODELS.last_performing_model IS NOT NULL THEN BEST_PERFORMING_MODELS.last_performing_model 
+  ELSE FALLBACK_MODELS.fallback_model 
+END: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `var_is_performing` cannot be resolved. Did you mean one of the following? [`CS_ID`, `FAIR_ID`, `GBCDB_ID`, `GRACE_ID`, `L1_OVERRIDE_PD`]. SQLSTATE: 42703
+False
