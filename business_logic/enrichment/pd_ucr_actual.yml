@@ -81,6 +81,17 @@ transformations:
         var_is_performing: case when DIAL_FAIR_PD_UCR.APPROVED_UCR not in ('6', '7', '8') then TRUE else FALSE end
         var_months_since_approval: months_between(current_date(), DIAL_FAIR_PD_UCR.PD_APPROVAL_DATE)
   
+  # Find the fallback model first (directly from source)
+  - aggregation:
+      alias: FALLBACK_MODELS
+      source: HIST_ALL_RATINGS
+      group:
+      - HIST_ALL_RATINGS.COMPANY_ID
+      - HIST_ALL_RATINGS.PORTFOLIO
+      - HIST_ALL_RATINGS.BUSINESSLINE
+      column_mapping:
+        fallback_model: first(HIST_ALL_RATINGS.PD_MODEL_VERSION)
+  
   # Find the most recent performing rating for each company+portfolio+businessline
   - aggregation:
       alias: MOST_RECENT_PERFORMING
@@ -112,36 +123,25 @@ transformations:
       - HIST_PERF_RATINGS.BUSINESSLINE
       column_mapping:
         last_performing_model: first(HIST_PERF_RATINGS.PD_MODEL_VERSION)
-
-  # Find the lowest rating_id for fallback (directly from source)
-  - aggregation:
-      alias: FALLBACK_MODELS
-      source: HIST_ALL_RATINGS
-      group:
-      - HIST_ALL_RATINGS.COMPANY_ID
-      - HIST_ALL_RATINGS.PORTFOLIO
-      - HIST_ALL_RATINGS.BUSINESSLINE
-      column_mapping:
-        fallback_model: first(HIST_ALL_RATINGS.PD_MODEL_VERSION)
-  
-  # Join the last performing models
-  - join:
-      left_source: DIAL_FAIR_PD_UCR
-      right_source: BEST_PERFORMING_MODELS
-      how: left
-      condition:
-      - DIAL_FAIR_PD_UCR.COMPANY_ID = BEST_PERFORMING_MODELS.COMPANY_ID
-      - DIAL_FAIR_PD_UCR.PORTFOLIO = BEST_PERFORMING_MODELS.PORTFOLIO
-      - DIAL_FAIR_PD_UCR.BUSINESSLINE = BEST_PERFORMING_MODELS.BUSINESSLINE
   
   # Join the fallback models
   - join:
+      left_source: DIAL_FAIR_PD_UCR
       right_source: FALLBACK_MODELS
       how: left
       condition:
       - DIAL_FAIR_PD_UCR.COMPANY_ID = FALLBACK_MODELS.COMPANY_ID
       - DIAL_FAIR_PD_UCR.PORTFOLIO = FALLBACK_MODELS.PORTFOLIO
       - DIAL_FAIR_PD_UCR.BUSINESSLINE = FALLBACK_MODELS.BUSINESSLINE
+  
+  # Join the last performing models
+  - join:
+      right_source: BEST_PERFORMING_MODELS
+      how: left
+      condition:
+      - DIAL_FAIR_PD_UCR.COMPANY_ID = BEST_PERFORMING_MODELS.COMPANY_ID
+      - DIAL_FAIR_PD_UCR.PORTFOLIO = BEST_PERFORMING_MODELS.PORTFOLIO
+      - DIAL_FAIR_PD_UCR.BUSINESSLINE = BEST_PERFORMING_MODELS.BUSINESSLINE
 
 expressions:
   PD_RATING_ID: DIAL_FAIR_PD_UCR.PD_RATING_ID
