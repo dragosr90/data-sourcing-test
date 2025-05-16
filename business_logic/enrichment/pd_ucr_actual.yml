@@ -63,43 +63,28 @@ sources:
     source: stg_202412.dial_fair_pd_ucr
     filter: RATING_STATUS = 'ACTUAL'
 
+  - alias: PERFORMING_RATINGS
+    columns:
+    - COMPANY_ID
+    - PD_MODEL_VERSION
+    - PORTFOLIO
+    - BUSINESSLINE
+    - PD_APPROVAL_DATE
+    - RATING_ID
+    source: stg_202412.dial_fair_pd_ucr
+    filter: RATING_STATUS = 'ACTUAL' AND APPROVED_UCR NOT IN ('6', '7', '8')
+
 transformations:
-  # Add variable to identify performing ratings
-  - add_variables:
-      source: HIST_RATINGS
-      column_mapping:
-        is_performing: case when HIST_RATINGS.APPROVED_UCR not in ('6', '7', '8') then TRUE else FALSE end
-  
-  # Create a table with performing models ranked by recency
-  - aggregation:
-      alias: PERFORMING_MODELS
-      source: HIST_RATINGS
-      group:
-      - COMPANY_ID
-      - PORTFOLIO
-      - BUSINESSLINE
-      - PD_MODEL_VERSION
-      - PD_APPROVAL_DATE
-      - RATING_ID
-      filter: is_performing = TRUE
-  
-  # Add ROW_NUMBER window function to rank by date (most recent first)
-  - add_variables:
-      source: PERFORMING_MODELS
-      column_mapping:
-        newest_rank: row_number() over (partition by COMPANY_ID, PORTFOLIO, BUSINESSLINE order by PD_APPROVAL_DATE desc, RATING_ID desc)
-  
-  # Get the newest performing model
+  # Get the last performing model directly
   - aggregation:
       alias: NEWEST_MODEL
-      source: PERFORMING_MODELS
+      source: PERFORMING_RATINGS
       group:
       - COMPANY_ID
       - PORTFOLIO
       - BUSINESSLINE
-      filter: newest_rank = 1
       column_mapping:
-        newest_model: first(PD_MODEL_VERSION)
+        newest_model: first(PD_MODEL_VERSION) OVER (PARTITION BY COMPANY_ID, PORTFOLIO, BUSINESSLINE ORDER BY PD_APPROVAL_DATE DESC, RATING_ID DESC)
   
   # Get a fallback model for cases where no performing model exists
   - aggregation:
