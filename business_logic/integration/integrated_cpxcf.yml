@@ -2,35 +2,36 @@ target: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_integrated_cpxcf
 
 sources:
   - alias: DUMMY
+    columns:
+    - AlternativeLocalReferenceIdentifier
+    - SourceSystemIdentifier
+    - DeliveryEntity
+    - ReportingDate
+    - CounterpartyRole
+    - LocalFacilityIdentifier
+    - CurrentAccountSourceSystemIdentifier
+    - ParticipatingCounterparty
+    - ParticipatingCounterpartySourceSystemIdentifier
     source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_dummy_facility
-    columns:
-      - AlternativeLocalReferenceIdentifier
-      - SourceSystemIdentifier
-      - DeliveryEntity
-      - ReportingDate
-      - CounterpartyRole
-      - LocalFacilityIdentifier
-      - CurrentAccountSourceSystemIdentifier
-      - ParticipatingCounterparty
-      - ParticipatingCounterpartySourceSystemIdentifier
   - alias: SSF_CPXCA
+    columns:
+    - CurrentAccount
+    - CurrentAccountSourceSystemIdentifier
+    - DeliveryEntity
+    - ReportingDate
     source: stg_{{ RUN_MONTH }}.ssf_{{ DELIVERY_ENTITY }}_cpxca
-    columns:
-      - CurrentAccount
-      - CurrentAccountSourceSystemIdentifier
-      - DeliveryEntity
-      - ReportingDate
   - alias: SSF_CPXCF
-    source: stg_{{ RUN_MONTH }}.ssf_{{ DELIVERY_ENTITY }}_cpxcf
     columns:
-      - DeliveryEntity
-      - ReportingDate
-      - CounterpartyRole
-      - CreditFacility
-      - CreditFacilitySourceSystemIdentifier
-      - LiabilityPercentage
-      - ParticipatingCounterparty
-      - ParticipatingCounterpartySourceSystemIdentifier
+    - DeliveryEntity
+    - ReportingDate
+    - CounterpartyRole
+    - CreditFacility
+    - CreditFacilitySourceSystemIdentifier
+    - LiabilityPercentage
+    - ParticipatingCounterparty
+    - ParticipatingCounterpartySourceSystemIdentifier
+    source: stg_{{ RUN_MONTH }}.ssf_{{ DELIVERY_ENTITY }}_cpxcf
+
 
 transformations:
   - join:
@@ -38,8 +39,8 @@ transformations:
       left_source: SSF_CPXCA
       right_source: DUMMY
       condition:
-        - SSF_CPXCA.CurrentAccount = DUMMY.AlternativeLocalReferenceIdentifier AND
-          SSF_CPXCA.CurrentAccountSourceSystemIdentifier = DUMMY.SourceSystemIdentifier
+        - SSF_CPXCA.CurrentAccount = DUMMY.AlternativeLocalReferenceIdentifier
+        - SSF_CPXCA.CurrentAccountSourceSystemIdentifier = DUMMY.SourceSystemIdentifier
       how: inner
   - union:
       alias: COMBINED_CPXCF
