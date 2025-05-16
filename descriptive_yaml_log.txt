@@ -1,19 +1,12 @@
-3:
-Validate YAML
+6:
+Write output to Delta table and comment lineage information
 
+write_and_comment(
+    spark,
+    business_logic_dict,
+    transformed_data,
+    run_month=run_month,
+    source_system=standardized_delivery_entity,
+)
 
-
-validate_business_logic_mapping(spark, business_logic_dict)
-
-2025-05-16 09:56:00 [INFO] validate:  YAML format validated successfully
-2025-05-16 09:56:02 [INFO] validate:  Sources validated successfully
-2025-05-16 09:56:03 [INFO] validate_join:  Joins validated successfully
-2025-05-16 09:56:04 [ERROR] validate_sql_expressions:  Problem with expression(s):
-2025-05-16 09:56:04 [ERROR] validate_sql_expressions:  DeliveryEntity: [AMBIGUOUS_REFERENCE] Reference `DeliveryEntity` is ambiguous, could be: [`DUMMY_CPXCF_TEMP`.`DeliveryEntity`, `DUMMY`.`DeliveryEntity`, `SSF_CPXCA`.`DeliveryEntity`]. SQLSTATE: 42704
-ReportingDate: [AMBIGUOUS_REFERENCE] Reference `ReportingDate` is ambiguous, could be: [`DUMMY_CPXCF_TEMP`.`ReportingDate`, `DUMMY`.`ReportingDate`, `SSF_CPXCA`.`ReportingDate`]. SQLSTATE: 42704
-LocalFacilityIdentifier: [AMBIGUOUS_REFERENCE] Reference `LocalFacilityIdentifier` is ambiguous, could be: [`DUMMY_CPXCF_TEMP`.`LocalFacilityIdentifier`, `DUMMY`.`LocalFacilityIdentifier`]. SQLSTATE: 42704
-CurrentAccountSourceSystemIdentifier: [AMBIGUOUS_REFERENCE] Reference `CurrentAccountSourceSystemIdentifier` is ambiguous, could be: [`DUMMY_CPXCF_TEMP`.`CurrentAccountSourceSystemIdentifier`, `SSF_CPXCA`.`CurrentAccountSourceSystemIdentifier`]. SQLSTATE: 42704
-ParticipatingCounterparty: [AMBIGUOUS_REFERENCE] Reference `ParticipatingCounterparty` is ambiguous, could be: [`DUMMY_CPXCF_TEMP`.`ParticipatingCounterparty`, `SSF_CPXCA`.`ParticipatingCounterparty`]. SQLSTATE: 42704
-ParticipatingCounterpartySourceSystemIdentifier: [AMBIGUOUS_REFERENCE] Reference `ParticipatingCounterpartySourceSystemIdentifier` is ambiguous, could be: [`DUMMY_CPXCF_TEMP`.`ParticipatingCounterpartySourceSystemIdentifier`, `SSF_CPXCA`.`ParticipatingCounterpartySourceSystemIdentifier`]. SQLSTATE: 42704
-2025-05-16 09:56:05 [INFO] validate_union:  Union expressions validated successfully
-False
+[AMBIGUOUS_REFERENCE] Reference `DUMMY_CPXCF_TEMP`.`DeliveryEntity` is ambiguous, could be: [`DUMMY_CPXCF_TEMP`.`DeliveryEntity`, `DUMMY_CPXCF_TEMP`.`DeliveryEntity`]. SQLSTATE: 42704
