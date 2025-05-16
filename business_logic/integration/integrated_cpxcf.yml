@@ -3,92 +3,67 @@ target: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_integrated_cpxcf
 sources:
   - alias: DUMMY
     columns:
-      - DeliveryEntity
-      - ReportingDate
-      - AlternativeLocalReferenceIdentifier
-      - LocalFacilityIdentifier
-      - SourceSystemIdentifier
+    - AlternativeLocalReferenceIdentifier
+    - SourceSystemIdentifier
+    - DeliveryEntity
+    - ReportingDate
+    - LocalFacilityIdentifier
     source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_dummy_facility
   - alias: SSF_CPXCA
     columns:
-      - DeliveryEntity
-      - ReportingDate
-      - CurrentAccount
-      - CurrentAccountSourceSystemIdentifier
-      - ParticipatingCounterparty
-      - ParticipatingCounterpartySourceSystemIdentifier
+    - CurrentAccount
+    - CurrentAccountSourceSystemIdentifier
+    - DeliveryEntity
+    - ReportingDate
+    - ParticipatingCounterparty
+    - ParticipatingCounterpartySourceSystemIdentifier
     source: stg_{{ RUN_MONTH }}.ssf_{{ DELIVERY_ENTITY }}_cpxca
   - alias: SSF_CPXCF
     columns:
-      - DeliveryEntity
-      - ReportingDate
-      - CounterpartyRole
-      - CreditFacility
-      - CreditFacilitySourceSystemIdentifier
-      - LiabilityPercentage
-      - ParticipatingCounterparty
-      - ParticipatingCounterpartySourceSystemIdentifier
+    - DeliveryEntity
+    - ReportingDate
+    - CounterpartyRole
+    - CreditFacility
+    - CreditFacilitySourceSystemIdentifier
+    - LiabilityPercentage
+    - ParticipatingCounterparty
+    - ParticipatingCounterpartySourceSystemIdentifier
     source: stg_{{ RUN_MONTH }}.ssf_{{ DELIVERY_ENTITY }}_cpxcf
 
+
 transformations:
-  # Step 1: Create pre-processed individual tables
-  - add_variables:
-      alias: DUMMY_PREP
-      source: DUMMY
-      column_mapping:
-        DUMMY_DeliveryEntity: DeliveryEntity
-        DUMMY_ReportingDate: ReportingDate
-        DUMMY_AlternativeLocalReferenceIdentifier: AlternativeLocalReferenceIdentifier
-        DUMMY_LocalFacilityIdentifier: LocalFacilityIdentifier
-        DUMMY_SourceSystemIdentifier: SourceSystemIdentifier
-  
-  - add_variables:
-      alias: SSF_CPXCA_PREP
-      source: SSF_CPXCA
-      column_mapping:
-        CPXCA_DeliveryEntity: DeliveryEntity
-        CPXCA_ReportingDate: ReportingDate
-        CPXCA_CurrentAccount: CurrentAccount
-        CPXCA_CurrentAccountSourceSystemIdentifier: CurrentAccountSourceSystemIdentifier
-        CPXCA_ParticipatingCounterparty: ParticipatingCounterparty
-        CPXCA_ParticipatingCounterpartySourceSystemIdentifier: ParticipatingCounterpartySourceSystemIdentifier
-  
-  # Step 2: Join the pre-processed tables using fully qualified column names
   - join:
-      alias: DUMMY_CPXCF
-      left_source: SSF_CPXCA_PREP
-      right_source: DUMMY_PREP
+      alias: DUMMY_CPXCF_TEMP
+      left_source: SSF_CPXCA
+      right_source: DUMMY
       condition:
-        - CPXCA_CurrentAccount = DUMMY_AlternativeLocalReferenceIdentifier AND
-          CPXCA_CurrentAccountSourceSystemIdentifier = DUMMY_SourceSystemIdentifier
+        - SSF_CPXCA.CurrentAccount = DUMMY.AlternativeLocalReferenceIdentifier
+        - SSF_CPXCA.CurrentAccountSourceSystemIdentifier = DUMMY.SourceSystemIdentifier
       how: inner
-  
-  # Step 3: Add columns needed for the final result
   - add_variables:
-      source: DUMMY_CPXCF
+      alias: DUMMY_CPXCF
+      source: DUMMY_CPXCF_TEMP
       column_mapping:
-        DeliveryEntity: CPXCA_DeliveryEntity
-        ReportingDate: CPXCA_ReportingDate
-        CounterpartyRole: CAST(NULL AS STRING)
-        CreditFacility: DUMMY_LocalFacilityIdentifier
-        CreditFacilitySourceSystemIdentifier: CPXCA_CurrentAccountSourceSystemIdentifier
-        LiabilityPercentage: CAST(NULL AS STRING)
-        ParticipatingCounterparty: CPXCA_ParticipatingCounterparty
-        ParticipatingCounterpartySourceSystemIdentifier: CPXCA_ParticipatingCounterpartySourceSystemIdentifier
-  
-  # Step 4: Union with the SSF_CPXCF table for the final result
+        SrcDeliveryEntity: DUMMY_CPXCF_TEMP.DeliveryEntity
+        SrcReportingDate: DUMMY_CPXCF_TEMP.ReportingDate
+        SrcCounterpartyRole: CAST(NULL AS STRING)
+        SrcCreditFacility: DUMMY_CPXCF_TEMP.LocalFacilityIdentifier
+        SrcCreditFacilitySourceSystemIdentifier: DUMMY_CPXCF_TEMP.CurrentAccountSourceSystemIdentifier
+        SrcLiabilityPercentage: CAST(NULL AS STRING)
+        SrcParticipatingCounterparty: DUMMY_CPXCF_TEMP.ParticipatingCounterparty
+        SrcParticipatingCounterpartySourceSystemIdentifier: DUMMY_CPXCF_TEMP.ParticipatingCounterpartySourceSystemIdentifier
   - union:
       alias: COMBINED_CPXCF
       column_mapping:
         DUMMY_CPXCF:
-          DeliveryEntity: DeliveryEntity
-          ReportingDate: ReportingDate
-          CounterpartyRole: CounterpartyRole
-          CreditFacility: CreditFacility
-          CreditFacilitySourceSystemIdentifier: CreditFacilitySourceSystemIdentifier
-          LiabilityPercentage: LiabilityPercentage
-          ParticipatingCounterparty: ParticipatingCounterparty
-          ParticipatingCounterpartySourceSystemIdentifier: ParticipatingCounterpartySourceSystemIdentifier
+          DeliveryEntity: SrcDeliveryEntity
+          ReportingDate: SrcReportingDate
+          CounterpartyRole: SrcCounterpartyRole
+          CreditFacility: SrcCreditFacility
+          CreditFacilitySourceSystemIdentifier: SrcCreditFacilitySourceSystemIdentifier
+          LiabilityPercentage: SrcLiabilityPercentage
+          ParticipatingCounterparty: SrcParticipatingCounterparty
+          ParticipatingCounterpartySourceSystemIdentifier: SrcParticipatingCounterpartySourceSystemIdentifier
         SSF_CPXCF:
           DeliveryEntity: DeliveryEntity
           ReportingDate: ReportingDate
@@ -105,7 +80,7 @@ expressions:
   CounterpartyRole: COMBINED_CPXCF.CounterpartyRole
   CreditFacility: COMBINED_CPXCF.CreditFacility
   CreditFacilitySourceSystemIdentifier: COMBINED_CPXCF.CreditFacilitySourceSystemIdentifier
-  LiabilityPercentage: COMBINED_CPXCF.LiabilityPercentage
+  LiabilityPercentage: CAST(NULL AS STRING)
   ParticipatingCounterparty: COMBINED_CPXCF.ParticipatingCounterparty
   ParticipatingCounterpartySourceSystemIdentifier: COMBINED_CPXCF.ParticipatingCounterpartySourceSystemIdentifier
 
