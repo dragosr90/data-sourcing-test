@@ -13,8 +13,6 @@ sources:
     columns:
     - CurrentAccount
     - CurrentAccountSourceSystemIdentifier
-    - DeliveryEntity
-    - ReportingDate
     - ParticipatingCounterparty
     - ParticipatingCounterpartySourceSystemIdentifier
     source: stg_{{ RUN_MONTH }}.ssf_{{ DELIVERY_ENTITY }}_cpxca
@@ -33,37 +31,25 @@ sources:
 
 transformations:
   - join:
-      alias: DUMMY_CPXCF_TEMP
+      alias: SSF_CPXCA_DUMMY
       left_source: SSF_CPXCA
       right_source: DUMMY
       condition:
         - SSF_CPXCA.CurrentAccount = DUMMY.AlternativeLocalReferenceIdentifier
         - SSF_CPXCA.CurrentAccountSourceSystemIdentifier = DUMMY.SourceSystemIdentifier
       how: inner
-  - add_variables:
-      alias: DUMMY_CPXCF
-      source: DUMMY_CPXCF_TEMP
-      column_mapping:
-        SrcDeliveryEntity: DUMMY_CPXCF_TEMP.DeliveryEntity
-        SrcReportingDate: DUMMY_CPXCF_TEMP.ReportingDate
-        SrcCounterpartyRole: CAST(NULL AS STRING)
-        SrcCreditFacility: DUMMY_CPXCF_TEMP.LocalFacilityIdentifier
-        SrcCreditFacilitySourceSystemIdentifier: DUMMY_CPXCF_TEMP.CurrentAccountSourceSystemIdentifier
-        SrcLiabilityPercentage: CAST(NULL AS STRING)
-        SrcParticipatingCounterparty: DUMMY_CPXCF_TEMP.ParticipatingCounterparty
-        SrcParticipatingCounterpartySourceSystemIdentifier: DUMMY_CPXCF_TEMP.ParticipatingCounterpartySourceSystemIdentifier
   - union:
       alias: COMBINED_CPXCF
       column_mapping:
-        DUMMY_CPXCF:
-          DeliveryEntity: SrcDeliveryEntity
-          ReportingDate: SrcReportingDate
-          CounterpartyRole: SrcCounterpartyRole
-          CreditFacility: SrcCreditFacility
-          CreditFacilitySourceSystemIdentifier: SrcCreditFacilitySourceSystemIdentifier
-          LiabilityPercentage: SrcLiabilityPercentage
-          ParticipatingCounterparty: SrcParticipatingCounterparty
-          ParticipatingCounterpartySourceSystemIdentifier: SrcParticipatingCounterpartySourceSystemIdentifier
+        SSF_CPXCA_DUMMY:
+          DeliveryEntity: DeliveryEntity
+          ReportingDate: ReportingDate
+          CounterpartyRole: CAST(NULL AS STRING)
+          CreditFacility: LocalFacilityIdentifier
+          CreditFacilitySourceSystemIdentifier: CurrentAccountSourceSystemIdentifier
+          LiabilityPercentage: CAST(NULL AS STRING)
+          ParticipatingCounterparty: ParticipatingCounterparty
+          ParticipatingCounterpartySourceSystemIdentifier: ParticipatingCounterpartySourceSystemIdentifier
         SSF_CPXCF:
           DeliveryEntity: DeliveryEntity
           ReportingDate: ReportingDate
@@ -80,7 +66,7 @@ expressions:
   CounterpartyRole: COMBINED_CPXCF.CounterpartyRole
   CreditFacility: COMBINED_CPXCF.CreditFacility
   CreditFacilitySourceSystemIdentifier: COMBINED_CPXCF.CreditFacilitySourceSystemIdentifier
-  LiabilityPercentage: CAST(NULL AS STRING)
+  LiabilityPercentage: COMBINED_CPXCF.LiabilityPercentage
   ParticipatingCounterparty: COMBINED_CPXCF.ParticipatingCounterparty
   ParticipatingCounterpartySourceSystemIdentifier: COMBINED_CPXCF.ParticipatingCounterpartySourceSystemIdentifier
 
