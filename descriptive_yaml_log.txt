@@ -1,19 +1,7 @@
-12:
-Load sources and apply filters and joins
+15:
+Show output for validation
 
-data = GetIntegratedData(spark, business_logic_dict).get_integrated_data()
 
-KeyError: 'DUMMY_JOIN'
-File <command-6358367925471435>, line 1
-----> 1 data = GetIntegratedData(spark, business_logic_dict).get_integrated_data()
-File /Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/src/extract/master_data_sql.py:71, in GetIntegratedData.transform_data(self, data_dict)
-     69 new_source = get_source(tf)
-     70 if new_source:
----> 71     transformed_data = data_dict[new_source]
-     72 # Apply the transformation
-     73 transformed_data = self._apply_transformation(
-     74     tf_step=tf_step,
-     75     tf_params=tf_params_req,
-     76     transformed_data=transformed_data,
-     77     data_dict=data_dict,
-     78 )
+display(transformed_data)
+
+[AMBIGUOUS_REFERENCE] Reference `DeliveryEntity` is ambiguous, could be: [`DUMMY_CPXCF`.`DeliveryEntity`, `DUMMY_CPXCF`.`DeliveryEntity`]. SQLSTATE: 42704
