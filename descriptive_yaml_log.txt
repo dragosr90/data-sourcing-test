@@ -1,18 +1,19 @@
-11:
-Validate YAML
+12:
+Load sources and apply filters and joins
 
+data = GetIntegratedData(spark, business_logic_dict).get_integrated_data()
 
-validate_business_logic_mapping(spark, business_logic_dict)
-
-2025-05-16 07:49:38 [INFO] validate:  YAML format validated successfully
-2025-05-16 07:49:40 [INFO] validate:  Sources validated successfully
-2025-05-16 07:49:40 [INFO] validate_join:  Joins validated successfully
-2025-05-16 07:49:41 [INFO] validate_add_variables:  Variables validated successfully
-2025-05-16 07:49:42 [ERROR] validate_sql_expressions:  Problem with expression(s):
-2025-05-16 07:49:42 [ERROR] validate_sql_expressions:  SSF_CPXCF.DeliveryEntity: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `SSF_CPXCF`.`DeliveryEntity` cannot be resolved. Did you mean one of the following? [`DeliveryEntity`, `SSF_CPXCF`.`CreditFacility`, `SSF_CPXCF`.`LiabilityPercentage`, `CounterpartyRole`, `LocalFacilityIdentifier`]. SQLSTATE: 42703
-SSF_CPXCF.ReportingDate: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `SSF_CPXCF`.`ReportingDate` cannot be resolved. Did you mean one of the following? [`ReportingDate`, `SSF_CPXCF`.`CreditFacility`, `CounterpartyRole`, `DeliveryEntity`, `SSF_CPXCF`.`LiabilityPercentage`]. SQLSTATE: 42703
-SSF_CPXCF.CounterpartyRole: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `SSF_CPXCF`.`CounterpartyRole` cannot be resolved. Did you mean one of the following? [`CounterpartyRole`, `SSF_CPXCF`.`CreditFacility`, `ParticipatingCounterparty`, `SSF_CPXCF`.`LiabilityPercentage`, `DeliveryEntity`]. SQLSTATE: 42703
-SSF_CPXCF.ParticipatingCounterparty: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `SSF_CPXCF`.`ParticipatingCounterparty` cannot be resolved. Did you mean one of the following? [`ParticipatingCounterparty`, `SSF_CPXCF`.`LiabilityPercentage`, `SSF_CPXCF`.`CreditFacility`, `LocalFacilityIdentifier`, `CounterpartyRole`]. SQLSTATE: 42703
-SSF_CPXCF.ParticipatingCounterpartySourceSystemIdentifier: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `SSF_CPXCF`.`ParticipatingCounterpartySourceSystemIdentifier` cannot be resolved. Did you mean one of the following? [`ParticipatingCounterpartySourceSystemIdentifier`, `SSF_CPXCF`.`CreditFacilitySourceSystemIdentifier`, `CreditFacilitySourceSystemIdentifier`, `CurrentAccountSourceSystemIdentifier`, `ParticipatingCounterparty`]. SQLSTATE: 42703
-False
-
+KeyError: 'DUMMY_JOIN'
+File <command-6358367925471435>, line 1
+----> 1 data = GetIntegratedData(spark, business_logic_dict).get_integrated_data()
+File /Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/src/extract/master_data_sql.py:71, in GetIntegratedData.transform_data(self, data_dict)
+     69 new_source = get_source(tf)
+     70 if new_source:
+---> 71     transformed_data = data_dict[new_source]
+     72 # Apply the transformation
+     73 transformed_data = self._apply_transformation(
+     74     tf_step=tf_step,
+     75     tf_params=tf_params_req,
+     76     transformed_data=transformed_data,
+     77     data_dict=data_dict,
+     78 )
