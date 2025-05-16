@@ -1,13 +1,18 @@
-3:
-Validate YAML
+6:
+Write output to Delta table and comment lineage information
 
 
-validate_business_logic_mapping(spark, business_logic_dict)
+write_and_comment(
+    spark,
+    business_logic_dict,
+    transformed_data,
+    run_month=run_month,
+    source_system=standardized_delivery_entity,
+)
 
-2025-05-16 09:12:50 [INFO] validate:  YAML format validated successfully
-2025-05-16 09:12:52 [INFO] validate:  Sources validated successfully
-2025-05-16 09:12:53 [INFO] validate_join:  Joins validated successfully
-2025-05-16 09:12:53 [INFO] validate_add_variables:  Variables validated successfully
-2025-05-16 09:12:53 [ERROR] validate_sql_expressions:  Problem with expression(s):
-2025-05-16 09:12:53 [ERROR] validate_sql_expressions:  DUMMY_CPXCF.CounterpartyRole: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `DUMMY_CPXCF`.`CounterpartyRole` cannot be resolved. Did you mean one of the following? [`CounterpartyRole`, `DUMMY_CPXCF`.`CurrentAccount`, `DUMMY_CPXCF`.`DeliveryEntity`, `DUMMY_CPXCF`.`ReportingDate`, `DUMMY_CPXCF`.`ParticipatingCounterparty`]. SQLSTATE: 42703
-False
+[AMBIGUOUS_REFERENCE] Reference `DUMMY_CPXCF_TEMP`.`DeliveryEntity` is ambiguous, could be: [`DUMMY_CPXCF_TEMP`.`DeliveryEntity`, `DUMMY_CPXCF_TEMP`.`DeliveryEntity`]. SQLSTATE: 42704
+
+AMBIGUOUS_REFERENCE
+SQLSTATE: 42704
+
+Reference <name> is ambiguous, could be: <referenceNames>.
