@@ -1,8 +1,18 @@
-15:
-Show output for validation
+11:
+Validate YAML
 
 
-display(transformed_data)
+validate_business_logic_mapping(spark, business_logic_dict)
 
-[AMBIGUOUS_REFERENCE] Reference `DUMMY_CPXCF`.`DeliveryEntity` is ambiguous, could be: [`DUMMY_CPXCF`.`DeliveryEntity`, `DUMMY_CPXCF`.`DeliveryEntity`]. SQLSTATE: 42704
+2025-05-16 07:49:38 [INFO] validate:  YAML format validated successfully
+2025-05-16 07:49:40 [INFO] validate:  Sources validated successfully
+2025-05-16 07:49:40 [INFO] validate_join:  Joins validated successfully
+2025-05-16 07:49:41 [INFO] validate_add_variables:  Variables validated successfully
+2025-05-16 07:49:42 [ERROR] validate_sql_expressions:  Problem with expression(s):
+2025-05-16 07:49:42 [ERROR] validate_sql_expressions:  SSF_CPXCF.DeliveryEntity: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `SSF_CPXCF`.`DeliveryEntity` cannot be resolved. Did you mean one of the following? [`DeliveryEntity`, `SSF_CPXCF`.`CreditFacility`, `SSF_CPXCF`.`LiabilityPercentage`, `CounterpartyRole`, `LocalFacilityIdentifier`]. SQLSTATE: 42703
+SSF_CPXCF.ReportingDate: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `SSF_CPXCF`.`ReportingDate` cannot be resolved. Did you mean one of the following? [`ReportingDate`, `SSF_CPXCF`.`CreditFacility`, `CounterpartyRole`, `DeliveryEntity`, `SSF_CPXCF`.`LiabilityPercentage`]. SQLSTATE: 42703
+SSF_CPXCF.CounterpartyRole: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `SSF_CPXCF`.`CounterpartyRole` cannot be resolved. Did you mean one of the following? [`CounterpartyRole`, `SSF_CPXCF`.`CreditFacility`, `ParticipatingCounterparty`, `SSF_CPXCF`.`LiabilityPercentage`, `DeliveryEntity`]. SQLSTATE: 42703
+SSF_CPXCF.ParticipatingCounterparty: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `SSF_CPXCF`.`ParticipatingCounterparty` cannot be resolved. Did you mean one of the following? [`ParticipatingCounterparty`, `SSF_CPXCF`.`LiabilityPercentage`, `SSF_CPXCF`.`CreditFacility`, `LocalFacilityIdentifier`, `CounterpartyRole`]. SQLSTATE: 42703
+SSF_CPXCF.ParticipatingCounterpartySourceSystemIdentifier: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `SSF_CPXCF`.`ParticipatingCounterpartySourceSystemIdentifier` cannot be resolved. Did you mean one of the following? [`ParticipatingCounterpartySourceSystemIdentifier`, `SSF_CPXCF`.`CreditFacilitySourceSystemIdentifier`, `CreditFacilitySourceSystemIdentifier`, `CurrentAccountSourceSystemIdentifier`, `ParticipatingCounterparty`]. SQLSTATE: 42703
+False
 
