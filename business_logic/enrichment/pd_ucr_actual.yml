@@ -68,7 +68,7 @@ transformations:
   - add_variables:
       source: HIST_RATINGS
       column_mapping:
-        is_performing: case when APPROVED_UCR not in ('6', '7', '8') then TRUE else FALSE end
+        is_performing: case when HIST_RATINGS.APPROVED_UCR not in ('6', '7', '8') then TRUE else FALSE end
   
   # Create a table with performing models ranked by recency
   - aggregation:
