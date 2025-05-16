@@ -1,7 +1,15 @@
-15:
-Show output for validation
+11:
+Validate YAML
 
+validate_business_logic_mapping(spark, business_logic_dict)
 
-display(transformed_data)
-
-[AMBIGUOUS_REFERENCE] Reference `DUMMY_CPXCF`.`DeliveryEntity` is ambiguous, could be: [`DUMMY_CPXCF`.`DeliveryEntity`, `DUMMY_CPXCF`.`DeliveryEntity`]. SQLSTATE: 42704
+2025-05-16 07:03:46 [INFO] validate:  YAML format validated successfully
+2025-05-16 07:03:48 [INFO] validate:  Sources validated successfully
+2025-05-16 07:03:48 [INFO] validate_join:  Joins validated successfully
+2025-05-16 07:03:49 [ERROR] validate_sql_expressions:  Problem with expression(s):
+2025-05-16 07:03:49 [ERROR] validate_sql_expressions:  DUMMY_CPXCF.DeliveryEntity: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `DUMMY_CPXCF`.`DeliveryEntity` cannot be resolved. Did you mean one of the following? [`DUMMY_CPXCF`.`CurrentAccount`, `DUMMY_CPXCF`.`LocalFacilityIdentifier`, `DUMMY_CPXCF`.`SourceSystemIdentifier`, `DUMMY_CPXCF`.`AlternativeLocalReferenceIdentifier`, `DUMMY_CPXCF`.`CurrentAccountSourceSystemIdentifier`]. SQLSTATE: 42703
+DUMMY_CPXCF.ReportingDate: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `DUMMY_CPXCF`.`ReportingDate` cannot be resolved. Did you mean one of the following? [`DUMMY_CPXCF`.`CurrentAccount`, `DUMMY_CPXCF`.`SourceSystemIdentifier`, `DUMMY_CPXCF`.`LocalFacilityIdentifier`, `DUMMY_CPXCF`.`AlternativeLocalReferenceIdentifier`, `DUMMY_CPXCF`.`CurrentAccountSourceSystemIdentifier`]. SQLSTATE: 42703
+DUMMY_CPXCF.CounterpartyRole: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `DUMMY_CPXCF`.`CounterpartyRole` cannot be resolved. Did you mean one of the following? [`DUMMY_CPXCF`.`CurrentAccount`, `DUMMY_CPXCF`.`SourceSystemIdentifier`, `DUMMY_CPXCF`.`LocalFacilityIdentifier`, `DUMMY_CPXCF`.`CurrentAccountSourceSystemIdentifier`, `DUMMY_CPXCF`.`AlternativeLocalReferenceIdentifier`]. SQLSTATE: 42703
+DUMMY_CPXCF.ParticipatingCounterparty: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `DUMMY_CPXCF`.`ParticipatingCounterparty` cannot be resolved. Did you mean one of the following? [`DUMMY_CPXCF`.`CurrentAccount`, `DUMMY_CPXCF`.`LocalFacilityIdentifier`, `DUMMY_CPXCF`.`SourceSystemIdentifier`, `LiabilityPercentage`, `CreditFacility`]. SQLSTATE: 42703
+DUMMY_CPXCF.ParticipatingCounterpartySourceSystemIdentifier: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `DUMMY_CPXCF`.`ParticipatingCounterpartySourceSystemIdentifier` cannot be resolved. Did you mean one of the following? [`DUMMY_CPXCF`.`CurrentAccountSourceSystemIdentifier`, `DUMMY_CPXCF`.`SourceSystemIdentifier`, `DUMMY_CPXCF`.`AlternativeLocalReferenceIdentifier`, `CreditFacilitySourceSystemIdentifier`, `DUMMY_CPXCF`.`LocalFacilityIdentifier`]. SQLSTATE: 42703
+False
