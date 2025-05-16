@@ -10,9 +10,4 @@ write_and_comment(
     source_system=standardized_delivery_entity,
 )
 
-[AMBIGUOUS_REFERENCE] Reference `DUMMY_CPXCF_TEMP`.`DeliveryEntity` is ambiguous, could be: [`DUMMY_CPXCF_TEMP`.`DeliveryEntity`, `DUMMY_CPXCF_TEMP`.`DeliveryEntity`]. SQLSTATE: 42704
-
-AMBIGUOUS_REFERENCE
-SQLSTATE: 42704
-
-Reference <name> is ambiguous, could be: <referenceNames>.
+[UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `DUMMY`.`DeliveryEntity` cannot be resolved. Did you mean one of the following? [`DUMMY_CPXCF_TEMP`.`DeliveryEntity`, `DUMMY_CPXCF_TEMP`.`DeliveryEntity`, `DUMMY_CPXCF_TEMP`.`ReportingDate`, `DUMMY_CPXCF_TEMP`.`ReportingDate`, `DUMMY_CPXCF_TEMP`.`CurrentAccount`]. SQLSTATE: 42703
