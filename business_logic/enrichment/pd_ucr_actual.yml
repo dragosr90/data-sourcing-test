@@ -1,4 +1,4 @@
-target: int_202412.pd_ucr_actual
+target: int_{{ RUN_MONTH }}.pd_ucr_actual
 
 sources:
   - alias: DIAL_FAIR_PD_UCR
@@ -49,7 +49,7 @@ sources:
     - PROPOSER
     - APPROVER
     - LB_RATING_ID
-    source: stg_202412.dial_fair_pd_ucr
+    source: stg_{{ RUN_MONTH }}.dial_fair_pd_ucr
 
   - alias: HIST_RATINGS
     columns:
@@ -60,8 +60,8 @@ sources:
     - PORTFOLIO
     - BUSINESSLINE
     - RATING_ID
-    source: stg_202412.dial_fair_pd_ucr
-    filter: RATING_STATUS = 'ACTUAL'
+    source: stg_{{ RUN_MONTH }}.dial_fair_pd_ucr
+    filter: APPROVED_UCR NOT IN ('6', '7', '8')
 
   - alias: PERFORMING_RATINGS
     columns:
@@ -71,8 +71,8 @@ sources:
     - BUSINESSLINE
     - PD_APPROVAL_DATE
     - RATING_ID
-    source: stg_202412.dial_fair_pd_ucr
-    filter: RATING_STATUS = 'ACTUAL' AND APPROVED_UCR NOT IN ('6', '7', '8')
+    source: stg_{{ RUN_MONTH }}.dial_fair_pd_ucr
+    filter: APPROVED_UCR NOT IN ('6', '7', '8')
 
 transformations:
   # Get the last performing model directly
