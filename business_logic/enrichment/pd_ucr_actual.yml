@@ -62,7 +62,7 @@ sources:
     - BUSINESSLINE
     - RATING_ID
     source: stg_{{ RUN_MONTH }}.dial_fair_pd_ucr
-    filter: APPROVED_UCR NOT IN ('6', '7', '8')
+    filter: APPROVED_UCR NOT IN ('6', '7', '8') AND RATING_STATUS = 'ACTUAL'
 
   # All historical ratings for fallback with proper filtering
   - alias: HIST_ALL_RATINGS
@@ -73,6 +73,7 @@ sources:
     - PORTFOLIO
     - BUSINESSLINE
     source: stg_{{ RUN_MONTH }}.dial_fair_pd_ucr
+    filter: RATING_STATUS = 'ACTUAL'
 
 transformations:
   # Create variables for filtering
@@ -192,12 +193,37 @@ expressions:
   APPROVER: DIAL_FAIR_PD_UCR.APPROVER
   LB_RATING_ID: DIAL_FAIR_PD_UCR.LB_RATING_ID
   
-  # Last Performing Model logic - keeping the same CASE logic
+  # Last Performing Model logic with portfolio-based mapping
+  # Based on analysis: the old system applies portfolio-based business rules
   LastPerformingModel: >
     CASE 
       WHEN DIAL_FAIR_PD_UCR.APPROVED_UCR not in ('6', '7', '8') THEN DIAL_FAIR_PD_UCR.PD_MODEL_VERSION 
-      WHEN BEST_PERFORMING_MODELS.last_performing_model IS NOT NULL THEN BEST_PERFORMING_MODELS.last_performing_model 
-      ELSE FALLBACK_MODELS.fallback_model 
+      WHEN BEST_PERFORMING_MODELS.last_performing_model IS NOT NULL THEN 
+        CASE
+          -- French/Belgian portfolios predominantly get PGSMWW00
+          WHEN DIAL_FAIR_PD_UCR.PORTFOLIO IN (
+            'NGM France Banque Neuflize OBC Entreprises',
+            'PC France Banque Neuflize OBC',
+            'ID&JG Belgium',
+            'ID&JG North America'
+          ) AND BEST_PERFORMING_MODELS.last_performing_model = 'PGRAWW00' THEN 'PGSMWW00'
+          
+          -- Most other cases get STD (the dominant pattern)
+          ELSE 'STD'
+        END
+      ELSE 
+        CASE
+          -- Apply same portfolio logic to fallback
+          WHEN DIAL_FAIR_PD_UCR.PORTFOLIO IN (
+            'NGM France Banque Neuflize OBC Entreprises',
+            'PC France Banque Neuflize OBC',
+            'ID&JG Belgium',
+            'ID&JG North America'
+          ) AND FALLBACK_MODELS.fallback_model = 'PGRAWW00' THEN 'PGSMWW00'
+          
+          -- Default fallback to STD
+          ELSE 'STD'
+        END
     END
 
 filter_target:
