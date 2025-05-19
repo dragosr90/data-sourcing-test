@@ -52,57 +52,24 @@ sources:
     source: stg_{{ RUN_MONTH }}.dial_fair_pd_ucr
 
 transformations:
-  # Create a derived table with window function ranks
+  # Create variables for filtering and logic
   - add_variables:
       source: DIAL_FAIR_PD_UCR
       column_mapping:
         is_performing: CASE WHEN DIAL_FAIR_PD_UCR.APPROVED_UCR NOT IN ('6', '7', '8') THEN TRUE ELSE FALSE END
         months_since_approval: months_between(current_date(), DIAL_FAIR_PD_UCR.PD_APPROVAL_DATE)
   
-  # Create a temporary table of just performing ratings
+  # Get the most recent performing model for each company+portfolio+businessline
   - aggregation:
-      alias: PERFORMING_RATINGS
+      alias: MOST_RECENT_MODELS
       source: DIAL_FAIR_PD_UCR
       group:
       - DIAL_FAIR_PD_UCR.COMPANY_ID
       - DIAL_FAIR_PD_UCR.PORTFOLIO
       - DIAL_FAIR_PD_UCR.BUSINESSLINE
-      - DIAL_FAIR_PD_UCR.PD_MODEL_VERSION
-      - DIAL_FAIR_PD_UCR.PD_APPROVAL_DATE
-      - DIAL_FAIR_PD_UCR.RATING_ID
+      column_mapping:
+        most_recent_model: max_by(DIAL_FAIR_PD_UCR.PD_MODEL_VERSION, DIAL_FAIR_PD_UCR.PD_APPROVAL_DATE)
       filter: DIAL_FAIR_PD_UCR.APPROVED_UCR NOT IN ('6', '7', '8')
-  
-  # Using explicit SQL to get max approval date by group
-  - aggregation:
-      alias: MAX_DATES
-      source: PERFORMING_RATINGS
-      group:
-      - PERFORMING_RATINGS.COMPANY_ID
-      - PERFORMING_RATINGS.PORTFOLIO
-      - PERFORMING_RATINGS.BUSINESSLINE
-      column_mapping:
-        max_approval_date: max(PERFORMING_RATINGS.PD_APPROVAL_DATE)
-  
-  # Join back to get the models with the max date
-  - join:
-      left_source: MAX_DATES
-      right_source: PERFORMING_RATINGS
-      how: inner
-      condition:
-      - MAX_DATES.COMPANY_ID = PERFORMING_RATINGS.COMPANY_ID
-      - MAX_DATES.PORTFOLIO = PERFORMING_RATINGS.PORTFOLIO
-      - MAX_DATES.BUSINESSLINE = PERFORMING_RATINGS.BUSINESSLINE
-      - MAX_DATES.max_approval_date = PERFORMING_RATINGS.PD_APPROVAL_DATE
-  
-  # Get the model with highest RATING_ID for each group
-  - aggregation:
-      alias: MOST_RECENT_MODELS
-      group:
-      - PERFORMING_RATINGS.COMPANY_ID
-      - PERFORMING_RATINGS.PORTFOLIO
-      - PERFORMING_RATINGS.BUSINESSLINE
-      column_mapping:
-        most_recent_model: max_by(PERFORMING_RATINGS.PD_MODEL_VERSION, PERFORMING_RATINGS.RATING_ID)
   
   # Get a fallback model for cases where no performing model exists
   - aggregation:
@@ -112,7 +79,6 @@ transformations:
       - DIAL_FAIR_PD_UCR.COMPANY_ID
       - DIAL_FAIR_PD_UCR.PORTFOLIO
       - DIAL_FAIR_PD_UCR.BUSINESSLINE
-      filter: DIAL_FAIR_PD_UCR.RATING_STATUS = 'ACTUAL'
       column_mapping:
         fallback_model: min(DIAL_FAIR_PD_UCR.PD_MODEL_VERSION)
   
