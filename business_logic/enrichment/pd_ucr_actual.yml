@@ -51,8 +51,8 @@ sources:
     - LB_RATING_ID
     source: stg_{{ RUN_MONTH }}.dial_fair_pd_ucr
 
-  # Historical performing ratings (UCR not in 6,7,8) with proper filtering
-  - alias: HIST_PERF_RATINGS
+  # Historical performing ratings (UCR not in 6,7,8) for lookup
+  - alias: HIST_PERFORMING_RATINGS
     columns:
     - COMPANY_ID
     - PD_MODEL_VERSION
@@ -62,9 +62,9 @@ sources:
     - BUSINESSLINE
     - RATING_ID
     source: stg_{{ RUN_MONTH }}.dial_fair_pd_ucr
-    filter: APPROVED_UCR NOT IN ('6', '7', '8') AND RATING_STATUS = 'ACTUAL'
+    filter: APPROVED_UCR NOT IN ('6', '7', '8')
 
-  # All historical ratings for fallback with proper filtering
+  # All historical ratings for fallback (lowest rating_id)
   - alias: HIST_ALL_RATINGS
     columns:
     - COMPANY_ID
@@ -73,77 +73,111 @@ sources:
     - PORTFOLIO
     - BUSINESSLINE
     source: stg_{{ RUN_MONTH }}.dial_fair_pd_ucr
-    filter: RATING_STATUS = 'ACTUAL'
 
 transformations:
-  # Create variables for filtering
-  - add_variables:
-      source: DIAL_FAIR_PD_UCR
-      column_mapping:
-        var_months_since_approval: months_between(current_date(), DIAL_FAIR_PD_UCR.PD_APPROVAL_DATE)
-  
-  # Find the fallback model (earliest by rating_id)
+  # Step 1: Find the most recent performing rating date for each company+portfolio+businessline
   - aggregation:
-      alias: FALLBACK_MODELS
+      alias: MOST_RECENT_PERFORMING_DATE
+      source: HIST_PERFORMING_RATINGS
+      group:
+      - HIST_PERFORMING_RATINGS.COMPANY_ID
+      - HIST_PERFORMING_RATINGS.PORTFOLIO
+      - HIST_PERFORMING_RATINGS.BUSINESSLINE
+      column_mapping:
+        most_recent_date: max(HIST_PERFORMING_RATINGS.PD_APPROVAL_DATE)
+
+  # Step 2: Join back to get all performing ratings with that most recent date
+  - join:
+      left_source: MOST_RECENT_PERFORMING_DATE
+      right_source: HIST_PERFORMING_RATINGS
+      how: inner
+      condition:
+      - MOST_RECENT_PERFORMING_DATE.COMPANY_ID = HIST_PERFORMING_RATINGS.COMPANY_ID
+      - MOST_RECENT_PERFORMING_DATE.PORTFOLIO = HIST_PERFORMING_RATINGS.PORTFOLIO
+      - MOST_RECENT_PERFORMING_DATE.BUSINESSLINE = HIST_PERFORMING_RATINGS.BUSINESSLINE
+      - MOST_RECENT_PERFORMING_DATE.most_recent_date = HIST_PERFORMING_RATINGS.PD_APPROVAL_DATE
+  
+  # Step 3: Among ratings with most recent date, find the one with highest rating_id
+  - aggregation:
+      alias: HIGHEST_RATING_ID_RECENT
+      group:
+      - HIST_PERFORMING_RATINGS.COMPANY_ID
+      - HIST_PERFORMING_RATINGS.PORTFOLIO
+      - HIST_PERFORMING_RATINGS.BUSINESSLINE
+      column_mapping:
+        max_rating_id: max(HIST_PERFORMING_RATINGS.RATING_ID)
+  
+  # Step 4: Join to get the PD_MODEL_VERSION for that specific rating
+  - join:
+      left_source: HIGHEST_RATING_ID_RECENT
+      right_source: HIST_PERFORMING_RATINGS
+      how: inner
+      condition:
+      - HIGHEST_RATING_ID_RECENT.COMPANY_ID = HIST_PERFORMING_RATINGS.COMPANY_ID
+      - HIGHEST_RATING_ID_RECENT.PORTFOLIO = HIST_PERFORMING_RATINGS.PORTFOLIO
+      - HIGHEST_RATING_ID_RECENT.BUSINESSLINE = HIST_PERFORMING_RATINGS.BUSINESSLINE
+      - HIGHEST_RATING_ID_RECENT.max_rating_id = HIST_PERFORMING_RATINGS.RATING_ID
+  
+  # Step 5: Create the best performing models table
+  - aggregation:
+      alias: BEST_PERFORMING_MODELS
+      group:
+      - HIST_PERFORMING_RATINGS.COMPANY_ID
+      - HIST_PERFORMING_RATINGS.PORTFOLIO
+      - HIST_PERFORMING_RATINGS.BUSINESSLINE
+      column_mapping:
+        last_performing_model: max(HIST_PERFORMING_RATINGS.PD_MODEL_VERSION)
+  
+  # Step 6: Fallback - find the record with lowest rating_id (as per user story)
+  - aggregation:
+      alias: LOWEST_RATING_ID_ALL
       source: HIST_ALL_RATINGS
       group:
       - HIST_ALL_RATINGS.COMPANY_ID
       - HIST_ALL_RATINGS.PORTFOLIO
       - HIST_ALL_RATINGS.BUSINESSLINE
       column_mapping:
-        fallback_model: min(HIST_ALL_RATINGS.PD_MODEL_VERSION)
+        min_rating_id: min(HIST_ALL_RATINGS.RATING_ID)
   
-  # Find the most recent performing rating for each company+portfolio+businessline
-  - aggregation:
-      alias: MOST_RECENT_PERFORMING
-      source: HIST_PERF_RATINGS
-      group:
-      - HIST_PERF_RATINGS.COMPANY_ID
-      - HIST_PERF_RATINGS.PORTFOLIO
-      - HIST_PERF_RATINGS.BUSINESSLINE
-      column_mapping:
-        most_recent_date: max(HIST_PERF_RATINGS.PD_APPROVAL_DATE)
-
-  # Join back to get all performing ratings with that most recent date
+  # Step 7: Join to get the PD_MODEL_VERSION for the lowest rating_id
   - join:
-      left_source: MOST_RECENT_PERFORMING
-      right_source: HIST_PERF_RATINGS
+      left_source: LOWEST_RATING_ID_ALL
+      right_source: HIST_ALL_RATINGS
       how: inner
       condition:
-      - MOST_RECENT_PERFORMING.COMPANY_ID = HIST_PERF_RATINGS.COMPANY_ID
-      - MOST_RECENT_PERFORMING.PORTFOLIO = HIST_PERF_RATINGS.PORTFOLIO
-      - MOST_RECENT_PERFORMING.BUSINESSLINE = HIST_PERF_RATINGS.BUSINESSLINE
-      - MOST_RECENT_PERFORMING.most_recent_date = HIST_PERF_RATINGS.PD_APPROVAL_DATE
+      - LOWEST_RATING_ID_ALL.COMPANY_ID = HIST_ALL_RATINGS.COMPANY_ID
+      - LOWEST_RATING_ID_ALL.PORTFOLIO = HIST_ALL_RATINGS.PORTFOLIO
+      - LOWEST_RATING_ID_ALL.BUSINESSLINE = HIST_ALL_RATINGS.BUSINESSLINE
+      - LOWEST_RATING_ID_ALL.min_rating_id = HIST_ALL_RATINGS.RATING_ID
   
-  # Get the model with highest rating_id among these most recent performing ratings
+  # Step 8: Create fallback models table
   - aggregation:
-      alias: BEST_PERFORMING_MODELS
+      alias: FALLBACK_MODELS
       group:
-      - HIST_PERF_RATINGS.COMPANY_ID
-      - HIST_PERF_RATINGS.PORTFOLIO
-      - HIST_PERF_RATINGS.BUSINESSLINE
+      - HIST_ALL_RATINGS.COMPANY_ID
+      - HIST_ALL_RATINGS.PORTFOLIO
+      - HIST_ALL_RATINGS.BUSINESSLINE
       column_mapping:
-        max_rating_id: max(HIST_PERF_RATINGS.RATING_ID)
-        last_performing_model: max(HIST_PERF_RATINGS.PD_MODEL_VERSION)
+        fallback_model: max(HIST_ALL_RATINGS.PD_MODEL_VERSION)
   
-  # Join the fallback models
+  # Step 9: Join best performing models to main data
   - join:
       left_source: DIAL_FAIR_PD_UCR
-      right_source: FALLBACK_MODELS
-      how: left
-      condition:
-      - DIAL_FAIR_PD_UCR.COMPANY_ID = FALLBACK_MODELS.COMPANY_ID
-      - DIAL_FAIR_PD_UCR.PORTFOLIO = FALLBACK_MODELS.PORTFOLIO
-      - DIAL_FAIR_PD_UCR.BUSINESSLINE = FALLBACK_MODELS.BUSINESSLINE
-  
-  # Join the last performing models
-  - join:
       right_source: BEST_PERFORMING_MODELS
       how: left
       condition:
       - DIAL_FAIR_PD_UCR.COMPANY_ID = BEST_PERFORMING_MODELS.COMPANY_ID
       - DIAL_FAIR_PD_UCR.PORTFOLIO = BEST_PERFORMING_MODELS.PORTFOLIO
       - DIAL_FAIR_PD_UCR.BUSINESSLINE = BEST_PERFORMING_MODELS.BUSINESSLINE
+  
+  # Step 10: Join fallback models to main data
+  - join:
+      right_source: FALLBACK_MODELS
+      how: left
+      condition:
+      - DIAL_FAIR_PD_UCR.COMPANY_ID = FALLBACK_MODELS.COMPANY_ID
+      - DIAL_FAIR_PD_UCR.PORTFOLIO = FALLBACK_MODELS.PORTFOLIO
+      - DIAL_FAIR_PD_UCR.BUSINESSLINE = FALLBACK_MODELS.BUSINESSLINE
 
 expressions:
   PD_RATING_ID: DIAL_FAIR_PD_UCR.PD_RATING_ID
@@ -193,39 +227,15 @@ expressions:
   APPROVER: DIAL_FAIR_PD_UCR.APPROVER
   LB_RATING_ID: DIAL_FAIR_PD_UCR.LB_RATING_ID
   
-  # Last Performing Model logic with portfolio-based mapping
-  # Based on analysis: the old system applies portfolio-based business rules
+  # LastPerformingModel - exactly as specified in the user story
   LastPerformingModel: >
     CASE 
-      WHEN DIAL_FAIR_PD_UCR.APPROVED_UCR not in ('6', '7', '8') THEN DIAL_FAIR_PD_UCR.PD_MODEL_VERSION 
-      WHEN BEST_PERFORMING_MODELS.last_performing_model IS NOT NULL THEN 
-        CASE
-          -- French/Belgian portfolios predominantly get PGSMWW00
-          WHEN DIAL_FAIR_PD_UCR.PORTFOLIO IN (
-            'NGM France Banque Neuflize OBC Entreprises',
-            'PC France Banque Neuflize OBC',
-            'ID&JG Belgium',
-            'ID&JG North America'
-          ) AND BEST_PERFORMING_MODELS.last_performing_model = 'PGRAWW00' THEN 'PGSMWW00'
-          
-          -- Most other cases get STD (the dominant pattern)
-          ELSE 'STD'
-        END
-      ELSE 
-        CASE
-          -- Apply same portfolio logic to fallback
-          WHEN DIAL_FAIR_PD_UCR.PORTFOLIO IN (
-            'NGM France Banque Neuflize OBC Entreprises',
-            'PC France Banque Neuflize OBC',
-            'ID&JG Belgium',
-            'ID&JG North America'
-          ) AND FALLBACK_MODELS.fallback_model = 'PGRAWW00' THEN 'PGSMWW00'
-          
-          -- Default fallback to STD
-          ELSE 'STD'
-        END
+      WHEN DIAL_FAIR_PD_UCR.APPROVED_UCR NOT IN ('6', '7', '8') THEN DIAL_FAIR_PD_UCR.PD_MODEL_VERSION 
+      WHEN BEST_PERFORMING_MODELS.last_performing_model IS NOT NULL THEN BEST_PERFORMING_MODELS.last_performing_model 
+      ELSE FALLBACK_MODELS.fallback_model 
     END
 
+# Filter exactly as specified in user story: 24 months from current reporting date
 filter_target:
   - DIAL_FAIR_PD_UCR.RATING_STATUS = 'ACTUAL' AND (months_between(current_date(), DIAL_FAIR_PD_UCR.PD_APPROVAL_DATE) < 24 OR DIAL_FAIR_PD_UCR.APPROVED_UCR IN ('6', '7', '8'))
 
