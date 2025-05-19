@@ -90,27 +90,7 @@ transformations:
       - HIST_ALL_RATINGS.BUSINESSLINE
       column_mapping:
         min_rating_id: min(HIST_ALL_RATINGS.RATING_ID)
-  
-  # Join back to get the model for the earliest rating
-  - join:
-      left_source: FALLBACK_MODELS
-      right_source: HIST_ALL_RATINGS
-      how: inner
-      condition:
-      - FALLBACK_MODELS.COMPANY_ID = HIST_ALL_RATINGS.COMPANY_ID
-      - FALLBACK_MODELS.PORTFOLIO = HIST_ALL_RATINGS.PORTFOLIO
-      - FALLBACK_MODELS.BUSINESSLINE = HIST_ALL_RATINGS.BUSINESSLINE
-      - FALLBACK_MODELS.min_rating_id = HIST_ALL_RATINGS.RATING_ID
-  
-  # Get the fallback model
-  - aggregation:
-      alias: FALLBACK_MODELS_FINAL
-      group:
-      - HIST_ALL_RATINGS.COMPANY_ID
-      - HIST_ALL_RATINGS.PORTFOLIO
-      - HIST_ALL_RATINGS.BUSINESSLINE
-      column_mapping:
-        fallback_model: max(HIST_ALL_RATINGS.PD_MODEL_VERSION)  # Use max for deterministic result
+        fallback_model: min(HIST_ALL_RATINGS.PD_MODEL_VERSION)
   
   # Find the most recent performing rating for each company+portfolio+businessline
   - aggregation:
@@ -136,44 +116,25 @@ transformations:
   
   # Get the highest rating_id among these most recent performing ratings
   - aggregation:
-      alias: HIGHEST_RATING_RECENT
+      alias: BEST_PERFORMING_MODELS
+      source: HIST_PERF_RATINGS  # Explicitly specify the source after the join
       group:
       - HIST_PERF_RATINGS.COMPANY_ID
       - HIST_PERF_RATINGS.PORTFOLIO
       - HIST_PERF_RATINGS.BUSINESSLINE
       column_mapping:
         max_rating_id: max(HIST_PERF_RATINGS.RATING_ID)
-  
-  # Join back to get the model for the highest rating_id
-  - join:
-      left_source: HIGHEST_RATING_RECENT
-      right_source: HIST_PERF_RATINGS
-      how: inner
-      condition:
-      - HIGHEST_RATING_RECENT.COMPANY_ID = HIST_PERF_RATINGS.COMPANY_ID
-      - HIGHEST_RATING_RECENT.PORTFOLIO = HIST_PERF_RATINGS.PORTFOLIO
-      - HIGHEST_RATING_RECENT.BUSINESSLINE = HIST_PERF_RATINGS.BUSINESSLINE
-      - HIGHEST_RATING_RECENT.max_rating_id = HIST_PERF_RATINGS.RATING_ID
-  
-  # Final aggregation to get the best performing model
-  - aggregation:
-      alias: BEST_PERFORMING_MODELS
-      group:
-      - HIST_PERF_RATINGS.COMPANY_ID
-      - HIST_PERF_RATINGS.PORTFOLIO
-      - HIST_PERF_RATINGS.BUSINESSLINE
-      column_mapping:
-        last_performing_model: max(HIST_PERF_RATINGS.PD_MODEL_VERSION)  # Use max for deterministic result
+        last_performing_model: max(HIST_PERF_RATINGS.PD_MODEL_VERSION)
   
   # Join the fallback models
   - join:
       left_source: DIAL_FAIR_PD_UCR
-      right_source: FALLBACK_MODELS_FINAL
+      right_source: FALLBACK_MODELS
       how: left
       condition:
-      - DIAL_FAIR_PD_UCR.COMPANY_ID = FALLBACK_MODELS_FINAL.COMPANY_ID
-      - DIAL_FAIR_PD_UCR.PORTFOLIO = FALLBACK_MODELS_FINAL.PORTFOLIO
-      - DIAL_FAIR_PD_UCR.BUSINESSLINE = FALLBACK_MODELS_FINAL.BUSINESSLINE
+      - DIAL_FAIR_PD_UCR.COMPANY_ID = FALLBACK_MODELS.COMPANY_ID
+      - DIAL_FAIR_PD_UCR.PORTFOLIO = FALLBACK_MODELS.PORTFOLIO
+      - DIAL_FAIR_PD_UCR.BUSINESSLINE = FALLBACK_MODELS.BUSINESSLINE
   
   # Join the last performing models
   - join:
@@ -237,7 +198,7 @@ expressions:
     CASE 
       WHEN DIAL_FAIR_PD_UCR.APPROVED_UCR not in ('6', '7', '8') THEN DIAL_FAIR_PD_UCR.PD_MODEL_VERSION 
       WHEN BEST_PERFORMING_MODELS.last_performing_model IS NOT NULL THEN BEST_PERFORMING_MODELS.last_performing_model 
-      ELSE FALLBACK_MODELS_FINAL.fallback_model 
+      ELSE FALLBACK_MODELS.fallback_model 
     END
 
 filter_target:
