@@ -4,19 +4,19 @@ Validate YAML
 
 validate_business_logic_mapping(spark, business_logic_dict)
 
-2025-05-19 11:44:00 [INFO] validate:  YAML format validated successfully
-2025-05-19 11:44:04 [INFO] validate:  Sources validated successfully
-2025-05-19 11:44:04 [INFO] validate_add_variables:  Variables validated successfully
-2025-05-19 11:44:04 [INFO] validate_aggregation:  Aggregations validated successfully
-2025-05-19 11:44:05 [INFO] validate_join:  Joins validated successfully
-2025-05-19 11:44:05 [INFO] validate_aggregation:  Aggregations validated successfully
-2025-05-19 11:44:05 [ERROR] validate_sql_expressions:  Problem with expression(s):
-2025-05-19 11:44:05 [ERROR] validate_sql_expressions:  max(HIST_PERF_RATINGS.PD_APPROVAL_DATE): [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `HIST_PERF_RATINGS`.`COMPANY_ID` cannot be resolved. Did you mean one of the following? [`HIST_ALL_RATINGS`.`COMPANY_ID`, `HIST_ALL_RATINGS`.`RATING_ID`, `HIST_ALL_RATINGS`.`PORTFOLIO`, `HIST_ALL_RATINGS`.`BUSINESSLINE`, `FALLBACK_MODELS`.`COMPANY_ID`]. SQLSTATE: 42703
-2025-05-19 11:44:05 [ERROR] validate_aggregation:  Issue with aggregated data MOST_RECENT_PERFORMING
-2025-05-19 11:44:06 [INFO] validate_join:  Joins validated successfully
-2025-05-19 11:44:06 [INFO] validate_aggregation:  Aggregations validated successfully
-2025-05-19 11:44:06 [INFO] validate_join:  Joins validated successfully
-2025-05-19 11:44:07 [INFO] validate_aggregation:  Aggregations validated successfully
-2025-05-19 11:44:07 [INFO] validate_join:  Joins validated successfully
-2025-05-19 11:44:07 [INFO] validate_join:  Joins validated successfully
+2025-05-19 12:44:58 [INFO] validate:  YAML format validated successfully
+2025-05-19 12:45:02 [INFO] validate:  Sources validated successfully
+2025-05-19 12:45:02 [INFO] validate_add_variables:  Variables validated successfully
+2025-05-19 12:45:02 [INFO] validate_aggregation:  Aggregations validated successfully
+2025-05-19 12:45:03 [INFO] validate_join:  Joins validated successfully
+2025-05-19 12:45:03 [INFO] validate_aggregation:  Aggregations validated successfully
+2025-05-19 12:45:03 [ERROR] validate_sql_expressions:  Problem with expression(s):
+2025-05-19 12:45:03 [ERROR] validate_sql_expressions:  max(HIST_PERF_RATINGS.PD_APPROVAL_DATE): [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `HIST_PERF_RATINGS`.`COMPANY_ID` cannot be resolved. Did you mean one of the following? [`HIST_ALL_RATINGS`.`COMPANY_ID`, `HIST_ALL_RATINGS`.`RATING_ID`, `HIST_ALL_RATINGS`.`PORTFOLIO`, `HIST_ALL_RATINGS`.`BUSINESSLINE`, `FALLBACK_MODELS`.`COMPANY_ID`]. SQLSTATE: 42703
+2025-05-19 12:45:03 [ERROR] validate_aggregation:  Issue with aggregated data MOST_RECENT_PERFORMING
+2025-05-19 12:45:04 [INFO] validate_join:  Joins validated successfully
+2025-05-19 12:45:04 [INFO] validate_aggregation:  Aggregations validated successfully
+2025-05-19 12:45:04 [INFO] validate_join:  Joins validated successfully
+2025-05-19 12:45:04 [INFO] validate_aggregation:  Aggregations validated successfully
+2025-05-19 12:45:05 [INFO] validate_join:  Joins validated successfully
+2025-05-19 12:45:05 [INFO] validate_join:  Joins validated successfully
 False
