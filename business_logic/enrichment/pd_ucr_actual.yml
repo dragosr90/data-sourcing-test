@@ -1,5 +1,5 @@
 
-target: enrich_{{ RUN_MONTH }}.pd_ucr_actual
+target: int_{{ RUN_MONTH }}.pd_ucr_actual
 
 sources:
   - alias: DIAL_FAIR_PD_UCR
