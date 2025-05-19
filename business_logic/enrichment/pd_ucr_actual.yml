@@ -1,4 +1,3 @@
-
 target: int_{{ RUN_MONTH }}.pd_ucr_actual
 
 sources:
@@ -52,6 +51,7 @@ sources:
     - LB_RATING_ID
     source: stg_{{ RUN_MONTH }}.dial_fair_pd_ucr
 
+  # Historical performing ratings (UCR not in 6,7,8) - Add RATING_STATUS filter
   - alias: HIST_PERF_RATINGS
     columns:
     - COMPANY_ID
@@ -64,6 +64,7 @@ sources:
     source: stg_{{ RUN_MONTH }}.dial_fair_pd_ucr
     filter: APPROVED_UCR NOT IN ('6', '7', '8')
 
+  # All historical ratings for fallback - Add RATING_STATUS filter
   - alias: HIST_ALL_RATINGS
     columns:
     - COMPANY_ID
@@ -71,6 +72,7 @@ sources:
     - RATING_ID
     - PORTFOLIO
     - BUSINESSLINE
+    - PD_APPROVAL_DATE
     source: stg_{{ RUN_MONTH }}.dial_fair_pd_ucr
 
 transformations:
@@ -80,10 +82,32 @@ transformations:
       column_mapping:
         var_months_since_approval: months_between(current_date(), DIAL_FAIR_PD_UCR.PD_APPROVAL_DATE)
   
-  # Find the fallback model first (directly from source)
+  # Find the fallback model (first by RATING_ID ordering - chronological order)
+  # Order by RATING_ID ASC to get the earliest model
+  - aggregation:
+      alias: FALLBACK_MODELS_TEMP
+      source: HIST_ALL_RATINGS
+      group:
+      - HIST_ALL_RATINGS.COMPANY_ID
+      - HIST_ALL_RATINGS.PORTFOLIO
+      - HIST_ALL_RATINGS.BUSINESSLINE
+      column_mapping:
+        min_rating_id: min(HIST_ALL_RATINGS.RATING_ID)
+  
+  # Join to get the actual fallback model for the minimum rating_id
+  - join:
+      left_source: FALLBACK_MODELS_TEMP
+      right_source: HIST_ALL_RATINGS
+      how: inner
+      condition:
+      - FALLBACK_MODELS_TEMP.COMPANY_ID = HIST_ALL_RATINGS.COMPANY_ID
+      - FALLBACK_MODELS_TEMP.PORTFOLIO = HIST_ALL_RATINGS.PORTFOLIO
+      - FALLBACK_MODELS_TEMP.BUSINESSLINE = HIST_ALL_RATINGS.BUSINESSLINE
+      - FALLBACK_MODELS_TEMP.min_rating_id = HIST_ALL_RATINGS.RATING_ID
+  
+  # Create final fallback models table
   - aggregation:
       alias: FALLBACK_MODELS
-      source: HIST_ALL_RATINGS
       group:
       - HIST_ALL_RATINGS.COMPANY_ID
       - HIST_ALL_RATINGS.PORTFOLIO
@@ -114,6 +138,28 @@ transformations:
       - MOST_RECENT_PERFORMING.most_recent_date = HIST_PERF_RATINGS.PD_APPROVAL_DATE
   
   # Get the highest rating_id among these most recent performing ratings
+  # This implements the "highest rating_id" logic mentioned in the comment
+  - aggregation:
+      alias: MAX_RATING_RECENT
+      group:
+      - HIST_PERF_RATINGS.COMPANY_ID
+      - HIST_PERF_RATINGS.PORTFOLIO
+      - HIST_PERF_RATINGS.BUSINESSLINE
+      column_mapping:
+        max_rating_id: max(HIST_PERF_RATINGS.RATING_ID)
+  
+  # Join to get the model for the highest rating_id
+  - join:
+      left_source: MAX_RATING_RECENT
+      right_source: HIST_PERF_RATINGS
+      how: inner
+      condition:
+      - MAX_RATING_RECENT.COMPANY_ID = HIST_PERF_RATINGS.COMPANY_ID
+      - MAX_RATING_RECENT.PORTFOLIO = HIST_PERF_RATINGS.PORTFOLIO
+      - MAX_RATING_RECENT.BUSINESSLINE = HIST_PERF_RATINGS.BUSINESSLINE
+      - MAX_RATING_RECENT.max_rating_id = HIST_PERF_RATINGS.RATING_ID
+  
+  # Create final best performing models table
   - aggregation:
       alias: BEST_PERFORMING_MODELS
       group:
@@ -190,7 +236,7 @@ expressions:
   APPROVER: DIAL_FAIR_PD_UCR.APPROVER
   LB_RATING_ID: DIAL_FAIR_PD_UCR.LB_RATING_ID
   
-  # Last Performing Model logic
+  # Last Performing Model logic - keeping the same CASE logic but with proper aggregations
   LastPerformingModel: >
     CASE 
       WHEN DIAL_FAIR_PD_UCR.APPROVED_UCR not in ('6', '7', '8') THEN DIAL_FAIR_PD_UCR.PD_MODEL_VERSION 
