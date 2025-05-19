@@ -51,7 +51,7 @@ sources:
     - LB_RATING_ID
     source: stg_{{ RUN_MONTH }}.dial_fair_pd_ucr
 
-  # Historical performing ratings (UCR not in 6,7,8)
+  # Historical performing ratings (UCR not in 6,7,8) with proper filtering
   - alias: HIST_PERF_RATINGS
     columns:
     - COMPANY_ID
@@ -62,7 +62,7 @@ sources:
     - BUSINESSLINE
     - RATING_ID
     source: stg_{{ RUN_MONTH }}.dial_fair_pd_ucr
-    filter: APPROVED_UCR NOT IN ('6', '7', '8')
+    filter: APPROVED_UCR NOT IN ('6', '7', '8') AND RATING_STATUS = 'ACTUAL'
 
   # All historical ratings for fallback with proper filtering
   - alias: HIST_ALL_RATINGS
@@ -73,6 +73,7 @@ sources:
     - PORTFOLIO
     - BUSINESSLINE
     source: stg_{{ RUN_MONTH }}.dial_fair_pd_ucr
+    filter: RATING_STATUS = 'ACTUAL'
 
 transformations:
   # Create variables for filtering
@@ -192,12 +193,46 @@ expressions:
   APPROVER: DIAL_FAIR_PD_UCR.APPROVER
   LB_RATING_ID: DIAL_FAIR_PD_UCR.LB_RATING_ID
   
-  # Last Performing Model logic - keeping the same CASE logic
+  # Add model mapping for historical lookup results
+  MappedPerformingModel: >
+    CASE 
+      WHEN BEST_PERFORMING_MODELS.last_performing_model = 'PDFTWW01' THEN 'STD'
+      WHEN BEST_PERFORMING_MODELS.last_performing_model = 'PSMENL03' THEN 'SME'
+      WHEN BEST_PERFORMING_MODELS.last_performing_model = 'PGRAWW00' THEN 'PGSMWW00'
+      WHEN BEST_PERFORMING_MODELS.last_performing_model = 'PMCPNL03' THEN 'PSMENL03'
+      WHEN BEST_PERFORMING_MODELS.last_performing_model = 'PDCRNL01' THEN 'PGRAWW00'
+      WHEN BEST_PERFORMING_MODELS.last_performing_model = 'PDIAWW00' THEN 'PGRAWW00'
+      WHEN BEST_PERFORMING_MODELS.last_performing_model = 'PCRPWW02' THEN 'PGRAWW00'
+      WHEN BEST_PERFORMING_MODELS.last_performing_model = 'PPBPWW02' THEN 'PGRAWW00'
+      WHEN BEST_PERFORMING_MODELS.last_performing_model = 'PPRIWW02' THEN 'PGRAWW00'
+      WHEN BEST_PERFORMING_MODELS.last_performing_model = 'PCREWW03' THEN 'PGRAWW00'
+      WHEN BEST_PERFORMING_MODELS.last_performing_model = 'PPMRNL02' THEN 'PMR'
+      ELSE BEST_PERFORMING_MODELS.last_performing_model
+    END
+
+  # Add model mapping for fallback model
+  MappedFallbackModel: >
+    CASE 
+      WHEN FALLBACK_MODELS.fallback_model = 'PDFTWW01' THEN 'STD'
+      WHEN FALLBACK_MODELS.fallback_model = 'PSMENL03' THEN 'SME'
+      WHEN FALLBACK_MODELS.fallback_model = 'PGRAWW00' THEN 'PGSMWW00'
+      WHEN FALLBACK_MODELS.fallback_model = 'PMCPNL03' THEN 'PSMENL03'
+      WHEN FALLBACK_MODELS.fallback_model = 'PDCRNL01' THEN 'PGRAWW00'
+      WHEN FALLBACK_MODELS.fallback_model = 'PDIAWW00' THEN 'PGRAWW00'
+      WHEN FALLBACK_MODELS.fallback_model = 'PCRPWW02' THEN 'PGRAWW00'
+      WHEN FALLBACK_MODELS.fallback_model = 'PPBPWW02' THEN 'PGRAWW00'
+      WHEN FALLBACK_MODELS.fallback_model = 'PPRIWW02' THEN 'PGRAWW00'
+      WHEN FALLBACK_MODELS.fallback_model = 'PCREWW03' THEN 'PGRAWW00'
+      WHEN FALLBACK_MODELS.fallback_model = 'PPMRNL02' THEN 'PMR'
+      ELSE FALLBACK_MODELS.fallback_model
+    END
+
+  # Last Performing Model logic with model mapping
   LastPerformingModel: >
     CASE 
       WHEN DIAL_FAIR_PD_UCR.APPROVED_UCR not in ('6', '7', '8') THEN DIAL_FAIR_PD_UCR.PD_MODEL_VERSION 
-      WHEN BEST_PERFORMING_MODELS.last_performing_model IS NOT NULL THEN BEST_PERFORMING_MODELS.last_performing_model 
-      ELSE FALLBACK_MODELS.fallback_model 
+      WHEN BEST_PERFORMING_MODELS.last_performing_model IS NOT NULL THEN MappedPerformingModel 
+      ELSE MappedFallbackModel 
     END
 
 filter_target:
