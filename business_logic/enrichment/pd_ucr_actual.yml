@@ -1,4 +1,5 @@
-target: int_{{ RUN_MONTH }}.pd_ucr_actual
+
+target: enrich_{{ RUN_MONTH }}.pd_ucr_actual
 
 sources:
   - alias: DIAL_FAIR_PD_UCR
@@ -70,7 +71,6 @@ sources:
     - RATING_ID
     - PORTFOLIO
     - BUSINESSLINE
-    - PD_APPROVAL_DATE
     source: stg_{{ RUN_MONTH }}.dial_fair_pd_ucr
 
 transformations:
@@ -80,7 +80,7 @@ transformations:
       column_mapping:
         var_months_since_approval: months_between(current_date(), DIAL_FAIR_PD_UCR.PD_APPROVAL_DATE)
   
-  # Find the fallback model (earliest rating by RATING_ID for each company+portfolio+businessline)
+  # Find the fallback model first (directly from source)
   - aggregation:
       alias: FALLBACK_MODELS
       source: HIST_ALL_RATINGS
@@ -89,8 +89,7 @@ transformations:
       - HIST_ALL_RATINGS.PORTFOLIO
       - HIST_ALL_RATINGS.BUSINESSLINE
       column_mapping:
-        min_rating_id: min(HIST_ALL_RATINGS.RATING_ID)
-        fallback_model: min(HIST_ALL_RATINGS.PD_MODEL_VERSION)
+        fallback_model: first(HIST_ALL_RATINGS.PD_MODEL_VERSION)
   
   # Find the most recent performing rating for each company+portfolio+businessline
   - aggregation:
@@ -117,14 +116,12 @@ transformations:
   # Get the highest rating_id among these most recent performing ratings
   - aggregation:
       alias: BEST_PERFORMING_MODELS
-      source: HIST_PERF_RATINGS  # Explicitly specify the source after the join
       group:
       - HIST_PERF_RATINGS.COMPANY_ID
       - HIST_PERF_RATINGS.PORTFOLIO
       - HIST_PERF_RATINGS.BUSINESSLINE
       column_mapping:
-        max_rating_id: max(HIST_PERF_RATINGS.RATING_ID)
-        last_performing_model: max(HIST_PERF_RATINGS.PD_MODEL_VERSION)
+        last_performing_model: first(HIST_PERF_RATINGS.PD_MODEL_VERSION)
   
   # Join the fallback models
   - join:
@@ -193,7 +190,7 @@ expressions:
   APPROVER: DIAL_FAIR_PD_UCR.APPROVER
   LB_RATING_ID: DIAL_FAIR_PD_UCR.LB_RATING_ID
   
-  # Last Performing Model logic - using CASE statement to handle all conditions
+  # Last Performing Model logic
   LastPerformingModel: >
     CASE 
       WHEN DIAL_FAIR_PD_UCR.APPROVED_UCR not in ('6', '7', '8') THEN DIAL_FAIR_PD_UCR.PD_MODEL_VERSION 
