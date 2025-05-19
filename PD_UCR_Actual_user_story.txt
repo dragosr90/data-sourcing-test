@@ -6,18 +6,18 @@ Logic
 Filter on Rating_status = 'ACTUAL' AND (approval date is < 24 months ago OR UCR = 6, 7 or 8)
 Addition of Last performing PD model
 Logic: if a rating is in default (UCR = 6, 7, or 8), then find the latest historical record with a performing rating. Pick that PD_MODEL_VERSION as last performing model
-Source table: stg_202412.dial_fair_pd_ucr
-Target table: int_202412.pd_ucr_actual
+Source table: stg_{{ RUN_MONTH }}.dial_fair_pd_ucr
+Target table: int_{{ RUN_MONTH }}.pd_ucr_actual
 
 Tasks 
 Create new yaml to create pd_ucr_actual from dial_fair_pd_ucr
 Logic:
 Add Last performing model column
-Check if the current rating is performing (approved_ucr not 6, 7, 8)
-If yes: take PD_Model_version from the same record
-If not: lookup in historical records: group by Company+portfolio+businessline and sort by approval date
-Select PD_Model_version from the most recently approved rating that is performing 
-If multiple performing with same approval date: select PD_Model_version from the record with highest rating_id
-If none performing: select PD_Model_version from the record with the lowest rating_id
+  - Check if the current rating is performing (approved_ucr not 6, 7, 8)
+      - If yes: take PD_Model_version from the same record
+      - If not: lookup in historical records: group by Company+portfolio+businessline and sort by approval date
+            - Select PD_Model_version from the most recently approved rating that is performing 
+            - If multiple performing with same approval date: select PD_Model_version from the record with highest rating_id
+            - If none performing: select PD_Model_version from the record with the lowest rating_id
 Add filter: RATING_STATUS = 'ACTUAL' AND (PD_APPROVAL_DATE < 24 months older than Reporting date OR APPROVED_UCR in (6,7,8))
 Final structure: same as DIAL PD UCR table, but with added column LastPerformingModel
