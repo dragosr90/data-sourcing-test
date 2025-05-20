@@ -64,21 +64,7 @@ sources:
     source: stg_{{ RUN_MONTH }}.dial_fair_pd_ucr
     filter: APPROVED_UCR NOT IN ('6', '7', '8')
 
-  # Fallback data - using the same source as DIAL_FAIR_PD_UCR
-  - alias: FALLBACK_SOURCE
-    columns:
-    - COMPANY_ID
-    - PD_MODEL_VERSION
-    - PORTFOLIO
-    - BUSINESSLINE
-    - RATING_ID
-    source: stg_{{ RUN_MONTH }}.dial_fair_pd_ucr
-
 transformations:
-  # Calculate months since approval for filtering
-  - add_variables:
-      column_mapping:
-        months_since_approval: months_between(current_date(), DIAL_FAIR_PD_UCR.PD_APPROVAL_DATE)
 
   # 1. For each company+portfolio+businessline, find the most recent PD_APPROVAL_DATE 
   # from the performing ratings (for finding the last performing model)
@@ -127,18 +113,7 @@ transformations:
       - BEST_PERF_MODELS.BUSINESSLINE = RECENT_PERF_RATINGS.BUSINESSLINE
       - BEST_PERF_MODELS.max_rating_id = RECENT_PERF_RATINGS.RATING_ID
 
-  # 5. Create fallback models using direct aggregation
-  - aggregation:
-      alias: FALLBACK_MODELS
-      source: FALLBACK_SOURCE
-      group:
-      - FALLBACK_SOURCE.COMPANY_ID
-      - FALLBACK_SOURCE.PORTFOLIO
-      - FALLBACK_SOURCE.BUSINESSLINE
-      column_mapping:
-        fallback_model_version: min_by(FALLBACK_SOURCE.PD_MODEL_VERSION, FALLBACK_SOURCE.RATING_ID)
-
-  # 6. Join the last performing models to the main data
+  # 5. Join the last performing models to the main data
   - join:
       left_source: DIAL_FAIR_PD_UCR
       right_source: LAST_PERF_MODELS
@@ -148,14 +123,13 @@ transformations:
       - DIAL_FAIR_PD_UCR.PORTFOLIO = LAST_PERF_MODELS.PORTFOLIO
       - DIAL_FAIR_PD_UCR.BUSINESSLINE = LAST_PERF_MODELS.BUSINESSLINE
 
-  # 7. Join the fallback models to the main data
-  - join:
-      right_source: FALLBACK_MODELS
-      how: left
-      condition:
-      - DIAL_FAIR_PD_UCR.COMPANY_ID = FALLBACK_MODELS.COMPANY_ID
-      - DIAL_FAIR_PD_UCR.PORTFOLIO = FALLBACK_MODELS.PORTFOLIO
-      - DIAL_FAIR_PD_UCR.BUSINESSLINE = FALLBACK_MODELS.BUSINESSLINE
+  # 6. Instead of a separate aggregation for fallback, add a window function to get the fallback model
+  - add_variables:
+      column_mapping:
+        months_since_approval: months_between(current_date(), DIAL_FAIR_PD_UCR.PD_APPROVAL_DATE)
+        fallback_model: first_value(DIAL_FAIR_PD_UCR.PD_MODEL_VERSION) 
+          OVER (PARTITION BY DIAL_FAIR_PD_UCR.COMPANY_ID, DIAL_FAIR_PD_UCR.PORTFOLIO, DIAL_FAIR_PD_UCR.BUSINESSLINE 
+                ORDER BY DIAL_FAIR_PD_UCR.RATING_ID ASC)
 
 expressions:
   PD_RATING_ID: DIAL_FAIR_PD_UCR.PD_RATING_ID
@@ -210,7 +184,7 @@ expressions:
     CASE 
       WHEN DIAL_FAIR_PD_UCR.APPROVED_UCR NOT IN ('6', '7', '8') THEN DIAL_FAIR_PD_UCR.PD_MODEL_VERSION 
       WHEN LAST_PERF_MODELS.PD_MODEL_VERSION IS NOT NULL THEN LAST_PERF_MODELS.PD_MODEL_VERSION 
-      ELSE FALLBACK_MODELS.fallback_model_version 
+      ELSE fallback_model 
     END
 
 filter_target:
