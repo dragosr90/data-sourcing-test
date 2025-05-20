@@ -64,60 +64,110 @@ sources:
     source: stg_{{ RUN_MONTH }}.dial_fair_pd_ucr
     filter: APPROVED_UCR NOT IN ('6', '7', '8')
 
+  # All ratings for fallback
+  - alias: ALL_RATINGS
+    columns:
+    - COMPANY_ID
+    - PD_MODEL_VERSION
+    - PORTFOLIO
+    - BUSINESSLINE
+    - RATING_ID
+    source: stg_{{ RUN_MONTH }}.dial_fair_pd_ucr
+
 transformations:
-  # Step 1: Find the most recent approval date for each company+portfolio+businessline
-  # from historical performing ratings
+  # Calculate months since approval for filtering
+  - add_variables:
+      column_mapping:
+        months_since_approval: months_between(current_date(), DIAL_FAIR_PD_UCR.PD_APPROVAL_DATE)
+
+  # 1. For each company+portfolio+businessline, find the most recent PD_APPROVAL_DATE 
+  # from the performing ratings (for finding the last performing model)
   - aggregation:
-      alias: RECENT_DATES
+      alias: MOST_RECENT_DATES
       source: HIST_PERF_RATINGS
       group:
       - HIST_PERF_RATINGS.COMPANY_ID
       - HIST_PERF_RATINGS.PORTFOLIO
       - HIST_PERF_RATINGS.BUSINESSLINE
       column_mapping:
-        most_recent_date: max(HIST_PERF_RATINGS.PD_APPROVAL_DATE)
+        max_approval_date: max(HIST_PERF_RATINGS.PD_APPROVAL_DATE)
 
-  # Step 2: Join to get all performing ratings from the most recent date
+  # 2. Join to get all performing ratings with the most recent approval date
   - join:
-      left_source: RECENT_DATES
+      alias: RECENT_PERF_RATINGS
+      left_source: MOST_RECENT_DATES
       right_source: HIST_PERF_RATINGS
       how: inner
       condition:
-      - RECENT_DATES.COMPANY_ID = HIST_PERF_RATINGS.COMPANY_ID
-      - RECENT_DATES.PORTFOLIO = HIST_PERF_RATINGS.PORTFOLIO
-      - RECENT_DATES.BUSINESSLINE = HIST_PERF_RATINGS.BUSINESSLINE
-      - RECENT_DATES.most_recent_date = HIST_PERF_RATINGS.PD_APPROVAL_DATE
+      - MOST_RECENT_DATES.COMPANY_ID = HIST_PERF_RATINGS.COMPANY_ID
+      - MOST_RECENT_DATES.PORTFOLIO = HIST_PERF_RATINGS.PORTFOLIO
+      - MOST_RECENT_DATES.BUSINESSLINE = HIST_PERF_RATINGS.BUSINESSLINE
+      - MOST_RECENT_DATES.max_approval_date = HIST_PERF_RATINGS.PD_APPROVAL_DATE
 
-  # Step 3: Among those most recent ratings, get the one with the highest rating_id
-  # (and its model version) for each company+portfolio+businessline
+  # 3. Get the model with the highest RATING_ID for each company+portfolio+businessline
+  # among the most recent performing ratings
   - aggregation:
-      alias: BEST_MODELS
+      alias: BEST_PERF_MODELS
       group:
-      - HIST_PERF_RATINGS.COMPANY_ID
-      - HIST_PERF_RATINGS.PORTFOLIO 
-      - HIST_PERF_RATINGS.BUSINESSLINE
+      - RECENT_PERF_RATINGS.COMPANY_ID
+      - RECENT_PERF_RATINGS.PORTFOLIO
+      - RECENT_PERF_RATINGS.BUSINESSLINE
       column_mapping:
-        last_performing_model: max(HIST_PERF_RATINGS.PD_MODEL_VERSION)
-        max_rating_id: max(HIST_PERF_RATINGS.RATING_ID)
+        max_rating_id: max(RECENT_PERF_RATINGS.RATING_ID)
 
-  # Step 4: Join the best performing models to the main data
+  # 4. Join back to get the exact model version for that highest RATING_ID
+  - join:
+      alias: LAST_PERF_MODELS
+      left_source: BEST_PERF_MODELS
+      right_source: RECENT_PERF_RATINGS
+      how: inner
+      condition:
+      - BEST_PERF_MODELS.COMPANY_ID = RECENT_PERF_RATINGS.COMPANY_ID
+      - BEST_PERF_MODELS.PORTFOLIO = RECENT_PERF_RATINGS.PORTFOLIO
+      - BEST_PERF_MODELS.BUSINESSLINE = RECENT_PERF_RATINGS.BUSINESSLINE
+      - BEST_PERF_MODELS.max_rating_id = RECENT_PERF_RATINGS.RATING_ID
+
+  # 5. Get the fallback models (model with lowest RATING_ID for each company+portfolio+businessline)
+  - aggregation:
+      alias: MIN_RATING_IDS
+      source: ALL_RATINGS
+      group:
+      - ALL_RATINGS.COMPANY_ID
+      - ALL_RATINGS.PORTFOLIO
+      - ALL_RATINGS.BUSINESSLINE
+      column_mapping:
+        min_rating_id: min(ALL_RATINGS.RATING_ID)
+
+  # 6. Join back to get the exact model version for that lowest RATING_ID
+  - join:
+      alias: FALLBACK_MODELS
+      left_source: MIN_RATING_IDS
+      right_source: ALL_RATINGS
+      how: inner
+      condition:
+      - MIN_RATING_IDS.COMPANY_ID = ALL_RATINGS.COMPANY_ID
+      - MIN_RATING_IDS.PORTFOLIO = ALL_RATINGS.PORTFOLIO
+      - MIN_RATING_IDS.BUSINESSLINE = ALL_RATINGS.BUSINESSLINE
+      - MIN_RATING_IDS.min_rating_id = ALL_RATINGS.RATING_ID
+
+  # 7. Join the last performing models to the main data
   - join:
       left_source: DIAL_FAIR_PD_UCR
-      right_source: BEST_MODELS
+      right_source: LAST_PERF_MODELS
       how: left
       condition:
-      - DIAL_FAIR_PD_UCR.COMPANY_ID = BEST_MODELS.COMPANY_ID
-      - DIAL_FAIR_PD_UCR.PORTFOLIO = BEST_MODELS.PORTFOLIO
-      - DIAL_FAIR_PD_UCR.BUSINESSLINE = BEST_MODELS.BUSINESSLINE
+      - DIAL_FAIR_PD_UCR.COMPANY_ID = LAST_PERF_MODELS.COMPANY_ID
+      - DIAL_FAIR_PD_UCR.PORTFOLIO = LAST_PERF_MODELS.PORTFOLIO
+      - DIAL_FAIR_PD_UCR.BUSINESSLINE = LAST_PERF_MODELS.BUSINESSLINE
 
-  # Step 5: Create a fallback model table from the main data
-  # This finds the model with the lowest rating_id per company+portfolio+businessline
-  - add_variables:
-      column_mapping:
-        fallback_model: first_value(DIAL_FAIR_PD_UCR.PD_MODEL_VERSION) 
-          OVER (PARTITION BY DIAL_FAIR_PD_UCR.COMPANY_ID, DIAL_FAIR_PD_UCR.PORTFOLIO, DIAL_FAIR_PD_UCR.BUSINESSLINE 
-                ORDER BY DIAL_FAIR_PD_UCR.RATING_ID ASC)
-        months_since_approval: months_between(current_date(), DIAL_FAIR_PD_UCR.PD_APPROVAL_DATE)
+  # 8. Join the fallback models to the main data
+  - join:
+      right_source: FALLBACK_MODELS
+      how: left
+      condition:
+      - DIAL_FAIR_PD_UCR.COMPANY_ID = FALLBACK_MODELS.COMPANY_ID
+      - DIAL_FAIR_PD_UCR.PORTFOLIO = FALLBACK_MODELS.PORTFOLIO
+      - DIAL_FAIR_PD_UCR.BUSINESSLINE = FALLBACK_MODELS.BUSINESSLINE
 
 expressions:
   PD_RATING_ID: DIAL_FAIR_PD_UCR.PD_RATING_ID
@@ -171,8 +221,8 @@ expressions:
   LastPerformingModel: >
     CASE 
       WHEN DIAL_FAIR_PD_UCR.APPROVED_UCR NOT IN ('6', '7', '8') THEN DIAL_FAIR_PD_UCR.PD_MODEL_VERSION 
-      WHEN BEST_MODELS.last_performing_model IS NOT NULL THEN BEST_MODELS.last_performing_model 
-      ELSE fallback_model 
+      WHEN LAST_PERF_MODELS.PD_MODEL_VERSION IS NOT NULL THEN LAST_PERF_MODELS.PD_MODEL_VERSION 
+      ELSE FALLBACK_MODELS.PD_MODEL_VERSION 
     END
 
 filter_target:
