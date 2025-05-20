@@ -64,69 +64,46 @@ sources:
     source: stg_{{ RUN_MONTH }}.dial_fair_pd_ucr
     filter: APPROVED_UCR NOT IN ('6', '7', '8')
 
-  # All historical ratings for fallback
-  - alias: HIST_ALL_RATINGS
-    columns:
-    - COMPANY_ID
-    - PD_MODEL_VERSION
-    - RATING_ID
-    - PORTFOLIO
-    - BUSINESSLINE
-    source: stg_{{ RUN_MONTH }}.dial_fair_pd_ucr
-
 transformations:
   # Create variables for filtering
   - add_variables:
       source: DIAL_FAIR_PD_UCR
       column_mapping:
         var_months_since_approval: months_between(current_date(), DIAL_FAIR_PD_UCR.PD_APPROVAL_DATE)
-  
-  # First, create a temporary table with the most recent date for each company+portfolio+businessline
+
+  # Find the most recent performing rating for each company+portfolio+businessline
   - aggregation:
-      alias: RECENT_DATES
+      alias: MOST_RECENT_PERFORMING
       source: HIST_PERF_RATINGS
       group:
-      - COMPANY_ID
-      - PORTFOLIO
-      - BUSINESSLINE
+      - HIST_PERF_RATINGS.COMPANY_ID
+      - HIST_PERF_RATINGS.PORTFOLIO
+      - HIST_PERF_RATINGS.BUSINESSLINE
       column_mapping:
-        most_recent_date: max(PD_APPROVAL_DATE)
-  
-  # Join to the historical performing ratings to get all ratings with the most recent date
+        most_recent_date: max(HIST_PERF_RATINGS.PD_APPROVAL_DATE)
+
+  # Join back to get the performing ratings with that most recent date
   - join:
-      alias: MOST_RECENT_RATINGS
-      left_source: RECENT_DATES
+      left_source: MOST_RECENT_PERFORMING
       right_source: HIST_PERF_RATINGS
       how: inner
       condition:
-      - RECENT_DATES.COMPANY_ID = HIST_PERF_RATINGS.COMPANY_ID
-      - RECENT_DATES.PORTFOLIO = HIST_PERF_RATINGS.PORTFOLIO
-      - RECENT_DATES.BUSINESSLINE = HIST_PERF_RATINGS.BUSINESSLINE
-      - RECENT_DATES.most_recent_date = HIST_PERF_RATINGS.PD_APPROVAL_DATE
-  
-  # Find the model with the highest rating_id for those most recent ratings
+      - MOST_RECENT_PERFORMING.COMPANY_ID = HIST_PERF_RATINGS.COMPANY_ID
+      - MOST_RECENT_PERFORMING.PORTFOLIO = HIST_PERF_RATINGS.PORTFOLIO
+      - MOST_RECENT_PERFORMING.BUSINESSLINE = HIST_PERF_RATINGS.BUSINESSLINE
+      - MOST_RECENT_PERFORMING.most_recent_date = HIST_PERF_RATINGS.PD_APPROVAL_DATE
+
+  # Get the model with the highest rating_id for those most recent ratings
   - aggregation:
       alias: LAST_PERFORMING_MODELS
-      source: MOST_RECENT_RATINGS
       group:
-      - COMPANY_ID
-      - PORTFOLIO
-      - BUSINESSLINE
+      - HIST_PERF_RATINGS.COMPANY_ID
+      - HIST_PERF_RATINGS.PORTFOLIO
+      - HIST_PERF_RATINGS.BUSINESSLINE
       column_mapping:
-        last_performing_model: max(PD_MODEL_VERSION)
-  
-  # Create fallback models table
-  - aggregation:
-      alias: FALLBACK_MODELS
-      source: DIAL_FAIR_PD_UCR
-      group:
-      - COMPANY_ID
-      - PORTFOLIO
-      - BUSINESSLINE
-      column_mapping:
-        fallback_model: min(PD_MODEL_VERSION)
-  
-  # Join all tables to main data
+        last_performing_model: max(HIST_PERF_RATINGS.PD_MODEL_VERSION)
+
+  # Join the LAST_PERFORMING_MODELS to the main data
   - join:
       left_source: DIAL_FAIR_PD_UCR
       right_source: LAST_PERFORMING_MODELS
@@ -135,7 +112,19 @@ transformations:
       - DIAL_FAIR_PD_UCR.COMPANY_ID = LAST_PERFORMING_MODELS.COMPANY_ID
       - DIAL_FAIR_PD_UCR.PORTFOLIO = LAST_PERFORMING_MODELS.PORTFOLIO
       - DIAL_FAIR_PD_UCR.BUSINESSLINE = LAST_PERFORMING_MODELS.BUSINESSLINE
-  
+
+  # Create fallback models for when no performing models exist
+  - aggregation:
+      alias: FALLBACK_MODELS
+      source: DIAL_FAIR_PD_UCR
+      group:
+      - DIAL_FAIR_PD_UCR.COMPANY_ID
+      - DIAL_FAIR_PD_UCR.PORTFOLIO
+      - DIAL_FAIR_PD_UCR.BUSINESSLINE
+      column_mapping:
+        fallback_model: min(DIAL_FAIR_PD_UCR.PD_MODEL_VERSION)
+
+  # Join the FALLBACK_MODELS to the main data
   - join:
       right_source: FALLBACK_MODELS
       how: left
