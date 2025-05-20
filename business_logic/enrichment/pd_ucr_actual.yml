@@ -64,8 +64,8 @@ sources:
     source: stg_{{ RUN_MONTH }}.dial_fair_pd_ucr
     filter: APPROVED_UCR NOT IN ('6', '7', '8')
 
-  # All ratings for fallback
-  - alias: ALL_RATINGS
+  # Fallback data - using the same source as DIAL_FAIR_PD_UCR
+  - alias: FALLBACK_SOURCE
     columns:
     - COMPANY_ID
     - PD_MODEL_VERSION
@@ -127,30 +127,18 @@ transformations:
       - BEST_PERF_MODELS.BUSINESSLINE = RECENT_PERF_RATINGS.BUSINESSLINE
       - BEST_PERF_MODELS.max_rating_id = RECENT_PERF_RATINGS.RATING_ID
 
-  # 5. Get the fallback models (model with lowest RATING_ID for each company+portfolio+businessline)
+  # 5. Create fallback models using direct aggregation
   - aggregation:
-      alias: MIN_RATING_IDS
-      source: ALL_RATINGS
-      group:
-      - ALL_RATINGS.COMPANY_ID
-      - ALL_RATINGS.PORTFOLIO
-      - ALL_RATINGS.BUSINESSLINE
-      column_mapping:
-        min_rating_id: min(ALL_RATINGS.RATING_ID)
-
-  # 6. Join back to get the exact model version for that lowest RATING_ID
-  - join:
       alias: FALLBACK_MODELS
-      left_source: MIN_RATING_IDS
-      right_source: ALL_RATINGS
-      how: inner
-      condition:
-      - MIN_RATING_IDS.COMPANY_ID = ALL_RATINGS.COMPANY_ID
-      - MIN_RATING_IDS.PORTFOLIO = ALL_RATINGS.PORTFOLIO
-      - MIN_RATING_IDS.BUSINESSLINE = ALL_RATINGS.BUSINESSLINE
-      - MIN_RATING_IDS.min_rating_id = ALL_RATINGS.RATING_ID
+      source: FALLBACK_SOURCE
+      group:
+      - FALLBACK_SOURCE.COMPANY_ID
+      - FALLBACK_SOURCE.PORTFOLIO
+      - FALLBACK_SOURCE.BUSINESSLINE
+      column_mapping:
+        fallback_model_version: min_by(FALLBACK_SOURCE.PD_MODEL_VERSION, FALLBACK_SOURCE.RATING_ID)
 
-  # 7. Join the last performing models to the main data
+  # 6. Join the last performing models to the main data
   - join:
       left_source: DIAL_FAIR_PD_UCR
       right_source: LAST_PERF_MODELS
@@ -160,7 +148,7 @@ transformations:
       - DIAL_FAIR_PD_UCR.PORTFOLIO = LAST_PERF_MODELS.PORTFOLIO
       - DIAL_FAIR_PD_UCR.BUSINESSLINE = LAST_PERF_MODELS.BUSINESSLINE
 
-  # 8. Join the fallback models to the main data
+  # 7. Join the fallback models to the main data
   - join:
       right_source: FALLBACK_MODELS
       how: left
@@ -222,7 +210,7 @@ expressions:
     CASE 
       WHEN DIAL_FAIR_PD_UCR.APPROVED_UCR NOT IN ('6', '7', '8') THEN DIAL_FAIR_PD_UCR.PD_MODEL_VERSION 
       WHEN LAST_PERF_MODELS.PD_MODEL_VERSION IS NOT NULL THEN LAST_PERF_MODELS.PD_MODEL_VERSION 
-      ELSE FALLBACK_MODELS.PD_MODEL_VERSION 
+      ELSE FALLBACK_MODELS.fallback_model_version 
     END
 
 filter_target:
