@@ -71,9 +71,10 @@ transformations:
       column_mapping:
         var_months_since_approval: months_between(current_date(), DIAL_FAIR_PD_UCR.PD_APPROVAL_DATE)
 
-  # Find the most recent performing rating for each company+portfolio+businessline
+  # Step 1: Find the most recent approval date for each company+portfolio+businessline
+  # from historical performing ratings
   - aggregation:
-      alias: MOST_RECENT_PERFORMING
+      alias: RECENT_DATES
       source: HIST_PERF_RATINGS
       group:
       - HIST_PERF_RATINGS.COMPANY_ID
@@ -82,56 +83,46 @@ transformations:
       column_mapping:
         most_recent_date: max(HIST_PERF_RATINGS.PD_APPROVAL_DATE)
 
-  # Join back to get the performing ratings with that most recent date
+  # Step 2: Join to get all performing ratings from the most recent date
   - join:
-      left_source: MOST_RECENT_PERFORMING
+      left_source: RECENT_DATES
       right_source: HIST_PERF_RATINGS
       how: inner
       condition:
-      - MOST_RECENT_PERFORMING.COMPANY_ID = HIST_PERF_RATINGS.COMPANY_ID
-      - MOST_RECENT_PERFORMING.PORTFOLIO = HIST_PERF_RATINGS.PORTFOLIO
-      - MOST_RECENT_PERFORMING.BUSINESSLINE = HIST_PERF_RATINGS.BUSINESSLINE
-      - MOST_RECENT_PERFORMING.most_recent_date = HIST_PERF_RATINGS.PD_APPROVAL_DATE
+      - RECENT_DATES.COMPANY_ID = HIST_PERF_RATINGS.COMPANY_ID
+      - RECENT_DATES.PORTFOLIO = HIST_PERF_RATINGS.PORTFOLIO
+      - RECENT_DATES.BUSINESSLINE = HIST_PERF_RATINGS.BUSINESSLINE
+      - RECENT_DATES.most_recent_date = HIST_PERF_RATINGS.PD_APPROVAL_DATE
 
-  # Get the model with the highest rating_id for those most recent ratings
+  # Step 3: Among those most recent ratings, get the one with the highest rating_id
+  # (and its model version) for each company+portfolio+businessline
   - aggregation:
-      alias: LAST_PERFORMING_MODELS
+      alias: BEST_MODELS
       group:
       - HIST_PERF_RATINGS.COMPANY_ID
-      - HIST_PERF_RATINGS.PORTFOLIO
+      - HIST_PERF_RATINGS.PORTFOLIO 
       - HIST_PERF_RATINGS.BUSINESSLINE
       column_mapping:
         last_performing_model: max(HIST_PERF_RATINGS.PD_MODEL_VERSION)
+        max_rating_id: max(HIST_PERF_RATINGS.RATING_ID)
 
-  # Join the LAST_PERFORMING_MODELS to the main data
+  # Step 4: Join the best performing models to the main data
   - join:
       left_source: DIAL_FAIR_PD_UCR
-      right_source: LAST_PERFORMING_MODELS
+      right_source: BEST_MODELS
       how: left
       condition:
-      - DIAL_FAIR_PD_UCR.COMPANY_ID = LAST_PERFORMING_MODELS.COMPANY_ID
-      - DIAL_FAIR_PD_UCR.PORTFOLIO = LAST_PERFORMING_MODELS.PORTFOLIO
-      - DIAL_FAIR_PD_UCR.BUSINESSLINE = LAST_PERFORMING_MODELS.BUSINESSLINE
+      - DIAL_FAIR_PD_UCR.COMPANY_ID = BEST_MODELS.COMPANY_ID
+      - DIAL_FAIR_PD_UCR.PORTFOLIO = BEST_MODELS.PORTFOLIO
+      - DIAL_FAIR_PD_UCR.BUSINESSLINE = BEST_MODELS.BUSINESSLINE
 
-  # Create fallback models for when no performing models exist
-  - aggregation:
-      alias: FALLBACK_MODELS
-      source: DIAL_FAIR_PD_UCR
-      group:
-      - DIAL_FAIR_PD_UCR.COMPANY_ID
-      - DIAL_FAIR_PD_UCR.PORTFOLIO
-      - DIAL_FAIR_PD_UCR.BUSINESSLINE
+  # Step 5: Create a fallback model table from the main data
+  # This finds the model with the lowest rating_id per company+portfolio+businessline
+  - add_variables:
       column_mapping:
-        fallback_model: min(DIAL_FAIR_PD_UCR.PD_MODEL_VERSION)
-
-  # Join the FALLBACK_MODELS to the main data
-  - join:
-      right_source: FALLBACK_MODELS
-      how: left
-      condition:
-      - DIAL_FAIR_PD_UCR.COMPANY_ID = FALLBACK_MODELS.COMPANY_ID
-      - DIAL_FAIR_PD_UCR.PORTFOLIO = FALLBACK_MODELS.PORTFOLIO
-      - DIAL_FAIR_PD_UCR.BUSINESSLINE = FALLBACK_MODELS.BUSINESSLINE
+        fallback_model: first_value(DIAL_FAIR_PD_UCR.PD_MODEL_VERSION) 
+          OVER (PARTITION BY DIAL_FAIR_PD_UCR.COMPANY_ID, DIAL_FAIR_PD_UCR.PORTFOLIO, DIAL_FAIR_PD_UCR.BUSINESSLINE 
+                ORDER BY DIAL_FAIR_PD_UCR.RATING_ID ASC)
 
 expressions:
   PD_RATING_ID: DIAL_FAIR_PD_UCR.PD_RATING_ID
@@ -185,8 +176,8 @@ expressions:
   LastPerformingModel: >
     CASE 
       WHEN DIAL_FAIR_PD_UCR.APPROVED_UCR NOT IN ('6', '7', '8') THEN DIAL_FAIR_PD_UCR.PD_MODEL_VERSION 
-      WHEN LAST_PERFORMING_MODELS.last_performing_model IS NOT NULL THEN LAST_PERFORMING_MODELS.last_performing_model 
-      ELSE FALLBACK_MODELS.fallback_model 
+      WHEN BEST_MODELS.last_performing_model IS NOT NULL THEN BEST_MODELS.last_performing_model 
+      ELSE fallback_model 
     END
 
 filter_target:
