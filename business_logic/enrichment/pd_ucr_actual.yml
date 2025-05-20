@@ -51,118 +51,16 @@ sources:
     - LB_RATING_ID
     source: stg_{{ RUN_MONTH }}.dial_fair_pd_ucr
 
-  # All historical ratings for performing records
-  - alias: HIST_PERF
-    columns:
-    - COMPANY_ID
-    - PD_MODEL_VERSION
-    - APPROVED_UCR
-    - PD_APPROVAL_DATE
-    - PORTFOLIO
-    - BUSINESSLINE
-    - RATING_ID
-    source: stg_{{ RUN_MONTH }}.dial_fair_pd_ucr
-    filter: APPROVED_UCR NOT IN ('6', '7', '8')
-
-  # All historical ratings
-  - alias: HIST_ALL
-    columns:
-    - COMPANY_ID
-    - PD_MODEL_VERSION
-    - RATING_ID
-    - PORTFOLIO
-    - BUSINESSLINE
-    source: stg_{{ RUN_MONTH }}.dial_fair_pd_ucr
-
 transformations:
   # Create variables for filtering
   - add_variables:
       source: DIAL_FAIR_PD_UCR
       column_mapping:
         var_months_since_approval: months_between(current_date(), DIAL_FAIR_PD_UCR.PD_APPROVAL_DATE)
-  
-  # Step 1: Find most recent date for each company+portfolio+businessline for performing ratings
-  - aggregation:
-      alias: BEST_PERF_DATE
-      source: HIST_PERF
-      group:
-      - HIST_PERF.COMPANY_ID
-      - HIST_PERF.PORTFOLIO
-      - HIST_PERF.BUSINESSLINE
-      column_mapping:
-        most_recent_date: max(HIST_PERF.PD_APPROVAL_DATE)
-  
-  # Step 2: Join to get records with that date
-  - join:
-      left_source: BEST_PERF_DATE
-      right_source: HIST_PERF
-      how: inner
-      condition:
-      - BEST_PERF_DATE.COMPANY_ID = HIST_PERF.COMPANY_ID
-      - BEST_PERF_DATE.PORTFOLIO = HIST_PERF.PORTFOLIO
-      - BEST_PERF_DATE.BUSINESSLINE = HIST_PERF.BUSINESSLINE
-      - BEST_PERF_DATE.most_recent_date = HIST_PERF.PD_APPROVAL_DATE
-  
-  # Step 3: Find the record with highest rating_id
-  - aggregation:
-      alias: BEST_PERF_ID
-      group:
-      - BEST_PERF_DATE.COMPANY_ID
-      - BEST_PERF_DATE.PORTFOLIO
-      - BEST_PERF_DATE.BUSINESSLINE
-      column_mapping:
-        best_model: max(HIST_PERF.PD_MODEL_VERSION)
-  
-  # Step 4: Find lowest rating_id for each company+portfolio+businessline (fallback)
-  - aggregation:
-      alias: FALLBACK_ID
-      source: HIST_ALL
-      group:
-      - HIST_ALL.COMPANY_ID
-      - HIST_ALL.PORTFOLIO
-      - HIST_ALL.BUSINESSLINE
-      column_mapping:
-        min_rating_id: min(HIST_ALL.RATING_ID)
-  
-  # Step 5: Join to get the model for that rating id
-  - join:
-      left_source: FALLBACK_ID
-      right_source: HIST_ALL
-      how: inner
-      condition:
-      - FALLBACK_ID.COMPANY_ID = HIST_ALL.COMPANY_ID
-      - FALLBACK_ID.PORTFOLIO = HIST_ALL.PORTFOLIO
-      - FALLBACK_ID.BUSINESSLINE = HIST_ALL.BUSINESSLINE
-      - FALLBACK_ID.min_rating_id = HIST_ALL.RATING_ID
-  
-  # Step 6: Get the fallback model
-  - aggregation:
-      alias: FALLBACK
-      group:
-      - FALLBACK_ID.COMPANY_ID
-      - FALLBACK_ID.PORTFOLIO
-      - FALLBACK_ID.BUSINESSLINE
-      column_mapping:
-        fallback_model: max(HIST_ALL.PD_MODEL_VERSION)
-  
-  # Step 7: Join best model to main table
-  - join:
-      left_source: DIAL_FAIR_PD_UCR
-      right_source: BEST_PERF_ID
-      how: left
-      condition:
-      - DIAL_FAIR_PD_UCR.COMPANY_ID = BEST_PERF_ID.COMPANY_ID
-      - DIAL_FAIR_PD_UCR.PORTFOLIO = BEST_PERF_ID.PORTFOLIO
-      - DIAL_FAIR_PD_UCR.BUSINESSLINE = BEST_PERF_ID.BUSINESSLINE
-  
-  # Step 8: Join fallback model to main table
-  - join:
-      right_source: FALLBACK
-      how: left
-      condition:
-      - DIAL_FAIR_PD_UCR.COMPANY_ID = FALLBACK.COMPANY_ID
-      - DIAL_FAIR_PD_UCR.PORTFOLIO = FALLBACK.PORTFOLIO
-      - DIAL_FAIR_PD_UCR.BUSINESSLINE = FALLBACK.BUSINESSLINE
+        # Add a flag for if this is a performing rating
+        is_performing: CASE WHEN DIAL_FAIR_PD_UCR.APPROVED_UCR NOT IN ('6', '7', '8') THEN 1 ELSE 0 END
+        # Flag if this is the current record being processed
+        is_current: 1
 
 expressions:
   PD_RATING_ID: DIAL_FAIR_PD_UCR.PD_RATING_ID
@@ -212,12 +110,38 @@ expressions:
   APPROVER: DIAL_FAIR_PD_UCR.APPROVER
   LB_RATING_ID: DIAL_FAIR_PD_UCR.LB_RATING_ID
   
-  # LastPerformingModel logic as per user story
+  # LastPerformingModel logic using SQL window functions directly
+  # This avoids the complex transformation pipeline that's causing validation issues
   LastPerformingModel: >
     CASE 
       WHEN DIAL_FAIR_PD_UCR.APPROVED_UCR NOT IN ('6', '7', '8') THEN DIAL_FAIR_PD_UCR.PD_MODEL_VERSION 
-      WHEN BEST_PERF_ID.best_model IS NOT NULL THEN BEST_PERF_ID.best_model 
-      ELSE FALLBACK.fallback_model 
+      ELSE (
+        SELECT 
+          CASE 
+            -- 1. First try to find most recent performing rating
+            WHEN MAX(CASE WHEN t.APPROVED_UCR NOT IN ('6', '7', '8') THEN 1 ELSE 0 END) OVER (PARTITION BY t.COMPANY_ID, t.PORTFOLIO, t.BUSINESSLINE) = 1 THEN 
+              FIRST_VALUE(t.PD_MODEL_VERSION) OVER (
+                PARTITION BY t.COMPANY_ID, t.PORTFOLIO, t.BUSINESSLINE 
+                ORDER BY 
+                  CASE WHEN t.APPROVED_UCR NOT IN ('6', '7', '8') THEN 1 ELSE 0 END DESC,
+                  t.PD_APPROVAL_DATE DESC,
+                  t.RATING_ID DESC
+              )
+            -- 2. If no performing ratings, use earliest rating (lowest rating_id)
+            ELSE 
+              FIRST_VALUE(t.PD_MODEL_VERSION) OVER (
+                PARTITION BY t.COMPANY_ID, t.PORTFOLIO, t.BUSINESSLINE 
+                ORDER BY t.RATING_ID ASC
+              )
+          END
+        FROM stg_{{ RUN_MONTH }}.dial_fair_pd_ucr t
+        WHERE 
+          t.RATING_STATUS = 'ACTUAL'
+          AND t.COMPANY_ID = DIAL_FAIR_PD_UCR.COMPANY_ID 
+          AND t.PORTFOLIO = DIAL_FAIR_PD_UCR.PORTFOLIO 
+          AND t.BUSINESSLINE = DIAL_FAIR_PD_UCR.BUSINESSLINE
+        LIMIT 1
+      )
     END
 
 filter_target:
