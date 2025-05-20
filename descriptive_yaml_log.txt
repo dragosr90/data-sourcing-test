@@ -6,17 +6,15 @@ Validate YAML
 validate_business_logic_mapping(spark, business_logic_dict)
 
 
-2025-05-20 07:34:06 [INFO] validate:  YAML format validated successfully
-2025-05-20 07:34:09 [INFO] validate:  Sources validated successfully
-2025-05-20 07:34:10 [INFO] validate_add_variables:  Variables validated successfully
-2025-05-20 07:34:10 [INFO] validate_aggregation:  Aggregations validated successfully
-2025-05-20 07:34:10 [INFO] validate_join:  Joins validated successfully
-2025-05-20 07:34:10 [INFO] validate_aggregation:  Aggregations validated successfully
-2025-05-20 07:34:10 [ERROR] validate_sql_expressions:  Problem with expression(s):
-2025-05-20 07:34:10 [ERROR] validate_sql_expressions:  min(HIST_ALL.RATING_ID): [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `HIST_ALL`.`COMPANY_ID` cannot be resolved. Did you mean one of the following? [`HIST_PERF`.`COMPANY_ID`, `BEST_PERF_ID`.`COMPANY_ID`, `HIST_PERF`.`RATING_ID`, `BEST_PERF_DATE`.`COMPANY_ID`, `HIST_PERF`.`PORTFOLIO`]. SQLSTATE: 42703
-2025-05-20 07:34:10 [ERROR] validate_aggregation:  Issue with aggregated data FALLBACK_ID
-2025-05-20 07:34:11 [INFO] validate_join:  Joins validated successfully
-2025-05-20 07:34:11 [INFO] validate_aggregation:  Aggregations validated successfully
-2025-05-20 07:34:11 [INFO] validate_join:  Joins validated successfully
-2025-05-20 07:34:12 [INFO] validate_join:  Joins validated successfully
+2025-05-20 08:15:00 [INFO] validate:  YAML format validated successfully
+2025-05-20 08:15:04 [INFO] validate:  Sources validated successfully
+2025-05-20 08:15:04 [INFO] validate_add_variables:  Variables validated successfully
+2025-05-20 08:15:05 [INFO] validate_aggregation:  Aggregations validated successfully
+2025-05-20 08:15:05 [INFO] validate_join:  Joins validated successfully
+2025-05-20 08:15:05 [INFO] validate_aggregation:  Aggregations validated successfully
+2025-05-20 08:15:05 [ERROR] validate_sql_expressions:  Problem with expression(s):
+2025-05-20 08:15:05 [ERROR] validate_sql_expressions:  min_by(HIST_ALL_RATINGS.PD_MODEL_VERSION, HIST_ALL_RATINGS.RATING_ID): [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `HIST_ALL_RATINGS`.`COMPANY_ID` cannot be resolved. Did you mean one of the following? [`HIST_PERF_RATINGS`.`COMPANY_ID`, `RECENT_PERF_RATINGS`.`COMPANY_ID`, `HIST_PERF_RATINGS`.`RATING_ID`, `HIST_PERF_RATINGS`.`PORTFOLIO`, `HIST_PERF_RATINGS`.`APPROVED_UCR`]. SQLSTATE: 42703
+2025-05-20 08:15:05 [ERROR] validate_aggregation:  Issue with aggregated data FALLBACK_MODELS
+2025-05-20 08:15:06 [INFO] validate_join:  Joins validated successfully
+2025-05-20 08:15:06 [INFO] validate_join:  Joins validated successfully
 False
