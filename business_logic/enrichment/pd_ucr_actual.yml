@@ -95,30 +95,18 @@ transformations:
       - PERF_RATINGS.PORTFOLIO
       - PERF_RATINGS.BUSINESSLINE
       column_mapping:
-        last_performing_model: max(PERF_RATINGS.PD_MODEL_VERSION)
+        last_perf_model: max(PERF_RATINGS.PD_MODEL_VERSION)
 
-  # Create fallback model table (with lowest rating_id)
+  # Create fallback models - all in one step
   - aggregation:
-      alias: MIN_RATING_IDS
+      alias: FALLBACK_DATA
       source: DIAL_FAIR_PD_UCR
       group:
-      - DIAL_FAIR_PD_UCR.COMPANY_ID
-      - DIAL_FAIR_PD_UCR.PORTFOLIO
-      - DIAL_FAIR_PD_UCR.BUSINESSLINE
+      - DIAL_FAIR_PD_UCR.COMPANY_ID as cid
+      - DIAL_FAIR_PD_UCR.PORTFOLIO as pf
+      - DIAL_FAIR_PD_UCR.BUSINESSLINE as bl
       column_mapping:
-        min_rating_id: min(DIAL_FAIR_PD_UCR.RATING_ID)
-
-  # Join to get the exact fallback model
-  - join:
-      alias: FALLBACK_MODELS
-      left_source: MIN_RATING_IDS
-      right_source: DIAL_FAIR_PD_UCR
-      how: inner
-      condition:
-      - MIN_RATING_IDS.COMPANY_ID = DIAL_FAIR_PD_UCR.COMPANY_ID
-      - MIN_RATING_IDS.PORTFOLIO = DIAL_FAIR_PD_UCR.PORTFOLIO
-      - MIN_RATING_IDS.BUSINESSLINE = DIAL_FAIR_PD_UCR.BUSINESSLINE
-      - MIN_RATING_IDS.min_rating_id = DIAL_FAIR_PD_UCR.RATING_ID
+        fallback_model: min_by(DIAL_FAIR_PD_UCR.PD_MODEL_VERSION, DIAL_FAIR_PD_UCR.RATING_ID)
 
   # Join both to main data
   - join:
@@ -131,12 +119,12 @@ transformations:
       - DIAL_FAIR_PD_UCR.BUSINESSLINE = LAST_PERF_MODELS.BUSINESSLINE
 
   - join:
-      right_source: FALLBACK_MODELS
+      right_source: FALLBACK_DATA
       how: left
       condition:
-      - DIAL_FAIR_PD_UCR.COMPANY_ID = FALLBACK_MODELS.COMPANY_ID
-      - DIAL_FAIR_PD_UCR.PORTFOLIO = FALLBACK_MODELS.PORTFOLIO
-      - DIAL_FAIR_PD_UCR.BUSINESSLINE = FALLBACK_MODELS.BUSINESSLINE
+      - DIAL_FAIR_PD_UCR.COMPANY_ID = FALLBACK_DATA.cid
+      - DIAL_FAIR_PD_UCR.PORTFOLIO = FALLBACK_DATA.pf 
+      - DIAL_FAIR_PD_UCR.BUSINESSLINE = FALLBACK_DATA.bl
 
 expressions:
   PD_RATING_ID: DIAL_FAIR_PD_UCR.PD_RATING_ID
@@ -190,8 +178,8 @@ expressions:
   LastPerformingModel: >
     CASE 
       WHEN DIAL_FAIR_PD_UCR.APPROVED_UCR NOT IN ('6', '7', '8') THEN DIAL_FAIR_PD_UCR.PD_MODEL_VERSION 
-      WHEN LAST_PERF_MODELS.last_performing_model IS NOT NULL THEN LAST_PERF_MODELS.last_performing_model 
-      ELSE FALLBACK_MODELS.PD_MODEL_VERSION 
+      WHEN LAST_PERF_MODELS.last_perf_model IS NOT NULL THEN LAST_PERF_MODELS.last_perf_model 
+      ELSE FALLBACK_DATA.fallback_model 
     END
 
 filter_target:
