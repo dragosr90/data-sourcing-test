@@ -64,16 +64,6 @@ sources:
     source: stg_{{ RUN_MONTH }}.dial_fair_pd_ucr
     filter: APPROVED_UCR NOT IN ('6', '7', '8')
 
-  # All ratings for fallback model
-  - alias: ALL_RATINGS
-    columns:
-    - COMPANY_ID
-    - PD_MODEL_VERSION
-    - PORTFOLIO
-    - BUSINESSLINE
-    - RATING_ID
-    source: stg_{{ RUN_MONTH }}.dial_fair_pd_ucr
-
 transformations:
   # Calculate months since approval for filtering
   - add_variables:
@@ -127,28 +117,28 @@ transformations:
       - BEST_PERF_MODELS.BUSINESSLINE = RECENT_PERF.BUSINESSLINE
       - BEST_PERF_MODELS.highest_rating_id = RECENT_PERF.RATING_ID
 
-  # Step 5: Find the fallback model (model with lowest rating_id)
+  # Step 5: Find the fallback model (model with lowest rating_id) directly from DIAL_FAIR_PD_UCR
   - aggregation:
       alias: FALLBACK_MODELS
-      source: ALL_RATINGS
+      source: DIAL_FAIR_PD_UCR
       group:
-      - ALL_RATINGS.COMPANY_ID
-      - ALL_RATINGS.PORTFOLIO
-      - ALL_RATINGS.BUSINESSLINE
+      - DIAL_FAIR_PD_UCR.COMPANY_ID
+      - DIAL_FAIR_PD_UCR.PORTFOLIO
+      - DIAL_FAIR_PD_UCR.BUSINESSLINE
       column_mapping:
-        lowest_rating_id: min(ALL_RATINGS.RATING_ID)
+        lowest_rating_id: min(DIAL_FAIR_PD_UCR.RATING_ID)
 
   # Step 6: Get the exact model version for that lowest rating_id
   - join:
       alias: FINAL_FALLBACK
       left_source: FALLBACK_MODELS
-      right_source: ALL_RATINGS
+      right_source: DIAL_FAIR_PD_UCR
       how: inner
       condition:
-      - FALLBACK_MODELS.COMPANY_ID = ALL_RATINGS.COMPANY_ID
-      - FALLBACK_MODELS.PORTFOLIO = ALL_RATINGS.PORTFOLIO
-      - FALLBACK_MODELS.BUSINESSLINE = ALL_RATINGS.BUSINESSLINE
-      - FALLBACK_MODELS.lowest_rating_id = ALL_RATINGS.RATING_ID
+      - FALLBACK_MODELS.COMPANY_ID = DIAL_FAIR_PD_UCR.COMPANY_ID
+      - FALLBACK_MODELS.PORTFOLIO = DIAL_FAIR_PD_UCR.PORTFOLIO
+      - FALLBACK_MODELS.BUSINESSLINE = DIAL_FAIR_PD_UCR.BUSINESSLINE
+      - FALLBACK_MODELS.lowest_rating_id = DIAL_FAIR_PD_UCR.RATING_ID
 
   # Step 7: Join the last performing models to the main data
   - join:
