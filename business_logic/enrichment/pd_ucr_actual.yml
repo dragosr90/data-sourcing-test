@@ -75,60 +75,7 @@ sources:
     source: stg_{{ RUN_MONTH }}.dial_fair_pd_ucr
 
 transformations:
-  # Step 1: Find the most recent performing rating date for each company+portfolio+businessline
-  - aggregation:
-      alias: MOST_RECENT_PERFORMING_DATE
-      source: HIST_PERFORMING_RATINGS
-      group:
-      - HIST_PERFORMING_RATINGS.COMPANY_ID
-      - HIST_PERFORMING_RATINGS.PORTFOLIO
-      - HIST_PERFORMING_RATINGS.BUSINESSLINE
-      column_mapping:
-        most_recent_date: max(HIST_PERFORMING_RATINGS.PD_APPROVAL_DATE)
-
-  # Step 2: Join back to get all performing ratings with that most recent date
-  - join:
-      left_source: MOST_RECENT_PERFORMING_DATE
-      right_source: HIST_PERFORMING_RATINGS
-      how: inner
-      condition:
-      - MOST_RECENT_PERFORMING_DATE.COMPANY_ID = HIST_PERFORMING_RATINGS.COMPANY_ID
-      - MOST_RECENT_PERFORMING_DATE.PORTFOLIO = HIST_PERFORMING_RATINGS.PORTFOLIO
-      - MOST_RECENT_PERFORMING_DATE.BUSINESSLINE = HIST_PERFORMING_RATINGS.BUSINESSLINE
-      - MOST_RECENT_PERFORMING_DATE.most_recent_date = HIST_PERFORMING_RATINGS.PD_APPROVAL_DATE
-  
-  # Step 3: Among ratings with most recent date, find the one with highest rating_id
-  - aggregation:
-      alias: HIGHEST_RATING_ID_RECENT
-      group:
-      - HIST_PERFORMING_RATINGS.COMPANY_ID
-      - HIST_PERFORMING_RATINGS.PORTFOLIO
-      - HIST_PERFORMING_RATINGS.BUSINESSLINE
-      column_mapping:
-        max_rating_id: max(HIST_PERFORMING_RATINGS.RATING_ID)
-  
-  # Step 4: Join to get the PD_MODEL_VERSION for that specific rating
-  - join:
-      left_source: HIGHEST_RATING_ID_RECENT
-      right_source: HIST_PERFORMING_RATINGS
-      how: inner
-      condition:
-      - HIGHEST_RATING_ID_RECENT.COMPANY_ID = HIST_PERFORMING_RATINGS.COMPANY_ID
-      - HIGHEST_RATING_ID_RECENT.PORTFOLIO = HIST_PERFORMING_RATINGS.PORTFOLIO
-      - HIGHEST_RATING_ID_RECENT.BUSINESSLINE = HIST_PERFORMING_RATINGS.BUSINESSLINE
-      - HIGHEST_RATING_ID_RECENT.max_rating_id = HIST_PERFORMING_RATINGS.RATING_ID
-  
-  # Step 5: Create the best performing models table
-  - aggregation:
-      alias: BEST_PERFORMING_MODELS
-      group:
-      - HIST_PERFORMING_RATINGS.COMPANY_ID
-      - HIST_PERFORMING_RATINGS.PORTFOLIO
-      - HIST_PERFORMING_RATINGS.BUSINESSLINE
-      column_mapping:
-        last_performing_model: max(HIST_PERFORMING_RATINGS.PD_MODEL_VERSION)
-  
-  # Step 6: Fallback - find the record with lowest rating_id (as per user story)
+  # Step 1: Create fallback models FIRST (lowest rating_id logic)
   - aggregation:
       alias: LOWEST_RATING_ID_ALL
       source: HIST_ALL_RATINGS
@@ -139,7 +86,7 @@ transformations:
       column_mapping:
         min_rating_id: min(HIST_ALL_RATINGS.RATING_ID)
   
-  # Step 7: Join to get the PD_MODEL_VERSION for the lowest rating_id
+  # Step 2: Join to get the PD_MODEL_VERSION for the lowest rating_id
   - join:
       left_source: LOWEST_RATING_ID_ALL
       right_source: HIST_ALL_RATINGS
@@ -150,7 +97,7 @@ transformations:
       - LOWEST_RATING_ID_ALL.BUSINESSLINE = HIST_ALL_RATINGS.BUSINESSLINE
       - LOWEST_RATING_ID_ALL.min_rating_id = HIST_ALL_RATINGS.RATING_ID
   
-  # Step 8: Create fallback models table
+  # Step 3: Create fallback models table
   - aggregation:
       alias: FALLBACK_MODELS
       group:
@@ -159,6 +106,59 @@ transformations:
       - HIST_ALL_RATINGS.BUSINESSLINE
       column_mapping:
         fallback_model: max(HIST_ALL_RATINGS.PD_MODEL_VERSION)
+  
+  # Step 4: Find the most recent performing rating date
+  - aggregation:
+      alias: MOST_RECENT_PERFORMING_DATE
+      source: HIST_PERFORMING_RATINGS
+      group:
+      - HIST_PERFORMING_RATINGS.COMPANY_ID
+      - HIST_PERFORMING_RATINGS.PORTFOLIO
+      - HIST_PERFORMING_RATINGS.BUSINESSLINE
+      column_mapping:
+        most_recent_date: max(HIST_PERFORMING_RATINGS.PD_APPROVAL_DATE)
+
+  # Step 5: Join back to get all performing ratings with that most recent date
+  - join:
+      left_source: MOST_RECENT_PERFORMING_DATE
+      right_source: HIST_PERFORMING_RATINGS
+      how: inner
+      condition:
+      - MOST_RECENT_PERFORMING_DATE.COMPANY_ID = HIST_PERFORMING_RATINGS.COMPANY_ID
+      - MOST_RECENT_PERFORMING_DATE.PORTFOLIO = HIST_PERFORMING_RATINGS.PORTFOLIO
+      - MOST_RECENT_PERFORMING_DATE.BUSINESSLINE = HIST_PERFORMING_RATINGS.BUSINESSLINE
+      - MOST_RECENT_PERFORMING_DATE.most_recent_date = HIST_PERFORMING_RATINGS.PD_APPROVAL_DATE
+  
+  # Step 6: Among ratings with most recent date, find the one with highest rating_id
+  - aggregation:
+      alias: HIGHEST_RATING_ID_RECENT
+      group:
+      - HIST_PERFORMING_RATINGS.COMPANY_ID
+      - HIST_PERFORMING_RATINGS.PORTFOLIO
+      - HIST_PERFORMING_RATINGS.BUSINESSLINE
+      column_mapping:
+        max_rating_id: max(HIST_PERFORMING_RATINGS.RATING_ID)
+  
+  # Step 7: Join to get the PD_MODEL_VERSION for that specific rating
+  - join:
+      left_source: HIGHEST_RATING_ID_RECENT
+      right_source: HIST_PERFORMING_RATINGS
+      how: inner
+      condition:
+      - HIGHEST_RATING_ID_RECENT.COMPANY_ID = HIST_PERFORMING_RATINGS.COMPANY_ID
+      - HIGHEST_RATING_ID_RECENT.PORTFOLIO = HIST_PERFORMING_RATINGS.PORTFOLIO
+      - HIGHEST_RATING_ID_RECENT.BUSINESSLINE = HIST_PERFORMING_RATINGS.BUSINESSLINE
+      - HIGHEST_RATING_ID_RECENT.max_rating_id = HIST_PERFORMING_RATINGS.RATING_ID
+  
+  # Step 8: Create the best performing models table
+  - aggregation:
+      alias: BEST_PERFORMING_MODELS
+      group:
+      - HIST_PERFORMING_RATINGS.COMPANY_ID
+      - HIST_PERFORMING_RATINGS.PORTFOLIO
+      - HIST_PERFORMING_RATINGS.BUSINESSLINE
+      column_mapping:
+        last_performing_model: max(HIST_PERFORMING_RATINGS.PD_MODEL_VERSION)
   
   # Step 9: Join best performing models to main data
   - join:
