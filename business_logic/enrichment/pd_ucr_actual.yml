@@ -51,8 +51,8 @@ sources:
     - LB_RATING_ID
     source: stg_{{ RUN_MONTH }}.dial_fair_pd_ucr
 
-  # Historical performing ratings (UCR not in 6,7,8)
-  - alias: HIST_PERF_RATINGS
+  # Historical performing ratings for finding last performing model
+  - alias: PERF_RATINGS
     columns:
     - COMPANY_ID
     - PD_MODEL_VERSION
@@ -64,110 +64,59 @@ sources:
     source: stg_{{ RUN_MONTH }}.dial_fair_pd_ucr
     filter: APPROVED_UCR NOT IN ('6', '7', '8')
 
-  # Fallback models (minimum rating_id for each company+portfolio+businessline)
-  - alias: FALLBACK_RATINGS
-    columns:
-    - COMPANY_ID
-    - PD_MODEL_VERSION
-    - PORTFOLIO
-    - BUSINESSLINE
-    - RATING_ID
-    source: stg_{{ RUN_MONTH }}.dial_fair_pd_ucr
-
 transformations:
-  # Calculate all variables at once
+  # Calculate months since approval for filtering
   - add_variables:
       source: DIAL_FAIR_PD_UCR
       column_mapping:
         months_since_approval: months_between(current_date(), DIAL_FAIR_PD_UCR.PD_APPROVAL_DATE)
 
-  # Get the last performing model - first find the most recent date
+  # Create an aggregated table with company+portfolio+businessline and
+  # both last performing model and fallback model
   - aggregation:
-      alias: MOST_RECENT_DATES
-      source: HIST_PERF_RATINGS
+      alias: MODEL_INFO
+      source: DIAL_FAIR_PD_UCR
       group:
-      - HIST_PERF_RATINGS.COMPANY_ID
-      - HIST_PERF_RATINGS.PORTFOLIO
-      - HIST_PERF_RATINGS.BUSINESSLINE
+      - DIAL_FAIR_PD_UCR.COMPANY_ID
+      - DIAL_FAIR_PD_UCR.PORTFOLIO
+      - DIAL_FAIR_PD_UCR.BUSINESSLINE
       column_mapping:
-        most_recent_date: max(HIST_PERF_RATINGS.PD_APPROVAL_DATE)
+        min_rating_pd_model: min_by(DIAL_FAIR_PD_UCR.PD_MODEL_VERSION, DIAL_FAIR_PD_UCR.RATING_ID)
 
-  # Join to get all ratings from that most recent date
-  - join:
-      alias: RECENT_PERF
-      left_source: MOST_RECENT_DATES
-      right_source: HIST_PERF_RATINGS
-      how: inner
-      condition:
-      - MOST_RECENT_DATES.COMPANY_ID = HIST_PERF_RATINGS.COMPANY_ID
-      - MOST_RECENT_DATES.PORTFOLIO = HIST_PERF_RATINGS.PORTFOLIO
-      - MOST_RECENT_DATES.BUSINESSLINE = HIST_PERF_RATINGS.BUSINESSLINE
-      - MOST_RECENT_DATES.most_recent_date = HIST_PERF_RATINGS.PD_APPROVAL_DATE
-
-  # Among those with most recent date, get the one with highest rating_id
-  - aggregation:
-      alias: LAST_PERF_MODELS
-      source: RECENT_PERF
-      group:
-      - RECENT_PERF.COMPANY_ID
-      - RECENT_PERF.PORTFOLIO
-      - RECENT_PERF.BUSINESSLINE
-      column_mapping:
-        max_rating_id: max(RECENT_PERF.RATING_ID)
-
-  # Get the exact model version for that highest rating_id
-  - join:
-      alias: FINAL_PERF_MODELS
-      left_source: LAST_PERF_MODELS
-      right_source: RECENT_PERF
-      how: inner
-      condition:
-      - LAST_PERF_MODELS.COMPANY_ID = RECENT_PERF.COMPANY_ID
-      - LAST_PERF_MODELS.PORTFOLIO = RECENT_PERF.PORTFOLIO
-      - LAST_PERF_MODELS.BUSINESSLINE = RECENT_PERF.BUSINESSLINE
-      - LAST_PERF_MODELS.max_rating_id = RECENT_PERF.RATING_ID
-
-  # Create fallback models (models with lowest rating_id per company+portfolio+businessline)
-  - aggregation:
-      alias: MIN_RATING_IDS
-      source: FALLBACK_RATINGS
-      group:
-      - FALLBACK_RATINGS.COMPANY_ID
-      - FALLBACK_RATINGS.PORTFOLIO
-      - FALLBACK_RATINGS.BUSINESSLINE
-      column_mapping:
-        min_rating_id: min(FALLBACK_RATINGS.RATING_ID)
-
-  # Join to get the exact model version for that lowest rating_id
-  - join:
-      alias: FALLBACK_MODELS
-      left_source: MIN_RATING_IDS
-      right_source: FALLBACK_RATINGS
-      how: inner
-      condition:
-      - MIN_RATING_IDS.COMPANY_ID = FALLBACK_RATINGS.COMPANY_ID
-      - MIN_RATING_IDS.PORTFOLIO = FALLBACK_RATINGS.PORTFOLIO
-      - MIN_RATING_IDS.BUSINESSLINE = FALLBACK_RATINGS.BUSINESSLINE
-      - MIN_RATING_IDS.min_rating_id = FALLBACK_RATINGS.RATING_ID
-
-  # Join the last performing models to the main data
+  # Join back the model info to the main data
   - join:
       left_source: DIAL_FAIR_PD_UCR
-      right_source: FINAL_PERF_MODELS
+      right_source: MODEL_INFO
       how: left
       condition:
-      - DIAL_FAIR_PD_UCR.COMPANY_ID = FINAL_PERF_MODELS.COMPANY_ID
-      - DIAL_FAIR_PD_UCR.PORTFOLIO = FINAL_PERF_MODELS.PORTFOLIO
-      - DIAL_FAIR_PD_UCR.BUSINESSLINE = FINAL_PERF_MODELS.BUSINESSLINE
+      - DIAL_FAIR_PD_UCR.COMPANY_ID = MODEL_INFO.COMPANY_ID
+      - DIAL_FAIR_PD_UCR.PORTFOLIO = MODEL_INFO.PORTFOLIO
+      - DIAL_FAIR_PD_UCR.BUSINESSLINE = MODEL_INFO.BUSINESSLINE
 
-  # Join the fallback models to the main data
+  # Create a special dataset for last performing models
+  - aggregation:
+      alias: PERF_MODEL_INFO
+      source: PERF_RATINGS
+      group:
+      - PERF_RATINGS.COMPANY_ID
+      - PERF_RATINGS.PORTFOLIO
+      - PERF_RATINGS.BUSINESSLINE
+      column_mapping:
+        # Get the model with the most recent approval date
+        last_performing_model: max_by(PERF_RATINGS.PD_MODEL_VERSION, PERF_RATINGS.PD_APPROVAL_DATE)
+        # If multiple with same date, use highest rating_id
+        max_rating_id_model: max_by(PERF_RATINGS.PD_MODEL_VERSION, PERF_RATINGS.RATING_ID)
+        # Also get the most recent date for reference
+        latest_approval_date: max(PERF_RATINGS.PD_APPROVAL_DATE)
+
+  # Join the performing model info to the main data
   - join:
-      right_source: FALLBACK_MODELS
+      right_source: PERF_MODEL_INFO
       how: left
       condition:
-      - DIAL_FAIR_PD_UCR.COMPANY_ID = FALLBACK_MODELS.COMPANY_ID
-      - DIAL_FAIR_PD_UCR.PORTFOLIO = FALLBACK_MODELS.PORTFOLIO
-      - DIAL_FAIR_PD_UCR.BUSINESSLINE = FALLBACK_MODELS.BUSINESSLINE
+      - DIAL_FAIR_PD_UCR.COMPANY_ID = PERF_MODEL_INFO.COMPANY_ID
+      - DIAL_FAIR_PD_UCR.PORTFOLIO = PERF_MODEL_INFO.PORTFOLIO
+      - DIAL_FAIR_PD_UCR.BUSINESSLINE = PERF_MODEL_INFO.BUSINESSLINE
 
 expressions:
   PD_RATING_ID: DIAL_FAIR_PD_UCR.PD_RATING_ID
@@ -221,8 +170,8 @@ expressions:
   LastPerformingModel: >
     CASE 
       WHEN DIAL_FAIR_PD_UCR.APPROVED_UCR NOT IN ('6', '7', '8') THEN DIAL_FAIR_PD_UCR.PD_MODEL_VERSION 
-      WHEN FINAL_PERF_MODELS.PD_MODEL_VERSION IS NOT NULL THEN FINAL_PERF_MODELS.PD_MODEL_VERSION 
-      ELSE FALLBACK_MODELS.PD_MODEL_VERSION 
+      WHEN PERF_MODEL_INFO.last_performing_model IS NOT NULL THEN PERF_MODEL_INFO.last_performing_model 
+      ELSE MODEL_INFO.min_rating_pd_model
     END
 
 filter_target:
