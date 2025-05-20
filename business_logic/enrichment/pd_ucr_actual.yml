@@ -81,64 +81,61 @@ transformations:
       column_mapping:
         var_months_since_approval: months_between(current_date(), DIAL_FAIR_PD_UCR.PD_APPROVAL_DATE)
   
-  # First, group by company+portfolio+businessline to find the most recent performing rating date
+  # First, create a temporary table with the most recent date for each company+portfolio+businessline
   - aggregation:
-      alias: MOST_RECENT_PERFORMING
+      alias: RECENT_DATES
       source: HIST_PERF_RATINGS
       group:
-      - HIST_PERF_RATINGS.COMPANY_ID
-      - HIST_PERF_RATINGS.PORTFOLIO
-      - HIST_PERF_RATINGS.BUSINESSLINE
+      - COMPANY_ID
+      - PORTFOLIO
+      - BUSINESSLINE
       column_mapping:
-        most_recent_date: max(HIST_PERF_RATINGS.PD_APPROVAL_DATE)
-
-  # Join back to get all performing ratings with that most recent date
+        most_recent_date: max(PD_APPROVAL_DATE)
+  
+  # Join to the historical performing ratings to get all ratings with the most recent date
   - join:
-      alias: RECENT_PERF_RATINGS
-      left_source: MOST_RECENT_PERFORMING
+      alias: MOST_RECENT_RATINGS
+      left_source: RECENT_DATES
       right_source: HIST_PERF_RATINGS
       how: inner
       condition:
-      - MOST_RECENT_PERFORMING.COMPANY_ID = HIST_PERF_RATINGS.COMPANY_ID
-      - MOST_RECENT_PERFORMING.PORTFOLIO = HIST_PERF_RATINGS.PORTFOLIO
-      - MOST_RECENT_PERFORMING.BUSINESSLINE = HIST_PERF_RATINGS.BUSINESSLINE
-      - MOST_RECENT_PERFORMING.most_recent_date = HIST_PERF_RATINGS.PD_APPROVAL_DATE
+      - RECENT_DATES.COMPANY_ID = HIST_PERF_RATINGS.COMPANY_ID
+      - RECENT_DATES.PORTFOLIO = HIST_PERF_RATINGS.PORTFOLIO
+      - RECENT_DATES.BUSINESSLINE = HIST_PERF_RATINGS.BUSINESSLINE
+      - RECENT_DATES.most_recent_date = HIST_PERF_RATINGS.PD_APPROVAL_DATE
   
-  # Get the model with highest rating_id among these most recent performing ratings
+  # Find the model with the highest rating_id for those most recent ratings
   - aggregation:
-      alias: BEST_PERFORMING_MODELS
-      source: RECENT_PERF_RATINGS
+      alias: LAST_PERFORMING_MODELS
+      source: MOST_RECENT_RATINGS
       group:
-      - RECENT_PERF_RATINGS.COMPANY_ID
-      - RECENT_PERF_RATINGS.PORTFOLIO
-      - RECENT_PERF_RATINGS.BUSINESSLINE
+      - COMPANY_ID
+      - PORTFOLIO
+      - BUSINESSLINE
       column_mapping:
-        max_rating_id: max(RECENT_PERF_RATINGS.RATING_ID)
-        last_performing_model: max(RECENT_PERF_RATINGS.PD_MODEL_VERSION)
+        last_performing_model: max(PD_MODEL_VERSION)
   
-  # Find the fallback model (with lowest rating_id if no performing ratings)
+  # Create fallback models table
   - aggregation:
       alias: FALLBACK_MODELS
-      source: HIST_ALL_RATINGS
+      source: DIAL_FAIR_PD_UCR
       group:
-      - HIST_ALL_RATINGS.COMPANY_ID
-      - HIST_ALL_RATINGS.PORTFOLIO
-      - HIST_ALL_RATINGS.BUSINESSLINE
+      - COMPANY_ID
+      - PORTFOLIO
+      - BUSINESSLINE
       column_mapping:
-        min_rating_id: min(HIST_ALL_RATINGS.RATING_ID)
-        fallback_model: min(HIST_ALL_RATINGS.PD_MODEL_VERSION)
+        fallback_model: min(PD_MODEL_VERSION)
   
-  # Join the last performing models
+  # Join all tables to main data
   - join:
       left_source: DIAL_FAIR_PD_UCR
-      right_source: BEST_PERFORMING_MODELS
+      right_source: LAST_PERFORMING_MODELS
       how: left
       condition:
-      - DIAL_FAIR_PD_UCR.COMPANY_ID = BEST_PERFORMING_MODELS.COMPANY_ID
-      - DIAL_FAIR_PD_UCR.PORTFOLIO = BEST_PERFORMING_MODELS.PORTFOLIO
-      - DIAL_FAIR_PD_UCR.BUSINESSLINE = BEST_PERFORMING_MODELS.BUSINESSLINE
+      - DIAL_FAIR_PD_UCR.COMPANY_ID = LAST_PERFORMING_MODELS.COMPANY_ID
+      - DIAL_FAIR_PD_UCR.PORTFOLIO = LAST_PERFORMING_MODELS.PORTFOLIO
+      - DIAL_FAIR_PD_UCR.BUSINESSLINE = LAST_PERFORMING_MODELS.BUSINESSLINE
   
-  # Join the fallback models
   - join:
       right_source: FALLBACK_MODELS
       how: left
@@ -199,7 +196,7 @@ expressions:
   LastPerformingModel: >
     CASE 
       WHEN DIAL_FAIR_PD_UCR.APPROVED_UCR NOT IN ('6', '7', '8') THEN DIAL_FAIR_PD_UCR.PD_MODEL_VERSION 
-      WHEN BEST_PERFORMING_MODELS.last_performing_model IS NOT NULL THEN BEST_PERFORMING_MODELS.last_performing_model 
+      WHEN LAST_PERFORMING_MODELS.last_performing_model IS NOT NULL THEN LAST_PERFORMING_MODELS.last_performing_model 
       ELSE FALLBACK_MODELS.fallback_model 
     END
 
