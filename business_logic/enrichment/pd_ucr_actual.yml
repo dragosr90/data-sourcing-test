@@ -109,13 +109,14 @@ transformations:
       alias: BEST_PERFORMING_MODELS
       source: RECENT_PERF_RATINGS
       group:
-      - HIST_PERF_RATINGS.COMPANY_ID
-      - HIST_PERF_RATINGS.PORTFOLIO
-      - HIST_PERF_RATINGS.BUSINESSLINE
+      - RECENT_PERF_RATINGS.COMPANY_ID
+      - RECENT_PERF_RATINGS.PORTFOLIO
+      - RECENT_PERF_RATINGS.BUSINESSLINE
       column_mapping:
-        last_performing_model: max_by(HIST_PERF_RATINGS.PD_MODEL_VERSION, HIST_PERF_RATINGS.RATING_ID)
+        max_rating_id: max(RECENT_PERF_RATINGS.RATING_ID)
+        last_performing_model: max(RECENT_PERF_RATINGS.PD_MODEL_VERSION)
   
-  # Find the fallback model (earliest by rating_id if no performing ratings)
+  # Find the fallback model (with lowest rating_id if no performing ratings)
   - aggregation:
       alias: FALLBACK_MODELS
       source: HIST_ALL_RATINGS
@@ -124,7 +125,8 @@ transformations:
       - HIST_ALL_RATINGS.PORTFOLIO
       - HIST_ALL_RATINGS.BUSINESSLINE
       column_mapping:
-        fallback_model: min_by(HIST_ALL_RATINGS.PD_MODEL_VERSION, HIST_ALL_RATINGS.RATING_ID)
+        min_rating_id: min(HIST_ALL_RATINGS.RATING_ID)
+        fallback_model: min(HIST_ALL_RATINGS.PD_MODEL_VERSION)
   
   # Join the last performing models
   - join:
