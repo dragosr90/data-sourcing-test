@@ -5,18 +5,16 @@ Validate YAML
 validate_business_logic_mapping(spark, business_logic_dict)
 
 
-2025-05-20 09:27:09 [INFO] validate:  YAML format validated successfully
-2025-05-20 09:27:12 [INFO] validate:  Sources validated successfully
-2025-05-20 09:27:13 [INFO] validate_add_variables:  Variables validated successfully
-2025-05-20 09:27:13 [INFO] validate_aggregation:  Aggregations validated successfully
-2025-05-20 09:27:13 [INFO] validate_join:  Joins validated successfully
-2025-05-20 09:27:13 [INFO] validate_aggregation:  Aggregations validated successfully
-2025-05-20 09:27:14 [INFO] validate_join:  Joins validated successfully
-2025-05-20 09:27:14 [ERROR] validate_sql_expressions:  Problem with expression(s):
-2025-05-20 09:27:14 [ERROR] validate_sql_expressions:  min(ALL_RATINGS.RATING_ID): [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `ALL_RATINGS`.`COMPANY_ID` cannot be resolved. Did you mean one of the following? [`RECENT_PERF_RATINGS`.`COMPANY_ID`, `LAST_PERF_MODELS`.`COMPANY_ID`, `BEST_PERF_MODELS`.`COMPANY_ID`, `RECENT_PERF_RATINGS`.`RATING_ID`, `LAST_PERF_MODELS`.`RATING_ID`]. SQLSTATE: 42703
-2025-05-20 09:27:14 [ERROR] validate_aggregation:  Issue with aggregated data MIN_RATING_IDS
-2025-05-20 09:27:14 [INFO] validate_join:  Joins validated successfully
-2025-05-20 09:27:15 [INFO] validate_join:  Joins validated successfully
-2025-05-20 09:27:15 [INFO] validate_join:  Joins validated successfully
+2025-05-20 09:33:53 [INFO] validate:  YAML format validated successfully
+2025-05-20 09:33:56 [INFO] validate:  Sources validated successfully
+2025-05-20 09:33:57 [INFO] validate_add_variables:  Variables validated successfully
+2025-05-20 09:33:57 [INFO] validate_aggregation:  Aggregations validated successfully
+2025-05-20 09:33:57 [INFO] validate_join:  Joins validated successfully
+2025-05-20 09:33:57 [INFO] validate_aggregation:  Aggregations validated successfully
+2025-05-20 09:33:58 [INFO] validate_join:  Joins validated successfully
+2025-05-20 09:33:58 [ERROR] validate_sql_expressions:  Problem with expression(s):
+2025-05-20 09:33:58 [ERROR] validate_sql_expressions:  min_by(FALLBACK_SOURCE.PD_MODEL_VERSION, FALLBACK_SOURCE.RATING_ID): [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `FALLBACK_SOURCE`.`COMPANY_ID` cannot be resolved. Did you mean one of the following? [`LAST_PERF_MODELS`.`COMPANY_ID`, `BEST_PERF_MODELS`.`COMPANY_ID`, `RECENT_PERF_RATINGS`.`COMPANY_ID`, `LAST_PERF_MODELS`.`RATING_ID`, `LAST_PERF_MODELS`.`PORTFOLIO`]. SQLSTATE: 42703
+2025-05-20 09:33:58 [ERROR] validate_aggregation:  Issue with aggregated data FALLBACK_MODELS
+2025-05-20 09:33:58 [INFO] validate_join:  Joins validated successfully
+2025-05-20 09:33:59 [INFO] validate_join:  Joins validated successfully
 False
-
