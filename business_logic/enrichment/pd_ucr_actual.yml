@@ -64,7 +64,7 @@ sources:
     source: stg_{{ RUN_MONTH }}.dial_fair_pd_ucr
     filter: APPROVED_UCR NOT IN ('6', '7', '8')
 
-  # All historical ratings for fallback with proper filtering
+  # All historical ratings for fallback
   - alias: HIST_ALL_RATINGS
     columns:
     - COMPANY_ID
@@ -90,7 +90,7 @@ transformations:
       - HIST_ALL_RATINGS.PORTFOLIO
       - HIST_ALL_RATINGS.BUSINESSLINE
       column_mapping:
-        fallback_model: min(HIST_ALL_RATINGS.PD_MODEL_VERSION)
+        fallback_model: min(HIST_ALL_RATINGS.RATING_ID)
   
   # Find the most recent performing rating for each company+portfolio+businessline
   - aggregation:
