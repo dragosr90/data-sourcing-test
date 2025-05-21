@@ -1,5 +1,4 @@
-# ----- CORRECTED YAML FILE -----
-# Changes made to address both numeric values and null values in LastPerformingModel
+# ----- CORRECTLY FORMATTED YAML WITH WINDOW FUNCTIONS -----
 target: int_{{ RUN_MONTH }}.pd_ucr_actual
 
 sources:
@@ -83,85 +82,69 @@ transformations:
       column_mapping:
         var_months_since_approval: months_between(current_date(), DIAL_FAIR_PD_UCR.PD_APPROVAL_DATE)
   
-  # Select the most recent performing ratings - restructured to fix the error
-  # First, create a source for most recent performing dates
-  - aggregation:
-      alias: MOST_RECENT_DATES
+  # Add window functions for finding most recent performing ratings
+  - add_variables:
       source: HIST_PERF_RATINGS
+      column_mapping:
+        most_recent_date_by_group: max(PD_APPROVAL_DATE) over (partition by COMPANY_ID, PORTFOLIO, BUSINESSLINE)
+        is_most_recent: case when PD_APPROVAL_DATE = max(PD_APPROVAL_DATE) over (partition by COMPANY_ID, PORTFOLIO, BUSINESSLINE) then 1 else 0 end
+        rating_rank: row_number() over (partition by COMPANY_ID, PORTFOLIO, BUSINESSLINE, PD_APPROVAL_DATE order by RATING_ID desc)
+  
+  # Filter to get only the most recent performing ratings
+  - add_variables:
+      source: HIST_PERF_RATINGS
+      column_mapping:
+        is_best_performing: case when is_most_recent = 1 and rating_rank = 1 then 1 else 0 end
+  
+  # Create a new table with just the best performing models
+  - aggregation:
+      alias: BEST_PERFORMING_MODELS
+      source: HIST_PERF_RATINGS
+      filter: is_best_performing = 1
       group:
       - HIST_PERF_RATINGS.COMPANY_ID
       - HIST_PERF_RATINGS.PORTFOLIO
       - HIST_PERF_RATINGS.BUSINESSLINE
       column_mapping:
-        most_recent_date: max(HIST_PERF_RATINGS.PD_APPROVAL_DATE)
+        last_performing_model: first(HIST_PERF_RATINGS.PD_MODEL_VERSION)
   
-  # Then join to get all records with those dates
-  - join:
-      alias: MOST_RECENT_PERFORMING
-      left_source: MOST_RECENT_DATES
-      right_source: HIST_PERF_RATINGS
-      how: inner
-      condition:
-      - MOST_RECENT_DATES.COMPANY_ID = HIST_PERF_RATINGS.COMPANY_ID
-      - MOST_RECENT_DATES.PORTFOLIO = HIST_PERF_RATINGS.PORTFOLIO
-      - MOST_RECENT_DATES.BUSINESSLINE = HIST_PERF_RATINGS.BUSINESSLINE
-      - MOST_RECENT_DATES.most_recent_date = HIST_PERF_RATINGS.PD_APPROVAL_DATE
-  
-  # Get the model with highest rating_id among these most recent performing ratings
-  - aggregation:
-      alias: BEST_PERFORMING_MODELS
-      source: MOST_RECENT_PERFORMING
-      group:
-      - MOST_RECENT_PERFORMING.COMPANY_ID
-      - MOST_RECENT_PERFORMING.PORTFOLIO
-      - MOST_RECENT_PERFORMING.BUSINESSLINE
-      column_mapping:
-        max_rating_id: max(MOST_RECENT_PERFORMING.RATING_ID)
-        last_performing_model: max(MOST_RECENT_PERFORMING.PD_MODEL_VERSION)
-  
-  # For fallback, we first need to find the record with the lowest RATING_ID for each group
-  - aggregation:
-      alias: MIN_RATING_ID
+  # Add window functions for finding records with minimum RATING_ID
+  - add_variables:
       source: HIST_ALL_RATINGS
+      column_mapping:
+        min_rating_id_by_group: min(RATING_ID) over (partition by COMPANY_ID, PORTFOLIO, BUSINESSLINE)
+        is_min_rating: case when RATING_ID = min(RATING_ID) over (partition by COMPANY_ID, PORTFOLIO, BUSINESSLINE) then 1 else 0 end
+  
+  # Create a new table with just the fallback models (PD_MODEL_VERSION from record with lowest RATING_ID)
+  - aggregation:
+      alias: FALLBACK_MODELS
+      source: HIST_ALL_RATINGS
+      filter: is_min_rating = 1
       group:
       - HIST_ALL_RATINGS.COMPANY_ID
       - HIST_ALL_RATINGS.PORTFOLIO
       - HIST_ALL_RATINGS.BUSINESSLINE
       column_mapping:
-        min_rating_id: min(HIST_ALL_RATINGS.RATING_ID)
+        fallback_model: first(HIST_ALL_RATINGS.PD_MODEL_VERSION)
   
-  # Then join to get the PD_MODEL_VERSION from the record with the lowest RATING_ID
-  - join:
-      alias: FALLBACK_MODELS
-      left_source: MIN_RATING_ID
-      right_source: HIST_ALL_RATINGS
-      how: inner
-      condition:
-      - MIN_RATING_ID.COMPANY_ID = HIST_ALL_RATINGS.COMPANY_ID
-      - MIN_RATING_ID.PORTFOLIO = HIST_ALL_RATINGS.PORTFOLIO
-      - MIN_RATING_ID.BUSINESSLINE = HIST_ALL_RATINGS.BUSINESSLINE
-      - MIN_RATING_ID.min_rating_id = HIST_ALL_RATINGS.RATING_ID
-      column_mapping:
-        fallback_model: HIST_ALL_RATINGS.PD_MODEL_VERSION
-  
-  # Join the fallback models
+  # Join best performing models to main data
   - join:
       left_source: DIAL_FAIR_PD_UCR
-      right_source: FALLBACK_MODELS
-      how: left
-      condition:
-      - DIAL_FAIR_PD_UCR.COMPANY_ID = FALLBACK_MODELS.COMPANY_ID
-      - DIAL_FAIR_PD_UCR.PORTFOLIO = FALLBACK_MODELS.PORTFOLIO
-      - DIAL_FAIR_PD_UCR.BUSINESSLINE = FALLBACK_MODELS.BUSINESSLINE
-  
-  # Join the last performing models
-  - join:
       right_source: BEST_PERFORMING_MODELS
       how: left
       condition:
       - DIAL_FAIR_PD_UCR.COMPANY_ID = BEST_PERFORMING_MODELS.COMPANY_ID
       - DIAL_FAIR_PD_UCR.PORTFOLIO = BEST_PERFORMING_MODELS.PORTFOLIO
       - DIAL_FAIR_PD_UCR.BUSINESSLINE = BEST_PERFORMING_MODELS.BUSINESSLINE
+  
+  # Join fallback models to main data
+  - join:
+      right_source: FALLBACK_MODELS
+      how: left
+      condition:
+      - DIAL_FAIR_PD_UCR.COMPANY_ID = FALLBACK_MODELS.COMPANY_ID
+      - DIAL_FAIR_PD_UCR.PORTFOLIO = FALLBACK_MODELS.PORTFOLIO
+      - DIAL_FAIR_PD_UCR.BUSINESSLINE = FALLBACK_MODELS.BUSINESSLINE
 
 expressions:
   PD_RATING_ID: DIAL_FAIR_PD_UCR.PD_RATING_ID
@@ -211,7 +194,7 @@ expressions:
   APPROVER: DIAL_FAIR_PD_UCR.APPROVER
   LB_RATING_ID: DIAL_FAIR_PD_UCR.LB_RATING_ID
   
-  # Last Performing Model logic with proper data type handling and fallback mechanism
+  # Last Performing Model logic 
   LastPerformingModel: >
     CASE 
       WHEN DIAL_FAIR_PD_UCR.APPROVED_UCR not in ('6', '7', '8') THEN DIAL_FAIR_PD_UCR.PD_MODEL_VERSION 
