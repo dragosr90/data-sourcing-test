@@ -89,11 +89,6 @@ transformations:
         most_recent_date_by_group: max(PD_APPROVAL_DATE) over (partition by COMPANY_ID, PORTFOLIO, BUSINESSLINE)
         is_most_recent: case when PD_APPROVAL_DATE = max(PD_APPROVAL_DATE) over (partition by COMPANY_ID, PORTFOLIO, BUSINESSLINE) then 1 else 0 end
         rating_rank: row_number() over (partition by COMPANY_ID, PORTFOLIO, BUSINESSLINE, PD_APPROVAL_DATE order by RATING_ID desc)
-  
-  # Filter to get only the most recent performing ratings
-  - add_variables:
-      source: HIST_PERF_RATINGS
-      column_mapping:
         is_best_performing: case when is_most_recent = 1 and rating_rank = 1 then 1 else 0 end
   
   # Create a new table with just the best performing models
