@@ -70,7 +70,7 @@ sources:
   - alias: HIST_ALL_RATINGS
     columns:
     - COMPANY_ID
-    - PD_MODEL_VERSION  # Ensure this column is included
+    - PD_MODEL_VERSION
     - RATING_ID
     - PORTFOLIO
     - BUSINESSLINE
@@ -82,6 +82,42 @@ transformations:
       source: DIAL_FAIR_PD_UCR
       column_mapping:
         var_months_since_approval: months_between(current_date(), DIAL_FAIR_PD_UCR.PD_APPROVAL_DATE)
+  
+  # Select the most recent performing ratings - restructured to fix the error
+  # First, create a source for most recent performing dates
+  - aggregation:
+      alias: MOST_RECENT_DATES
+      source: HIST_PERF_RATINGS
+      group:
+      - HIST_PERF_RATINGS.COMPANY_ID
+      - HIST_PERF_RATINGS.PORTFOLIO
+      - HIST_PERF_RATINGS.BUSINESSLINE
+      column_mapping:
+        most_recent_date: max(HIST_PERF_RATINGS.PD_APPROVAL_DATE)
+  
+  # Then join to get all records with those dates
+  - join:
+      alias: MOST_RECENT_PERFORMING
+      left_source: MOST_RECENT_DATES
+      right_source: HIST_PERF_RATINGS
+      how: inner
+      condition:
+      - MOST_RECENT_DATES.COMPANY_ID = HIST_PERF_RATINGS.COMPANY_ID
+      - MOST_RECENT_DATES.PORTFOLIO = HIST_PERF_RATINGS.PORTFOLIO
+      - MOST_RECENT_DATES.BUSINESSLINE = HIST_PERF_RATINGS.BUSINESSLINE
+      - MOST_RECENT_DATES.most_recent_date = HIST_PERF_RATINGS.PD_APPROVAL_DATE
+  
+  # Get the model with highest rating_id among these most recent performing ratings
+  - aggregation:
+      alias: BEST_PERFORMING_MODELS
+      source: MOST_RECENT_PERFORMING
+      group:
+      - MOST_RECENT_PERFORMING.COMPANY_ID
+      - MOST_RECENT_PERFORMING.PORTFOLIO
+      - MOST_RECENT_PERFORMING.BUSINESSLINE
+      column_mapping:
+        max_rating_id: max(MOST_RECENT_PERFORMING.RATING_ID)
+        last_performing_model: max(MOST_RECENT_PERFORMING.PD_MODEL_VERSION)
   
   # For fallback, we first need to find the record with the lowest RATING_ID for each group
   - aggregation:
@@ -107,40 +143,6 @@ transformations:
       - MIN_RATING_ID.min_rating_id = HIST_ALL_RATINGS.RATING_ID
       column_mapping:
         fallback_model: HIST_ALL_RATINGS.PD_MODEL_VERSION
-  
-  # Find the most recent performing rating for each company+portfolio+businessline
-  - aggregation:
-      alias: MOST_RECENT_PERFORMING
-      source: HIST_PERF_RATINGS
-      group:
-      - HIST_PERF_RATINGS.COMPANY_ID
-      - HIST_PERF_RATINGS.PORTFOLIO
-      - HIST_PERF_RATINGS.BUSINESSLINE
-      column_mapping:
-        most_recent_date: max(HIST_PERF_RATINGS.PD_APPROVAL_DATE)
-
-  # Join back to get all performing ratings with that most recent date
-  - join:
-      left_source: MOST_RECENT_PERFORMING
-      right_source: HIST_PERF_RATINGS
-      how: inner
-      condition:
-      - MOST_RECENT_PERFORMING.COMPANY_ID = HIST_PERF_RATINGS.COMPANY_ID
-      - MOST_RECENT_PERFORMING.PORTFOLIO = HIST_PERF_RATINGS.PORTFOLIO
-      - MOST_RECENT_PERFORMING.BUSINESSLINE = HIST_PERF_RATINGS.BUSINESSLINE
-      - MOST_RECENT_PERFORMING.most_recent_date = HIST_PERF_RATINGS.PD_APPROVAL_DATE
-  
-  # Get the model with highest PD_MODEL_VERSION among these most recent performing ratings
-  - aggregation:
-      alias: BEST_PERFORMING_MODELS
-      group:
-      - HIST_PERF_RATINGS.COMPANY_ID
-      - HIST_PERF_RATINGS.PORTFOLIO
-      - HIST_PERF_RATINGS.BUSINESSLINE
-      column_mapping:
-        max_rating_id: max(HIST_PERF_RATINGS.RATING_ID)
-        # Use consistent data type for last performing model
-        last_performing_model: max(HIST_PERF_RATINGS.PD_MODEL_VERSION)
   
   # Join the fallback models
   - join:
