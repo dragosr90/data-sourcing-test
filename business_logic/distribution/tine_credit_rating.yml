@@ -1,0 +1,80 @@
+target: dist_{{ RUN_MONTH }}.tine_credit_rating
+
+sources:
+  - alias: ICR
+    source: enrich_{{ RUN_MONTH }}.issuer_credit_rating_{{ DELIVERY_ENTITY }}
+  - alias: ISU
+    source: enrich_{{ RUN_MONTH }}.issue_credit_rating_{{ DELIVERY_ENTITY }}
+  - alias: CCR
+    source: enrich_{{ RUN_MONTH }}.country_credit_rating
+
+transformations:
+  - union:
+      alias: CREDIT_RATING
+      allow_missing_columns: true
+      column_mapping:
+      - ICR
+      - ISU
+      - CCR
+
+expressions:
+  Credit_Rating_ID: Credit_Rating_ID
+  Credit_Fac_Agmt_ID: Credit_Fac_Agmt_ID
+  Global_Fac_ID: Global_Fac_ID
+  Cpty_ID: Cpty_ID
+  GlobalCounterPartyIdentifier: GlobalCounterPartyIdentifier
+  Delivery_Entity: delivery_entity
+  Reporting_Date: reporting_date
+  Ficth_CreditRating: Ficth_CreditRating
+  Fitch_ShortTerm_CreditRating: Fitch_ShortTerm_CreditRating
+  Fitch_ShortTerm_CreditRating_Foreign: Fitch_ShortTerm_CreditRating_Foreign
+  Fitch_ShortTerm_Rating_Foreign: Fitch_ShortTerm_Rating_Foreign
+  Fitch_ShortTerm_Rating_Local: Fitch_ShortTerm_Rating_Local
+  Fitch_LongTerm_IssuerDefaultRating_Foreign: Fitch_LongTerm_IssuerDefaultRating_Foreign
+  Snp_LongTermInsurerFinancialStrength_Local: Snp_LongTermInsurerFinancialStrength_Local
+  Fitch_Derivative_Cpty_Rating: Fitch_Derivative_Cpty_Rating
+  Fitch_LongTerm_IssuerDefaultRating_Local: Fitch_LongTerm_IssuerDefaultRating_Local
+  Snp_LongTerm_InsurerFinancialStrength_Local: Snp_LongTerm_InsurerFinancialStrength_Local
+  Snp_Credit_Rating: Snp_Credit_Rating
+  Snp_ShortTerm_CreditRrating: Snp_ShortTerm_CreditRrating
+  Snp_ShortTerm_IssuerCreditRating_Foreign: Snp_ShortTerm_IssuerCreditRating_Foreign
+  Snp_ShortTerm_IssuerCreditRating_Local: Snp_ShortTerm_IssuerCreditRating_Local
+  Snp_LongTerm_IssuerCreditRating_Foreign: Snp_LongTerm_IssuerCreditRating_Foreign
+  Snp_LongTerm_IssuerCreditRating_Local: Snp_LongTerm_IssuerCreditRating_Local
+  Snp_ShortTerm_FinancialInstitutionResolutionCptyRating_Foreign: Snp_ShortTerm_FinancialInstitutionResolutionCptyRating_Foreign
+  Snp_ShortTerm_FinancialInstitutionResolutionCptyRating_Local: Snp_ShortTerm_FinancialInstitutionResolutionCptyRating_Local
+  Moodys_Credit_Rating: Moodys_Credit_Rating
+  Moodys_ShortTerm_Credit_Rating: Moodys_ShortTerm_Credit_Rating
+  Moodys_Global_ShortTerm_Rating_Foreign: Moodys_Global_ShortTerm_Rating_Foreign
+  Moodys_Global_ShortTerm_Rating_Local: Moodys_Global_ShortTerm_Rating_Local
+  Moodys_Global_LongTerm_Rating_Foreign: Moodys_Global_LongTerm_Rating_Foreign
+  Moodys_Global_LongTerm_Rating_Local: Moodys_Global_LongTerm_Rating_Local
+  Kbra_ShortTerm_CreditRating: Kbra_ShortTerm_CreditRating
+  Kbra_Credit_Rating: Kbra_Credit_Rating
+  Fitch_InsurerFinancialStrength_Rating: Fitch_InsurerFinancialStrength_Rating
+  Ucr: Ucr
+  Fitch_ShortTerm_Rating_Foreign_dd: Fitch_ShortTerm_Rating_Foreign_dd
+  Fitch_ShortTerm_Rating_Local_dd: Fitch_ShortTerm_Rating_Local_dd
+  Fitch_LongTerm_Issuer_Default_Rating_Foreign_dd: Fitch_LongTerm_Issuer_Default_Rating_Foreign_dd
+  Fitch_LongTerm_Issuer_Default_Rating_Local_dd: Fitch_LongTerm_Issuer_Default_Rating_Local_dd
+  Moodys_Global_ShortTerm_Rating_foreign_dd: Moodys_Global_ShortTerm_Rating_foreign_dd
+  Moodys_Global_ShortTerm_Rating_local_dd: Moodys_Global_ShortTerm_Rating_local_dd
+  Moodys_Global_LongTerm_Rating_foreign_dd: Moodys_Global_LongTerm_Rating_foreign_dd
+  Moodys_Global_LongTerm_Rating_local_dd: Moodys_Global_LongTerm_Rating_local_dd
+  Snp_ShortTerm_IssuerCreditRating_Foreign_dd: Snp_ShortTerm_IssuerCreditRating_Foreign_dd
+  Snp_ShortTerm_IssuerCreditRating_Local_dd: Snp_ShortTerm_IssuerCreditRating_Local_dd
+  Snp_LongTerm_IssuerCreditRating_Foreign_dd: Snp_LongTerm_IssuerCreditRating_Foreign_dd
+  Snp_LongTerm_IssuerCreditRating_Local_dd: Snp_LongTerm_IssuerCreditRating_Local_dd
+  Moodys_LongTerm_FinancialStrength_Foreign: Moodys_LongTerm_FinancialStrength_Foreign
+  Moodys_LongTerm_FinancialStrength_Local: Moodys_LongTerm_FinancialStrength_Local
+  Moodys_ShortTerm_FinancialStrength_Foreign: Moodys_ShortTerm_FinancialStrength_Foreign
+  Moodys_ShortTerm_FinancialStrength_Local: Moodys_ShortTerm_FinancialStrength_Local
+  Snp_LongTerm_InsurerFinancialStrength_Foreign_dd: Snp_LongTerm_InsurerFinancialStrength_Foreign_dd
+  Snp_LongTerm_InsurerFinancialStrength_Local_dd: Snp_LongTerm_InsurerFinancialStrength_Local_dd
+  Moodys_LongTerm_FinancialStrength_Foreign_dd: Moodys_LongTerm_FinancialStrength_Foreign_dd
+  Moodys_LongTerm_FinancialStrength_Local_dd: Moodys_LongTerm_FinancialStrength_Local_dd
+  Moodys_ShortTerm_FinancialStrength_Foreign_dd: Moodys_ShortTerm_FinancialStrength_Foreign_dd
+  Moodys_ShortTerm_FinancialStrength_Local_dd: Moodys_ShortTerm_FinancialStrength_Local_dd
+  Fitch_InsurerFinancialStrength_Rating_dd: Fitch_InsurerFinancialStrength_Rating_dd
+  
+drop_duplicates: true
