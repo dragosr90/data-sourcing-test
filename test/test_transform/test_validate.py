@@ -52,6 +52,436 @@ def sources_joins():
     ("sources", "transformations", "output", "expected_logging"),
     [
         (
+            # Happy flow Union (column_mapping dict)
+            [
+                {
+                    "source": "source_tbl_A",
+                    "alias": "TBL_A",
+                    "columns": ["c1", "c2", "c3", "c4"],
+                },
+                {
+                    "source": "source_tbl_B",
+                    "alias": "TBL_B",
+                    "columns": ["c1", "c5", "c7"],
+                },
+                {
+                    "source": "source_tbl_C",
+                    "alias": "TBL_C",
+                    "columns": ["c2c", "c6", "c8"],
+                },
+            ],
+            [
+                {
+                    "union": {
+                        "source": "TBL_B",
+                        "alias": "TABLE_B_C",
+                        "column_mapping": [
+                            {"TBL_B": {"c1": "c1", "c5": "c5"}},
+                            {"TBL_C": {"c1": "c2c", "c5": "c8"}},
+                        ],
+                    }
+                }
+            ],
+            True,
+            [
+                "Union expressions validated successfully",
+                "Transformations validated successfully",
+            ],
+        ),
+        (
+            # Happy flow Union (column_mapping dict, upper and lowercase columns)
+            [
+                {
+                    "source": "source_tbl_A",
+                    "alias": "TBL_A",
+                    "columns": ["c1", "c5", "c7"],
+                },
+                {
+                    "source": "source_tbl_B",
+                    "alias": "TBL_B",
+                    "columns": ["c1", "C5", "c7"],
+                },
+                {
+                    "source": "source_tbl_C",
+                    "alias": "TBL_C",
+                    "columns": ["c1", "C5", "c7"],
+                },
+            ],
+            [
+                {
+                    "union": {
+                        "source": "TBL_B",
+                        "alias": "TABLE_B_C",
+                        "column_mapping": [
+                            {"TBL_A": {"c1": "c1", "C5": "c5"}},
+                            {"TBL_B": {"c1": "c1", "C5": "C5"}},
+                            {"TBL_C": {"c1": "c1", "C5": "C5"}},
+                        ],
+                    }
+                }
+            ],
+            True,
+            [
+                "Union expressions validated successfully",
+                "Transformations validated successfully",
+            ],
+        ),
+        (
+            # Happy flow Union (column_mapping list)
+            [
+                {
+                    "source": "source_tbl_B",
+                    "alias": "TBL_B",
+                    "columns": ["c1", "c2", "c3"],
+                },
+                {
+                    "source": "source_tbl_C",
+                    "alias": "TBL_C",
+                    "columns": ["c1", "c2", "c3"],
+                },
+            ],
+            [
+                {
+                    "union": {
+                        "alias": "TABLE_B_C",
+                        "source": "TBL_B",
+                        "column_mapping": ["TBL_B", "TBL_C"],
+                    }
+                }
+            ],
+            True,
+            [
+                "Union expressions validated successfully",
+                "Transformations validated successfully",
+            ],
+        ),
+        (
+            # Unhappy flow Union (column_mapping list) different column names
+            [
+                {
+                    "source": "source_tbl_B",
+                    "alias": "TBL_B",
+                    "columns": ["c1b", "c2b", "c3b"],
+                },
+                {
+                    "source": "source_tbl_C",
+                    "alias": "TBL_C",
+                    "columns": ["c1c", "c2c", "c3c"],
+                },
+            ],
+            [
+                {
+                    "union": {
+                        "alias": "TABLE_B_C",
+                        "source": "TBL_B",
+                        "column_mapping": ["TBL_B", "TBL_C"],
+                    }
+                }
+            ],
+            False,
+            [
+                "Column names and lengths are not identical across all tables.",
+            ],
+        ),
+        (
+            # Unhappy flow Union, different shapes (column_mapping list)
+            [
+                {
+                    "source": "source_tbl_B",
+                    "alias": "TBL_B",
+                    "columns": ["c1", "c2", "c5"],
+                },
+                {
+                    "source": "source_tbl_C",
+                    "alias": "TBL_C",
+                    "columns": ["c1", "c2", "c3", "c4"],
+                },
+            ],
+            [
+                {
+                    "union": {
+                        "alias": "TABLE_B_C",
+                        "column_mapping": ["TBL_B", "TBL_C"],
+                    }
+                }
+            ],
+            False,
+            [
+                "Column names and lengths are not identical across all tables.",
+            ],
+        ),
+        (
+            # Different shapes (column_mapping list), but validation=True since we allow missing columns  # noqa: E501
+            [
+                {
+                    "source": "source_tbl_B",
+                    "alias": "TBL_B",
+                    "columns": ["c1", "c2", "c5"],
+                },
+                {
+                    "source": "source_tbl_C",
+                    "alias": "TBL_C",
+                    "columns": ["c1", "c2", "c3", "c4"],
+                },
+            ],
+            [
+                {
+                    "union": {
+                        "alias": "TABLE_B_C",
+                        "column_mapping": ["TBL_B", "TBL_C"],
+                        "allow_missing_columns": True,
+                    }
+                }
+            ],
+            True,
+            [
+                "Union expressions validated successfully",
+                "Transformations validated successfully",
+            ],
+        ),
+        # No Existing source table Union
+        (
+            [
+                {
+                    "source": "source_tbl_A",
+                    "alias": "TBL_A",
+                    "columns": ["c1", "c2", "c3", "c4"],
+                },
+                {
+                    "source": "source_tbl_B",
+                    "alias": "TBL_B",
+                    "columns": ["c1", "c5", "c7"],
+                },
+                {
+                    "source": "source_tbl_C",
+                    "alias": "TBL_C",
+                    "columns": ["c2c", "c6", "c8"],
+                },
+            ],
+            [
+                {
+                    "union": {
+                        "source": "TBL_B",
+                        "alias": "TABLE_B_C",
+                        "column_mapping": [
+                            {"TBL_B": {"c1": "c1", "c5": "c5"}},
+                            {"TBL_D": {"c1": "c2c", "c5": "c8"}},
+                        ],
+                    }
+                }
+            ],
+            False,
+            ["Source table(s) ['TBL_D'] in TABLE_B_C not loaded."],
+        ),
+        # No Existing column Union
+        (
+            [
+                {
+                    "source": "source_tbl_A",
+                    "alias": "TBL_A",
+                    "columns": ["c1", "c2", "c3", "c4"],
+                },
+                {
+                    "source": "source_tbl_B",
+                    "alias": "TBL_B",
+                    "columns": ["c1", "c5", "c7"],
+                },
+                {
+                    "source": "source_tbl_C",
+                    "alias": "TBL_C",
+                    "columns": ["c2c", "c6", "c8"],
+                },
+            ],
+            [
+                {
+                    "union": {
+                        "source": "TBL_B",
+                        "alias": "TABLE_B_C",
+                        "column_mapping": [
+                            {"TBL_B": {"c1": "c1", "c5": "c5"}},
+                            {"TBL_C": {"c1": "c_not_existing", "c5": "c8"}},
+                        ],
+                    }
+                }
+            ],
+            False,
+            [
+                "Problem with expression(s):",
+                "c_not_existing: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column or function parameter with name `c_not_existing` cannot be resolved. Did you mean one of the following? [`c2c`, `c6`, `c8`].",  # noqa: E501
+            ],
+        ),
+        # Wrong column mapping Union
+        (
+            [
+                {
+                    "source": "source_tbl_A",
+                    "alias": "TBL_A",
+                    "columns": ["c1", "c2", "c3", "c4"],
+                },
+                {
+                    "source": "source_tbl_B",
+                    "alias": "TBL_B",
+                    "columns": ["c1", "c5", "c7"],
+                },
+                {
+                    "source": "source_tbl_C",
+                    "alias": "TBL_C",
+                    "columns": ["c2c", "c6", "c8"],
+                },
+            ],
+            [
+                {
+                    "union": {
+                        "source": "TBL_B",
+                        "alias": "TABLE_B_C",
+                        "column_mapping": [
+                            {"TBL_B": {"c1": "c1", "c5": "c5"}},
+                            {"TBL_C": {"c1_wrng": "c2c", "c5": "c8"}},
+                        ],
+                    }
+                }
+            ],
+            False,
+            ["Column names and lengths are not identical across all tables."],
+        ),
+        # Happy mixture column mapping Union
+        (
+            [
+                {
+                    "source": "source_tbl_B",
+                    "alias": "TBL_B",
+                    "columns": ["c1", "c5", "c7"],
+                },
+                {
+                    "source": "source_tbl_C",
+                    "alias": "TBL_C",
+                    "columns": ["c2c", "c6", "c8"],
+                },
+            ],
+            [
+                {
+                    "union": {
+                        "alias": "TABLE_B_C",
+                        "column_mapping": [
+                            "TBL_B",
+                            {"TBL_C": {"c1": "c2c", "c5": "c6", "c7": "c8"}},
+                        ],
+                    }
+                }
+            ],
+            True,
+            [
+                "Union expressions validated successfully",
+                "Transformations validated successfully",
+            ],
+        ),
+        # UnHappy mixture column mapping Union, wrong final column
+        (
+            [
+                {
+                    "source": "source_tbl_B",
+                    "alias": "TBL_B",
+                    "columns": ["c1", "c5", "c7"],
+                },
+                {
+                    "source": "source_tbl_C",
+                    "alias": "TBL_C",
+                    "columns": ["c2c", "c6", "c8"],
+                },
+            ],
+            [
+                {
+                    "union": {
+                        "alias": "TABLE_B_C",
+                        "column_mapping": [
+                            "TBL_B",
+                            {"TBL_C": {"c1_wrong": "c2c", "c5": "c6", "c7": "c8"}},
+                        ],
+                    }
+                }
+            ],
+            False,
+            [
+                "Column names and lengths are not identical across all tables.",
+            ],
+        ),
+        # UnHappy mixture column mapping Union, wrong final column but allow missing columns so validation = True  # noqa: E501
+        (
+            [
+                {
+                    "source": "source_tbl_B",
+                    "alias": "TBL_B",
+                    "columns": ["c1", "c5", "c7"],
+                },
+                {
+                    "source": "source_tbl_C",
+                    "alias": "TBL_C",
+                    "columns": ["c2c", "c6", "c8"],
+                },
+            ],
+            [
+                {
+                    "union": {
+                        "alias": "TABLE_B_C",
+                        "column_mapping": [
+                            "TBL_B",
+                            {"TBL_C": {"c1_wrong": "c2c", "c5": "c6", "c7": "c8"}},
+                        ],
+                        "allow_missing_columns": True,
+                    }
+                }
+            ],
+            True,
+            [
+                "Union expressions validated successfully",
+                "Transformations validated successfully",
+            ],
+        ),
+        # UnHappy mixture column mapping Union, not existing column in source
+        (
+            [
+                {
+                    "source": "source_tbl_B",
+                    "alias": "TBL_B",
+                    "columns": ["c1", "c5", "c7"],
+                },
+                {
+                    "source": "source_tbl_C",
+                    "alias": "TBL_C",
+                    "columns": ["c2c", "c6", "c8"],
+                },
+            ],
+            [
+                {
+                    "union": {
+                        "alias": "TABLE_B_C",
+                        "column_mapping": [
+                            "TBL_B",
+                            {"TBL_C": {"c1": "c2c", "c5": "c6", "c7": "c8_wrong"}},
+                        ],
+                    }
+                }
+            ],
+            False,
+            [
+                "Problem with expression(s):",
+                "c8_wrong: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column or function parameter with name `c8_wrong` cannot be resolved. Did you mean one of the following? [`c1`, `c5`, `TBL_C`.`c6`, `TBL_C`.`c8`, `TBL_C`.`c2c`].",  # noqa: E501
+            ],
+        ),
+    ],
+)
+def test_validate_union(
+    spark_session, sources, transformations, output, expected_logging, caplog
+):
+    logic = {"sources": sources, "transformations": transformations}
+    assert Transformations(spark_session, logic).validate() == output
+    assert caplog.messages == expected_logging
+
+
+@pytest.mark.parametrize(
+    ("sources", "transformations", "output", "expected_logging"),
+    [
+        (
             # Input `sources`` list
             [{"alias": "TBLA", "columns": ["a", "b"]}],
             # Input `joins`` list
@@ -240,150 +670,6 @@ def sources_joins():
             # Expected logging from input above
             [
                 "No transformation steps included",
-            ],
-        ),
-        (
-            # Happy flow Union
-            [
-                {
-                    "source": "source_tbl_A",
-                    "alias": "TBL_A",
-                    "columns": ["c1", "c2", "c3", "c4"],
-                },
-                {
-                    "source": "source_tbl_B",
-                    "alias": "TBL_B",
-                    "columns": ["c1", "c5", "c7"],
-                },
-                {
-                    "source": "source_tbl_C",
-                    "alias": "TBL_C",
-                    "columns": ["c2c", "c6", "c8"],
-                },
-            ],
-            [
-                {
-                    "union": {
-                        "source": "TBL_B",
-                        "alias": "TABLE_B_C",
-                        "column_mapping": {
-                            "TBL_B": {"c1": "c1", "c5": "c5"},
-                            "TBL_C": {"c1": "c2c", "c5": "c8"},
-                        },
-                    }
-                }
-            ],
-            True,
-            [
-                "Union expressions validated successfully",
-                "Transformations validated successfully",
-            ],
-        ),
-        # No Existing source table Union
-        (
-            [
-                {
-                    "source": "source_tbl_A",
-                    "alias": "TBL_A",
-                    "columns": ["c1", "c2", "c3", "c4"],
-                },
-                {
-                    "source": "source_tbl_B",
-                    "alias": "TBL_B",
-                    "columns": ["c1", "c5", "c7"],
-                },
-                {
-                    "source": "source_tbl_C",
-                    "alias": "TBL_C",
-                    "columns": ["c2c", "c6", "c8"],
-                },
-            ],
-            [
-                {
-                    "union": {
-                        "source": "TBL_B",
-                        "alias": "TABLE_B_C",
-                        "column_mapping": {
-                            "TBL_B": {"c1": "c1", "c5": "c5"},
-                            "TBL_D": {"c1": "c2c", "c5": "c8"},
-                        },
-                    }
-                }
-            ],
-            False,
-            ["Source table(s) ['TBL_D'] in TABLE_B_C not loaded."],
-        ),
-        # No Existing column Union
-        (
-            [
-                {
-                    "source": "source_tbl_A",
-                    "alias": "TBL_A",
-                    "columns": ["c1", "c2", "c3", "c4"],
-                },
-                {
-                    "source": "source_tbl_B",
-                    "alias": "TBL_B",
-                    "columns": ["c1", "c5", "c7"],
-                },
-                {
-                    "source": "source_tbl_C",
-                    "alias": "TBL_C",
-                    "columns": ["c2c", "c6", "c8"],
-                },
-            ],
-            [
-                {
-                    "union": {
-                        "source": "TBL_B",
-                        "alias": "TABLE_B_C",
-                        "column_mapping": {
-                            "TBL_B": {"c1": "c1", "c5": "c5"},
-                            "TBL_C": {"c1": "c_not_existing", "c5": "c8"},
-                        },
-                    }
-                }
-            ],
-            False,
-            [
-                "Problem with expression(s):",
-                "c_not_existing: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column or function parameter with name `c_not_existing` cannot be resolved. Did you mean one of the following? [`c2c`, `c6`, `c8`].",  # noqa: E501
-            ],
-        ),
-        # Wrong column mapping Union
-        (
-            [
-                {
-                    "source": "source_tbl_A",
-                    "alias": "TBL_A",
-                    "columns": ["c1", "c2", "c3", "c4"],
-                },
-                {
-                    "source": "source_tbl_B",
-                    "alias": "TBL_B",
-                    "columns": ["c1", "c5", "c7"],
-                },
-                {
-                    "source": "source_tbl_C",
-                    "alias": "TBL_C",
-                    "columns": ["c2c", "c6", "c8"],
-                },
-            ],
-            [
-                {
-                    "union": {
-                        "source": "TBL_B",
-                        "alias": "TABLE_B_C",
-                        "column_mapping": {
-                            "TBL_B": {"c1": "c1", "c5": "c5"},
-                            "TBL_C": {"c1_wrng": "c2c", "c5": "c8"},
-                        },
-                    }
-                }
-            ],
-            False,
-            [
-                "Column mapping names are not identical: [['c1', 'c5'], ['c1_wrng', 'c5']]"  # noqa: E501
             ],
         ),
         # Happy flow filter
@@ -829,7 +1115,7 @@ def test_validate_expressions(
             ],
             ["TBL_A.c1 = concat(TBL_B.c5, TBL_B.c7, TBL_C.c6, TBL_C.c9)"],
             False,
-            "concat(TBL_B.c5, TBL_B.c7, TBL_C.c6, TBL_C.c9): [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column or function parameter with name `TBL_C`.`c9` cannot be resolved. Did you mean one of the following? [`TBL_C`.`c6`, `TBL_C`.`c8`, `TBL_A`.`c1`, `TBL_B`.`c1`, `TBL_A`.`c2`].",  # noqa: E501
+            "TBL_A.c1 = concat(TBL_B.c5, TBL_B.c7, TBL_C.c6, TBL_C.c9): [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column or function parameter with name `TBL_C`.`c9` cannot be resolved. Did you mean one of the following? [`TBL_C`.`c6`, `TBL_C`.`c8`, `TBL_A`.`c1`, `TBL_B`.`c1`, `TBL_A`.`c2`].",  # noqa: E501
         ),
         # Unhappy with some SQL injection
         (
@@ -855,8 +1141,7 @@ def test_validate_expressions(
             ],
             ["TBL_B.c1 = TBL_A.c1;DROP TABLE TBL_B"],
             False,
-            "TBL_A.c1;DROP TABLE TBL_B: "
-            "[PARSE_SYNTAX_ERROR] Syntax error at or near ';'.(line 1, pos 9)",
+            "TBL_B.c1 = TBL_A.c1;DROP TABLE TBL_B: [PARSE_SYNTAX_ERROR] Syntax error at or near ';'.(line 1, pos 19)",  # noqa: E501
         ),
     ],
 )
@@ -990,7 +1275,7 @@ def test_yaml(business_logic, validation_output, first_log, last_log, caplog):
                 "Join condition expressions validated successfully",
                 "Joins validated successfully",
                 "Problem with expression(s):",
-                "TBLD.col02: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column or function parameter with name `TBLD`.`col02` cannot be resolved. Did you mean one of the following? [`TBLA`.`col02`, `TBLB`.`col02`, `TBLA`.`col01`, `TBLB`.`col01`, `TBLA`.`col03`].",  # noqa: E501
+                "TBLA.col02 = TBLD.col02: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column or function parameter with name `TBLD`.`col02` cannot be resolved. Did you mean one of the following? [`TBLA`.`col02`, `TBLB`.`col02`, `TBLA`.`col01`, `TBLB`.`col01`, `TBLA`.`col03`].",  # noqa: E501
             ],
         ),
         (  # UnHappy flow 2, join condition not possible, non existing column
@@ -1010,7 +1295,7 @@ def test_yaml(business_logic, validation_output, first_log, last_log, caplog):
                 "Join condition expressions validated successfully",
                 "Joins validated successfully",
                 "Problem with expression(s):",
-                "TBLC.col09: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column or function parameter with name `TBLC`.`col09` cannot be resolved. Did you mean one of the following? [`TBLC`.`col01`, `TBLC`.`col02`, `TBLB`.`col09`, `TBLC`.`col10`, `TBLA`.`col01`].",  # noqa: E501
+                "TBLA.col02 = TBLC.col09: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column or function parameter with name `TBLC`.`col09` cannot be resolved. Did you mean one of the following? [`TBLC`.`col01`, `TBLC`.`col02`, `TBLB`.`col09`, `TBLC`.`col10`, `TBLA`.`col01`].",  # noqa: E501
             ],
         ),
         (  # Unhappy flow, duplicate in multiple potential ambiguous table aliases in right_sources  # noqa: E501
@@ -1140,6 +1425,7 @@ def test_ambiguous_columns(
             """
             sources:
                 - alias: TBLA
+                  columns: ["col01", "col02", "col03"]
                   source: table_a
 
             transformations:
