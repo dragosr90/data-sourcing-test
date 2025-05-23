@@ -1,0 +1,66 @@
+target: enrich_{{ RUN_MONTH }}.facility_with_dummy_fbs
+
+sources:
+  - alias: SSF_CF
+    source: enrich_{{ RUN_MONTH }}.enrich_ssf_cf_fbs
+    filter: PlNplIndicator='NPL'
+  - alias: SSF_CA_DUMMY_FAC
+    source: enrich_{{ RUN_MONTH }}.enrich_ssf_ca_dummy_fac_fbs
+
+transformations:
+  - union:
+      alias: FACILITY
+      column_mapping:
+      - SSF_CF
+      - SSF_CA_DUMMY_FAC
+      allow_missing_columns: true
+
+expressions:
+  reporting_date: reporting_date
+  delivery_entity: delivery_entity
+  PlNplIndicator: PlNplIndicator
+  credit_fac_agmt_uid: credit_fac_agmt_uid
+  credit_fac_agmt_id: credit_fac_agmt_id
+  cpty_id: cpty_id
+  credit_agmt_id: credit_agmt_id
+  credit_fac_agmt_ssc: credit_fac_agmt_ssc
+  global_fac_id: global_fac_id
+  basel_product_type: basel_product_type
+  committed_ind: committed_ind
+  typeofcommitment: typeofcommitment
+  revolvingindicator: revolvingindicator
+  original_ccy: original_ccy
+  pre_calculated_ead: pre_calculated_ead
+  credit_limit: credit_limit
+  accrued_fees: accrued_fees
+  drawn_amount: drawn_amount
+  undrawn_amount: undrawn_amount
+  ead_model: ead_model
+  dummy_fac_flag: dummy_fac_flag
+  lgd_class: lgd_class
+  lgd_downturn_with_cons: lgd_downturn_with_cons
+  lgd_model: lgd_model
+  lgd_source_system_id: lgd_source_system_id
+  ifrs9_risk_stage: ifrs9_risk_stage
+  loan_loss_allowance_amount: loan_loss_allowance_amount
+  multi_obligor_fac_flag: multi_obligor_fac_flag
+  process_filter_code: process_filter_code
+  ray_prefix: ray_prefix
+  reporting_entity: reporting_entity
+  secz_invl_type: secz_invl_type
+  single_drawdown_flag: single_drawdown_flag
+  sourced_exemption_id: sourced_exemption_id
+  ar_start_date: ar_start_date
+  term_out_date: term_out_date
+  maturity_date: maturity_date
+  credit_risk_approach_type: credit_risk_approach_type
+  specialisedlendingtype: specialisedlendingtype
+  highqualityindicator: highqualityindicator
+  infrastructsupportingfactor: infrastructsupportingfactor
+  landacquisitiondevconstexpofin: landacquisitiondevconstexpofin
+  projectfinancephaseindicator: projectfinancephaseindicator
+  slotting_category: slotting_category
+  incomeproducingrestfinance: incomeproducingrestfinance
+  ar_participation_type: ar_participation_type
+  ar_financial_status_type: ar_financial_status_type
+  book_type: book_type
