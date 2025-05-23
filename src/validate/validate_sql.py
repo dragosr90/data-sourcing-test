@@ -6,6 +6,7 @@ from pyspark.sql.functions import lit
 from pyspark.sql.types import StructType
 from pyspark.sql.utils import AnalysisException, ParseException
 
+from src.config.business_logic import SourceConfig
 from src.utils.alias_util import get_aliases_on_dataframe
 from src.utils.logging_util import get_logger
 
@@ -14,12 +15,14 @@ logger = get_logger()
 
 def generate_dummy_dataframe(
     spark: SparkSession,
-    sources: list[dict],
+    sources: list[SourceConfig],
     extra_cols: list[str] | None = None,
+    *,
+    case_sensitive: bool = False,
 ) -> DataFrame:
     if extra_cols is None:
         extra_cols = []
-    tablecolumn_list = []
+    tablecolumn_list: list[str] = []
     for source in sources:
         alias = source["alias"]
         if "columns" in source:
@@ -38,18 +41,24 @@ def generate_dummy_dataframe(
                 logger.exception(
                     f"Failed to retrieve columns for source {source['source']}"
                 )
+
     if not tablecolumn_list and not extra_cols:
         return spark.createDataFrame([], StructType([]))
-    extra_cols_with_alias = [c for c in extra_cols if "." in c]
+    tablecolumn_list = process_dummy_columns(
+        tablecolumn_list, case_sensitive=case_sensitive
+    )
+    extra_cols_with_alias = process_dummy_columns(
+        extra_cols, case_sensitive=case_sensitive
+    )
     extra_cols_no_alias = set(extra_cols) - set(extra_cols_with_alias)
+
+    available_columns = sorted({*tablecolumn_list, *extra_cols_with_alias})
     empty_data = spark.createDataFrame(
         [],
-        ", ".join(
-            [f"`{col}`: string" for col in tablecolumn_list + extra_cols_with_alias]
-        ),
+        ", ".join([f"`{col}`: string" for col in available_columns]),
     )
     data = get_aliases_on_dataframe(
-        data=empty_data, input_field_names=tablecolumn_list + extra_cols_with_alias
+        data=empty_data, input_field_names=available_columns
     )
     return (
         data.withColumns({extra_col: lit("") for extra_col in extra_cols_no_alias})
@@ -88,7 +97,7 @@ def validate_expressions(
 
 def validate_sql_expressions(
     spark: SparkSession,
-    sources: list[dict],
+    sources: list[SourceConfig],
     expressions: dict[str, str],
     extra_cols: list[str] | None = None,
     group: list[str] | None = None,
@@ -113,3 +122,13 @@ def validate_sql_expressions(
         logger.error("\n".join([f"{k}: {v}" for k, v in errors.items()]))
         return False
     return True
+
+
+def process_dummy_columns(
+    input_cols: list[str], *, case_sensitive: bool = False
+) -> list[str]:
+    return [
+        f"{c.split('.')[0]}.{c.split('.')[1].lower() if not case_sensitive else c}"
+        for c in input_cols
+        if "." in c
+    ]
