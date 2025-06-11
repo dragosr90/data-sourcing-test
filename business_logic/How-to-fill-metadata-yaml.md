@@ -244,8 +244,8 @@ aggregated datasets at the beginning of the transformation steps.
 This step contain.
 
 - `alias`: Name of union dataset
-- `column_mapping`: mapping of columns from input datasets
-- `source`: Source alias of first Union dataset, mandatory if it is the first transformation step.
+- `column_mapping`: list of input tables for the union or a list of mappings with underlying column mappings
+- `allow_missing_columns`: True if missing columns are alowed in one of the underlying union tables. Default `False`
 
 
 ```yaml
@@ -266,12 +266,12 @@ transformations:
   - union:
       alias: TABLE_B_C
       column_mapping:
-        TABLE_B:
-          col01: cast(col01 as string)
-          col04: col04   
-        TABLE_C:
-          col01: col01          
-          col04: col05 / col06
+        - TABLE_B:
+            col01: cast(col01 as string)
+            col04: col04   
+        - TABLE_C:
+            col01: col01          
+            col04: col05 / col06
 ```
 
 In this example, two tables are vertically stacked based on columns `col01` and `col02`.
@@ -279,6 +279,37 @@ Then the new table `TABLE_B_C` is added to the list of sources' configuration.
 Note that the column keys on the union data level should be the same for all source
 data sets. For instance, like the example above `col01` and `col02` for source `TABLE_B`
 and `TABLE_C` to union to `TABLE_B_C`. 
+
+An alternative approach:
+
+```yaml
+sources:
+  - alias: TBL_B
+    columns:
+    - col01
+    - col04
+    source: table_b
+  - alias: TBL_C
+    columns:
+    - col01
+    - col04
+    - col05
+    source: table_c
+
+transformations:
+  - union:
+      alias: TABLE_B_C
+      column_mapping:
+      - TABLE_B
+      - TABLE_C
+      # Required since not all columns are the same for input sources
+      allow_missing_columns: true
+```
+
+In this example, two tables are vertically stacked based on columns `col01`,  `col04` and `col05`.
+Note that the `col05` does not exist in `TABLE_B`, so these values are filled with `null`. 
+
+If `allow_missing_columns` parameter is set to `false` the pipeline will fail in this example.
 
 
 ## Expressions
