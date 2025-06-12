@@ -1,0 +1,112 @@
+target: enrich_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_exemption_claim_counterparty
+
+sources:
+  - alias: SSF_CP
+    columns:
+    - BaselIICounterpartyType
+    - DeliveryEntity
+    - ExemptionFromAdvancedInternalRatingBasedApproach
+    - LocalId
+    - ReportingDate
+    - SourceSystemIdentifier
+    source: stg_{{ RUN_MONTH }}.ssf_{{ DELIVERY_ENTITY }}_cp
+  - alias: 1286EXMP
+    # TODO: change this to integration once integration dataset is ready
+    columns:
+    - basel_approach
+    - b2_cpty_type_id
+    - b2_pd_type_id
+    - ctpty_ssc
+    - ctpty_uid
+    - exemption_condition_id
+    - exemption_id
+    - exemption_name
+    - intercompany_flag
+    - lgd_rtg_model
+    - pl_npl_indicator
+    - reporting_entity_id
+    - sourced_exemption_id
+    - specialisedlendingtype
+    - cr_pd_program
+    - pd_rtg_model
+    source: stg_{{ RUN_MONTH }}.bsl_andes_1286_b2_exmp_cond
+  - alias: PD_UCR
+    columns:
+    - CounterpartyID
+    - CounterpartySourceSystemIdentifier
+    - LastPerformingPDModelCode
+    - PDModelCode
+    source: enrich_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_pd_ucr
+  - alias: IC
+    columns:
+    - CounterpartyID
+    - CounterpartySourceSystemIdentifier
+    - IntercompanyFlag
+    source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_intercompany
+
+transformations:
+  - join:
+      left_source: SSF_CP
+      right_source: PD_UCR
+      how: inner
+      condition:
+        - SSF_CP.LocalId = PD_UCR.CounterpartyID
+        - SSF_CP.SourceSystemIdentifier = PD_UCR.CounterpartySourceSystemIdentifier
+  - join:
+      right_source: IC
+      how: left
+      condition:
+        - SSF_CP.LocalId = IC.CounterpartyID
+        - SSF_CP.SourceSystemIdentifier = IC.CounterpartySourceSystemIdentifier
+  - join:
+      right_source: 1286EXMP
+      condition:
+        - 1286EXMP.reporting_entity_id = '*'
+        - 1286EXMP.b2_pd_type_id = '*'
+        - 1286EXMP.lgd_rtg_model = '*'
+        - 1286EXMP.pl_npl_indicator = '*'
+        - 1286EXMP.specialisedlendingtype = '*'
+        - 1286EXMP.cr_pd_program = '*'
+        - 1286EXMP.pd_rtg_model IN (
+            PD_UCR.PDModelCode,
+            PD_UCR.LastPerformingPDModelCode,
+            '*'
+          )
+        - 1286EXMP.b2_cpty_type_id IN (
+            SSF_CP.BaselIICounterpartyType,
+            '*'
+          )
+        - 1286EXMP.intercompany_flag = 
+            CASE WHEN IC.IntercompanyFlag = 'Y' THEN IC.IntercompanyFlag ELSE '*' END
+        - UPPER(1286EXMP.sourced_exemption_id) IN (
+            UPPER(SSF_CP.ExemptionFromAdvancedInternalRatingBasedApproach),
+            '*'
+          )
+        - 1286EXMP.ctpty_ssc IN (
+            'BCA',
+            '*'
+          )
+        - 1286EXMP.ctpty_ssc || 1286EXMP.ctpty_uid = SSF_CP.LocalId OR
+          1286EXMP.ctpty_uid = '*'
+      how: left
+  - filter:
+      conditions:
+        - 1286EXMP.exemption_condition_id IS NOT NULL
+
+expressions:
+  DeliveryEntity: SSF_CP.DeliveryEntity
+  ReportingDate: SSF_CP.ReportingDate
+  CounterpartyID: SSF_CP.LocalId
+  CounterpartySourceSystemIdentifier: SSF_CP.SourceSystemIdentifier
+  PDModelCode: PD_UCR.PDModelCode
+  LastPerformingPDModelCode: PD_UCR.LastPerformingPDModelCode
+  IntercompanyFlag: IC.IntercompanyFlag
+  SourcedExemptionId: SSF_CP.ExemptionFromAdvancedInternalRatingBasedApproach
+  BaselCreditRiskApproach: 1286EXMP.basel_approach
+  ExemptionConditionId: 1286EXMP.exemption_condition_id
+  ExemptionId: 1286EXMP.exemption_id
+  ExemptionName: 1286EXMP.exemption_name
+  Rank: ROW_NUMBER() OVER (
+          PARTITION BY SSF_CP.LocalId
+          ORDER BY 1286EXMP.exemption_condition_id
+        )
