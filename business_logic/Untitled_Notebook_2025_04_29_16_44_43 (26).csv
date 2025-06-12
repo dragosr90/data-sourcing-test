@@ -1,0 +1,11 @@
+EXEMPTION_CONDITION_ID,EXEMPTION_ID,EXEMPTION_NAME,EXEMPTION_END_DATE,SOURCE_SYS_COMP_ID,PD_RTG_MODEL,REPORTING_ENTITY_ID,B2_PD_TYPE_ID,RPRT_CAR_ACCCODE_ID,B2_CPTY_TYPE_ID,CR_PD_PROGRAM,CUSTOMER_MARKET_SEGMENT_ID,LGD_RTG_MODEL,LEGAL_ENTITY,EX_FBN_FLAG,INTERCOMPANY_FLAG,CTPTY_UID,CTPTY_SSC,BASEL_APPROACH,EC_MODEL_INPUT_INDICATOR,EC_PROXIED_INDICATOR,TIME_STAMP,MIN_TURNOVER,SOURCED_EXEMPTION_ID,PL_NPL_INDICATOR,SPECIALISEDLENDINGTYPE
+100,CCP,Central Counterparties,9999-12-31,*,*,*,*,*,QCCP,*,*,*,*,*,*,*,*,STD,N,Y,2023-11-29T23:12:47Z,*,*,*,*
+101,CCP,Central Counterparties,9999-12-31,*,*,*,*,*,NQCCP,*,*,*,*,*,*,*,*,STD,N,Y,2023-11-29T23:12:47Z,*,*,*,*
+102,Ex_Non_Material,Non Material Entity,9999-12-31,*,*,220100,*,*,*,*,*,*,*,*,*,*,*,STD,N,Y,2023-11-29T23:12:47Z,*,*,*,*
+103,Ex_Non_Material,Non Material Entity,9999-12-31,*,*,425055,*,*,*,*,*,*,*,*,*,*,*,STD,N,Y,2023-11-29T23:12:47Z,*,*,*,*
+104,Ex_Non_Material,Non Material Entity,9999-12-31,*,*,425057,*,*,*,*,*,*,*,*,*,*,*,STD,N,Y,2023-11-29T23:12:47Z,*,*,*,*
+105,Ex_Non_Material,Non Material Entity,9999-12-31,*,*,208239,*,*,*,*,*,*,*,*,*,*,*,STD,N,Y,2023-11-29T23:12:47Z,*,*,*,*
+106,Ex_Non_Material,Non Material Entity,9999-12-31,*,*,202970,*,*,*,*,*,*,*,*,*,*,*,STD,N,Y,2023-11-29T23:12:47Z,*,*,*,*
+107,Ex_Non_Material,Non Material Entity,9999-12-31,*,*,208289,*,*,*,*,*,*,*,*,*,*,*,STD,N,Y,2023-11-29T23:12:47Z,*,*,*,*
+108,Ex_Non_Material,Non Material Entity,9999-12-31,*,*,220069,*,*,*,*,*,*,*,*,*,*,*,STD,N,Y,2023-11-29T23:12:47Z,*,*,*,*
+109,Ex_Non_Material,Non Material Entity,9999-12-31,*,*,230050,*,*,*,*,*,*,*,*,*,*,*,STD,N,Y,2023-11-29T23:12:47Z,*,*,*,*
