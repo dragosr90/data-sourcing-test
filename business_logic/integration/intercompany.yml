@@ -1,0 +1,49 @@
+target: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_intercompany
+
+sources:
+  - alias: SSF_CP
+    columns:
+    - DeliveryEntity
+    - LocalId
+    - InsighterId
+    - SourceSystemIdentifier
+    filter: InsighterId is not NULL
+    source: stg_{{ RUN_MONTH }}.ssf_{{ DELIVERY_ENTITY }}_cp
+  - alias: MDM_1028
+    columns:
+    - source_sys_uid
+    - legal_entity
+    - primary_name
+    - b2_cpty_type
+    - incorporation_country
+    - aab_gbl_industry_class
+    - parent_le
+    - reporting_entity
+    - le_type
+    source: stg_{{ RUN_MONTH }}.bsl_ggop_1028_aab_legal_entity
+
+transformations:
+  - join:
+      left_source: SSF_CP
+      right_source: MDM_1028
+      condition:
+        - SSF_CP.InsighterId  = MDM_1028.source_sys_uid 
+      how: left
+
+expressions:
+  DeliveryEntity: SSF_CP.DeliveryEntity
+  CounterpartyID: SSF_CP.LocalId
+  CounterpartySourceSystemIdentifier: SSF_CP.SourceSystemIdentifier
+  InsighterId: SSF_CP.InsighterId
+  GlobalCounterPartyIdentifier: MDM_1028.legal_entity
+  InterCompanyFlag: case when MDM_1028.source_sys_uid is not null then 'Y' else 'N' end
+  PrimaryName: MDM_1028.primary_name
+  BaselCounterpartyType: MDM_1028.b2_cpty_type
+  IncorparationCountry: MDM_1028.incorporation_country
+  RealCompanyActivitySector: MDM_1028.aab_gbl_industry_class
+  UltimateParent: MDM_1028.parent_le
+  ReportingEntity: MDM_1028.reporting_entity
+  InterCompanyType: MDM_1028.le_type
+
+
+  
