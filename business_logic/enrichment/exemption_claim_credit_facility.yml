@@ -1,0 +1,225 @@
+# Exemption Claim Credit Facility Structure
+# This YAML defines the data processing pipeline for exemption claim credit facility data
+
+target: enrich_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_exemption_claim_credit_facility
+
+sources:
+  # Main facility data source
+  - alias: FACILITY
+    columns:
+    - DeliveryEntity
+    - ReportingDate
+    - ReportingEntity
+    - BaselIIProductType
+    - PlNplIndicator
+    - SpecialisedLendingType
+    - ExemptionFromAdvancedInternalRatingBasedApproach
+    - LocalFacilityIdentifier
+    - SourceSystemIdentifier
+    source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_integrated_facility
+
+  # Credit facility complex mapping source
+  - alias: CPXCF
+    columns:
+    - CreditFacility
+    - CreditFacilitySourceSystemIdentifier
+    - ParticipatingCounterparty
+    - ParticipatingCounterpartySourceSystemIdentifier
+    source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_integrated_cpxcf
+
+  # PD UCR enrichment data
+  - alias: PD_UCR
+    columns:
+    - CounterpartyID
+    - CounterpartySourceSystemIdentifier
+    - PDModelCode
+    - LastPerformingPDModelCode
+    source: enrich_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_pd_ucr
+
+  # Intercompany flag data
+  - alias: INTERCOMPANY
+    columns:
+    - CounterpartyID
+    - CounterpartySourceSystemIdentifier
+    - InterCompanyFlag
+    source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_intercompany
+
+  # LGD model data
+  - alias: LGD
+    columns:
+    - CreditFacilityID
+    - CreditFacilitySourceSystemIdentifier
+    - CounterpartyID
+    - CounterpartySourceSystemIdentifier
+    - LGDModelCode
+    - LGDClass
+    - DownturnLossGivenDefault
+    - ThroughTheCycleLossGivenDefault
+    - LossGivenDefaultRatingApprovalDate
+    - LossGivenDefaultExpiryDate
+    - LGDMarginOfConservatism
+    - LGDType
+    - LGDSource
+    source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_lgd
+
+  # SSF Counterparty data for Basel calculations
+  - alias: SSF_CP
+    columns:
+    - BaselIICounterpartyType
+    - DeliveryEntity
+    - ExemptionFromAdvancedInternalRatingBasedApproach
+    - LocalId
+    - ReportingDate
+    - SourceSystemIdentifier
+    source: stg_{{ RUN_MONTH }}.ssf_{{ DELIVERY_ENTITY }}_cp
+
+  # Exemption mapping table (1286)
+  - alias: EXMP_1286
+    columns:
+    - basel_approach
+    - b2_cpty_type_id
+    - b2_pd_type_id
+    - ctpty_ssc
+    - ctpty_uid
+    - exemption_condition_id
+    - exemption_id
+    - exemption_name
+    - intercompany_flag
+    - lgd_rtg_model
+    - pl_npl_indicator
+    - reporting_entity_id
+    - sourced_exemption_id
+    - specialisedlendingtype
+    - cr_pd_program
+    - pd_rtg_model
+    source: stg_{{ RUN_MONTH }}.bsl_andes_1286_b2_exmp_cond
+
+transformations:
+  # Join facility with credit facility complex mapping
+  - join:
+      left_source: FACILITY
+      right_source: CPXCF
+      condition:
+        - FACILITY.LocalFacilityIdentifier = CPXCF.CreditFacility
+        - FACILITY.SourceSystemIdentifier = CPXCF.CreditFacilitySourceSystemIdentifier
+      how: left
+
+  # Join with PD UCR data using the counterparty from CPXCF
+  - join:
+      right_source: PD_UCR
+      condition:
+        - CPXCF.ParticipatingCounterparty = PD_UCR.CounterpartyID
+        - CPXCF.ParticipatingCounterpartySourceSystemIdentifier = PD_UCR.CounterpartySourceSystemIdentifier
+      how: left
+
+  # Join with intercompany flag using the counterparty from CPXCF
+  - join:
+      right_source: INTERCOMPANY
+      condition:
+        - CPXCF.ParticipatingCounterparty = INTERCOMPANY.CounterpartyID
+        - CPXCF.ParticipatingCounterpartySourceSystemIdentifier = INTERCOMPANY.CounterpartySourceSystemIdentifier
+      how: left
+
+  # Join with LGD data - using both facility and counterparty keys
+  - join:
+      right_source: LGD
+      condition:
+        - FACILITY.LocalFacilityIdentifier = LGD.CreditFacilityID
+        - FACILITY.SourceSystemIdentifier = LGD.CreditFacilitySourceSystemIdentifier
+        - CPXCF.ParticipatingCounterparty = LGD.CounterpartyID
+        - CPXCF.ParticipatingCounterpartySourceSystemIdentifier = LGD.CounterpartySourceSystemIdentifier
+      how: left
+
+  # Complex transformation for Basel exemption calculations
+  # First join SSF_CP with PD_UCR
+  - join:
+      left_source: SSF_CP
+      right_source: PD_UCR
+      condition:
+        - SSF_CP.LocalId = PD_UCR.CounterpartyID
+        - SSF_CP.SourceSystemIdentifier = PD_UCR.CounterpartySourceSystemIdentifier
+      how: inner
+      alias: SSF_CP_PD
+
+  # Join with intercompany for SSF_CP
+  - join:
+      left_source: SSF_CP_PD
+      right_source: INTERCOMPANY
+      condition:
+        - SSF_CP_PD.LocalId = INTERCOMPANY.CounterpartyID
+        - SSF_CP_PD.SourceSystemIdentifier = INTERCOMPANY.CounterpartySourceSystemIdentifier
+      how: left
+      alias: SSF_CP_PD_IC
+
+  # Complex join with exemption mapping table
+  - join:
+      left_source: SSF_CP_PD_IC
+      right_source: EXMP_1286
+      condition:
+        - EXMP_1286.reporting_entity_id = '*'
+        - EXMP_1286.b2_pd_type_id = '*'
+        - EXMP_1286.lgd_rtg_model = '*'
+        - EXMP_1286.pl_npl_indicator = '*'
+        - EXMP_1286.specialisedlendingtype = '*'
+        - EXMP_1286.cr_pd_program = '*'
+        - EXMP_1286.pd_rtg_model IN (SSF_CP_PD_IC.PDModelCode, SSF_CP_PD_IC.LastPerformingPDModelCode, '*')
+        - EXMP_1286.b2_cpty_type_id IN (SSF_CP_PD_IC.BaselIICounterpartyType, '*')
+        - EXMP_1286.intercompany_flag = CASE WHEN SSF_CP_PD_IC.InterCompanyFlag = 'Y' THEN SSF_CP_PD_IC.InterCompanyFlag ELSE '*' END
+        - UPPER(EXMP_1286.sourced_exemption_id) IN (UPPER(SSF_CP_PD_IC.ExemptionFromAdvancedInternalRatingBasedApproach), '*')
+        - EXMP_1286.ctpty_ssc IN ('BCA', '*')
+        - EXMP_1286.ctpty_ssc || EXMP_1286.ctpty_uid = SSF_CP_PD_IC.LocalId OR EXMP_1286.ctpty_uid = '*'
+      how: left
+      alias: SSF_CP_EXEMPTION
+
+  # Filter to keep only valid exemptions
+  - filter:
+      alias: SSF_CP_EXEMPTION_VALID
+      conditions:
+        - SSF_CP_EXEMPTION.exemption_condition_id IS NOT NULL
+
+  # Add rank variable for exemption priority
+  - add_variables:
+      Rank: ROW_NUMBER() OVER (PARTITION BY SSF_CP_EXEMPTION_VALID.LocalId ORDER BY SSF_CP_EXEMPTION_VALID.exemption_condition_id)
+
+  # Join the exemption results back to main data
+  - join:
+      right_source: SSF_CP_EXEMPTION_VALID
+      condition:
+        - CPXCF.ParticipatingCounterparty = SSF_CP_EXEMPTION_VALID.LocalId
+        - CPXCF.ParticipatingCounterpartySourceSystemIdentifier = SSF_CP_EXEMPTION_VALID.SourceSystemIdentifier
+        - Rank = 1
+      how: left
+
+expressions:
+  # Direct mappings from facility table
+  DeliveryEntity: FACILITY.DeliveryEntity
+  ReportingDate: FACILITY.ReportingDate
+  ReprtingEntity: FACILITY.ReportingEntity
+  BaselProductType: FACILITY.BaselIIProductType
+  PlNplIndicator: FACILITY.PlNplIndicator
+  SpecialisedLendingType: FACILITY.SpecialisedLendingType
+  SourcedExemptionId: FACILITY.ExemptionFromAdvancedInternalRatingBasedApproach
+  
+  # Credit facility identifiers from CPXCF join
+  CreditFacilityID: CPXCF.ParticipatingCounterparty
+  CreditFacilitySourceSystemIdentifier: CPXCF.ParticipatingCounterpartySourceSystemIdentifier
+  
+  # Counterparty data from PD UCR
+  CounterpartyID: PD_UCR.CounterpartyID
+  CounterpartySourceSystemIdentifier: PD_UCR.CounterpartySourceSystemIdentifier
+  PDModelCode: PD_UCR.PDModelCode
+  LastPerformingPDModelCode: PD_UCR.LastPerformingPDModelCode
+  
+  # Other enriched data
+  IntercompanyFlag: INTERCOMPANY.InterCompanyFlag
+  LGDModelCode: LGD.LGDModelCode
+  
+  # Basel exemption calculations from SSF_CP_EXEMPTION_VALID
+  BaselCreditRiskApproach: SSF_CP_EXEMPTION_VALID.basel_approach
+  ExemptionConditionId: SSF_CP_EXEMPTION_VALID.exemption_condition_id
+  ExemptionId: SSF_CP_EXEMPTION_VALID.exemption_id
+  ExemptionName: SSF_CP_EXEMPTION_VALID.exemption_name
+  Rank: Rank
+
+# Optional: Remove duplicates if needed
+drop_duplicates: true
