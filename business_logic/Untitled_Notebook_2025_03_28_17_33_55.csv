@@ -1,0 +1,11 @@
+DeliveryEntity,ReportingDate,ReportingEntity,CreditFacilityID,CreditFacilitySourceSystemIdentifier,GlobalFacilityIdentifier,CounterpartyID,CounterpartySourceSystemIdentifier,BaselCounterpartyType,ProbabilityOfDefaultModel,PlNplIndicator,LGDModelCode,LGDClass,DownturnLossGivenDefault,ThroughTheCycleLossGivenDefault,LossGivenDefaultRatingApprovalDate,LossGivenDefaultExpiryDate,LGDMarginOfConservatism,LGDType,LGDSource
+FBS,2024-12-31,425140,DUM0050116479744,AAB.SYS.1861,null,null,null,null,null,null,LNOMO401,L1,0.75,0.75,2024-12-31,null,null,null,null
+FBS,2024-12-31,425140,DUM0050136295525,AAB.SYS.1861,null,null,null,null,null,null,LNOMO401,L1,0.75,0.75,2024-12-31,null,null,null,null
+FBS,2024-12-31,425140,DUM0050140075585,AAB.SYS.1861,null,null,null,null,null,null,LNOMO401,L1,0.75,0.75,2024-12-31,null,null,null,null
+FBS,2024-12-31,525140,DUM0050812487982,AAB.SYS.1861,null,null,null,null,null,null,LNOMO401,L1,0.75,0.75,2024-12-31,null,null,null,null
+FBS,2024-12-31,425140,DUM0050895179679,AAB.SYS.1861,null,null,null,null,null,null,LNOMO401,L1,0.75,0.75,2024-12-31,null,null,null,null
+FBS,2024-12-31,525140,F050100001203,AAB.SYS.1861,null,BCA2036398073,AAB.SYS.1861,null,null,PL,null,null,0.0,null,null,null,null,null,SSF_FBS
+FBS,2024-12-31,525140,F050100001238,AAB.SYS.1861,null,BCA2036719430,AAB.SYS.1861,null,null,PL,null,null,0.0,null,null,null,null,null,SSF_FBS
+FBS,2024-12-31,525140,F050100001351,AAB.SYS.1861,null,BCA2036735266,AAB.SYS.1861,null,null,PL,null,null,0.0,null,null,null,null,null,SSF_FBS
+FBS,2024-12-31,525140,F050100001394,AAB.SYS.1861,null,BCA2036755097,AAB.SYS.1861,null,null,PL,null,null,0.0,null,null,null,null,null,SSF_FBS
+FBS,2024-12-31,525140,F050100001432,AAB.SYS.1861,null,BCA2036736823,AAB.SYS.1861,null,null,PL,null,null,0.0,null,null,null,null,null,SSF_FBS
