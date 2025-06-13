@@ -1,0 +1,66 @@
+2:
+Read business logic YAML
+
+business_logic_dict = parse_yaml(
+    yaml_path=f"{stage}/{target_mapping}",
+    parameters={
+        "RUN_MONTH": run_month,
+        "DELIVERY_ENTITY": delivery_entity,
+    },
+)
+
+2025-06-13 07:57:10 [INFO] standardize_delivery_entity:  Standardized delivery entity 'FBS' to 'fbs'
+2025-06-13 07:57:11 [INFO] send_command:  Exception while sending command.
+Traceback (most recent call last):
+  File "/databricks/python/lib/python3.11/site-packages/IPython/core/interactiveshell.py", line 3526, in run_code
+    exec(code_obj, self.user_global_ns, self.user_ns)
+  File "/home/spark-a09c82f5-d47a-41c4-9d96-89/.ipykernel/15381/command-5360238388540804-405503223", line 1, in <module>
+    business_logic_dict = parse_yaml(
+                          ^^^^^^^^^^^
+  File "/Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/src/utils/parse_yaml.py", line 63, in parse_yaml
+    for key in business_logic["expressions"]:
+               ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+TypeError: 'NoneType' object is not subscriptable
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/databricks/spark/python/lib/py4j-0.10.9.7-src.zip/py4j/clientserver.py", line 528, in send_command
+    self.socket.sendall(command.encode("utf-8"))
+ConnectionResetError: [Errno 104] Connection reset by peer
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/databricks/spark/python/lib/py4j-0.10.9.7-src.zip/py4j/java_gateway.py", line 1038, in send_command
+    response = connection.send_command(command)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/databricks/spark/python/lib/py4j-0.10.9.7-src.zip/py4j/clientserver.py", line 531, in send_command
+    raise Py4JNetworkError(
+py4j.protocol.Py4JNetworkError: Error while sending
+
+TypeError: 'NoneType' object is not subscriptable
+---------------------------------------------------------------------------
+TypeError                                 Traceback (most recent call last)
+File <command-5360238388540804>, line 1
+----> 1 business_logic_dict = parse_yaml(
+      2     yaml_path=f"{stage}/{target_mapping}",
+      3     parameters={
+      4         "RUN_MONTH": run_month,
+      5         "DELIVERY_ENTITY": delivery_entity,
+      6     },
+      7 )
+
+File /Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/src/utils/parse_yaml.py:63, in parse_yaml(yaml_path, parameters)
+     55             yaml_str = re.sub(
+     56                 rf"{{{{\s*{parameter}\s*}}}}",
+     57                 str(value),
+     58                 yaml_str,
+     59                 flags=re.IGNORECASE,
+     60             )
+     62 business_logic = yaml.safe_load(yaml_str)
+---> 63 for key in business_logic["expressions"]:
+     64     business_logic["expressions"][key] = str(business_logic["expressions"][key])
+     66 return alias_hyphen_columns(business_logic)
+
+TypeError: 'NoneType' object is not subscriptable
