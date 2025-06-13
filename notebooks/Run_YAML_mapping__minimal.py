@@ -6,8 +6,7 @@ import sys
 from src.extract.master_data_sql import GetIntegratedData
 from src.transform.table_write_and_comment import write_and_comment
 from src.transform.transform_business_logic_sql import transform_business_logic_sql
-from src.utils.get_catalog import get_catalog
-from src.utils.parameter_utils import parse_delivery_entity
+from src.utils.get_env import get_catalog
 from src.utils.parse_yaml import parse_yaml
 from src.validate.run_all import validate_business_logic_mapping
 
@@ -43,9 +42,30 @@ dbutils.widgets.text(
     "202408",
     "3. Run Month",
 )
-dbutils.widgets.text(
+
+delivery_entities = [
+    "AACF",
+    "ALFAM",
+    "BEAM",
+    "BRDWH",
+    "ENTRACARD",
+    "FBS",
+    "IHUB-AU1",
+    "IHUB-BE1",
+    "IHUB-CN1",
+    "IHUB-DE2",
+    "IHUB-FR1",
+    "IHUB-HK2",
+    "IHUB-SG1",
+    "IHUB-US1",
+    "LEASE",
+    "VIENNA",
+]
+
+dbutils.widgets.dropdown(
     "delivery_entity",
     "",
+    ["", *sorted(delivery_entities)],
     "4. Delivery Entity",
 )
 
@@ -54,35 +74,36 @@ target_mapping = dbutils.widgets.get("target_mapping")
 run_month = dbutils.widgets.get("run_month")
 delivery_entity = dbutils.widgets.get("delivery_entity")
 
-# Get both original and standardized delivery entity in one call
-original_delivery_entity, standardized_delivery_entity = parse_delivery_entity(
-    delivery_entity
-)
-
 # COMMAND ----------
 
 # DBTITLE 1,Read business logic YAML
+
 business_logic_dict = parse_yaml(
     yaml_path=f"{stage}/{target_mapping}",
     parameters={
         "RUN_MONTH": run_month,
-        "DELIVERY_ENTITY": standardized_delivery_entity,
+        "DELIVERY_ENTITY": delivery_entity,
     },
 )
 
 # COMMAND ----------
 
 # DBTITLE 1,Validate YAML
+
 validate_business_logic_mapping(spark, business_logic_dict)
+
 
 # COMMAND ----------
 
 # DBTITLE 1,Load sources and apply filters and joins
+
 data = GetIntegratedData(spark, business_logic_dict).get_integrated_data()
+
 
 # COMMAND ----------
 
 # DBTITLE 1,Apply expressions
+
 transformed_data = transform_business_logic_sql(
     data,
     business_logic_dict,
@@ -91,10 +112,11 @@ transformed_data = transform_business_logic_sql(
 # COMMAND ----------
 
 # DBTITLE 1,Write output to Delta table and comment lineage information
+
 write_and_comment(
     spark,
     business_logic_dict,
     transformed_data,
     run_month=run_month,
-    source_system=standardized_delivery_entity,
+    source_system=delivery_entity,
 )
