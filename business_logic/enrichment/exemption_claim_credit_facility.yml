@@ -13,6 +13,8 @@ sources:
     - ExemptionFromAdvancedInternalRatingBasedApproach
     - LocalFacilityIdentifier
     - SourceSystemIdentifier
+    - SubFacilityFlag
+    filter: SubFacilityFlag = 0
     source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_integrated_facility
 
   # Credit facility complex mapping source
@@ -22,6 +24,8 @@ sources:
     - CreditFacilitySourceSystemIdentifier
     - ParticipatingCounterparty
     - ParticipatingCounterpartySourceSystemIdentifier
+    - CounterpartyRole
+    filter: CounterpartyRole = 'MAIN'
     source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_integrated_cpxcf
 
   # SSF Counterparty data for Basel calculations
