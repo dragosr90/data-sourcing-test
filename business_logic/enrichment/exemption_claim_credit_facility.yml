@@ -135,39 +135,30 @@ transformations:
   - join:
       right_source: 1286EXMP
       condition:
-        - 1286EXMP.reporting_entity_id = '*'
-        - 1286EXMP.b2_pd_type_id = '*'
-        - 1286EXMP.lgd_rtg_model = '*'
-        - 1286EXMP.pl_npl_indicator = '*'
-        - 1286EXMP.specialisedlendingtype = '*'
+        - 1286EXMP.reporting_entity_id = FACILITY.ReportingEntity or 1286EXMP.reporting_entity_id = '*'
+        - 1286EXMP.b2_pd_type_id = FACILITY.BaselIIProductType or 1286EXMP.b2_pd_type_id = '*'
+        - 1286EXMP.lgd_rtg_model = LGD.LGDModelCode or 1286EXMP.lgd_rtg_model = '*'
+        - 1286EXMP.pl_npl_indicator = FACILITY.PlNplIndicator or 1286EXMP.pl_npl_indicator = '*'
+        - 1286EXMP.specialisedlendingtype = FACILITY.SpecialisedLendingType or 1286EXMP.specialisedlendingtype = '*'
         - 1286EXMP.cr_pd_program = '*'
-        - 1286EXMP.pd_rtg_model IN (
-            PD_UCR.PDModelCode,
-            PD_UCR.LastPerformingPDModelCode,
-            '*'
-          )
-        - 1286EXMP.b2_cpty_type_id IN (
-            SSF_CP.BaselIICounterpartyType,
-            '*'
-          )
-        - 1286EXMP.intercompany_flag = 
-            CASE WHEN IC.InterCompanyFlag = 'Y' THEN IC.InterCompanyFlag ELSE '*' END
-        - UPPER(1286EXMP.sourced_exemption_id) IN (
-            UPPER(SSF_CP.ExemptionFromAdvancedInternalRatingBasedApproach),
-            '*'
-          )
-        - 1286EXMP.ctpty_ssc IN (
-            SSF_CP.SourceSystemIdentifier,
-            '*'
-          )
-        - 1286EXMP.ctpty_ssc || 1286EXMP.ctpty_uid = SSF_CP.LocalId OR
-          1286EXMP.ctpty_uid = '*'
+        - 1286EXMP.pd_rtg_model = PD_UCR.PDModelCode or 1286EXMP.pd_rtg_model = PD_UCR.LastPerformingPDModelCode or 1286EXMP.pd_rtg_model = '*'
+        - 1286EXMP.b2_cpty_type_id = SSF_CP.BaselIICounterpartyType or 1286EXMP.b2_cpty_type_id = '*'
+        - 1286EXMP.intercompany_flag = case when IC.InterCompanyFlag = 'Y' then 'Y' else '*' end
+        - upper(1286EXMP.sourced_exemption_id) = upper(coalesce(FACILITY.ExemptionFromAdvancedInternalRatingBasedApproach, SSF_CP.ExemptionFromAdvancedInternalRatingBasedApproach)) or 1286EXMP.sourced_exemption_id = '*'
+        - 1286EXMP.ctpty_ssc = case when FACILITY.DeliveryEntity = 'FBS' then 'BCA'
+                                     when FACILITY.DeliveryEntity = 'LEASE' then 'SBC'
+                                     when FACILITY.DeliveryEntity = 'IHUB-BE1' then 'YDV'
+                                     when FACILITY.DeliveryEntity = 'IHUB-DE2' then 'PCC'
+                                     when FACILITY.DeliveryEntity = 'IHUB-FR1' then 'PDC'
+                                end
+            or 1286EXMP.ctpty_ssc = '*'
+        - 1286EXMP.ctpty_ssc || 1286EXMP.ctpty_uid = SSF_CP.LocalId 
+          or 1286EXMP.ctpty_uid = SSF_CP.LocalId
+          or substr(1286EXMP.ctpty_uid, 1, 8) = substr(SSF_CP.LocalId, 3)
+          or 1286EXMP.ctpty_uid = '*'
       how: left
 
-  # Filter to keep only valid exemptions
-  - filter:
-      conditions:
-        - 1286EXMP.exemption_condition_id IS NOT NULL
+  # Filter to keep only valid exemptions - removed since we'll use filter_target instead
 
 expressions:
   # Direct mappings from facility table
@@ -180,8 +171,8 @@ expressions:
   SourcedExemptionId: FACILITY.ExemptionFromAdvancedInternalRatingBasedApproach
   
   # Credit facility identifiers from CPXCF join
-  CreditFacilityID: CPXCF.ParticipatingCounterparty
-  CreditFacilitySourceSystemIdentifier: CPXCF.ParticipatingCounterpartySourceSystemIdentifier
+  CreditFacilityID: CPXCF.CreditFacility
+  CreditFacilitySourceSystemIdentifier: CPXCF.CreditFacilitySourceSystemIdentifier
   
   # Counterparty data from PD UCR
   CounterpartyID: PD_UCR.CounterpartyID
@@ -199,8 +190,11 @@ expressions:
   ExemptionId: 1286EXMP.exemption_id
   ExemptionName: 1286EXMP.exemption_name
   Rank: ROW_NUMBER() OVER (
-          PARTITION BY SSF_CP.LocalId
+          PARTITION BY FACILITY.LocalFacilityIdentifier
           ORDER BY 1286EXMP.exemption_condition_id
         )
+
+filter_target:
+- 1286EXMP.exemption_condition_id is not null
 
 drop_duplicates: true
