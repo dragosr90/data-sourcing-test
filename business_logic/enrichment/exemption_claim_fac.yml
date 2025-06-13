@@ -1,0 +1,68 @@
+target: enrich_{{ RUN_MONTH }}.exemption_claim_fac_{{ DELIVERY_ENTITY }}
+
+sources:
+  - alias: CF
+    source: enrich_{{ RUN_MONTH }}.facility_with_dummy_{{ DELIVERY_ENTITY }}
+  - alias: CP
+    source: enrich_{{ RUN_MONTH }}.enrich_ssf_cp_{{ DELIVERY_ENTITY }}
+  - alias: 1286EXMP
+    source: stg_{{ RUN_MONTH }}.bsl_andes_1286_b2_exmp_cond
+
+transformations:
+  - join:
+      left_source: CF
+      right_source: CP
+      condition:
+        - CF.reporting_date = CP.reporting_date
+        - CF.delivery_entity = CP.delivery_entity
+        - CF.cpty_id = CP.cpty_id
+      how: left 
+  - join:
+      right_source: 1286EXMP
+      condition:
+        - 1286EXMP.REPORTING_ENTITY_ID=CF.reporting_entity or 1286EXMP.REPORTING_ENTITY_ID='*'
+        - 1286EXMP.B2_PD_TYPE_ID=CF.basel_product_type or 1286EXMP.B2_PD_TYPE_ID='*'
+        - 1286EXMP.LGD_RTG_MODEL=CF.lgd_model or 1286EXMP.LGD_RTG_MODEL='*'
+        - 1286EXMP.PL_NPL_INDICATOR=CF.PlNplIndicator or 1286EXMP.PL_NPL_INDICATOR='*' 
+        - 1286EXMP.SPECIALISEDLENDINGTYPE=CF.specialisedlendingtype or 1286EXMP.SPECIALISEDLENDINGTYPE='*'
+        - 1286EXMP.CR_PD_PROGRAM='*'
+        - 1286EXMP.PD_RTG_MODEL=CP.probability_of_default_model or 1286EXMP.PD_RTG_MODEL=CP.last_performing_model or 1286EXMP.PD_RTG_MODEL='*'
+        - 1286EXMP.B2_CPTY_TYPE_ID=CP.basel_cpty_type or 1286EXMP.B2_CPTY_TYPE_ID='*'
+        - 1286EXMP.INTERCOMPANY_FLAG=case when CP.financial_institution_flag=1 then 'Y' else '*' end
+        - upper(1286EXMP.SOURCED_EXEMPTION_ID)=upper(coalesce(CF.sourced_exemption_id,CP.sourced_exemption_id)) or 1286EXMP.SOURCED_EXEMPTION_ID='*' 
+        - 1286EXMP.CTPTY_SSC=case when CP.delivery_entity = 'FBS' then 'BCA'
+                                  when CP.delivery_entity = 'LEASE' then 'SBC'
+                                  when CP.delivery_entity = 'IHUB-BE1' then 'YDV'
+                                  when CP.delivery_entity = 'IHUB-DE2' then 'PCC'
+                                  when CP.delivery_entity = 'IHUB-FR1' then 'PDC'
+                             end
+            or 1286EXMP.CTPTY_SSC='*'
+        - 1286EXMP.CTPTY_SSC || 1286EXMP.CTPTY_UID=CP.cpty_uid 
+          or 1286EXMP.CTPTY_UID=CP.cpty_uid
+          or substr(1286EXMP.CTPTY_UID,1,8)=substr(CP.CPTY_UID,3)
+          or 1286EXMP.CTPTY_UID='*'
+      how: left 
+
+expressions:
+  reporting_date: CF.reporting_date
+  delivery_entity: CF.delivery_entity
+  cpty_id: CP.cpty_id
+  cpty_uid: CP.cpty_uid
+  credit_fac_agmt_id: CF.credit_fac_agmt_id
+  probability_of_default_model: CP.probability_of_default_model
+  last_performing_model: CP.last_performing_model
+  financial_institution_flag: CP.financial_institution_flag
+  reporting_entity: CF.reporting_entity
+  basel_product_type: CF.basel_product_type
+  lgd_model: CF.lgd_model
+  PlNplIndicator: CF.PlNplIndicator
+  sourced_exemption_id: coalesce(CF.sourced_exemption_id,CP.sourced_exemption_id)
+  specialisedlendingtype: CF.specialisedlendingtype
+  basel_approach: 1286EXMP.basel_approach
+  exemption_condition_id: 1286EXMP.exemption_condition_id
+  exemption_id: 1286EXMP.exemption_id
+  exemption_name: 1286EXMP.exemption_name
+  rank_num: ROW_NUMBER() OVER (PARTITION BY  CF.credit_fac_agmt_id ORDER BY 1286EXMP.EXEMPTION_CONDITION_ID) 
+
+filter_target:
+- 1286EXMP.EXEMPTION_CONDITION_ID is not null
