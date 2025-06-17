@@ -1,8 +1,15 @@
+description: This YAML is designed to integrate all the facilities coming from SSF and dummy facilities created on our side. It also derives the HighestExistingFacility, SubFacilityFlag, and linked CounterpartyID.
+
 target: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_integrated_facility
 
 sources:
+  - alias: SSF_DUMMY_FACILITY
+    source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_dummy_facility
   - alias: CF1
     source: stg_{{ RUN_MONTH }}.ssf_{{ DELIVERY_ENTITY }}_cf
+  - alias: INT_CPXCF
+    filter: CounterpartyRole = 'MAIN'
+    source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_integrated_cpxcf
   - alias: CF2
     filter: CreditAgreement = 'N'
     source: stg_{{ RUN_MONTH }}.ssf_{{ DELIVERY_ENTITY }}_cf
@@ -12,8 +19,6 @@ sources:
   - alias: CF4
     filter: CreditAgreement = 'N'
     source: stg_{{ RUN_MONTH }}.ssf_{{ DELIVERY_ENTITY }}_cf
-  - alias: SSF_DUMMY_FACILITY
-    source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_dummy_facility
 
 transformations:
   - union:
@@ -24,6 +29,12 @@ transformations:
       allow_missing_columns: true
   - join:
       left_source: COMBINED_FACILITIES
+      right_source: INT_CPXCF
+      condition:
+        - COMBINED_FACILITIES.LocalFacilityIdentifier = INT_CPXCF.CreditFacility
+        - COMBINED_FACILITIES.SourceSystemIdentifier = INT_CPXCF.CreditFacilitySourceSystemIdentifier
+      how: left
+  - join:
       right_source: CF2
       condition:
         - COMBINED_FACILITIES.ParentCreditFacility = CF2.LocalFacilityIdentifier
@@ -146,5 +157,7 @@ expressions:
                                   when COMBINED_FACILITIES.ParentCreditFacility is null then 'level 0 parent found'
                             end
   SubFacilityFlag: case when CF2.LocalFacilityIdentifier is not null then 1 else 0 end
+  CounterpartyID: INT_CPXCF.ParticipatingCounterparty
+  CounterpartySourceSystemIdentifier: INT_CPXCF.ParticipatingCounterpartySourceSystemIdentifier
 
 drop_duplicates: true
