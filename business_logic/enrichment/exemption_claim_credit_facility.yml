@@ -1,7 +1,9 @@
+description: Generic functionality YAML for Exemption Claim logic, based on existing exemption_claim YAMLs
+
 target: enrich_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_exemption_claim_credit_facility
 
 sources:
-  # Main facility data source
+  # Main facility data source - already includes CounterpartyID and CounterpartySourceSystemIdentifier
   - alias: FACILITY
     columns:
     - DeliveryEntity
@@ -14,19 +16,10 @@ sources:
     - LocalFacilityIdentifier
     - SourceSystemIdentifier
     - SubFacilityFlag
+    - CounterpartyID
+    - CounterpartySourceSystemIdentifier
     filter: SubFacilityFlag = 0
     source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_integrated_facility
-
-  # Credit facility complex mapping source
-  - alias: CPXCF
-    columns:
-    - CreditFacility
-    - CreditFacilitySourceSystemIdentifier
-    - ParticipatingCounterparty
-    - ParticipatingCounterpartySourceSystemIdentifier
-    - CounterpartyRole
-    filter: CounterpartyRole = 'MAIN'
-    source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_integrated_cpxcf
 
   # SSF Counterparty data for Basel calculations
   - alias: SSF_CP
@@ -88,37 +81,29 @@ sources:
     source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_lgd
 
 transformations:
-  # Join facility with credit facility complex mapping
-  - join:
-      left_source: FACILITY
-      right_source: CPXCF
-      condition:
-        - FACILITY.LocalFacilityIdentifier = CPXCF.CreditFacility
-        - FACILITY.SourceSystemIdentifier = CPXCF.CreditFacilitySourceSystemIdentifier
-      how: left
-
   # Join with SSF_CP to get counterparty data
   - join:
+      left_source: FACILITY
       right_source: SSF_CP
       condition:
-        - CPXCF.ParticipatingCounterparty = SSF_CP.LocalId
-        - CPXCF.ParticipatingCounterpartySourceSystemIdentifier = SSF_CP.SourceSystemIdentifier
+        - FACILITY.CounterpartyID = SSF_CP.LocalId
+        - FACILITY.CounterpartySourceSystemIdentifier = SSF_CP.SourceSystemIdentifier
       how: left
 
   # Join with PD UCR data
   - join:
       right_source: PD_UCR
       condition:
-        - CPXCF.ParticipatingCounterparty = PD_UCR.CounterpartyID
-        - CPXCF.ParticipatingCounterpartySourceSystemIdentifier = PD_UCR.CounterpartySourceSystemIdentifier
+        - FACILITY.CounterpartyID = PD_UCR.CounterpartyID
+        - FACILITY.CounterpartySourceSystemIdentifier = PD_UCR.CounterpartySourceSystemIdentifier
       how: left
 
   # Join with intercompany flag
   - join:
       right_source: IC
       condition:
-        - CPXCF.ParticipatingCounterparty = IC.CounterpartyID
-        - CPXCF.ParticipatingCounterpartySourceSystemIdentifier = IC.CounterpartySourceSystemIdentifier
+        - FACILITY.CounterpartyID = IC.CounterpartyID
+        - FACILITY.CounterpartySourceSystemIdentifier = IC.CounterpartySourceSystemIdentifier
       how: left
 
   # Join with LGD data
@@ -127,8 +112,6 @@ transformations:
       condition:
         - FACILITY.LocalFacilityIdentifier = LGD.CreditFacilityID
         - FACILITY.SourceSystemIdentifier = LGD.CreditFacilitySourceSystemIdentifier
-        - CPXCF.ParticipatingCounterparty = LGD.CounterpartyID
-        - CPXCF.ParticipatingCounterpartySourceSystemIdentifier = LGD.CounterpartySourceSystemIdentifier
       how: left
 
   # Join with exemption mapping table
@@ -158,10 +141,7 @@ transformations:
           or 1286EXMP.ctpty_uid = '*'
       how: left
 
-  # Filter to keep only valid exemptions - removed since we'll use filter_target instead
-
 expressions:
-  # Direct mappings from facility table
   DeliveryEntity: FACILITY.DeliveryEntity
   ReportingDate: FACILITY.ReportingDate
   ReportingEntity: FACILITY.ReportingEntity
@@ -169,22 +149,14 @@ expressions:
   PlNplIndicator: FACILITY.PlNplIndicator
   SpecialisedLendingType: FACILITY.SpecialisedLendingType
   SourcedExemptionId: FACILITY.ExemptionFromAdvancedInternalRatingBasedApproach
-  
-  # Credit facility identifiers from CPXCF join
-  CreditFacilityID: CPXCF.CreditFacility
-  CreditFacilitySourceSystemIdentifier: CPXCF.CreditFacilitySourceSystemIdentifier
-  
-  # Counterparty data from PD UCR
-  CounterpartyID: PD_UCR.CounterpartyID
-  CounterpartySourceSystemIdentifier: PD_UCR.CounterpartySourceSystemIdentifier
+  CreditFacilityID: FACILITY.LocalFacilityIdentifier
+  CreditFacilitySourceSystemIdentifier: FACILITY.SourceSystemIdentifier
+  CounterpartyID: FACILITY.CounterpartyID
+  CounterpartySourceSystemIdentifier: FACILITY.CounterpartySourceSystemIdentifier
   PDModelCode: PD_UCR.PDModelCode
   LastPerformingPDModelCode: PD_UCR.LastPerformingPDModelCode
-  
-  # Other enriched data
-  IntercompanyFlag: IC.InterCompanyFlag
+  financial_institution_flag: IC.InterCompanyFlag
   LGDModelCode: LGD.LGDModelCode
-  
-  # Basel exemption calculations
   BaselCreditRiskApproach: 1286EXMP.basel_approach
   ExemptionConditionId: 1286EXMP.exemption_condition_id
   ExemptionId: 1286EXMP.exemption_id
