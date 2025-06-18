@@ -19,6 +19,116 @@ MIN_ARGS_FOR_RUN_ID = 1
 MIN_ARGS_FOR_DEADLINE = 2
 
 
+def process_single_file(
+    extraction: ExtractNonSSFData,
+    file: dict[str, str],
+    log_config: ProcessLogConfig,
+) -> None:
+    """Process a single file through all stages.
+    
+    Args:
+        extraction: ExtractNonSSFData instance
+        file: Dictionary with source_system and file_name
+        log_config: Process log configuration
+    """
+    source_system = file["source_system"]
+    file_name = file["file_name"]
+    file_comment = f"Processing {Path(file_name).stem}"
+    
+    # Start the process for corresponding trigger file
+    append_to_process_log(
+        **log_config,
+        source_system=source_system,
+        status="Started",
+        comments=file_comment,
+    )
+
+    # 1. Initial checks
+    if not extraction.initial_checks(
+        file_name=file_name, source_system=source_system
+    ):
+        append_to_process_log(
+            **log_config,
+            source_system=source_system,
+            file_delivery_status=NonSSFStepStatus.INIT_CHECKS,
+            comments=file_comment,
+            status="Failed",
+        )
+
+    # 2. Convert to parquet and place in month container
+    if not extraction.convert_to_parquet(
+        source_system=source_system,
+        file_name=file_name,
+    ):
+        append_to_process_log(
+            **log_config,
+            source_system=source_system,
+            file_delivery_status=NonSSFStepStatus.CONVERTED_PARQUET,
+            comments=file_comment,
+            status="Failed",
+        )
+
+    # 3. Move source file to processed folder
+    if not extraction.move_source_file(
+        source_system=source_system, file_name=file_name
+    ):
+        append_to_process_log(
+            **log_config,
+            source_system=source_system,
+            file_delivery_status=NonSSFStepStatus.MOVED_SRC,
+            comments=file_comment,
+            status="Failed",
+        )
+
+    # 4. Load to staging table
+    data = extraction.extract_from_parquet(
+        source_system=source_system, file_name=file_name
+    )
+    stg_table_name = extraction.get_staging_table_name(file_name)
+    if not extraction.save_to_stg_table(
+        data=data,
+        stg_table_name=stg_table_name,
+        source_system=source_system,
+        file_name=Path(file_name).stem,
+    ):
+        append_to_process_log(
+            **log_config,
+            source_system=source_system,
+            file_delivery_status=NonSSFStepStatus.LOADED_STG,
+            comments=file_comment,
+            status="Failed",
+        )
+
+    # 5. DQ checks
+    elif not extraction.validate_data_quality(
+        source_system=source_system,
+        file_name=Path(file_name).stem,
+        stg_table_name=stg_table_name,
+    ):
+        append_to_process_log(
+            **log_config,
+            source_system=source_system,
+            file_delivery_status=NonSSFStepStatus.CHECKED_DQ,
+            comments=file_comment,
+            status="Failed",
+        )
+
+    # Complete the process for corresponding trigger file
+    extraction.update_log_metadata(
+        source_system=source_system,
+        key=Path(file_name).stem,
+        file_delivery_status=NonSSFStepStatus.COMPLETED,
+        result="SUCCESS",
+        comment=file_comment,
+    )
+    append_to_process_log(
+        **log_config,
+        source_system=source_system,
+        comments=file_comment,
+        status="Completed",
+    )
+
+
 def non_ssf_load(
     spark: SparkSession,
     run_month: str,
@@ -102,102 +212,9 @@ def non_ssf_load(
     if deadline_passed:
         check_deadline_violations(extraction, files_per_delivery_entity, log_config)
 
+    # Process each file
     for file in files_per_delivery_entity:
-        source_system = file["source_system"]
-        file_name = file["file_name"]
-        file_comment = f"Processing {Path(file_name).stem}"
-        # Start the process for corresponding trigger file
-        append_to_process_log(
-            **log_config,
-            source_system=source_system,
-            status="Started",
-            comments=file_comment,
-        )
-
-        # 1. Initial checks
-        if not extraction.initial_checks(
-            file_name=file_name, source_system=source_system
-        ):
-            append_to_process_log(
-                **log_config,
-                source_system=source_system,
-                file_delivery_status=NonSSFStepStatus.INIT_CHECKS,
-                comments=file_comment,
-                status="Failed",
-            )
-
-        # 2. Convert to parquet and place in month container
-        if not extraction.convert_to_parquet(
-            source_system=source_system,
-            file_name=file_name,
-        ):
-            append_to_process_log(
-                **log_config,
-                source_system=source_system,
-                file_delivery_status=NonSSFStepStatus.CONVERTED_PARQUET,
-                comments=file_comment,
-                status="Failed",
-            )
-
-        # 3. Move source file to processed folder
-        if not extraction.move_source_file(
-            source_system=source_system, file_name=file_name
-        ):
-            append_to_process_log(
-                **log_config,
-                source_system=source_system,
-                file_delivery_status=NonSSFStepStatus.MOVED_SRC,
-                comments=file_comment,
-                status="Failed",
-            )
-
-        # 4. Load to staging table
-        data = extraction.extract_from_parquet(
-            source_system=source_system, file_name=file_name
-        )
-        stg_table_name = extraction.get_staging_table_name(file_name)
-        if not extraction.save_to_stg_table(
-            data=data,
-            stg_table_name=stg_table_name,
-            source_system=source_system,
-            file_name=Path(file_name).stem,
-        ):
-            append_to_process_log(
-                **log_config,
-                source_system=source_system,
-                file_delivery_status=NonSSFStepStatus.LOADED_STG,
-                comments=file_comment,
-                status="Failed",
-            )
-
-        # 5. DQ checks
-        elif not extraction.validate_data_quality(
-            source_system=source_system,
-            file_name=Path(file_name).stem,
-            stg_table_name=stg_table_name,
-        ):
-            append_to_process_log(
-                **log_config,
-                source_system=source_system,
-                file_delivery_status=NonSSFStepStatus.CHECKED_DQ,
-                comments=file_comment,
-                status="Failed",
-            )
-
-        # Complete the process for corresponding trigger file
-        extraction.update_log_metadata(
-            source_system=source_system,
-            key=Path(file_name).stem,
-            file_delivery_status=NonSSFStepStatus.COMPLETED,
-            result="SUCCESS",
-            comment=file_comment,
-        )
-        append_to_process_log(
-            **log_config,
-            source_system=source_system,
-            comments=file_comment,
-            status="Completed",
-        )
+        process_single_file(extraction, file, log_config)
 
     # Complete the process after all trigger files
     append_to_process_log(
