@@ -72,13 +72,15 @@ class ExtractNonSSFData(ExtractStagingData):
     def place_static_data(
         self, 
         new_files: list[str], 
+        *,
         deadline_passed: bool = False
     ) -> list[str]:
         """Handle static data files for the LRD_STATIC source system.
 
         Loops over metadata entries for LRD_STATIC files and checks if they are
         delivered this month. If not, copies the files from the processed folder to the
-        static folder only after deadline has passed and only for files that are still expected.
+        static folder only after deadline has passed and only for files that are still
+        expected.
 
         Args:
             new_files (list[str]): List of files found in the source container. This
@@ -136,8 +138,10 @@ class ExtractNonSSFData(ExtractStagingData):
                         for file in self.dbutils.fs.ls(processed_folder)
                         if file.name.startswith(file_name)
                     ]
-                except Exception as e:
-                    logger.error(f"Error accessing processed folder {processed_folder}: {e}")
+                except (IOError, OSError) as e:
+                    logger.exception(
+                        f"Error accessing processed folder {processed_folder}"
+                    )
                     continue
                 
                 if not processed_files:
@@ -165,15 +169,21 @@ class ExtractNonSSFData(ExtractStagingData):
                             source_system=source_system.upper(),
                             key=Path(file_name).stem,
                             file_delivery_status=NonSSFStepStatus.RECEIVED,
-                            comment=f"Static file {processed_file} copied from processed folder after deadline.",
+                            comment=(
+                                f"Static file {processed_file} copied from processed "
+                                f"folder after deadline."
+                            ),
                         )
-                    except Exception as e:
-                        logger.error(f"Failed to copy {latest_processed_file} to {target_file}: {e}")
+                    except (IOError, OSError) as e:
+                        logger.exception(
+                            f"Failed to copy {latest_processed_file} to {target_file}"
+                        )
                         
         return new_files
 
     def get_all_files(
         self, 
+        *,
         deadline_passed: bool = False, 
         deadline_date: datetime | None = None
     ) -> list[dict[str, str]]:
@@ -199,7 +209,7 @@ class ExtractNonSSFData(ExtractStagingData):
                     for p in self.dbutils.fs.ls(f"{self.source_container_url}/{subfolder}")
                     if (not p.isDir() or p.name.endswith(".parquet"))
                 ]
-            except Exception as e:
+            except (IOError, OSError) as e:
                 logger.warning(f"Could not access folder {subfolder}: {e}")
                 all_files[subfolder] = []
             
@@ -235,9 +245,15 @@ class ExtractNonSSFData(ExtractStagingData):
         if deadline_date:
             deadline_str = deadline_date.strftime("%Y-%m-%d %H:%M:%S UTC")
             if deadline_passed:
-                logger.info(f"Deadline has passed ({deadline_str}). LRD_STATIC files copied from processed folder.")
+                logger.info(
+                    f"Deadline has passed ({deadline_str}). "
+                    f"LRD_STATIC files copied from processed folder."
+                )
             else:
-                logger.info(f"Deadline not yet reached ({deadline_str}). LRD_STATIC files will not be copied.")
+                logger.info(
+                    f"Deadline not yet reached ({deadline_str}). "
+                    f"LRD_STATIC files will not be copied."
+                )
         
         return [
             {"source_system": source_system, "file_name": file_name}
