@@ -4,17 +4,19 @@ ruff lint................................................................Failed
 - exit code: 1
 
 All checks passed!
-All checks passed!
-All checks passed!
-scripts\nonssf_staging_process.py:22:5: C901 `non_ssf_load` is too complex (11 > 10)
-   |
-22 | def non_ssf_load(
-   |     ^^^^^^^^^^^^ C901
-23 |     spark: SparkSession,
-24 |     run_month: str,
-   |
+test\staging\test_extract_non_ssf_data.py:478:42: FBT003 Boolean positional value in function call
+    |
+476 |         TypeError, match="takes 2 positional arguments but 3 were given"
+477 |     ):
+478 |         extraction.place_static_data([], True)  # This should fail
+    |                                          ^^^^ FBT003
+479 |
+480 |     # Test that calling with keyword argument works
+    |
 
 Found 1 error.
+All checks passed!
+All checks passed!
 
 ruff format..............................................................Passed
 mypy.....................................................................Passed
