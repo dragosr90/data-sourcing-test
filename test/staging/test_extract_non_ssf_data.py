@@ -4,7 +4,13 @@ from pathlib import Path
 from unittest.mock import call
 
 import pytest
-from pyspark.sql.types import IntegerType, StringType, StructField, StructType
+from pyspark.sql.types import (
+    IntegerType, 
+    StringType, 
+    StructField, 
+    StructType,
+    TimestampType,
+)
 
 from src.staging.extract_nonssf_data import ExtractNonSSFData
 
@@ -48,7 +54,7 @@ def test_extract_non_ssf_data(
     mock_meta = spark_session.createDataFrame(
         [
             (
-                "lrd_static",
+                "LRD_STATIC",  # Changed to uppercase to match folder names
                 "TEST_NON_SSF_V1",
                 ".txt",
                 "|",
@@ -57,7 +63,7 @@ def test_extract_non_ssf_data(
                 "Expected",
             ),
             (
-                "lrd_static",
+                "LRD_STATIC",  # Changed to uppercase
                 "TEST_NON_SSF_V2",
                 ".txt",
                 "|",
@@ -66,7 +72,7 @@ def test_extract_non_ssf_data(
                 "Expected",
             ),
             (
-                "nme",
+                "NME",  # Changed to uppercase
                 "TEST_NON_SSF_V3",
                 ".parquet",
                 ",",
@@ -75,7 +81,7 @@ def test_extract_non_ssf_data(
                 "Expected",
             ),
             (
-                "finob",
+                "FINOB",  # Changed to uppercase
                 "TEST_NON_SSF_V4",
                 ".csv",
                 ",",
@@ -100,7 +106,7 @@ def test_extract_non_ssf_data(
     mock_log = spark_session.createDataFrame(
         [
             (
-                "lrd_static",
+                "LRD_STATIC",
                 "TEST_NON_SSF_V1",
                 1,
                 0,
@@ -150,7 +156,9 @@ def test_extract_non_ssf_data(
     mock_read.table.assert_any_call(f"bsrc_d.log_{run_month}.log_nonssf")
 
     mock_dbutils_fs_ls = mocker.patch.object(extraction.dbutils.fs, "ls")
+    # Add more side effects to handle all the ls calls
     effect = [
+        # First round of ls calls for get_all_files
         [
             FileInfoMock(
                 {
@@ -163,16 +171,18 @@ def test_extract_non_ssf_data(
         for li in [
             [
                 ("TEST_NON_SSF_V3.parquet", "NME"),
-                ("TEST_NON_SSF_V3.csv", "NME"),
+                ("TEST_NON_SSF_V3.csv", "NME"),  # Wrong extension file
                 ("processed/", "NME"),
             ],
             [("TEST_NON_SSF_V4.csv", "FINOB"), ("processed/", "FINOB")],
             [
                 ("TEST_NON_SSF_V1.txt", "LRD_STATIC"),
-                ("TEST_NON_SSF_V5.txt", "LRD_STATIC"),
+                ("TEST_NON_SSF_V5.txt", "LRD_STATIC"),  # Not in metadata
                 ("processed/", "LRD_STATIC"),
             ],
+            # For place_static_data - V2 is missing, check processed folder
             [("TEST_NON_SSF_V2_999999.txt", "LRD_STATIC/processed")],
+            # Additional ls call to check if the file exists
             [("TEST_NON_SSF_V2_999999.txt", "LRD_STATIC/processed")],
         ]
     ]
@@ -232,7 +242,7 @@ def test_extract_non_ssf_data(
         assert any(
             args[0] == f"{test_container}/{source_system}/{file_name_base}"
             and re.match(
-                f"{test_container}/{source_system}/processed/{file_name_no_ext}__\d{{8}}\d{{6}}{file_name_ext}",  # noqa: W605
+                rf"{test_container}/{source_system}/processed/{file_name_no_ext}__\d{{8}}\d{{6}}{file_name_ext}",
                 args[1],
             )
             for args, _ in calls
@@ -304,7 +314,7 @@ def test_extract_non_ssf_data_with_deadline(
     mock_meta = spark_session.createDataFrame(
         [
             (
-                "lrd_static",
+                "LRD_STATIC",  # Uppercase to match code
                 "TEST_STATIC_FILE",
                 ".txt",
                 "|",
@@ -316,19 +326,20 @@ def test_extract_non_ssf_data_with_deadline(
         schema=schema_meta,
     )
 
-    schema_log = [
-        "SourceSystem",
-        "SourceFileName",
-        "DeliveryNumber",
-        "FileDeliveryStep",
-        "FileDeliveryStatus",
-        "Result",
-        "LastUpdatedDateTimestamp",
-        "Comment",
-    ]
-    mock_log = spark_session.createDataFrame(
-        [], schema=schema_log  # Empty log
-    )
+    # Create schema for log DataFrame
+    schema_log = StructType([
+        StructField("SourceSystem", StringType(), True),
+        StructField("SourceFileName", StringType(), True),
+        StructField("DeliveryNumber", IntegerType(), True),
+        StructField("FileDeliveryStep", IntegerType(), True),
+        StructField("FileDeliveryStatus", StringType(), True),
+        StructField("Result", StringType(), True),
+        StructField("LastUpdatedDateTimestamp", TimestampType(), True),
+        StructField("Comment", StringType(), True),
+    ])
+    
+    # Create empty DataFrame with schema
+    mock_log = spark_session.createDataFrame([], schema=schema_log)
 
     # Mock spark.read
     mock_read = mocker.patch("pyspark.sql.SparkSession.read", autospec=True)
@@ -426,7 +437,7 @@ def test_place_static_data_keyword_only(
     mock_meta = spark_session.createDataFrame(
         [
             (
-                "lrd_static",
+                "LRD_STATIC",  # Uppercase
                 "TEST_FILE",
                 ".txt",
                 "|",
@@ -438,16 +449,19 @@ def test_place_static_data_keyword_only(
         schema=schema_meta,
     )
 
-    schema_log = [
-        "SourceSystem",
-        "SourceFileName",
-        "DeliveryNumber",
-        "FileDeliveryStep",
-        "FileDeliveryStatus",
-        "Result",
-        "LastUpdatedDateTimestamp",
-        "Comment",
-    ]
+    # Create schema for log DataFrame
+    schema_log = StructType([
+        StructField("SourceSystem", StringType(), True),
+        StructField("SourceFileName", StringType(), True),
+        StructField("DeliveryNumber", IntegerType(), True),
+        StructField("FileDeliveryStep", IntegerType(), True),
+        StructField("FileDeliveryStatus", StringType(), True),
+        StructField("Result", StringType(), True),
+        StructField("LastUpdatedDateTimestamp", TimestampType(), True),
+        StructField("Comment", StringType(), True),
+    ])
+    
+    # Create empty DataFrame with schema
     mock_log = spark_session.createDataFrame([], schema=schema_log)
 
     # Mock spark.read
@@ -463,7 +477,7 @@ def test_place_static_data_keyword_only(
 
     # Test that calling with positional argument raises TypeError
     with pytest.raises(TypeError, match="takes 2 positional arguments but 3 were given"):
-        extraction.place_static_data([], True)  # This should fail
+        extraction.place_static_data([], True)  # noqa: FBT003 - Testing that positional bool fails
 
     # Test that calling with keyword argument works
     result = extraction.place_static_data([], deadline_passed=True)  # This should work
