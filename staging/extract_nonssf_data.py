@@ -69,16 +69,22 @@ class ExtractNonSSFData(ExtractStagingData):
         )
         return result
 
-    def place_static_data(self, new_files: list[str]) -> list[str]:
+    def place_static_data(
+        self, 
+        new_files: list[str], 
+        deadline_passed: bool = False
+    ) -> list[str]:
         """Handle static data files for the LRD_STATIC source system.
 
         Loops over metadata entries for LRD_STATIC files and checks if they are
         delivered this month. If not, copies the files from the processed folder to the
-        static folder.
+        static folder only after deadline has passed and only for files that are still expected.
 
         Args:
             new_files (list[str]): List of files found in the source container. This
                 list will be updated with files copied from the processed folder.
+            deadline_passed (bool): Whether the deadline has passed. Only copy files
+                after deadline has passed.
 
         Returns:
             list[str]: List of copied static files.
@@ -94,46 +100,92 @@ class ExtractNonSSFData(ExtractStagingData):
         processed_folder = (
             f"{self.source_container_url}/{source_system.upper()}/processed"
         )
+        
         for file in expected_files:
             file_name = file["SourceFileName"]
             extension = file["SourceFileFormat"]
+            
+            # Check if file is already delivered this month
             if file_name not in [Path(f).stem for f in new_files]:
+                # Only proceed with copying if deadline has passed
+                if not deadline_passed:
+                    logger.info(
+                        f"File {file_name} not delivered but deadline not reached yet. "
+                        "Skipping copy from processed folder."
+                    )
+                    continue
+                
+                # Check if the file is expected (still in metadata as expected)
+                expected_status = (
+                    self.meta_data.filter(col("SourceFileName") == file_name)
+                    .select("FileDeliveryStatus")
+                    .collect()
+                )
+                
+                if not expected_status or expected_status[0]["FileDeliveryStatus"] != "Expected":
+                    logger.info(
+                        f"File {file_name} is not in expected status. "
+                        "Skipping copy from processed folder."
+                    )
+                    continue
+                
                 # Check if the file is already in the processed folder
-                processed_files = [
-                    file.path
-                    for file in self.dbutils.fs.ls(processed_folder)
-                    if file.name.startswith(file_name)
-                ]
+                try:
+                    processed_files = [
+                        file.path
+                        for file in self.dbutils.fs.ls(processed_folder)
+                        if file.name.startswith(file_name)
+                    ]
+                except Exception as e:
+                    logger.error(f"Error accessing processed folder {processed_folder}: {e}")
+                    continue
+                
                 if not processed_files:
                     logger.error(
                         f"File {file_name} not delivered and not found in "
                         f"{source_system.upper()}/processed folder."
                     )
                     continue
+                
                 latest_processed_file = max(processed_files)
                 if self.dbutils.fs.ls(latest_processed_file):
                     # Copy the file to the static folder
                     processed_file = f"{processed_folder}/{file_name}"
-                    self.dbutils.fs.cp(
-                        latest_processed_file,
-                        f"{static_folder}/{file_name}{extension}",
-                    )
-                    logger.info(f"Copied {file_name} to static folder.")
-                    new_files.append(f"{static_folder}/{file_name}{extension}")
-                self.update_log_metadata(
-                    source_system=source_system.upper(),
-                    key=Path(file_name).stem,
-                    file_delivery_status=NonSSFStepStatus.RECEIVED,
-                    comment=f"Static file {processed_file} copied from process folder.",
-                )
+                    target_file = f"{static_folder}/{file_name}{extension}"
+                    
+                    try:
+                        self.dbutils.fs.cp(latest_processed_file, target_file)
+                        logger.info(
+                            f"Copied {file_name} to static folder after deadline passed. "
+                            f"Source: {latest_processed_file}, Target: {target_file}"
+                        )
+                        new_files.append(target_file)
+                        
+                        self.update_log_metadata(
+                            source_system=source_system.upper(),
+                            key=Path(file_name).stem,
+                            file_delivery_status=NonSSFStepStatus.RECEIVED,
+                            comment=f"Static file {processed_file} copied from processed folder after deadline.",
+                        )
+                    except Exception as e:
+                        logger.error(f"Failed to copy {latest_processed_file} to {target_file}: {e}")
+                        
         return new_files
 
-    def get_all_files(self) -> list[dict[str, str]]:
+    def get_all_files(
+        self, 
+        deadline_passed: bool = False, 
+        deadline_date: datetime | None = None
+    ) -> list[dict[str, str]]:
         """Retrieve all files from the source container along with their source systems.
 
         Filters files based on metadata records. If a file is not found in the metadata,
         it is removed from the list. For LRD_STATIC files, missing files are copied from
-        the processed folder.
+        the processed folder only after deadline has passed and only for expected files.
+
+        Args:
+            deadline_passed (bool): Whether the deadline has passed
+            deadline_date (datetime | None): The deadline date
 
         Returns:
             list[dict[str, str]]: List of dictionaries containing file names and their
@@ -141,16 +193,24 @@ class ExtractNonSSFData(ExtractStagingData):
         """
         all_files = {}
         for subfolder in ["NME", "FINOB", "LRD_STATIC"]:
-            all_files[subfolder] = [
-                p.path
-                for p in self.dbutils.fs.ls(f"{self.source_container_url}/{subfolder}")
-                if (not p.isDir() or p.name.endswith(".parquet"))
-            ]
+            try:
+                all_files[subfolder] = [
+                    p.path
+                    for p in self.dbutils.fs.ls(f"{self.source_container_url}/{subfolder}")
+                    if (not p.isDir() or p.name.endswith(".parquet"))
+                ]
+            except Exception as e:
+                logger.warning(f"Could not access folder {subfolder}: {e}")
+                all_files[subfolder] = []
+            
             expected_files = [
                 row["SourceFileName"]
-                for row in self.meta_data.select("SourceFileName").collect()
+                for row in self.meta_data.filter(col("SourceSystem") == subfolder).select("SourceFileName").collect()
             ]
-            for file in all_files[subfolder]:
+            
+            # Create a copy of the list to iterate over while modifying the original
+            files_to_check = all_files[subfolder].copy()
+            for file in files_to_check:
                 # Check if the file has a matching record in the metadata
                 if Path(file).stem not in expected_files:
                     logger.warning(
@@ -164,7 +224,21 @@ class ExtractNonSSFData(ExtractStagingData):
                     key=Path(file).stem,
                     file_delivery_status=NonSSFStepStatus.RECEIVED,
                 )
-        all_files["LRD_STATIC"] = self.place_static_data(all_files["LRD_STATIC"])
+        
+        # Handle LRD_STATIC files with deadline logic
+        all_files["LRD_STATIC"] = self.place_static_data(
+            all_files["LRD_STATIC"], 
+            deadline_passed=deadline_passed
+        )
+        
+        # Log deadline information
+        if deadline_date:
+            deadline_str = deadline_date.strftime("%Y-%m-%d %H:%M:%S UTC")
+            if deadline_passed:
+                logger.info(f"Deadline has passed ({deadline_str}). LRD_STATIC files copied from processed folder.")
+            else:
+                logger.info(f"Deadline not yet reached ({deadline_str}). LRD_STATIC files will not be copied.")
+        
         return [
             {"source_system": source_system, "file_name": file_name}
             for source_system in all_files.keys()
