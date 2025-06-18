@@ -14,6 +14,10 @@ from src.utils.table_logging import write_to_log
 
 logger = get_logger()
 
+# Constants for magic numbers
+MIN_ARGS_FOR_RUN_ID = 1
+MIN_ARGS_FOR_DEADLINE = 2
+
 
 def non_ssf_load(
     spark: SparkSession,
@@ -24,7 +28,8 @@ def non_ssf_load(
     """Full load of Non-SSF data.
 
     1. Check availability of LRD_STATIC/NME/FINOB data in blob storage
-    2. Copy processed LRD_STATIC for missing files (only after deadline and for expected files)
+    2. Copy processed LRD_STATIC for missing files (only after deadline and for
+       expected files)
     3. Check deadline for FINOB and NME files and raise error if deadline passed
     4. For every file in blob storage:
         1. Initial checks
@@ -67,7 +72,9 @@ def non_ssf_load(
         try:
             deadline_dt = datetime.strptime(deadline_date, "%Y-%m-%d").replace(tzinfo=timezone.utc)
         except ValueError:
-            logger.error(f"Invalid deadline_date format: {deadline_date}. Expected YYYY-MM-DD")
+            logger.exception(
+                f"Invalid deadline_date format: {deadline_date}. Expected YYYY-MM-DD"
+            )
             deadline_dt = datetime.now(tz=timezone.utc)
     else:
         deadline_dt = datetime.now(tz=timezone.utc)
@@ -235,10 +242,16 @@ def check_deadline_violations(
         
         if expected_file not in delivered_files:
             missing_files.append(f"{source_system}/{expected_file}")
-            logger.error(f"Deadline passed: Missing expected file {expected_file} from {source_system}")
+            logger.error(
+                f"Deadline passed: Missing expected file {expected_file} "
+                f"from {source_system}"
+            )
     
     if missing_files:
-        error_msg = f"Deadline violation: Missing files after deadline - {', '.join(missing_files)}"
+        error_msg = (
+            f"Deadline violation: Missing files after deadline - "
+            f"{', '.join(missing_files)}"
+        )
         
         # Log the error for each missing file's source system
         for missing_file in missing_files:
@@ -305,7 +318,8 @@ if __name__ == "__main__":
     # Get args:
     if len(sys.argv) not in [1, 2, 3]:
         logger.error(
-            "Incorrect number of parameters, expected 1, 2 or 3: run_month[ run_id][ deadline_date]"
+            "Incorrect number of parameters, expected 1, 2 or 3: "
+            "run_month[ run_id][ deadline_date]"
         )
         sys.exit(-1)
 
@@ -313,9 +327,9 @@ if __name__ == "__main__":
     run_id = 1
     deadline_date = None
     
-    if len(remaining_args) >= 1:
+    if len(remaining_args) >= MIN_ARGS_FOR_RUN_ID:
         run_id = int(remaining_args[0])
-    if len(remaining_args) >= 2:
+    if len(remaining_args) >= MIN_ARGS_FOR_DEADLINE:
         deadline_date = remaining_args[1]
     
     non_ssf_load(spark, run_month, run_id, deadline_date)  # type: ignore[name-defined]
