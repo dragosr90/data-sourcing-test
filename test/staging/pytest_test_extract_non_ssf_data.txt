@@ -6,279 +6,25 @@ configfile: pyproject.toml
 plugins: cov-6.0.0, mock-3.14.0
 collected 4 items
 
-test\staging\test_extract_non_ssf_data.py FFF.                                                                                                                                              [100%]
+test\staging\test_extract_non_ssf_data.py ...F                                                                                                                                              [100%]
 
 ============================================================================================ FAILURES ============================================================================================ 
-________________________________________________________________________ test_extract_non_ssf_data[202503-test-container] ________________________________________________________________________ 
+___________________________________________________________________ test_place_static_data_keyword_only[202503-test-container] ___________________________________________________________________ 
 
-self = <MagicMock name='cp' id='2623052979680'>
-args = ('abfss://test-container@bsrcdadls.dfs.core.windows.net/LRD_STATIC/processed/TEST_NON_SSF_V2_999999.txt', 'abfss://test-container@bsrcdadls.dfs.core.windows.net/LRD_STATIC/TEST_NON_SSF_V2.txt')
-kwargs = {}
-expected = call('abfss://test-container@bsrcdadls.dfs.core.windows.net/LRD_STATIC/processed/TEST_NON_SSF_V2_999999.txt', 'abfss://test-container@bsrcdadls.dfs.core.windows.net/LRD_STATIC/TEST_NON_SSF_V2.txt')
-cause = None, actual = []
-expected_string = "cp('abfss://test-container@bsrcdadls.dfs.core.windows.net/LRD_STATIC/processed/TEST_NON_SSF_V2_999999.txt', 'abfss://test-container@bsrcdadls.dfs.core.windows.net/LRD_STATIC/TEST_NON_SSF_V2.txt')"
-
-    def assert_any_call(self, /, *args, **kwargs):
-        """assert the mock has been called with the specified arguments.
-
-        The assert passes if the mock has *ever* been called, unlike
-        `assert_called_with` and `assert_called_once_with` that only pass if
-        the call is the most recent one."""
-        expected = self._call_matcher(_Call((args, kwargs), two=True))
-        cause = expected if isinstance(expected, Exception) else None
-        actual = [self._call_matcher(c) for c in self.call_args_list]
-        if cause or expected not in _AnyComparer(actual):
-            expected_string = self._format_mock_call_signature(args, kwargs)
->           raise AssertionError(
-                '%s call not found' % expected_string
-            ) from cause
-E           AssertionError: cp('abfss://test-container@bsrcdadls.dfs.core.windows.net/LRD_STATIC/processed/TEST_NON_SSF_V2_999999.txt', 'abfss://test-container@bsrcdadls.dfs.core.windows.net/LRD_STATIC/TEST_NON_SSF_V2.txt') call not found
-
-C:\Program Files\Python310\lib\unittest\mock.py:1000: AssertionError
-
-During handling of the above exception, another exception occurred:
-
-spark_session = <pyspark.sql.session.SparkSession object at 0x00000262BA0E2590>, mocker = <pytest_mock.plugin.MockerFixture object at 0x00000262BA0E2890>, run_month = '202503'
-source_container = 'test-container', caplog = <_pytest.logging.LogCaptureFixture object at 0x00000262BA0E3310>
+spark_session = <pyspark.sql.session.SparkSession object at 0x00000222FF6C25C0>, mocker = <pytest_mock.plugin.MockerFixture object at 0x00000222FF952A40>, run_month = '202503'
+source_container = 'test-container'
 
     @pytest.mark.parametrize(
         ("run_month", "source_container"),
         [("202503", "test-container")],
     )
-    def test_extract_non_ssf_data(
+    def test_place_static_data_keyword_only(
         spark_session,
         mocker,
         run_month,
         source_container,
-        caplog,
     ):
-        test_container = f"abfss://{source_container}@bsrcdadls.dfs.core.windows.net"
-        month_container = f"abfss://{run_month}@bsrcdadls.dfs.core.windows.net"
-        metadata_path = f"bsrc_d.metadata_{run_month}.metadata_nonssf"
-        log_path = f"bsrc_d.log_{run_month}.log_nonssf"
-
-        # Create a mock DataFrame
-        schema_meta = [
-            "SourceSystem",
-            "SourceFileName",
-            "SourceFileFormat",
-            "SourceFileDelimiter",
-            "StgTableName",
-            "FileDeliveryStep",
-            "FileDeliveryStatus",
-        ]
-        mock_meta = spark_session.createDataFrame(
-            [
-                (
-                    "LRD_STATIC",  # Changed to uppercase to match folder names
-                    "TEST_NON_SSF_V1",
-                    ".txt",
-                    "|",
-                    "test_non_ssf_v1",
-                    0,
-                    "Expected",
-                ),
-                (
-                    "LRD_STATIC",  # Changed to uppercase
-                    "TEST_NON_SSF_V2",
-                    ".txt",
-                    "|",
-                    "test_non_ssf_v2",
-                    0,
-                    "Expected",
-                ),
-                (
-                    "NME",  # Changed to uppercase
-                    "TEST_NON_SSF_V3",
-                    ".parquet",
-                    ",",
-                    "test_non_ssf_v3",
-                    0,
-                    "Expected",
-                ),
-                (
-                    "FINOB",  # Changed to uppercase
-                    "TEST_NON_SSF_V4",
-                    ".csv",
-                    ",",
-                    "test_non_ssf_v4",
-                    0,
-                    "Expected",
-                ),
-            ],
-            schema=schema_meta,
-        )
-
-        schema_log = [
-            "SourceSystem",
-            "SourceFileName",
-            "DeliveryNumber",
-            "FileDeliveryStep",
-            "FileDeliveryStatus",
-            "Result",
-            "LastUpdatedDateTimestamp",
-            "Comment",
-        ]
-        mock_log = spark_session.createDataFrame(
-            [
-                (
-                    "LRD_STATIC",
-                    "TEST_NON_SSF_V1",
-                    1,
-                    0,
-                    "Expected",
-                    "Success",
-                    datetime.now(timezone.utc),
-                    "Test comment",
-                )
-            ],
-            schema=schema_log,
-        )
-
-        dummy_df = spark_session.createDataFrame(
-            [(1, "2", 3)],
-            schema=StructType(
-                [
-                    StructField("col1", IntegerType()),
-                    StructField("col2", StringType()),
-                    StructField("col3", IntegerType()),
-                ]
-            ),
-        )
-
-        # Mock spark.read.json and spark.read.table to return the mock DataFrames
-        mock_read = mocker.patch("pyspark.sql.SparkSession.read", autospec=True)
-        mock_read.table.side_effect = [
-            mock_meta,
-            mock_log,
-            dummy_df,
-            dummy_df,
-            dummy_df,
-            dummy_df,
-        ]
-
-        mock_write = mocker.patch("pyspark.sql.DataFrameWriter.parquet")
-        mock_save_table = mocker.patch("pyspark.sql.DataFrameWriter.saveAsTable")
-
-        # Check ExtractNonSSFData class initialisation
-        extraction = ExtractNonSSFData(
-            spark_session,
-            run_month,
-            source_container=source_container,
-        )
-
-        # Verify that spark.read.table was called with the correct arguments
-        mock_read.table.assert_any_call(f"bsrc_d.metadata_{run_month}.metadata_nonssf")
-        mock_read.table.assert_any_call(f"bsrc_d.log_{run_month}.log_nonssf")
-
-        mock_dbutils_fs_ls = mocker.patch.object(extraction.dbutils.fs, "ls")
-        # Add more side effects to handle all the ls calls
-        effect = [
-            # First round of ls calls for get_all_files
-            [
-                FileInfoMock(
-                    {
-                        "path": f"{test_container}/{folder}/{file}",
-                        "name": f"{file}",
-                    }
-                )
-                for file, folder in li
-            ]
-            for li in [
-                [
-                    ("TEST_NON_SSF_V3.parquet", "NME"),
-                    ("TEST_NON_SSF_V3.csv", "NME"),  # Wrong extension file
-                    ("processed/", "NME"),
-                ],
-                [("TEST_NON_SSF_V4.csv", "FINOB"), ("processed/", "FINOB")],
-                [
-                    ("TEST_NON_SSF_V1.txt", "LRD_STATIC"),
-                    ("TEST_NON_SSF_V5.txt", "LRD_STATIC"),  # Not in metadata
-                    ("processed/", "LRD_STATIC"),
-                ],
-                # For place_static_data - V2 is missing, check processed folder
-                [("TEST_NON_SSF_V2_999999.txt", "LRD_STATIC/processed")],
-                # Additional ls call to check if the file exists
-                [("TEST_NON_SSF_V2_999999.txt", "LRD_STATIC/processed")],
-            ]
-        ]
-        mock_dbutils_fs_ls.side_effect = effect
-        mock_dbutils_fs_cp = mocker.patch.object(extraction.dbutils.fs, "cp")
-        mock_dbutils_fs_mv = mocker.patch.object(extraction.dbutils.fs, "mv")
-
-        # Test with deadline passed (default behavior in the test)
-        found_files = extraction.get_all_files(deadline_passed=True)
->       mock_dbutils_fs_cp.assert_any_call(
-            f"{test_container}/LRD_STATIC/processed/TEST_NON_SSF_V2_999999.txt",
-            f"{test_container}/LRD_STATIC/TEST_NON_SSF_V2.txt",
-        )
-E       AssertionError: cp('abfss://test-container@bsrcdadls.dfs.core.windows.net/LRD_STATIC/processed/TEST_NON_SSF_V2_999999.txt', 'abfss://test-container@bsrcdadls.dfs.core.windows.net/LRD_STATIC/TEST_NON_SSF_V2.txt') call not found
-
-test\staging\test_extract_non_ssf_data.py:195: AssertionError
-------------------------------------------------------------------------------------- Captured stderr setup -------------------------------------------------------------------------------------- 
-Setting default log level to "WARN".
-To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
--------------------------------------------------------------------------------------- Captured stdout call -------------------------------------------------------------------------------------- 
-2025-06-18 11:34:40 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V3
-2025-06-18 11:34:40 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V3
-2025-06-18 11:34:43 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V3
-2025-06-18 11:34:43 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V3
-2025-06-18 11:34:46 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V4
-2025-06-18 11:34:46 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V4
-2025-06-18 11:34:50 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V1
-2025-06-18 11:34:50 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V1
-2025-06-18 11:34:51 [WARNING] get_all_files:  File TEST_NON_SSF_V5 not found in metadata. Please check if it should be delivered.
-2025-06-18 11:34:51 [WARNING] get_all_files:  File TEST_NON_SSF_V5 not found in metadata. Please check if it should be delivered.
--------------------------------------------------------------------------------------- Captured stderr call -------------------------------------------------------------------------------------- 
-[Stage 15:>                                                         (0 + 1) / 1]
---------------------------------------------------------------------------------------- Captured log call ---------------------------------------------------------------------------------------- 
-INFO     betl_src_poc_logger:extract_base.py:205 FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V3
-INFO     betl_src_poc_logger:extract_base.py:205 FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V3
-INFO     betl_src_poc_logger:extract_base.py:205 FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V4
-INFO     betl_src_poc_logger:extract_base.py:205 FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V1
-WARNING  betl_src_poc_logger:extract_nonssf_data.py:227 File TEST_NON_SSF_V5 not found in metadata. Please check if it should be delivered.
-______________________________________________________________ test_extract_non_ssf_data_with_deadline[202503-test-container-True] _______________________________________________________________ 
-
-self = <MagicMock name='cp' id='2623054049824'>
-args = ('abfss://test-container@bsrcdadls.dfs.core.windows.net/LRD_STATIC/processed/TEST_STATIC_FILE_20240101.txt', 'abfss://test-container@bsrcdadls.dfs.core.windows.net/LRD_STATIC/TEST_STATIC_FILE.txt')
-kwargs = {}, msg = "Expected 'cp' to be called once. Called 0 times."
-
-    def assert_called_once_with(self, /, *args, **kwargs):
-        """assert that the mock was called exactly once and that that call was
-        with the specified arguments."""
-        if not self.call_count == 1:
-            msg = ("Expected '%s' to be called once. Called %s times.%s"
-                   % (self._mock_name or 'mock',
-                      self.call_count,
-                      self._calls_repr()))
->           raise AssertionError(msg)
-E           AssertionError: Expected 'cp' to be called once. Called 0 times.
-
-C:\Program Files\Python310\lib\unittest\mock.py:940: AssertionError
-
-During handling of the above exception, another exception occurred:
-
-spark_session = <pyspark.sql.session.SparkSession object at 0x00000262BA0E2590>, mocker = <pytest_mock.plugin.MockerFixture object at 0x00000262BA0E3280>, run_month = '202503'
-source_container = 'test-container', deadline_passed = True, caplog = <_pytest.logging.LogCaptureFixture object at 0x00000262BA359CC0>
-
-    @pytest.mark.parametrize(
-        ("run_month", "source_container", "deadline_passed"),
-        [
-            ("202503", "test-container", True),
-            ("202503", "test-container", False),
-        ],
-    )
-    def test_extract_non_ssf_data_with_deadline(
-        spark_session,
-        mocker,
-        run_month,
-        source_container,
-        deadline_passed,
-        caplog,
-    ):
-        """Test the deadline functionality for LRD_STATIC files."""
-        test_container = f"abfss://{source_container}@bsrcdadls.dfs.core.windows.net"
-
+        """Test that place_static_data requires deadline_passed as keyword argument."""
         # Create mock metadata DataFrame
         schema_meta = [
             "SourceSystem",
@@ -292,11 +38,11 @@ source_container = 'test-container', deadline_passed = True, caplog = <_pytest.l
         mock_meta = spark_session.createDataFrame(
             [
                 (
-                    "LRD_STATIC",  # Uppercase to match code
-                    "TEST_STATIC_FILE",
+                    "LRD_STATIC",  # Uppercase
+                    "TEST_FILE",
                     ".txt",
                     "|",
-                    "test_static_file",
+                    "test_file",
                     0,
                     "Expected",
                 ),
@@ -332,215 +78,42 @@ source_container = 'test-container', deadline_passed = True, caplog = <_pytest.l
             source_container=source_container,
         )
 
-        # Mock filesystem operations
-        mock_dbutils_fs_ls = mocker.patch.object(extraction.dbutils.fs, "ls")
-        mock_dbutils_fs_cp = mocker.patch.object(extraction.dbutils.fs, "cp")
+        # Test that calling with positional argument raises TypeError
+        with pytest.raises(
+            TypeError, match="takes 2 positional arguments but 3 were given"
+        ):
+            extraction.place_static_data([], True)  # noqa: FBT003 - Testing that positional bool fails
 
-        # Set up the mock file system - file is missing from LRD_STATIC but exists in processed # noqa: E501
-        effect = [
-            [],  # Empty NME folder
-            [],  # Empty FINOB folder
-            [],  # Empty LRD_STATIC folder (file not delivered)
-            [  # Processed folder contains the file
-                FileInfoMock(
-                    {
-                        "path": f"{test_container}/LRD_STATIC/processed/TEST_STATIC_FILE_20240101.txt",  # noqa: E501
-                        "name": "TEST_STATIC_FILE_20240101.txt",
-                    }
-                )
-            ],
-            [  # Second call to processed folder for ls check
-                FileInfoMock(
-                    {
-                        "path": f"{test_container}/LRD_STATIC/processed/TEST_STATIC_FILE_20240101.txt",  # noqa: E501
-                        "name": "TEST_STATIC_FILE_20240101.txt",
-                    }
-                )
-            ],
-        ]
-        mock_dbutils_fs_ls.side_effect = effect
+        # Test that calling with keyword argument works
+>       result = extraction.place_static_data([], deadline_passed=True)  # This should work
 
-        # Set deadline date
-        deadline_date = (
-            datetime.now(timezone.utc) - timedelta(days=1)
-            if deadline_passed
-            else datetime.now(timezone.utc) + timedelta(days=1)
-        )
+test\staging\test_extract_non_ssf_data.py:498:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _  
+src\staging\extract_nonssf_data.py:136: in place_static_data
+    for file in self.dbutils.fs.ls(processed_folder)
+..\bsrc-etl-venv\lib\site-packages\databricks\sdk\dbutils.py:59: in ls
+    return [
+..\bsrc-etl-venv\lib\site-packages\databricks\sdk\dbutils.py:59: in <listcomp>
+    return [
+..\bsrc-etl-venv\lib\site-packages\databricks\sdk\mixins\files.py:620: in list
+    p = self._path(path)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _  
 
-        # Call get_all_files with deadline information
-        found_files = extraction.get_all_files(
-            deadline_passed=deadline_passed, deadline_date=deadline_date
-        )
+self = <databricks.sdk.mixins.files.DbfsExt object at 0x00000222FF9C85E0>
+src = ParseResult(scheme='abfss', netloc='test-container@bsrcdadls.dfs.core.windows.net', path='/LRD_STATIC/processed', params='', query='', fragment='')
 
-        if deadline_passed:
-            # Should copy the file from processed folder
->           mock_dbutils_fs_cp.assert_called_once_with(
-                f"{test_container}/LRD_STATIC/processed/TEST_STATIC_FILE_20240101.txt",
-                f"{test_container}/LRD_STATIC/TEST_STATIC_FILE.txt",
+    def _path(self, src):
+        src = parse.urlparse(str(src))
+        if src.scheme and src.scheme not in self.__ALLOWED_SCHEMES:
+>           raise ValueError(
+                f'unsupported scheme "{src.scheme}". DBUtils in the SDK only supports local, root DBFS, and '
+                "UC Volumes paths, not external locations or DBFS mount points."
             )
-E           AssertionError: Expected 'cp' to be called once. Called 0 times.
+E           ValueError: unsupported scheme "abfss". DBUtils in the SDK only supports local, root DBFS, and UC Volumes paths, not external locations or DBFS mount points.
 
-test\staging\test_extract_non_ssf_data.py:399: AssertionError
--------------------------------------------------------------------------------------- Captured stdout call -------------------------------------------------------------------------------------- 
-2025-06-18 11:35:00 [INFO] get_all_files:  Deadline has passed (2025-06-17 08:34:54 UTC). LRD_STATIC files copied from processed folder.
-2025-06-18 11:35:00 [INFO] get_all_files:  Deadline has passed (2025-06-17 08:34:54 UTC). LRD_STATIC files copied from processed folder.
+..\bsrc-etl-venv\lib\site-packages\databricks\sdk\mixins\files.py:638: ValueError
 -------------------------------------------------------------------------------------- Captured stderr call -------------------------------------------------------------------------------------- 
-[Stage 19:>                                                         (0 + 1) / 1]
---------------------------------------------------------------------------------------- Captured log call ---------------------------------------------------------------------------------------- 
-INFO     betl_src_poc_logger:extract_nonssf_data.py:248 Deadline has passed (2025-06-17 08:34:54 UTC). LRD_STATIC files copied from processed folder.
-______________________________________________________________ test_extract_non_ssf_data_with_deadline[202503-test-container-False] ______________________________________________________________ 
 
-spark_session = <pyspark.sql.session.SparkSession object at 0x00000262BA0E2590>, mocker = <pytest_mock.plugin.MockerFixture object at 0x00000262BA300970>, run_month = '202503'
-source_container = 'test-container', deadline_passed = False, caplog = <_pytest.logging.LogCaptureFixture object at 0x00000262BA3006D0>
-
-    @pytest.mark.parametrize(
-        ("run_month", "source_container", "deadline_passed"),
-        [
-            ("202503", "test-container", True),
-            ("202503", "test-container", False),
-        ],
-    )
-    def test_extract_non_ssf_data_with_deadline(
-        spark_session,
-        mocker,
-        run_month,
-        source_container,
-        deadline_passed,
-        caplog,
-    ):
-        """Test the deadline functionality for LRD_STATIC files."""
-        test_container = f"abfss://{source_container}@bsrcdadls.dfs.core.windows.net"
-
-        # Create mock metadata DataFrame
-        schema_meta = [
-            "SourceSystem",
-            "SourceFileName",
-            "SourceFileFormat",
-            "SourceFileDelimiter",
-            "StgTableName",
-            "FileDeliveryStep",
-            "FileDeliveryStatus",
-        ]
-        mock_meta = spark_session.createDataFrame(
-            [
-                (
-                    "LRD_STATIC",  # Uppercase to match code
-                    "TEST_STATIC_FILE",
-                    ".txt",
-                    "|",
-                    "test_static_file",
-                    0,
-                    "Expected",
-                ),
-            ],
-            schema=schema_meta,
-        )
-
-        # Create schema for log DataFrame
-        schema_log = StructType(
-            [
-                StructField("SourceSystem", StringType(), True),  # noqa: FBT003
-                StructField("SourceFileName", StringType(), True),  # noqa: FBT003
-                StructField("DeliveryNumber", IntegerType(), True),  # noqa: FBT003
-                StructField("FileDeliveryStep", IntegerType(), True),  # noqa: FBT003
-                StructField("FileDeliveryStatus", StringType(), True),  # noqa: FBT003
-                StructField("Result", StringType(), True),  # noqa: FBT003
-                StructField("LastUpdatedDateTimestamp", TimestampType(), True),  # noqa: FBT003
-                StructField("Comment", StringType(), True),  # noqa: FBT003
-            ]
-        )
-
-        # Create empty DataFrame with schema
-        mock_log = spark_session.createDataFrame([], schema=schema_log)
-
-        # Mock spark.read
-        mock_read = mocker.patch("pyspark.sql.SparkSession.read", autospec=True)
-        mock_read.table.side_effect = [mock_meta, mock_log]
-
-        # Create extraction instance
-        extraction = ExtractNonSSFData(
-            spark_session,
-            run_month,
-            source_container=source_container,
-        )
-
-        # Mock filesystem operations
-        mock_dbutils_fs_ls = mocker.patch.object(extraction.dbutils.fs, "ls")
-        mock_dbutils_fs_cp = mocker.patch.object(extraction.dbutils.fs, "cp")
-
-        # Set up the mock file system - file is missing from LRD_STATIC but exists in processed # noqa: E501
-        effect = [
-            [],  # Empty NME folder
-            [],  # Empty FINOB folder
-            [],  # Empty LRD_STATIC folder (file not delivered)
-            [  # Processed folder contains the file
-                FileInfoMock(
-                    {
-                        "path": f"{test_container}/LRD_STATIC/processed/TEST_STATIC_FILE_20240101.txt",  # noqa: E501
-                        "name": "TEST_STATIC_FILE_20240101.txt",
-                    }
-                )
-            ],
-            [  # Second call to processed folder for ls check
-                FileInfoMock(
-                    {
-                        "path": f"{test_container}/LRD_STATIC/processed/TEST_STATIC_FILE_20240101.txt",  # noqa: E501
-                        "name": "TEST_STATIC_FILE_20240101.txt",
-                    }
-                )
-            ],
-        ]
-        mock_dbutils_fs_ls.side_effect = effect
-
-        # Set deadline date
-        deadline_date = (
-            datetime.now(timezone.utc) - timedelta(days=1)
-            if deadline_passed
-            else datetime.now(timezone.utc) + timedelta(days=1)
-        )
-
-        # Call get_all_files with deadline information
-        found_files = extraction.get_all_files(
-            deadline_passed=deadline_passed, deadline_date=deadline_date
-        )
-
-        if deadline_passed:
-            # Should copy the file from processed folder
-            mock_dbutils_fs_cp.assert_called_once_with(
-                f"{test_container}/LRD_STATIC/processed/TEST_STATIC_FILE_20240101.txt",
-                f"{test_container}/LRD_STATIC/TEST_STATIC_FILE.txt",
-            )
-            # Check that the file was added to the list
-            assert len(found_files) == 1
-            assert found_files[0]["source_system"] == "LRD_STATIC"
-            assert (
-                found_files[0]["file_name"]
-                == f"{test_container}/LRD_STATIC/TEST_STATIC_FILE.txt"
-            )
-            # Check log message
-            assert "Deadline has passed" in caplog.text
-            assert "LRD_STATIC files copied from processed folder" in caplog.text
-        else:
-            # Should NOT copy the file
-            mock_dbutils_fs_cp.assert_not_called()
-            # No files should be found
-            assert len(found_files) == 0
-            # Check log messages
->           assert (
-                "File TEST_STATIC_FILE not delivered but deadline not reached yet"
-                in caplog.text
-            )
-E           AssertionError: assert 'File TEST_STATIC_FILE not delivered but deadline not reached yet' in 'INFO     betl_src_poc_logger:extract_nonssf_data.py:253 Deadline not yet reached (2025-06-19 08:35:01 UTC). LRD_STATIC files will not be copied.\n'
-E            +  where 'INFO     betl_src_poc_logger:extract_nonssf_data.py:253 Deadline not yet reached (2025-06-19 08:35:01 UTC). LRD_STATIC files will not be copied.\n' = <_pytest.logging.LogCaptureFixture object at 0x00000262BA3006D0>.text
-
-test\staging\test_extract_non_ssf_data.py:419: AssertionError
--------------------------------------------------------------------------------------- Captured stdout call -------------------------------------------------------------------------------------- 
-2025-06-18 11:35:06 [INFO] get_all_files:  Deadline not yet reached (2025-06-19 08:35:01 UTC). LRD_STATIC files will not be copied.
-2025-06-18 11:35:06 [INFO] get_all_files:  Deadline not yet reached (2025-06-19 08:35:01 UTC). LRD_STATIC files will not be copied.
--------------------------------------------------------------------------------------- Captured stderr call -------------------------------------------------------------------------------------- 
-[Stage 23:>                                                         (0 + 1) / 1]
---------------------------------------------------------------------------------------- Captured log call ---------------------------------------------------------------------------------------- 
-INFO     betl_src_poc_logger:extract_nonssf_data.py:253 Deadline not yet reached (2025-06-19 08:35:01 UTC). LRD_STATIC files will not be copied.
 ======================================================================================== warnings summary ======================================================================================== 
 ..\bsrc-etl-venv\lib\site-packages\holidays\deprecations\v1_incompatibility.py:40
   C:\Users\B25712\bsrc-etl-venv\bsrc-etl-venv\lib\site-packages\holidays\deprecations\v1_incompatibility.py:40: FutureIncompatibilityWarning:
@@ -575,7 +148,7 @@ src\config\exceptions.py                           21     21     0%   6-48
 src\config\process.py                               4      4     0%   7-10
 src\config\schema.py                                4      4     0%   3-52
 src\dq\__init__.py                                  0      0   100%
-src\dq\dq_validation.py                           141    132     6%   47-112, 166-181, 197-249, 265-286, 318-350, 372-392, 414-486
+src\dq\dq_validation.py                           141     88    38%   54-55, 69, 77-78, 88, 176-181, 201-249, 269-286, 323-350, 377-392, 414-486
 src\extract\__init__.py                             0      0   100%
 src\extract\master_data_sql.py                     90     71    21%   31-33, 37-38, 42, 59-88, 109-137, 149-156, 162-164, 188, 222-231, 285-300, 329-356
 src\month_setup\__init__.py                         0      0   100%
@@ -583,9 +156,9 @@ src\month_setup\dial_derive_snapshotdate.py        32     27    16%   12-18, 28-
 src\month_setup\metadata_log_tables.py             32     25    22%   23-84, 159, 166-203
 src\month_setup\setup_new_month.py                 13     13     0%   17-84
 src\staging\__init__.py                             0      0   100%
-src\staging\extract_base.py                        65     17    74%   156, 162-164, 304-312, 343-352, 386-403, 419
+src\staging\extract_base.py                        65      8    88%   156, 162-164, 304-312
 src\staging\extract_dial_data.py                   65     65     0%   16-360
-src\staging\extract_nonssf_data.py                103     63    39%   48-70, 104-178, 211-213, 278-312, 327, 343, 366-388
+src\staging\extract_nonssf_data.py                103     13    87%   126-130, 140-143, 146-150, 175-176, 209-211, 291-295
 src\staging\extract_ssf_data.py                   164    164     0%   26-620
 src\staging\status.py                              57      5    91%   18, 53-54, 107, 151
 src\transform\__init__.py                           0      0   100%
@@ -593,14 +166,14 @@ src\transform\table_write_and_comment.py           72     72     0%   14-237
 src\transform\transform_business_logic_sql.py       6      6     0%   6-25
 src\utils\__init__.py                               0      0   100%
 src\utils\alias_util.py                            13     13     0%   10-109
-src\utils\export_parquet.py                        15     12    20%   38-57, 67-68
+src\utils\export_parquet.py                        15      6    60%   49-54, 67-68
 src\utils\get_dbutils.py                            2      0   100%
 src\utils\get_env.py                               10      0   100%
 src\utils\logging_util.py                           6      0   100%
-src\utils\parameter_utils.py                       23     19    17%   33-53, 79-84, 105-116
+src\utils\parameter_utils.py                       23     13    43%   34, 38-42, 79-84, 105-116
 src\utils\parse_yaml.py                            22     22     0%   11-127
 src\utils\sources_util.py                          52     52     0%   7-218
-src\utils\table_logging.py                         14      5    64%   36-37, 54-56
+src\utils\table_logging.py                         14      0   100%
 src\utils\table_schema.py                           3      3     0%   8-16
 src\utils\transformations_util.py                  17     12    29%   20-25, 39, 51, 65-68
 src\validate\__init__.py                            0      0   100%
@@ -612,14 +185,12 @@ src\validate\transformations.py                   192    192     0%   21-593
 src\validate\validate_sql.py                       54     54     0%   13-130
 src\validate\yaml.py                               18     18     0%   3-34
 -----------------------------------------------------------------------------
-TOTAL                                            1430   1158    19%
+TOTAL                                            1430   1038    27%
 Coverage HTML written to dir htmlcov
 
-==================================================================================== short test summary info ===================================================================================== 
-FAILED test/staging/test_extract_non_ssf_data.py::test_extract_non_ssf_data[202503-test-container] - AssertionError: cp('abfss://test-container@bsrcdadls.dfs.core.windows.net/LRD_STATIC/processed/TEST_NON_SSF_V2_999999.txt', 'abfss://test-container@bsrcdadls.dfs.core.windows.net/LRD_STATIC/...
-FAILED test/staging/test_extract_non_ssf_data.py::test_extract_non_ssf_data_with_deadline[202503-test-container-True] - AssertionError: Expected 'cp' to be called once. Called 0 times.
-FAILED test/staging/test_extract_non_ssf_data.py::test_extract_non_ssf_data_with_deadline[202503-test-container-False] - AssertionError: assert 'File TEST_STATIC_FILE not delivered but deadline not reached yet' in 'INFO     betl_src_poc_logger:extract_nonssf_data.py:253 Deadline not yet reached (2025-06-19 08:...
-============================================================================ 3 failed, 1 passed, 1 warning in 53.00s ============================================================================= 
-SUCCESS: The process with PID 23072 (child process of PID 3400) has been terminated.
-SUCCESS: The process with PID 3400 (child process of PID 23148) has been terminated.
-SUCCESS: The process with PID 23148 (child process of PID 13440) has been terminated.
+==================================================================================== short test summary info =====================================================================================
+FAILED test/staging/test_extract_non_ssf_data.py::test_place_static_data_keyword_only[202503-test-container] - ValueError: unsupported scheme "abfss". DBUtils in the SDK only supports local, root DBFS, and UC Volumes paths, not external locations or DBFS mount points.
+======================================================================= 1 failed, 3 passed, 1 warning in 99.91s (0:01:39) ======================================================================== 
+SUCCESS: The process with PID 2572 (child process of PID 24128) has been terminated.
+SUCCESS: The process with PID 24128 (child process of PID 24880) has been terminated.
+SUCCESS: The process with PID 24880 (child process of PID 20200) has been terminated.
