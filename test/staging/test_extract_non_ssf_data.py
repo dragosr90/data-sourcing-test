@@ -475,6 +475,9 @@ def test_place_static_data_keyword_only(
         source_container=source_container,
     )
 
+    # Mock the dbutils.fs.ls to prevent actual filesystem access
+    mocker.patch.object(extraction.dbutils.fs, "ls", return_value=[])
+
     # Test that calling with positional argument raises TypeError
     with pytest.raises(TypeError, match="takes 2 positional arguments but 3 were given"):
         extraction.place_static_data([], True)  # noqa: FBT003 - Testing that positional bool fails
