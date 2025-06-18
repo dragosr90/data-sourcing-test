@@ -1,0 +1,233 @@
+(bsrc-etl-venv) PS C:\Users\B25712\bsrc-etl-venv\bsrc-etl> pre-commit run --all-files
+ruff lint................................................................Failed
+- hook id: ruff
+- exit code: 1
+
+src\staging\extract_nonssf_data.py:73:37: FBT001 Boolean-typed positional argument in function definition
+   |
+72 |     def place_static_data(
+73 |         self, new_files: list[str], deadline_passed: bool = False
+   |                                     ^^^^^^^^^^^^^^^ FBT001
+74 |     ) -> list[str]:
+75 |         """Handle static data files for the LRD_STATIC source system.
+   |
+
+src\staging\extract_nonssf_data.py:73:37: FBT002 Boolean default positional argument in function definition
+   |
+72 |     def place_static_data(
+73 |         self, new_files: list[str], deadline_passed: bool = False
+   |                                     ^^^^^^^^^^^^^^^ FBT002
+74 |     ) -> list[str]:
+75 |         """Handle static data files for the LRD_STATIC source system.
+   |
+
+src\staging\extract_nonssf_data.py:79:89: E501 Line too long (96 > 88)
+   |
+77 |         Loops over metadata entries for LRD_STATIC files and checks if they are
+78 |         delivered this month. If not, copies the files from the processed folder to the
+79 |         static folder only after deadline has passed and only for files that are still expected.
+   |                                                                                         ^^^^^^^^ E501
+80 |
+81 |         Args:
+   |
+
+src\staging\extract_nonssf_data.py:140:24: BLE001 Do not catch blind exception: `Exception`
+    |
+138 |                         if file.name.startswith(file_name)
+139 |                     ]
+140 |                 except Exception as e:
+    |                        ^^^^^^^^^ BLE001
+141 |                     logger.error(
+142 |                         f"Error accessing processed folder {processed_folder}: {e}"
+    |
+
+src\staging\extract_nonssf_data.py:141:21: TRY400 Use `logging.exception` instead of `logging.error`
+    |
+139 |                       ]
+140 |                   except Exception as e:
+141 |                       logger.error(
+    |  _____________________^
+142 | |                         f"Error accessing processed folder {processed_folder}: {e}"
+143 | |                     )
+    | |_____________________^ TRY400
+144 |                       continue
+    |
+    = help: Replace with `exception`
+
+src\staging\extract_nonssf_data.py:162:89: E501 Line too long (90 > 88)
+    |
+160 |                         self.dbutils.fs.cp(latest_processed_file, target_file)
+161 |                         logger.info(
+162 |                             f"Copied {file_name} to static folder after deadline passed. "
+    |                                                                                         ^^ E501
+163 |                             f"Source: {latest_processed_file}, Target: {target_file}"
+164 |                         )
+    |
+
+src\staging\extract_nonssf_data.py:171:89: E501 Line too long (113 > 88)
+    |
+169 |                             key=Path(file_name).stem,
+170 |                             file_delivery_status=NonSSFStepStatus.RECEIVED,
+171 |                             comment=f"Static file {processed_file} copied from processed folder after deadline.",
+    |                                                                                         ^^^^^^^^^^^^^^^^^^^^^^^^^ E501
+172 |                         )
+173 |                     except Exception as e:
+    |
+
+src\staging\extract_nonssf_data.py:173:28: BLE001 Do not catch blind exception: `Exception`
+    |
+171 |                             comment=f"Static file {processed_file} copied from processed folder after deadline.",
+172 |                         )
+173 |                     except Exception as e:
+    |                            ^^^^^^^^^ BLE001
+174 |                         logger.error(
+175 |                             f"Failed to copy {latest_processed_file} to {target_file}: {e}"
+    |
+
+src\staging\extract_nonssf_data.py:174:25: TRY400 Use `logging.exception` instead of `logging.error`
+    |
+172 |                           )
+173 |                       except Exception as e:
+174 |                           logger.error(
+    |  _________________________^
+175 | |                             f"Failed to copy {latest_processed_file} to {target_file}: {e}"
+176 | |                         )
+    | |_________________________^ TRY400
+177 |
+178 |           return new_files
+    |
+    = help: Replace with `exception`
+
+src\staging\extract_nonssf_data.py:175:89: E501 Line too long (91 > 88)
+    |
+173 |                     except Exception as e:
+174 |                         logger.error(
+175 |                             f"Failed to copy {latest_processed_file} to {target_file}: {e}"
+    |                                                                                         ^^^ E501
+176 |                         )
+    |
+
+src\staging\extract_nonssf_data.py:181:15: FBT001 Boolean-typed positional argument in function definition
+    |
+180 |     def get_all_files(
+181 |         self, deadline_passed: bool = False, deadline_date: datetime | None = None
+    |               ^^^^^^^^^^^^^^^ FBT001
+182 |     ) -> list[dict[str, str]]:
+183 |         """Retrieve all files from the source container along with their source systems.
+    |
+
+src\staging\extract_nonssf_data.py:181:15: FBT002 Boolean default positional argument in function definition
+    |
+180 |     def get_all_files(
+181 |         self, deadline_passed: bool = False, deadline_date: datetime | None = None
+    |               ^^^^^^^^^^^^^^^ FBT002
+182 |     ) -> list[dict[str, str]]:
+183 |         """Retrieve all files from the source container along with their source systems.
+    |
+
+src\staging\extract_nonssf_data.py:207:20: BLE001 Do not catch blind exception: `Exception`
+    |
+205 |                     if (not p.isDir() or p.name.endswith(".parquet"))
+206 |                 ]
+207 |             except Exception as e:
+    |                    ^^^^^^^^^ BLE001
+208 |                 logger.warning(f"Could not access folder {subfolder}: {e}")
+209 |                 all_files[subfolder] = []
+    |
+
+src\staging\extract_nonssf_data.py:245:89: E501 Line too long (107 > 88)
+    |
+243 |             if deadline_passed:
+244 |                 logger.info(
+245 |                     f"Deadline has passed ({deadline_str}). LRD_STATIC files copied from processed folder."
+    |                                                                                         ^^^^^^^^^^^^^^^^^^^ E501
+246 |                 )
+247 |             else:
+    |
+
+src\staging\extract_nonssf_data.py:249:89: E501 Line too long (102 > 88)
+    |
+247 |             else:
+248 |                 logger.info(
+249 |                     f"Deadline not yet reached ({deadline_str}). LRD_STATIC files will not be copied."
+    |                                                                                         ^^^^^^^^^^^^^^ E501
+250 |                 )
+    |
+
+Found 15 errors.
+No fixes available (2 hidden fixes can be enabled with the `--unsafe-fixes` option).
+All checks passed!
+All checks passed!
+scripts\nonssf_staging_process.py:18:5: C901 `non_ssf_load` is too complex (11 > 10)
+   |
+18 | def non_ssf_load(
+   |     ^^^^^^^^^^^^ C901
+19 |     spark: SparkSession,
+20 |     run_month: str,
+   |
+
+scripts\nonssf_staging_process.py:27:89: E501 Line too long (95 > 88)
+   |
+26 |     1. Check availability of LRD_STATIC/NME/FINOB data in blob storage
+27 |     2. Copy processed LRD_STATIC for missing files (only after deadline and for expected files)
+   |                                                                                         ^^^^^^^ E501
+28 |     3. Check deadline for FINOB and NME files and raise error if deadline passed
+29 |     4. For every file in blob storage:
+   |
+
+scripts\nonssf_staging_process.py:72:13: TRY400 Use `logging.exception` instead of `logging.error`
+   |
+70 |               )
+71 |           except ValueError:
+72 |               logger.error(
+   |  _____________^
+73 | |                 f"Invalid deadline_date format: {deadline_date}. Expected YYYY-MM-DD"
+74 | |             )
+   | |_____________^ TRY400
+75 |               deadline_dt = datetime.now(tz=timezone.utc)
+76 |       else:
+   |
+   = help: Replace with `exception`
+
+scripts\nonssf_staging_process.py:246:89: E501 Line too long (94 > 88)
+    |
+244 |             missing_files.append(f"{source_system}/{expected_file}")
+245 |             logger.error(
+246 |                 f"Deadline passed: Missing expected file {expected_file} from {source_system}"
+    |                                                                                         ^^^^^^ E501
+247 |             )
+    |
+
+scripts\nonssf_staging_process.py:250:89: E501 Line too long (100 > 88)
+    |
+249 |     if missing_files:
+250 |         error_msg = f"Deadline violation: Missing files after deadline - {', '.join(missing_files)}"
+    |                                                                                         ^^^^^^^^^^^^ E501
+251 |
+252 |         # Log the error for each missing file's source system
+    |
+
+scripts\nonssf_staging_process.py:316:89: E501 Line too long (100 > 88)
+    |
+314 |     if len(sys.argv) not in [1, 2, 3]:
+315 |         logger.error(
+316 |             "Incorrect number of parameters, expected 1, 2 or 3: run_month[ run_id][ deadline_date]"
+    |                                                                                         ^^^^^^^^^^^^ E501
+317 |         )
+318 |         sys.exit(-1)
+    |
+
+scripts\nonssf_staging_process.py:326:31: PLR2004 Magic value used in comparison, consider replacing `2` with a constant variable
+    |
+324 |     if len(remaining_args) >= 1:
+325 |         run_id = int(remaining_args[0])
+326 |     if len(remaining_args) >= 2:
+    |                               ^ PLR2004
+327 |         deadline_date = remaining_args[1]
+    |
+
+Found 7 errors.
+No fixes available (1 hidden fix can be enabled with the `--unsafe-fixes` option).
+
+ruff format..............................................................Passed
+mypy.....................................................................Passed
