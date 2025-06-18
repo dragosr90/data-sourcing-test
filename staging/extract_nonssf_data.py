@@ -91,16 +91,16 @@ class ExtractNonSSFData(ExtractStagingData):
         Returns:
             list[str]: List of copied static files.
         """
-        source_system = "lrd_static"
+        source_system = "LRD_STATIC"
         expected_files = (
             self.meta_data.where(f"SourceSystem = '{source_system}'")
             .select("SourceFileName", "SourceFileFormat")
             .distinct()
             .collect()
         )
-        static_folder = f"{self.source_container_url}/{source_system.upper()}"
+        static_folder = f"{self.source_container_url}/{source_system}"
         processed_folder = (
-            f"{self.source_container_url}/{source_system.upper()}/processed"
+            f"{self.source_container_url}/{source_system}/processed"
         )
         
         for file in expected_files:
@@ -147,7 +147,7 @@ class ExtractNonSSFData(ExtractStagingData):
                 if not processed_files:
                     logger.error(
                         f"File {file_name} not delivered and not found in "
-                        f"{source_system.upper()}/processed folder."
+                        f"{source_system}/processed folder."
                     )
                     continue
                 
@@ -166,7 +166,7 @@ class ExtractNonSSFData(ExtractStagingData):
                         new_files.append(target_file)
                         
                         self.update_log_metadata(
-                            source_system=source_system.upper(),
+                            source_system=source_system,
                             key=Path(file_name).stem,
                             file_delivery_status=NonSSFStepStatus.RECEIVED,
                             comment=(
