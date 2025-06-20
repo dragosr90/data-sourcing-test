@@ -5,12 +5,14 @@ from pathlib import Path
 from pyspark.sql import DataFrame
 from pyspark.sql.functions import col
 
+from src.config.exceptions import NonSSFExtractionError
+from src.config.process import ProcessLogConfig
 from src.staging.extract_base import ExtractStagingData
 from src.staging.status import NonSSFStepStatus
 from src.utils.export_parquet import export_to_parquet
 from src.utils.get_env import get_container_path
 from src.utils.logging_util import get_logger
-from src.utils.table_logging import get_result
+from src.utils.table_logging import get_result, write_to_log
 
 logger = get_logger()
 
@@ -91,16 +93,16 @@ class ExtractNonSSFData(ExtractStagingData):
         Returns:
             list[str]: List of copied static files.
         """
-        source_system = "LRD_STATIC"
+        source_system = "lrd_static"  # Changed to lowercase to match metadata
         expected_files = (
             self.meta_data.where(f"SourceSystem = '{source_system}'")
             .select("SourceFileName", "SourceFileFormat")
             .distinct()
             .collect()
         )
-        static_folder = f"{self.source_container_url}/{source_system}"
+        static_folder = f"{self.source_container_url}/{source_system.upper()}"
         processed_folder = (
-            f"{self.source_container_url}/{source_system}/processed"
+            f"{self.source_container_url}/{source_system.upper()}/processed"
         )
         
         for file in expected_files:
@@ -120,11 +122,15 @@ class ExtractNonSSFData(ExtractStagingData):
                 # Check if the file is expected (still in metadata as expected)
                 expected_status = (
                     self.meta_data.filter(col("SourceFileName") == file_name)
-                    .select("FileDeliveryStatus")
+                    .select("FileDeliveryStep")
                     .collect()
                 )
                 
-                if not expected_status or expected_status[0]["FileDeliveryStatus"] != "Expected":
+                # Use NonSSFStepStatus enum values for comparison
+                if not expected_status or expected_status[0]["FileDeliveryStep"] not in [
+                    NonSSFStepStatus.EXPECTED.value,
+                    NonSSFStepStatus.REDELIVERY.value
+                ]:
                     logger.info(
                         f"File {file_name} is not in expected status. "
                         "Skipping copy from processed folder."
@@ -147,7 +153,7 @@ class ExtractNonSSFData(ExtractStagingData):
                 if not processed_files:
                     logger.error(
                         f"File {file_name} not delivered and not found in "
-                        f"{source_system}/processed folder."
+                        f"{source_system.upper()}/processed folder."
                     )
                     continue
                 
@@ -166,7 +172,7 @@ class ExtractNonSSFData(ExtractStagingData):
                         new_files.append(target_file)
                         
                         self.update_log_metadata(
-                            source_system=source_system,
+                            source_system=source_system.upper(),
                             key=Path(file_name).stem,
                             file_delivery_status=NonSSFStepStatus.RECEIVED,
                             comment=(
@@ -215,7 +221,9 @@ class ExtractNonSSFData(ExtractStagingData):
             
             expected_files = [
                 row["SourceFileName"]
-                for row in self.meta_data.filter(col("SourceSystem") == subfolder).select("SourceFileName").collect()
+                for row in self.meta_data.filter(
+                    col("SourceSystem") == subfolder.lower()  # Use lowercase for comparison
+                ).select("SourceFileName").collect()
             ]
             
             # Create a copy of the list to iterate over while modifying the original
@@ -260,6 +268,126 @@ class ExtractNonSSFData(ExtractStagingData):
             for source_system in all_files.keys()
             for file_name in all_files[source_system]
         ]
+
+    def check_deadline_violations(
+        self,
+        files_per_delivery_entity: list[dict[str, str]],
+        log_config: ProcessLogConfig
+    ) -> None:
+        """Check for deadline violations for FINOB and NME files.
+        
+        Raises error if deadline has passed and expected files are missing.
+        
+        Args:
+            files_per_delivery_entity: List of files found
+            log_config: Process log configuration
+            
+        Raises:
+            NonSSFExtractionError: If deadline violations are found
+        """
+        # Get expected files for FINOB and NME from metadata
+        finob_nme_expected = self.meta_data.filter(
+            self.meta_data.SourceSystem.isin(["finob", "nme"])  # Use lowercase
+        ).select("SourceFileName", "SourceSystem").collect()
+        
+        # Get delivered files for FINOB and NME
+        delivered_files = {
+            Path(file["file_name"]).stem: file["source_system"].lower()
+            for file in files_per_delivery_entity 
+            if file["source_system"].lower() in ["finob", "nme"]
+        }
+        
+        # Check for missing files
+        missing_files = []
+        for row in finob_nme_expected:
+            expected_file = row["SourceFileName"]
+            source_system = row["SourceSystem"]
+            
+            if expected_file not in delivered_files:
+                missing_files.append(f"{source_system}/{expected_file}")
+                logger.error(
+                    f"Deadline passed: Missing expected file {expected_file} "
+                    f"from {source_system}"
+                )
+        
+        if missing_files:
+            error_msg = (
+                f"Deadline violation: Missing files after deadline - "
+                f"{', '.join(missing_files)}"
+            )
+            
+            # Log the error for each missing file's source system
+            for missing_file in missing_files:
+                source_system = missing_file.split('/')[0]
+                self._append_to_process_log(
+                    **log_config,
+                    source_system=source_system.upper(),  # Convert back to uppercase for logging
+                    comments=f"Deadline violation: {missing_file}",
+                    status="Failed",
+                )
+            
+            # Raise error to stop the pipeline
+            raise NonSSFExtractionError(
+                NonSSFStepStatus.RECEIVED,
+                additional_info=error_msg
+            )
+
+    def _append_to_process_log(
+        self,
+        spark,
+        run_month: str,
+        record: dict,
+        source_system: str,
+        comments: str,
+        status: str = "Completed",
+        file_delivery_status: NonSSFStepStatus = NonSSFStepStatus.COMPLETED,
+    ) -> None:
+        """Helper method to append to process log."""
+        record["Status"] = status
+        record["Comments"] = comments
+        record["SourceSystem"] = source_system
+        write_to_log(
+            spark=spark,
+            run_month=run_month,
+            record=dict(record),
+            log_table="process_log",
+        )
+        if status == "Failed":
+            # Overall process should be set to failed as well
+            record["SourceSystem"] = ""
+            write_to_log(
+                spark=spark,
+                run_month=run_month,
+                record=dict(record),
+                log_table="process_log",
+            )
+            raise NonSSFExtractionError(file_delivery_status, additional_info=comments)
+
+    def get_deadline_from_metadata(self, source_system: str, file_name: str) -> datetime | None:
+        """Get deadline date from metadata for a specific file.
+        
+        Args:
+            source_system: Source system name
+            file_name: File name to check
+            
+        Returns:
+            Deadline date from metadata or None if not found
+        """
+        deadline_row = self.meta_data.filter(
+            (col("SourceSystem") == source_system.lower()) & 
+            (col("SourceFileName") == Path(file_name).stem)
+        ).select("Deadline").collect()
+        
+        if deadline_row and deadline_row[0]["Deadline"]:
+            # Assuming the Deadline column is a date type, convert to datetime
+            deadline_date = deadline_row[0]["Deadline"]
+            if isinstance(deadline_date, str):
+                return datetime.strptime(deadline_date, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+            else:
+                # If it's already a date/datetime object
+                return datetime.combine(deadline_date, datetime.min.time()).replace(tzinfo=timezone.utc)
+        
+        return None
 
     def convert_to_parquet(self, source_system: str, file_name: str) -> bool:
         """Convert a source file to Parquet format and save it in the target container.
