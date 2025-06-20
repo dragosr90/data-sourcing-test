@@ -54,7 +54,7 @@ def test_extract_non_ssf_data(
     mock_meta = spark_session.createDataFrame(
         [
             (
-                "LRD_STATIC",  # Changed to uppercase to match folder names
+                "lrd_static",  # Changed back to lowercase to match metadata
                 "TEST_NON_SSF_V1",
                 ".txt",
                 "|",
@@ -63,7 +63,7 @@ def test_extract_non_ssf_data(
                 "Expected",
             ),
             (
-                "LRD_STATIC",  # Changed to uppercase
+                "lrd_static",  # Changed back to lowercase
                 "TEST_NON_SSF_V2",
                 ".txt",
                 "|",
@@ -72,7 +72,7 @@ def test_extract_non_ssf_data(
                 "Expected",
             ),
             (
-                "NME",  # Changed to uppercase
+                "nme",  # Changed back to lowercase
                 "TEST_NON_SSF_V3",
                 ".parquet",
                 ",",
@@ -81,7 +81,7 @@ def test_extract_non_ssf_data(
                 "Expected",
             ),
             (
-                "FINOB",  # Changed to uppercase
+                "finob",  # Changed back to lowercase
                 "TEST_NON_SSF_V4",
                 ".csv",
                 ",",
@@ -314,7 +314,7 @@ def test_extract_non_ssf_data_with_deadline(
     mock_meta = spark_session.createDataFrame(
         [
             (
-                "LRD_STATIC",  # Uppercase to match code
+                "lrd_static",  # lowercase to match metadata
                 "TEST_STATIC_FILE",
                 ".txt",
                 "|",
@@ -437,7 +437,7 @@ def test_place_static_data_keyword_only(
     mock_meta = spark_session.createDataFrame(
         [
             (
-                "LRD_STATIC",  # Uppercase
+                "lrd_static",  # lowercase
                 "TEST_FILE",
                 ".txt",
                 "|",
