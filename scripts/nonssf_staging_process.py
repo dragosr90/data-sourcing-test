@@ -155,7 +155,7 @@ def non_ssf_load(
         run_month (str): Run month in yyyymm format
         run_id (int, optional): Run ID. Defaults to 1.
         deadline_date (str | None, optional): Deadline date in YYYY-MM-DD format. 
-            If not provided, uses current date.
+            If not provided, gets deadline from metadata table.
 
     Raises:
         NonSSFExtractionError: If any of the steps has status "Failed".
@@ -177,22 +177,42 @@ def non_ssf_load(
     # Start the process
     append_to_process_log(**log_config, comments="", source_system="", status="Started")
 
-    # Parse deadline date
+    extraction = ExtractNonSSFData(spark, run_month=run_month)
+    
+    # Get deadline from metadata if not provided
+    current_dt = datetime.now(tz=timezone.utc)
+    
+    # First check if we need to use deadline logic (for LRD_STATIC files)
+    # Get the earliest deadline from metadata for LRD_STATIC files
+    lrd_static_deadlines = extraction.meta_data.filter(
+        extraction.meta_data.SourceSystem == "lrd_static"
+    ).select("Deadline").distinct().collect()
+    
+    deadline_dt = None
+    if lrd_static_deadlines:
+        # Find the earliest deadline
+        for row in lrd_static_deadlines:
+            if row["Deadline"]:
+                file_deadline = row["Deadline"]
+                if isinstance(file_deadline, str):
+                    file_deadline_dt = datetime.strptime(file_deadline, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+                else:
+                    file_deadline_dt = datetime.combine(file_deadline, datetime.min.time()).replace(tzinfo=timezone.utc)
+                
+                if deadline_dt is None or file_deadline_dt < deadline_dt:
+                    deadline_dt = file_deadline_dt
+    
+    # Override with command line argument if provided
     if deadline_date:
         try:
             deadline_dt = datetime.strptime(deadline_date, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+            logger.info(f"Using deadline date from command line: {deadline_dt}")
         except ValueError:
             logger.exception(
                 f"Invalid deadline_date format: {deadline_date}. Expected YYYY-MM-DD"
             )
-            deadline_dt = datetime.now(tz=timezone.utc)
-    else:
-        deadline_dt = datetime.now(tz=timezone.utc)
     
-    current_dt = datetime.now(tz=timezone.utc)
-    deadline_passed = current_dt >= deadline_dt
-
-    extraction = ExtractNonSSFData(spark, run_month=run_month)
+    deadline_passed = deadline_dt is not None and current_dt >= deadline_dt
     
     # Get all files from basel-nonssf-landing container and place static data
     # Pass deadline information to the extraction class
@@ -208,9 +228,29 @@ def non_ssf_load(
 
     logger.info(files_per_delivery_entity)
 
-    # Check for deadline violations for FINOB and NME
-    if deadline_passed:
-        check_deadline_violations(extraction, files_per_delivery_entity, log_config)
+    # Check for deadline violations for FINOB and NME files
+    # Get deadlines for FINOB and NME from metadata
+    finob_nme_deadlines = {}
+    for source in ["finob", "nme"]:
+        deadlines = extraction.meta_data.filter(
+            extraction.meta_data.SourceSystem == source
+        ).select("SourceFileName", "Deadline").collect()
+        
+        for row in deadlines:
+            if row["Deadline"]:
+                file_deadline = row["Deadline"]
+                if isinstance(file_deadline, str):
+                    file_deadline_dt = datetime.strptime(file_deadline, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+                else:
+                    file_deadline_dt = datetime.combine(file_deadline, datetime.min.time()).replace(tzinfo=timezone.utc)
+                
+                # Check if this specific file's deadline has passed
+                if current_dt >= file_deadline_dt:
+                    finob_nme_deadlines[f"{source}/{row['SourceFileName']}"] = True
+    
+    # If any FINOB/NME file has passed its deadline, check for violations
+    if finob_nme_deadlines:
+        extraction.check_deadline_violations(files_per_delivery_entity, log_config)
 
     # Process each file
     for file in files_per_delivery_entity:
@@ -220,71 +260,6 @@ def non_ssf_load(
     append_to_process_log(
         **log_config, comments="", source_system="", status="Completed"
     )
-
-
-def check_deadline_violations(
-    extraction: ExtractNonSSFData,
-    files_per_delivery_entity: list[dict[str, str]],
-    log_config: ProcessLogConfig
-) -> None:
-    """Check for deadline violations for FINOB and NME files.
-    
-    Raises error if deadline has passed and expected files are missing.
-    
-    Args:
-        extraction: ExtractNonSSFData instance
-        files_per_delivery_entity: List of files found
-        log_config: Process log configuration
-        
-    Raises:
-        NonSSFExtractionError: If deadline violations are found
-    """
-    # Get expected files for FINOB and NME from metadata
-    finob_nme_expected = extraction.meta_data.filter(
-        extraction.meta_data.SourceSystem.isin(["FINOB", "NME"])
-    ).select("SourceFileName", "SourceSystem").collect()
-    
-    # Get delivered files for FINOB and NME
-    delivered_files = {
-        Path(file["file_name"]).stem: file["source_system"] 
-        for file in files_per_delivery_entity 
-        if file["source_system"] in ["FINOB", "NME"]
-    }
-    
-    # Check for missing files
-    missing_files = []
-    for row in finob_nme_expected:
-        expected_file = row["SourceFileName"]
-        source_system = row["SourceSystem"]
-        
-        if expected_file not in delivered_files:
-            missing_files.append(f"{source_system}/{expected_file}")
-            logger.error(
-                f"Deadline passed: Missing expected file {expected_file} "
-                f"from {source_system}"
-            )
-    
-    if missing_files:
-        error_msg = (
-            f"Deadline violation: Missing files after deadline - "
-            f"{', '.join(missing_files)}"
-        )
-        
-        # Log the error for each missing file's source system
-        for missing_file in missing_files:
-            source_system = missing_file.split('/')[0]
-            append_to_process_log(
-                **log_config,
-                source_system=source_system,
-                comments=f"Deadline violation: {missing_file}",
-                status="Failed",
-            )
-        
-        # Raise error to stop the pipeline
-        raise NonSSFExtractionError(
-            NonSSFStepStatus.RECEIVED,
-            additional_info=error_msg
-        )
 
 
 def append_to_process_log(
