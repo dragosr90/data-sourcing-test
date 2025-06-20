@@ -129,6 +129,66 @@ def process_single_file(
     )
 
 
+def get_deadline_from_metadata(extraction: ExtractNonSSFData, source_system: str) -> datetime | None:
+    """Get the earliest deadline from metadata for a given source system.
+    
+    Args:
+        extraction: ExtractNonSSFData instance
+        source_system: Source system to check
+        
+    Returns:
+        Earliest deadline datetime or None if no deadlines found
+    """
+    deadlines = extraction.meta_data.filter(
+        extraction.meta_data.SourceSystem == source_system
+    ).select("Deadline").distinct().collect()
+    
+    earliest_deadline = None
+    for row in deadlines:
+        if row["Deadline"]:
+            file_deadline = row["Deadline"]
+            if isinstance(file_deadline, str):
+                file_deadline_dt = datetime.strptime(file_deadline, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+            else:
+                file_deadline_dt = datetime.combine(file_deadline, datetime.min.time()).replace(tzinfo=timezone.utc)
+            
+            if earliest_deadline is None or file_deadline_dt < earliest_deadline:
+                earliest_deadline = file_deadline_dt
+    
+    return earliest_deadline
+
+
+def check_finob_nme_deadlines(extraction: ExtractNonSSFData, current_dt: datetime) -> dict[str, bool]:
+    """Check which FINOB/NME files have passed their deadlines.
+    
+    Args:
+        extraction: ExtractNonSSFData instance
+        current_dt: Current datetime
+        
+    Returns:
+        Dictionary of file paths that have passed their deadline
+    """
+    finob_nme_deadlines = {}
+    for source in ["finob", "nme"]:
+        deadlines = extraction.meta_data.filter(
+            extraction.meta_data.SourceSystem == source
+        ).select("SourceFileName", "Deadline").collect()
+        
+        for row in deadlines:
+            if row["Deadline"]:
+                file_deadline = row["Deadline"]
+                if isinstance(file_deadline, str):
+                    file_deadline_dt = datetime.strptime(file_deadline, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+                else:
+                    file_deadline_dt = datetime.combine(file_deadline, datetime.min.time()).replace(tzinfo=timezone.utc)
+                
+                # Check if this specific file's deadline has passed
+                if current_dt >= file_deadline_dt:
+                    finob_nme_deadlines[f"{source}/{row['SourceFileName']}"] = True
+    
+    return finob_nme_deadlines
+
+
 def non_ssf_load(
     spark: SparkSession,
     run_month: str,
@@ -182,25 +242,8 @@ def non_ssf_load(
     # Get deadline from metadata if not provided
     current_dt = datetime.now(tz=timezone.utc)
     
-    # First check if we need to use deadline logic (for LRD_STATIC files)
     # Get the earliest deadline from metadata for LRD_STATIC files
-    lrd_static_deadlines = extraction.meta_data.filter(
-        extraction.meta_data.SourceSystem == "lrd_static"
-    ).select("Deadline").distinct().collect()
-    
-    deadline_dt = None
-    if lrd_static_deadlines:
-        # Find the earliest deadline
-        for row in lrd_static_deadlines:
-            if row["Deadline"]:
-                file_deadline = row["Deadline"]
-                if isinstance(file_deadline, str):
-                    file_deadline_dt = datetime.strptime(file_deadline, "%Y-%m-%d").replace(tzinfo=timezone.utc)
-                else:
-                    file_deadline_dt = datetime.combine(file_deadline, datetime.min.time()).replace(tzinfo=timezone.utc)
-                
-                if deadline_dt is None or file_deadline_dt < deadline_dt:
-                    deadline_dt = file_deadline_dt
+    deadline_dt = get_deadline_from_metadata(extraction, "lrd_static")
     
     # Override with command line argument if provided
     if deadline_date:
@@ -229,24 +272,7 @@ def non_ssf_load(
     logger.info(files_per_delivery_entity)
 
     # Check for deadline violations for FINOB and NME files
-    # Get deadlines for FINOB and NME from metadata
-    finob_nme_deadlines = {}
-    for source in ["finob", "nme"]:
-        deadlines = extraction.meta_data.filter(
-            extraction.meta_data.SourceSystem == source
-        ).select("SourceFileName", "Deadline").collect()
-        
-        for row in deadlines:
-            if row["Deadline"]:
-                file_deadline = row["Deadline"]
-                if isinstance(file_deadline, str):
-                    file_deadline_dt = datetime.strptime(file_deadline, "%Y-%m-%d").replace(tzinfo=timezone.utc)
-                else:
-                    file_deadline_dt = datetime.combine(file_deadline, datetime.min.time()).replace(tzinfo=timezone.utc)
-                
-                # Check if this specific file's deadline has passed
-                if current_dt >= file_deadline_dt:
-                    finob_nme_deadlines[f"{source}/{row['SourceFileName']}"] = True
+    finob_nme_deadlines = check_finob_nme_deadlines(extraction, current_dt)
     
     # If any FINOB/NME file has passed its deadline, check for violations
     if finob_nme_deadlines:
