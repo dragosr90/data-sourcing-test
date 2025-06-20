@@ -3,20 +3,28 @@ ruff lint................................................................Failed
 - hook id: ruff
 - exit code: 1
 
-All checks passed!
-test\staging\test_extract_non_ssf_data.py:478:42: FBT003 Boolean positional value in function call
+src\staging\extract_nonssf_data.py:340:9: ANN001 Missing type annotation for function argument `spark`
     |
-476 |         TypeError, match="takes 2 positional arguments but 3 were given"
-477 |     ):
-478 |         extraction.place_static_data([], True)  # This should fail
-    |                                          ^^^^ FBT003
-479 |
-480 |     # Test that calling with keyword argument works
+338 |     def _append_to_process_log(
+339 |         self,
+340 |         spark,
+    |         ^^^^^ ANN001
+341 |         run_month: str,
+342 |         record: dict,
     |
 
 Found 1 error.
 All checks passed!
 All checks passed!
+scripts\nonssf_staging_process.py:130:5: PLR0912 Too many branches (18 > 12)
+    |
+130 | def non_ssf_load(  # noqa: C901 # noqa: PLR0912
+    |     ^^^^^^^^^^^^ PLR0912
+131 |     spark: SparkSession,
+132 |     run_month: str,
+    |
+
+Found 1 error.
 
 ruff format..............................................................Passed
 mypy.....................................................................Passed
