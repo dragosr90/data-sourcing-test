@@ -1,15 +1,367 @@
-2025-06-23T08:31:32.8599481Z ##[section]Starting: Check if package exists in Nexus3
-2025-06-23T08:31:32.8604891Z ==============================================================================
-2025-06-23T08:31:32.8605028Z Task         : Python script
-2025-06-23T08:31:32.8605112Z Description  : Run a Python file or inline script
-2025-06-23T08:31:32.8605219Z Version      : 0.248.1
-2025-06-23T08:31:32.8605305Z Author       : Microsoft Corporation
-2025-06-23T08:31:32.8605392Z Help         : https://docs.microsoft.com/azure/devops/pipelines/tasks/utility/python-script
-2025-06-23T08:31:32.8605505Z ==============================================================================
-2025-06-23T08:31:33.0795011Z [command]/usr/local/bin/python /__w/1354/s/blocks/python/scripts/check_package_exist.py BSRC_BUILDER *** abnamro_betl_src_poc 0.1.0
-2025-06-23T08:31:33.2199498Z Checking package at URL: https://p-nexus-3.development.nl.eu.abnamro.com:8443/repository/python-releases/packages/abnamro-betl-src-poc/0.1.0/abnamro_betl_src_poc-0.1.0-py3-none-any.whl
-2025-06-23T08:31:33.2200923Z Response Status Code: 200
-2025-06-23T08:31:33.2201535Z Package 'abnamro_betl_src_poc-0.1.0-py3-none-any.whl' already exists in Nexus repository 'python-releases'. To build new version, do a commit in your repo and run the pipeline again.
-2025-06-23T08:31:33.2363840Z 
-2025-06-23T08:31:33.2413930Z ##[error]The process '/usr/local/bin/python' failed with exit code 1
-2025-06-23T08:31:33.2478912Z ##[section]Finishing: Check if package exists in Nexus3
+2025-06-23T12:14:20.1727652Z ##[debug]Evaluating condition for step: 'Check if package exists in Nexus3'
+2025-06-23T12:14:20.1728761Z ##[debug]Evaluating: SucceededNode()
+2025-06-23T12:14:20.1729079Z ##[debug]Evaluating SucceededNode:
+2025-06-23T12:14:20.1729620Z ##[debug]=> True
+2025-06-23T12:14:20.1729924Z ##[debug]Result: True
+2025-06-23T12:14:20.1730236Z ##[section]Starting: Check if package exists in Nexus3
+2025-06-23T12:14:20.1735445Z ==============================================================================
+2025-06-23T12:14:20.1735577Z Task         : Python script
+2025-06-23T12:14:20.1735664Z Description  : Run a Python file or inline script
+2025-06-23T12:14:20.1735765Z Version      : 0.248.1
+2025-06-23T12:14:20.1735854Z Author       : Microsoft Corporation
+2025-06-23T12:14:20.1736067Z Help         : https://docs.microsoft.com/azure/devops/pipelines/tasks/utility/python-script
+2025-06-23T12:14:20.1736188Z ==============================================================================
+2025-06-23T12:14:20.2466667Z ##[debug]Using node path: /usr/agent/vsts-agent/externals/node20_1/bin/node
+2025-06-23T12:14:20.3353833Z ##[debug]Handler: /__a/externals/node20_1/bin/node
+2025-06-23T12:14:20.3355817Z ##[debug]HandlerArg: /__w/_tasks/PythonScript_6392f95f-7e76-4a18-b3c7-7f078d2f7700/0.248.1/main.js
+2025-06-23T12:14:20.3356826Z ##[debug]HandlerWorkDir: /__w/459/s
+2025-06-23T12:14:20.3357775Z ##[debug]Set env: COMMAND_CORRELATION_ID=4aaf8ec7-0e85-4eda-bb25-c34eecea93f6
+2025-06-23T12:14:20.3358710Z ##[debug]Set env: INPUT_SCRIPTSOURCE=filePath
+2025-06-23T12:14:20.3359692Z ##[debug]Set env: INPUT_SCRIPTPATH=/__w/459/s/blocks/python/scripts/check_package_exist.py
+2025-06-23T12:14:20.3360523Z ##[debug]Set env: INPUT_SCRIPT=
+2025-06-23T12:14:20.3361350Z ##[debug]Set env: INPUT_ARGUMENTS=BSRC_BUILDER *** abnamro_betl_src_poc 0.1.0
+2025-06-23T12:14:20.3361921Z ##[debug]Set env: INPUT_PYTHONINTERPRETER=
+2025-06-23T12:14:20.3362903Z ##[debug]Set env: INPUT_WORKINGDIRECTORY=/__w/459/s
+2025-06-23T12:14:20.3363803Z ##[debug]Set env: INPUT_FAILONSTDERR=true
+2025-06-23T12:14:20.3364764Z ##[debug]Set env: ENDPOINT_URL_SYSTEMVSSCONNECTION=https://dev.azure.com/cbsp-abnamro/
+2025-06-23T12:14:20.3367220Z ##[debug]Set env: ENDPOINT_AUTH_SYSTEMVSSCONNECTION={"parameters":{"AccessToken":***
+2025-06-23T12:14:20.3368201Z ##[debug]Set env: ENDPOINT_AUTH_SCHEME_SYSTEMVSSCONNECTION=OAuth
+2025-06-23T12:14:20.3370206Z ##[debug]Set env: ENDPOINT_AUTH_PARAMETER_SYSTEMVSSCONNECTION_ACCESSTOKEN=***
+2025-06-23T12:14:20.3370699Z ##[debug]Set env: BUILD_SOURCEVERSION=d43b04c5c94d54d7e4b61ffcab5a3654e070c7a0
+2025-06-23T12:14:20.3371171Z ##[debug]Set env: BUILD_REPOSITORY_GIT_SUBMODULECHECKOUT=False
+2025-06-23T12:14:20.3371648Z ##[debug]Set env: DISTRIBUTEDTASK_AGENT_ENABLEADDITIONALMASKINGREGEXES=True
+2025-06-23T12:14:20.3372110Z ##[debug]Set env: SYSTEM_COLLECTIONID=06e2de9d-0560-4fd5-8c72-c3d0e7d69fa6
+2025-06-23T12:14:20.3372605Z ##[debug]Set env: BUILD_STAGEREQUESTEDBY=Microsoft.VisualStudio.Services.TFS
+2025-06-23T12:14:20.3373241Z ##[debug]Set env: DISTRIBUTEDTASK_AGENT_CHECKIFTASKNODERUNNERISDEPRECATED246=False
+2025-06-23T12:14:20.3373789Z ##[debug]Set env: SYSTEM_JOBNAME=__default
+2025-06-23T12:14:20.3374511Z ##[debug]Set env: DISTRIBUTEDTASK_AGENT_USENODE20TOSTARTCONTAINER=True
+2025-06-23T12:14:20.3375159Z ##[debug]Set env: SYSTEM_JOBDISPLAYNAME=CheckPackage
+2025-06-23T12:14:20.3375720Z ##[debug]Set env: AZP_AGENT_CHECK_FOR_TASK_DEPRECATION=true
+2025-06-23T12:14:20.3376221Z ##[debug]Set env: ABNAMRO_VSTS_FEED=https://cbsp-abnamro.pkgs.visualstudio.com/_packaging/Abnamro.Vsts.Feed/nuget/v3/index.json
+2025-06-23T12:14:20.3376705Z ##[debug]Set env: AGENT_JOBNAME=CheckPackage
+2025-06-23T12:14:20.3377153Z ##[debug]Set env: DISTRIBUTEDTASK_AGENT_ROSETTA2WARNING=True
+2025-06-23T12:14:20.3377585Z ##[debug]Set env: SYSTEM_JOBATTEMPT=1
+2025-06-23T12:14:20.3378045Z ##[debug]Set env: BUILD_STAGINGDIRECTORY=/__w/459/a
+2025-06-23T12:14:20.3378489Z ##[debug]Set env: USE_FIXED_AZ_CONFIG_INIT=true
+2025-06-23T12:14:20.3378949Z ##[debug]Set env: DISTRIBUTEDTASK_AGENT_FAILDEPRECATEDTASK=True
+2025-06-23T12:14:20.3379709Z ##[debug]Set env: AGENT_BUILDDIRECTORY=/__w/459
+2025-06-23T12:14:20.3380165Z ##[debug]Set env: DISTRIBUTEDTASK_AGENT_USENEWNODEHANDLERTELEMETRY=True
+2025-06-23T12:14:20.3380632Z ##[debug]Set env: BUILD_REPOSITORY_LOCALPATH=/__w/459/s
+2025-06-23T12:14:20.3381095Z ##[debug]Set env: SOLO_TWISTLOCK_URI=https://twlk.int.abnamro.com
+2025-06-23T12:14:20.3381588Z ##[debug]Set env: DISTRIBUTEDTASK_AGENT_AGENTENABLEPIPELINEARTIFACTLARGECHUNKSIZE=True
+2025-06-23T12:14:20.3382049Z ##[debug]Set env: SERVICENOW_PR_URL=https://aabsiampr.service-now.com/
+2025-06-23T12:14:20.3382493Z ##[debug]Set env: FAIL_JOB_WHEN_AGENT_DIES=true
+2025-06-23T12:14:20.3383181Z ##[debug]Set env: AGENT_DISABLELOGPLUGIN_TESTFILEPUBLISHERPLUGIN=true
+2025-06-23T12:14:20.3383648Z ##[debug]Set env: SOLO_FORTIFY_APPLICATIONID_VERSION=1.0
+2025-06-23T12:14:20.3384203Z ##[debug]Set env: SYSTEM_ARTIFACTSDIRECTORY=/__w/459/a
+2025-06-23T12:14:20.3384646Z ##[debug]Set env: SYSTEM_JOBPARALLELISMTAG=Private
+2025-06-23T12:14:20.3385101Z ##[debug]Set env: SOLO_NEXUSIQ_CLI_CURRENTVERSION=1.47.0-01
+2025-06-23T12:14:20.3385554Z ##[debug]Set env: AZP_ENABLE_RESOURCE_MONITOR_DEBUG_OUTPUT=true
+2025-06-23T12:14:20.3385985Z ##[debug]Set env: SYSTEM_STAGENAME=CI
+2025-06-23T12:14:20.3386425Z ##[debug]Set env: SYSTEM_TASKDISPLAYNAME=Check if package exists in Nexus3
+2025-06-23T12:14:20.3386875Z ##[debug]Set env: TASK_SKIPTRANSLATORFORCHECKOUT=False
+2025-06-23T12:14:20.3387323Z ##[debug]Set env: XLD-HOSTNAME=p-xldeploy.development.nl.eu.abnamro.com
+2025-06-23T12:14:20.3387772Z ##[debug]Set env: AGENT_TOOLSDIRECTORY=/__t
+2025-06-23T12:14:20.3388209Z ##[debug]Set env: SYSTEM_HOSTTYPE=build
+2025-06-23T12:14:20.3388634Z ##[debug]Set env: BUILDER_USER=BSRC_BUILDER
+2025-06-23T12:14:20.3389173Z ##[debug]Set env: AGENT_MACHINENAME=pipe01p-dock32
+2025-06-23T12:14:20.3389635Z ##[debug]Set env: BUILD_REPOSITORY_ID=2676d897-83f7-462b-80c3-6e3a8c595335
+2025-06-23T12:14:20.3390118Z ##[debug]Set env: SYSTEM_TEAMFOUNDATIONSERVERURI=https://dev.azure.com/cbsp-abnamro/
+2025-06-23T12:14:20.3390586Z ##[debug]Set env: BUILD_SOURCEBRANCHNAME=main
+2025-06-23T12:14:20.3391040Z ##[debug]Set env: AGENT_LOGTOBLOBSTORAGESERVICE=true
+2025-06-23T12:14:20.3391501Z ##[debug]Set env: DISTRIBUTEDTASK_AGENT_ENABLERESOURCEMONITORDEBUGOUTPUT=True
+2025-06-23T12:14:20.3391966Z ##[debug]Set env: SYSTEM_PULLREQUEST_ISFORK=False
+2025-06-23T12:14:20.3392424Z ##[debug]Set env: DISTRIBUTEDTASK_AGENT_FAILDEPRECATEDBUILDTASK=True
+2025-06-23T12:14:20.3393039Z ##[debug]Set env: SYSTEM_TEAMPROJECTID=e7ada105-1033-49b0-be87-f49a1ab314ee
+2025-06-23T12:14:20.3393764Z ##[debug]Set env: BUILD_REASON=Manual
+2025-06-23T12:14:20.3394396Z ##[debug]Set env: BUILD_DEFINITIONNAME=bsrc-etl
+2025-06-23T12:14:20.3395154Z ##[debug]Set env: DISTRIBUTEDTASK_AGENT_CONTINUEAFTERCANCELPROCESSTREEKILLATTEMPT=True
+2025-06-23T12:14:20.3395812Z ##[debug]Set env: DISTRIBUTEDTASK_AGENT_USESPARSECHECKOUTINCHECKOUTTASK=True
+2025-06-23T12:14:20.3396265Z ##[debug]Set env: RESOURCES_TRIGGERINGCATEGORY=
+2025-06-23T12:14:20.3396713Z ##[debug]Set env: SYSTEM_PHASEID=07a3fe6d-ab05-502c-a602-b81d471a5424
+2025-06-23T12:14:20.3397177Z ##[debug]Set env: SERVICECONNECTION_NPM_NXRM3_NAME=bsrc-nx3-npm-releases-p-sc
+2025-06-23T12:14:20.3397646Z ##[debug]Set env: DISTRIBUTEDTASK_AGENT_USEWORKSPACEID=True
+2025-06-23T12:14:20.3398091Z ##[debug]Set env: USE_GIT_LONG_PATHS=true
+2025-06-23T12:14:20.3398533Z ##[debug]Set env: AGENT_WORKFOLDER=/__w
+2025-06-23T12:14:20.3398969Z ##[debug]Set env: AZP_ENABLE_RESOURCE_UTILIZATION_WARNINGS=true
+2025-06-23T12:14:20.3399416Z ##[debug]Set env: USE_MSDEPLOY_TOKEN_AUTH=true
+2025-06-23T12:14:20.3399899Z ##[debug]Set env: DISTRIBUTEDTASK_TASKS_MODIFYNUMBEROFRETRIESINROBOCOPY=True
+2025-06-23T12:14:20.3400350Z ##[debug]Set env: AGENT_ISSELFHOSTED=1
+2025-06-23T12:14:20.3400882Z ##[debug]Set env: SOLO_NEXUS2_REPOSITORIES_URI=https://p-nexus-repo.development.nl.eu.abnamro.com:8443/nexus/service/local/repositories/
+2025-06-23T12:14:20.3401361Z ##[debug]Set env: SYSTEM=build
+2025-06-23T12:14:20.3401806Z ##[debug]Set env: DISTRIBUTEDTASK_AGENT_DOCKERACTIONRETRIES=True
+2025-06-23T12:14:20.3402430Z ##[debug]Set env: BUILD_SOURCEBRANCH=refs/heads/main
+2025-06-23T12:14:20.3403067Z ##[debug]Set env: SYSTEM_STAGEDISPLAYNAME=CI
+2025-06-23T12:14:20.3403520Z ##[debug]Set env: USE_LATEST_GIT_VERSION=true
+2025-06-23T12:14:20.3404007Z ##[debug]Set env: ABNAMRO_VSTS_RELEASE_FEED=https://cbsp-abnamro.pkgs.visualstudio.com/_packaging/Abnamro.Vsts.Feed@Release/nuget/v3/index.json
+2025-06-23T12:14:20.3404502Z ##[debug]Set env: SYSTEM_PHASEATTEMPT=1
+2025-06-23T12:14:20.3405035Z ##[debug]Set env: DISTRIBUTEDTASK_AGENT_LOGTASKNAMEINUSERAGENT=True
+2025-06-23T12:14:20.3405636Z ##[debug]Set env: AZURE_HTTP_USER_AGENT=VSTS_06e2de9d-0560-4fd5-8c72-c3d0e7d69fa6_build_109286_0
+2025-06-23T12:14:20.3406121Z ##[debug]Set env: SYSTEM_JOBIDENTIFIER=CI.CheckPackage.__default
+2025-06-23T12:14:20.3406762Z ##[debug]Set env: BUILD_BUILDURI=vstfs:///Build/Build/12771027
+2025-06-23T12:14:20.3407222Z ##[debug]Set env: SYSTEM_PHASENAME=CheckPackage
+2025-06-23T12:14:20.3407665Z ##[debug]Set env: PIPELINE_WORKSPACE=/__w/459
+2025-06-23T12:14:20.3408212Z ##[debug]Set env: SYSTEM_OIDCREQUESTURI=https://dev.azure.com/cbsp-abnamro/e7ada105-1033-49b0-be87-f49a1ab314ee/_apis/distributedtask/hubs/build/plans/3637e8ce-ab14-455b-834a-7ea3d1569643/jobs/1399107d-87fb-5bbc-d8fa-1a50a05b8d19/oidctoken
+2025-06-23T12:14:20.3408753Z ##[debug]Set env: TASK_PUBLISHTELEMETRY=True
+2025-06-23T12:14:20.3409290Z ##[debug]Set env: SYSTEM_CANISSUEOIDCTOKENFORWORKLOADIDENTITYFEDERATION=false
+2025-06-23T12:14:20.3409767Z ##[debug]Set env: BUILD_DEFINITIONFOLDERPATH=\bsrc\etl
+2025-06-23T12:14:20.3410376Z ##[debug]Set env: DISTRIBUTEDTASK_AGENT_USEMSALLIBRARY=True
+2025-06-23T12:14:20.3410851Z ##[debug]Set env: SOLO_NEXUS3_DOCKER_RELEASES_SC=bsrc-nx3-docker-releases-p-sc
+2025-06-23T12:14:20.3411347Z ##[debug]Set env: AGENT_CONTAINERID=e6a7ee9973824096ad88ae10dfdb0c2bedfa163264b6764f5960ed5b8f749b76
+2025-06-23T12:14:20.3411831Z ##[debug]Set env: SOLO_NEXUSIQ_CLI_JARNAME=nexus-iq-cli-
+2025-06-23T12:14:20.3412278Z ##[debug]Set env: DISTRIBUTEDTASK_AGENT_READONLYVARIABLES=True
+2025-06-23T12:14:20.3412870Z ##[debug]Set env: SOLO_NEXUS2_URI=https://p-nexus-repo.development.nl.eu.abnamro.com:8443/
+2025-06-23T12:14:20.3413590Z ##[debug]Set env: BUILD_SOURCEVERSIONAUTHOR=Dragos-Cosmin Raduta
+2025-06-23T12:14:20.3414273Z ##[debug]Set env: SYSTEM_CULTURE=en-US
+2025-06-23T12:14:20.3414945Z ##[debug]Set env: AZP_75787_ENABLE_NEW_LOGIC=false
+2025-06-23T12:14:20.3415640Z ##[debug]Set env: RETIRE_AZURERM_POWERSHELL_MODULE=true
+2025-06-23T12:14:20.3416315Z ##[debug]Set env: SYSTEM_POSTLINESSPEED=500
+2025-06-23T12:14:20.3416987Z ##[debug]Set env: FAIL_DEPRECATED_TASK=true
+2025-06-23T12:14:20.3417631Z ##[debug]Set env: BUILD_REQUESTEDFOREMAIL=dragos-cosmin.raduta@nl.abnamro.com
+2025-06-23T12:14:20.3418248Z ##[debug]Set env: SERVICECONNECTION_TWISTLOCK_NAME=bsrc-twistlock-p-sc
+2025-06-23T12:14:20.3418693Z ##[debug]Set env: RESOURCES_TRIGGERINGALIAS=
+2025-06-23T12:14:20.3419142Z ##[debug]Set env: PIPELINE_REPOSITORY_NAME=bsrc-etl
+2025-06-23T12:14:20.3419611Z ##[debug]Set env: VSTS_PROCESS_LOOKUP_ID=vsts_818a1531-c80c-4a1d-8554-883ef3f2fd9a
+2025-06-23T12:14:20.3420116Z ##[debug]Set env: SOLO_NEXUSIQ_CLI_REPOSITORY=COM-SONATYPE-releases/com/sonatype/nexus-iq/nexus-iq-cli/
+2025-06-23T12:14:20.3420814Z ##[debug]Set env: AZP_75787_ENABLE_NEW_PH_LOGIC=true
+2025-06-23T12:14:20.3421274Z ##[debug]Set env: SYSTEM_TASKINSTANCENAME=PythonScript
+2025-06-23T12:14:20.3421708Z ##[debug]Set env: SYSTEM_DEBUG=True
+2025-06-23T12:14:20.3422165Z ##[debug]Set env: BUILD_QUEUEDBYID=c86f4bba-3771-6b42-a3fe-355408105e49
+2025-06-23T12:14:20.3422630Z ##[debug]Set env: XLD-SECURITY-USER=ado-xld-api-security-user
+2025-06-23T12:14:20.3423314Z ##[debug]Set env: SERVICENOW_ARTIFACT=ServiceNow
+2025-06-23T12:14:20.3423770Z ##[debug]Set env: SYSTEM_JOBTIMEOUT=60
+2025-06-23T12:14:20.3424244Z ##[debug]Set env: MODIFY_NUMBER_OF_RETRIES_IN_ROBOCOPY=true
+2025-06-23T12:14:20.3424704Z ##[debug]Set env: DISTRIBUTEDTASK_AGENT_MOUNTWORKSPACE=True
+2025-06-23T12:14:20.3425155Z ##[debug]Set env: DISTRIBUTEDTASK_TASKS_SKIPHELMMANIFESTNULLPARTS=True
+2025-06-23T12:14:20.3425822Z ##[debug]Set env: AAB_APPLICATION_VERSION=0.1.0
+2025-06-23T12:14:20.3426284Z ##[debug]Set env: AGENT_CONTAINERNETWORK=vsts_network_b6c9592ef7ed419ca20ea6d8fb7bdf21
+2025-06-23T12:14:20.3426733Z ##[debug]Set env: SYSTEM_STAGEATTEMPT=1
+2025-06-23T12:14:20.3427188Z ##[debug]Set env: SYSTEM_TEAMFOUNDATIONCOLLECTIONURI=https://dev.azure.com/cbsp-abnamro/
+2025-06-23T12:14:20.3427638Z ##[debug]Set env: GIT_TERMINAL_PROMPT=0
+2025-06-23T12:14:20.3428083Z ##[debug]Set env: DISTRIBUTEDTASK_AGENT_FORCEUPDATETOLATEST2VERSION=False
+2025-06-23T12:14:20.3428530Z ##[debug]Set env: AGENT_TEMPDIRECTORY=/__w/_temp
+2025-06-23T12:14:20.3428977Z ##[debug]Set env: DISTRIBUTEDTASK_AGENT_ADDFORCECREDENTIALSTOGITCHECKOUT=True
+2025-06-23T12:14:20.3429490Z ##[debug]Set env: AGENT_READONLYVARIABLES=true
+2025-06-23T12:14:20.3429923Z ##[debug]Set env: BUILD_SOURCESDIRECTORY=/__w/459/s
+2025-06-23T12:14:20.3430368Z ##[debug]Set env: AZP_AGENT_IGNORE_VSTSTASKLIB=true
+2025-06-23T12:14:20.3430839Z ##[debug]Set env: MSDEPLOY_HTTP_USER_AGENT=VSTS_06e2de9d-0560-4fd5-8c72-c3d0e7d69fa6_build_109286_0
+2025-06-23T12:14:20.3431319Z ##[debug]Set env: TASK_DISPLAYNAME=Check if package exists in Nexus3
+2025-06-23T12:14:20.3431769Z ##[debug]Set env: BUILD_REPOSITORY_NAME=bsrc-etl
+2025-06-23T12:14:20.3432208Z ##[debug]Set env: AGENT_OSARCHITECTURE=X64
+2025-06-23T12:14:20.3432652Z ##[debug]Set env: SYSTEM_TOTALJOBSINPHASE=1
+2025-06-23T12:14:20.3433210Z ##[debug]Set env: SYSTEM_PHASEDISPLAYNAME=CheckPackage
+2025-06-23T12:14:20.3433664Z ##[debug]Set env: COPYFILESOVERSSHV0_USE_QUEUE=true
+2025-06-23T12:14:20.3434105Z ##[debug]Set env: BUILD_REPOSITORY_CLEAN=True
+2025-06-23T12:14:20.3434583Z ##[debug]Set env: DISTRIBUTEDTASK_AGENT_ENABLERESOURCEUTILIZATIONWARNINGS=True
+2025-06-23T12:14:20.3435057Z ##[debug]Set env: BUILD_BUILDID=12771027
+2025-06-23T12:14:20.3435492Z ##[debug]Set env: SYSTEM_DEFINITIONNAME=bsrc-etl
+2025-06-23T12:14:20.3435932Z ##[debug]Set env: AGENT_ENABLE_PIPELINEARTIFACT_LARGE_CHUNK_SIZE=true
+2025-06-23T12:14:20.3436371Z ##[debug]Set env: SYSTEM_ISAZUREVM=1
+2025-06-23T12:14:20.3436821Z ##[debug]Set env: DISTRIBUTEDTASK_AGENT_ENABLEISSUESOURCEVALIDATION=True
+2025-06-23T12:14:20.3437272Z ##[debug]Set env: ENABLE_ISSUE_SOURCE_VALIDATION=true
+2025-06-23T12:14:20.3437744Z ##[debug]Set env: BUILD_REPOSITORY_URI=https://cbsp-abnamro@dev.azure.com/cbsp-abnamro/GRD0001018/_git/bsrc-etl
+2025-06-23T12:14:20.3438315Z ##[debug]Set env: AZP_75787_ENABLE_COLLECT=true
+2025-06-23T12:14:20.3438750Z ##[debug]Set env: SYSTEM_SERVERTYPE=Hosted
+2025-06-23T12:14:20.3439172Z ##[debug]Set env: USE_MSAL=true
+2025-06-23T12:14:20.3439607Z ##[debug]Set env: AGENT_RETAINDEFAULTENCODING=false
+2025-06-23T12:14:20.3440064Z ##[debug]Set env: SOLO_FORTIFY_BUILDBREAKER_CLI_CURRENTVERSION=3.0.7
+2025-06-23T12:14:20.3440514Z ##[debug]Set env: AGENT_USEWORKSPACEID=true
+2025-06-23T12:14:20.3440944Z ##[debug]Set env: SYSTEM_DEFINITIONID=109286
+2025-06-23T12:14:20.3441396Z ##[debug]Set env: SYSTEM_COLLECTIONURI=https://dev.azure.com/cbsp-abnamro/
+2025-06-23T12:14:20.3441868Z ##[debug]Set env: DISTRIBUTEDTASK_TASKS_COPYFILESOVERSSHV0USEQUEUE=True
+2025-06-23T12:14:20.3442314Z ##[debug]Set env: AGENT_DIAGNOSTIC=True
+2025-06-23T12:14:20.3442902Z ##[debug]Set env: SECO_CODEQUALITYCHECK_TAGID=b5cd6a82e7be4f8bb18e54e68c4de524
+2025-06-23T12:14:20.3443589Z ##[debug]Set env: SERVICENOW_ST_URL=https://aabsiamst.service-now.com/
+2025-06-23T12:14:20.3444229Z ##[debug]Set env: ROSETTA2_WARNING=true
+2025-06-23T12:14:20.3560040Z ##[debug]Set env: SYSTEM_JOBID=1399107d-87fb-5bbc-d8fa-1a50a05b8d19
+2025-06-23T12:14:20.3560918Z ##[debug]Set env: BUILD_REQUESTEDFOR=Dragos-Cosmin Raduta
+2025-06-23T12:14:20.3561684Z ##[debug]Set env: DISTRIBUTEDTASK_AGENT_USELATESTGITVERSION=True
+2025-06-23T12:14:20.3562466Z ##[debug]Set env: AAB_APPLICATION_NAME=abnamro_betl_src_poc
+2025-06-23T12:14:20.3563626Z ##[debug]Set env: SERVICENOW_ET_URL=https://aabsiamet.service-now.com/
+2025-06-23T12:14:20.3564533Z ##[debug]Set env: AGENT_ROOTDIRECTORY=/__w
+2025-06-23T12:14:20.3565694Z ##[debug]Set env: AZP_PS_ENABLE_INVOKE_PROCESS=true
+2025-06-23T12:14:20.3566524Z ##[debug]Set env: DISTRIBUTEDTASK_AGENT_USEDOCKERCOMPOSEV2COMPATIBLEMODE=False
+2025-06-23T12:14:20.3567274Z ##[debug]Set env: SYSTEM_WORKFOLDER=/__w
+2025-06-23T12:14:20.3567998Z ##[debug]Set env: AZP_AGENT_LOG_TASKNAME_IN_USERAGENT=true
+2025-06-23T12:14:20.3568902Z ##[debug]Set env: XLRELEASE_URI=https://p-xlrelease.development.nl.eu.abnamro.com:5516
+2025-06-23T12:14:20.3569745Z ##[debug]Set env: SYSTEM_JOBPOSITIONINPHASE=1
+2025-06-23T12:14:20.3570578Z ##[debug]Set env: SOLO_NEXUS3_DOCKER_GROUP_URI=p-nexus-3.development.nl.eu.abnamro.com:18445/
+2025-06-23T12:14:20.3571402Z ##[debug]Set env: DISTRIBUTEDTASK_AGENT_FAILJOBWHENAGENTDIES=True
+2025-06-23T12:14:20.3572396Z ##[debug]Set env: SYSTEM_TASKDEFINITIONSURI=https://dev.azure.com/cbsp-abnamro/
+2025-06-23T12:14:20.3573313Z ##[debug]Set env: SYSTEM_PIPELINESTARTTIME=2025-06-23 14:14:07+02:00
+2025-06-23T12:14:20.3574102Z ##[debug]Set env: BUILD_BUILDNUMBER=20250623.7
+2025-06-23T12:14:20.3575317Z ##[debug]Set env: BUILD_SOURCEVERSIONMESSAGE=Merged PR 927117: Generic Functionality - Credit Facility Exemption Claim (PPU4 logic)
+2025-06-23T12:14:20.3576235Z ##[debug]Set env: BUILD_REQUESTEDFORID=c86f4bba-3771-6b42-a3fe-355408105e49
+2025-06-23T12:14:20.3577204Z ##[debug]Set env: SOLO_NEXUS3_DOCKER_RELEASES_URI=p-nexus-3.development.nl.eu.abnamro.com:18443/
+2025-06-23T12:14:20.3578064Z ##[debug]Set env: BUILD_QUEUEDBY=Dragos-Cosmin Raduta
+2025-06-23T12:14:20.3578850Z ##[debug]Set env: agent.jobstatus=Succeeded
+2025-06-23T12:14:20.3579623Z ##[debug]Set env: AGENT_JOBSTATUS=Succeeded
+2025-06-23T12:14:20.3580396Z ##[debug]Set env: DISTRIBUTEDTASK_AGENT_USEGITLONGPATHS=True
+2025-06-23T12:14:20.3604950Z ##[debug]Set env: AGENT_NAME=pipe01p-dock32
+2025-06-23T12:14:20.3605861Z ##[debug]Set env: SERVICECONNECTION_SONARQUBE_NAME=SonarQube-PR
+2025-06-23T12:14:20.3606884Z ##[debug]Set env: AGENT_CONTAINERMAPPING={
+  "python": {
+    "id": "e6a7ee9973824096ad88ae10dfdb0c2bedfa163264b6764f5960ed5b8f749b76"
+  }
+}
+2025-06-23T12:14:20.3607839Z ##[debug]Set env: AGENT_ID=1707542
+2025-06-23T12:14:20.3608697Z ##[debug]Set env: SERVICECONNECTION_FORTIFY_NAME=fortify-p-sc
+2025-06-23T12:14:20.3609617Z ##[debug]Set env: SERVICENOW_DEV_URL=https://aabsiamdev.service-now.com/
+2025-06-23T12:14:20.3610538Z ##[debug]Set env: DISTRIBUTEDTASK_TASKS_USELATESTOPENSSLVERSION=True
+2025-06-23T12:14:20.3611425Z ##[debug]Set env: DISTRIBUTEDTASK_TASKS_NODE_SKIPDEBUGLOGSWHENDEBUGMODEOFF=True
+2025-06-23T12:14:20.3612507Z ##[debug]Set env: SOLO_NEXUS3_REPOSITORIES_URI=https://p-nexus-3.development.nl.eu.abnamro.com:8443/
+2025-06-23T12:14:20.3613601Z ##[debug]Set env: AGENT_CLOUDID=
+2025-06-23T12:14:20.3614482Z ##[debug]Set env: USE_AKS_CREDENTIAL_API=true
+2025-06-23T12:14:20.3615337Z ##[debug]Set env: SYSTEM_TEAMPROJECT=GRD0001018
+2025-06-23T12:14:20.3616225Z ##[debug]Set env: SYSTEM_TASKINSTANCEID=9bf93429-6cda-5a57-3387-9d6886a19778
+2025-06-23T12:14:20.3617102Z ##[debug]Set env: FAIL_DEPRECATED_BUILD_TASK=true
+2025-06-23T12:14:20.3618019Z ##[debug]Set env: SERVICECONNECTION_NEXUS_IQ_NAME=bsrc-nexus-iq-p-sc
+2025-06-23T12:14:20.3618901Z ##[debug]Set env: AZP_75787_ENABLE_NEW_LOGIC_LOG=false
+2025-06-23T12:14:20.3619847Z ##[debug]Set env: BUILD_STAGEREQUESTEDBYID=00000002-0000-8888-8000-000000000000
+2025-06-23T12:14:20.3620787Z ##[debug]Set env: DISTRIBUTEDTASK_TASKS_HIDEDOCKEREXECTASKLOGISSUEERROROUTPUT=True
+2025-06-23T12:14:20.3621701Z ##[debug]Set env: AGENT_HOMEDIRECTORY=/__a
+2025-06-23T12:14:20.3622566Z ##[debug]Set env: DISTRIBUTEDTASK_TASKS_RETIREAZURERMPOWERSHELLMODULE=True
+2025-06-23T12:14:20.3623672Z ##[debug]Set env: AGENT_USE_FETCH_FILTER_IN_CHECKOUT_TASK=true
+2025-06-23T12:14:20.3624428Z ##[debug]Set env: AGENT_VERSION=4.255.0
+2025-06-23T12:14:20.3645888Z ##[debug]Set env: BUILD_DEFINITIONVERSION=1
+2025-06-23T12:14:20.3646498Z ##[debug]Set env: SYSTEM_TIMELINEID=3637e8ce-ab14-455b-834a-7ea3d1569643
+2025-06-23T12:14:20.3646989Z ##[debug]Set env: DISTRIBUTEDTASK_AGENT_USEFETCHFILTERINCHECKOUTTASK=True
+2025-06-23T12:14:20.3647684Z ##[debug]Set env: AAB_IS_RELEASE_VERSION=true
+2025-06-23T12:14:20.3648154Z ##[debug]Set env: SYSTEM_PLANID=3637e8ce-ab14-455b-834a-7ea3d1569643
+2025-06-23T12:14:20.3648678Z ##[debug]Set env: SOLO_NEXUSIQ_URI=https://p-nexus-iq.development.nl.eu.abnamro.com:8443
+2025-06-23T12:14:20.3649149Z ##[debug]Set env: AGENT_TASKRESTRICTIONSENFORCEMENTMODE=Enabled
+2025-06-23T12:14:20.3649582Z ##[debug]Set env: AGENT_OS=Linux
+2025-06-23T12:14:20.3650012Z ##[debug]Set env: BUILD_ARTIFACTSTAGINGDIRECTORY=/__w/459/a
+2025-06-23T12:14:20.3650446Z ##[debug]Set env: AGENT_ACCEPTTEEEULA=True
+2025-06-23T12:14:20.3650898Z ##[debug]Set env: SOLO_NEXUS3_DOCKER_GROUP_SC=bsrc-nx3-docker-group-p-sc
+2025-06-23T12:14:20.3651335Z ##[debug]Set env: SYSTEM_ISSCHEDULED=False
+2025-06-23T12:14:20.3651847Z ##[debug]Set env: BUILD_BINARIESDIRECTORY=/__w/459/b
+2025-06-23T12:14:20.3652301Z ##[debug]Set env: DISTRIBUTEDTASK_AGENT_IGNOREVSTSTASKLIB=True
+2025-06-23T12:14:20.3652909Z ##[debug]Set env: SOLO_FORTIFY_BUILDBREAKER_CLI_JARNAME=fortify-buildbreaker-
+2025-06-23T12:14:20.3653464Z ##[debug]Set env: DISTRIBUTEDTASK_AGENT_FIXPOSSIBLEGITOUTOFMEMORYPROBLEM=False
+2025-06-23T12:14:20.3653922Z ##[debug]Set env: USE_OPENSSL_LATEST_VERSION=true
+2025-06-23T12:14:20.3654375Z ##[debug]Set env: AGENT_DISABLELOGPLUGIN_TESTRESULTLOGPLUGIN=true
+2025-06-23T12:14:20.3654862Z ##[debug]Set env: SOLO_FORTIFY_BUILDBREAKER_CLI_REPOSITORY=java-shared/content/com/abnamro/seco/fortify-buildbreaker/
+2025-06-23T12:14:20.3655335Z ##[debug]Set env: APPLICATION_ACRONYM=bsrc
+2025-06-23T12:14:20.3655783Z ##[debug]Set env: SYSTEM_STAGEID=ae4f8708-9994-57d3-c2d7-b892156e7812
+2025-06-23T12:14:20.3656241Z ##[debug]Set env: SOLO_FORTIFYSSC_URI=https://ftfy.int.abnamro.com
+2025-06-23T12:14:20.3656694Z ##[debug]Set env: AZP_AGENT_MOUNT_WORKSPACE=true
+2025-06-23T12:14:20.3657190Z ##[debug]Set env: ABNAMRO_VSTS_PRERELEASE_FEED=https://cbsp-abnamro.pkgs.visualstudio.com/_packaging/Abnamro.Vsts.Feed@Prerelease/nuget/v3/index.json
+2025-06-23T12:14:20.3657686Z ##[debug]Set env: SYSTEM_DEFAULTWORKINGDIRECTORY=/__w/459/s
+2025-06-23T12:14:20.3658129Z ##[debug]Set env: BUILD_CONTAINERID=49483751
+2025-06-23T12:14:20.3658554Z ##[debug]Set env: SYSTEM_ISDOCKERCONTAINER=0
+2025-06-23T12:14:20.3659013Z ##[debug]Set env: VSTSAGENT_CONTINUE_AFTER_CANCEL_PROCESSTREEKILL_ATTEMPT=true
+2025-06-23T12:14:20.3659478Z ##[debug]Set env: AGENT_USE_SPARSE_CHECKOUT_IN_CHECKOUT_TASK=true
+2025-06-23T12:14:20.3659933Z ##[debug]Set env: DISTRIBUTEDTASK_AGENT_LOGTOBLOBSTORAGESERVICE=True
+2025-06-23T12:14:20.3660369Z ##[debug]Set env: BUILD_REPOSITORY_PROVIDER=TfsGit
+2025-06-23T12:14:20.3660817Z ##[debug]Set env: SYSTEM_ENABLEACCESSTOKEN=SecretVariable
+2025-06-23T12:14:20.3661267Z ##[debug]Set env: COMMON_TESTRESULTSDIRECTORY=/__w/459/TestResults
+2025-06-23T12:14:20.3661715Z ##[debug]Set env: VSTSAGENT_DOCKER_ACTION_RETRIES=true
+2025-06-23T12:14:20.3665847Z ##[debug]Set env: VSTS_PUBLIC_VARIABLES=["build.sourceVersion","build.repository.git.submodulecheckout","DistributedTask.Agent.EnableAdditionalMaskingRegexes","system.collectionId","build.stageRequestedBy","DistributedTask.Agent.CheckIfTaskNodeRunnerIsDeprecated246","system.jobName","DistributedTask.Agent.UseNode20ToStartContainer","system.jobDisplayName","AZP_AGENT_CHECK_FOR_TASK_DEPRECATION","Abnamro.Vsts.Feed","agent.jobname","DistributedTask.Agent.Rosetta2Warning","system.jobAttempt","build.stagingdirectory","USE_FIXED_AZ_CONFIG_INIT","DistributedTask.Agent.FailDeprecatedTask","agent.builddirectory","DistributedTask.Agent.USENEWNODEHANDLERTELEMETRY","build.repository.localpath","Solo.Twistlock.Uri","DistributedTask.Agent.AgentEnablePipelineArtifactLargeChunkSize","servicenow_pr_url","FAIL_JOB_WHEN_AGENT_DIES","agent.disablelogplugin.TestFilePublisherPlugin","Solo.Fortify.ApplicationId.Version","system.artifactsdirectory","system.jobParallelismTag","Solo.NexusIq.Cli.CurrentVersion","AZP_ENABLE_RESOURCE_MONITOR_DEBUG_OUTPUT","system.stageName","system.taskDisplayName","task.skipTranslatorForCheckout","xld-hostname","agent.ToolsDirectory","system.hosttype","BUILDER_USER","agent.machinename","build.repository.id","system.TeamFoundationServerUri","build.sourceBranchName","agent.LogToBlobstorageService","DistributedTask.Agent.EnableResourceMonitorDebugOutput","system.pullRequest.isFork","DistributedTask.Agent.FailDeprecatedBuildTask","system.teamProjectId","build.reason","build.definitionName","DistributedTask.Agent.ContinueAfterCancelProcessTreeKillAttempt","DistributedTask.Agent.UseSparseCheckoutInCheckoutTask","resources.triggeringCategory","system.phaseId","Serviceconnection.Npm.Nxrm3.Name","DistributedTask.Agent.UseWorkspaceId","USE_GIT_LONG_PATHS","agent.workfolder","AZP_ENABLE_RESOURCE_UTILIZATION_WARNINGS","USE_MSDEPLOY_TOKEN_AUTH","DistributedTask.Tasks.ModifyNumberOfRetriesInRobocopy","agent.isselfhosted","Solo.Nexus2.Repositories.Uri","system","DistributedTask.Agent.DockerActionRetries","build.sourceBranch","system.stageDisplayName","USE_LATEST_GIT_VERSION","Abnamro.Vsts.Release.Feed","system.phaseAttempt","DistributedTask.Agent.LogTaskNameInUserAgent","AZURE_HTTP_USER_AGENT","system.jobIdentifier","build.buildUri","system.phaseName","pipeline.workspace","System.OidcRequestUri","task.publishTelemetry","System.CanIssueOidcTokenForWorkloadIdentityFederation","build.definitionFolderPath","DistributedTask.Agent.UseMsalLibrary","Solo.Nexus3.Docker.Releases.Sc","agent.containerid","Solo.NexusIq.Cli.JarName","DistributedTask.Agent.ReadOnlyVariables","Solo.Nexus2.Uri","build.sourceVersionAuthor","system.culture","AZP_75787_ENABLE_NEW_LOGIC","RETIRE_AZURERM_POWERSHELL_MODULE","system.postLinesSpeed","FAIL_DEPRECATED_TASK","build.requestedForEmail","Serviceconnection.Twistlock.Name","resources.triggeringAlias","pipeline.repository.name","VSTS_PROCESS_LOOKUP_ID","Solo.NexusIq.Cli.Repository","AZP_75787_ENABLE_NEW_PH_LOGIC","system.taskInstanceName","system.debug","build.queuedById","xld-security-user","servicenow_artifact","system.jobTimeout","MODIFY_NUMBER_OF_RETRIES_IN_ROBOCOPY","DistributedTask.Agent.MountWorkspace","DistributedTask.Tasks.SkipHelmManifestNullParts","aab_application_version","agent.containernetwork","system.stageAttempt","system.teamFoundationCollectionUri","GIT_TERMINAL_PROMPT","DistributedTask.Agent.ForceUpdateToLatest2Version","agent.TempDirectory","DistributedTask.Agent.AddForceCredentialsToGitCheckout","agent.readOnlyVariables","build.sourcesdirectory","AZP_AGENT_IGNORE_VSTSTASKLIB","MSDEPLOY_HTTP_USER_AGENT","task.displayname","build.Repository.name","agent.osarchitecture","System.TotalJobsInPhase","system.phaseDisplayName","COPYFILESOVERSSHV0_USE_QUEUE","build.repository.clean","DistributedTask.Agent.EnableResourceUtilizationWarnings","build.buildId","system.definitionName","AGENT_ENABLE_PIPELINEARTIFACT_LARGE_CHUNK_SIZE","system.isazurevm","DistributedTask.Agent.EnableIssueSourceValidation","ENABLE_ISSUE_SOURCE_VALIDATION","build.repository.uri","AZP_75787_ENABLE_COLLECT","system.servertype","USE_MSAL","agent.retainDefaultEncoding","Solo.Fortify.BuildBreaker.Cli.CurrentVersion","agent.useWorkspaceId","system.definitionId","system.collectionUri","DistributedTask.Tasks.CopyFilesOverSSHV0UseQueue","agent.diagnostic","Seco.CodeQualityCheck.TagId","servicenow_st_url","ROSETTA2_WARNING","system.jobId","build.requestedFor","DistributedTask.Agent.UseLatestGitVersion","aab_application_name","servicenow_et_url","agent.RootDirectory","AZP_PS_ENABLE_INVOKE_PROCESS","DistributedTask.Agent.UseDockerComposeV2CompatibleMode","system.workfolder","AZP_AGENT_LOG_TASKNAME_IN_USERAGENT","XLRelease.Uri","System.JobPositionInPhase","Solo.Nexus3.Docker.Group.Uri","DistributedTask.Agent.FailJobWhenAgentDies","system.taskDefinitionsUri","system.pipelineStartTime","build.buildNumber","build.sourceVersionMessage","build.requestedForId","Solo.Nexus3.Docker.Releases.Uri","build.queuedBy","agent.jobstatus","DistributedTask.Agent.UseGitLongPaths","agent.name","Serviceconnection.SonarQube.Name","agent.containermapping","agent.id","Serviceconnection.Fortify.Name","servicenow_dev_url","DistributedTask.Tasks.UseLatestOpensslVersion","DistributedTask.Tasks.Node.SkipDebugLogsWhenDebugModeOff","Solo.Nexus3.Repositories.Uri","agent.cloudid","USE_AKS_CREDENTIAL_API","system.teamProject","system.taskInstanceId","FAIL_DEPRECATED_BUILD_TASK","Serviceconnection.Nexus.IQ.Name","AZP_75787_ENABLE_NEW_LOGIC_LOG","build.stageRequestedById","DistributedTask.Tasks.hideDockerExecTaskLogIssueErrorOutput","agent.homedirectory","DistributedTask.Tasks.RetireAzureRMPowerShellModule","AGENT_USE_FETCH_FILTER_IN_CHECKOUT_TASK","agent.version","build.definitionVersion","system.timelineId","DistributedTask.Agent.UseFetchFilterInCheckoutTask","aab_is_release_version","system.planId","Solo.NexusIq.Uri","agent.taskRestrictionsEnforcementMode","agent.os","build.artifactstagingdirectory","agent.acceptteeeula","Solo.Nexus3.Docker.Group.Sc","system.isScheduled","build.binariesdirectory","DistributedTask.Agent.IgnoreVSTSTaskLib","Solo.Fortify.BuildBreaker.Cli.JarName","DistributedTask.Agent.FixPossibleGitOutOfMemoryProblem","USE_OPENSSL_LATEST_VERSION","agent.disablelogplugin.TestResultLogPlugin","Solo.Fortify.BuildBreaker.Cli.Repository","Application_Acronym","system.stageId","Solo.FortifySsc.Uri","AZP_AGENT_MOUNT_WORKSPACE","Abnamro.Vsts.Prerelease.Feed","system.defaultworkingdirectory","build.containerId","system.isdockercontainer","VSTSAGENT_CONTINUE_AFTER_CANCEL_PROCESSTREEKILL_ATTEMPT","AGENT_USE_SPARSE_CHECKOUT_IN_CHECKOUT_TASK","DistributedTask.Agent.LogToBlobstorageService","build.repository.provider","system.enableAccessToken","common.testresultsdirectory","VSTSAGENT_DOCKER_ACTION_RETRIES"]
+2025-06-23T12:14:20.3670377Z ##[debug]Set env: SECRET_IB_APPLICATION_GATEWAY_SECRET=***
+2025-06-23T12:14:20.3670855Z ##[debug]Set env: SECRET_SERVICENOW_OA_DEV_CLIENT_SECRET=***
+2025-06-23T12:14:20.3671327Z ##[debug]Set env: SECRET_BUILDER_PASSWORD=***
+2025-06-23T12:14:20.3671790Z ##[debug]Set env: SECRET_TARGETHOSTPASSWORD=***
+2025-06-23T12:14:20.3672304Z ##[debug]Set env: SECRET_SERVICENOW_OA_ET_REFRESH_TOKEN=***
+2025-06-23T12:14:20.3672917Z ##[debug]Set env: SECRET_SOLO_FORTIFYSSC_ANALYSISUPLOADTOKEN=***
+2025-06-23T12:14:20.3673414Z ##[debug]Set env: SECRET_SERVICENOW_OA_ST_CLIENT_SECRET=***
+2025-06-23T12:14:20.3673907Z ##[debug]Set env: SECRET_XLD-SECURITY-USER-PWD=***
+2025-06-23T12:14:20.3674385Z ##[debug]Set env: SECRET_SERVICENOW_OA_PR_CLIENT_ID=***
+2025-06-23T12:14:20.3674873Z ##[debug]Set env: SECRET_XLRELEASE_TOKEN=***
+2025-06-23T12:14:20.3675383Z ##[debug]Set env: SECRET_SERVICENOW_OA_DEV_REFRESH_TOKEN=***
+2025-06-23T12:14:20.3675847Z ##[debug]Set env: SECRET_GLOBALREPORTPASSWORD=***
+2025-06-23T12:14:20.3676314Z ##[debug]Set env: SECRET_SERVICENOW_OA_PR_CLIENT_SECRET=***
+2025-06-23T12:14:20.3676773Z ##[debug]Set env: SECRET_SERVICENOW_OA_ET_CLIENT_SECRET=***
+2025-06-23T12:14:20.3677256Z ##[debug]Set env: SECRET_ANSIBLETOWER_USER_PART=***
+2025-06-23T12:14:20.3677727Z ##[debug]Set env: SECRET_ANSIBLETOWER_KEY=***
+2025-06-23T12:14:20.3678186Z ##[debug]Set env: SECRET_TARGETHOSTUSERNAME=***
+2025-06-23T12:14:20.3678662Z ##[debug]Set env: SECRET_XLD-SEC-USERPWD2=***
+2025-06-23T12:14:20.3679156Z ##[debug]Set env: SECRET_SERVICENOW_OA_PR_REFRESH_TOKEN=***
+2025-06-23T12:14:20.3679630Z ##[debug]Set env: SECRET_SERVICENOW_OA_ST_CLIENT_ID=***
+2025-06-23T12:14:20.3680911Z ##[debug]Set env: SECRET_SYSTEM_ACCESSTOKEN=***
+2025-06-23T12:14:20.3681374Z ##[debug]Set env: SECRET_XLDPRIVATEKEYFILE=***
+2025-06-23T12:14:20.3681854Z ##[debug]Set env: SECRET_SERVICENOW_OA_ET_CLIENT_ID=***
+2025-06-23T12:14:20.3682364Z ##[debug]Set env: SECRET_SERVICENOW_OA_ST_REFRESH_TOKEN=***
+2025-06-23T12:14:20.3683042Z ##[debug]Set env: SECRET_XLD-SEC-USERNAME2=***
+2025-06-23T12:14:20.3683529Z ##[debug]Set env: SECRET_SERVICENOW_OA_DEV_CLIENT_ID=***
+2025-06-23T12:14:20.3684364Z ##[debug]Set env: VSTS_SECRET_VARIABLES=["ib_application_gateway_secret","servicenow_oa_dev_client_secret","BUILDER_PASSWORD","targethostPassword","servicenow_oa_et_refresh_token","Solo.FortifySsc.AnalysisUploadToken","servicenow_oa_st_client_secret","xld-security-user-pwd","servicenow_oa_pr_client_id","XLRelease.Token","servicenow_oa_dev_refresh_token","globalreportPassword","servicenow_oa_pr_client_secret","servicenow_oa_et_client_secret","AnsibleTower.user.part","AnsibleTower.key","targethostUsername","xld-sec-userpwd2","servicenow_oa_pr_refresh_token","servicenow_oa_st_client_id","system.accessToken","xldPrivateKeyfile","servicenow_oa_et_client_id","servicenow_oa_st_refresh_token","xld-sec-username2","servicenow_oa_dev_client_id"]
+2025-06-23T12:14:20.3685339Z ##[debug]Handler Setup Complete
+2025-06-23T12:14:20.3892081Z ##[debug]system.debug=True
+2025-06-23T12:14:20.3892697Z ##[debug]DistributedTask.Tasks.Node.SkipDebugLogsWhenDebugModeOff=True
+2025-06-23T12:14:20.3933577Z ##[debug]agent.TempDirectory=/__w/_temp
+2025-06-23T12:14:20.3938847Z ##[debug]loading inputs and endpoints
+2025-06-23T12:14:20.3941489Z ##[debug]loading INPUT_SCRIPTSOURCE
+2025-06-23T12:14:20.3955023Z ##[debug]loading INPUT_SCRIPTPATH
+2025-06-23T12:14:20.3957044Z ##[debug]loading INPUT_ARGUMENTS
+2025-06-23T12:14:20.3957821Z ##[debug]loading INPUT_WORKINGDIRECTORY
+2025-06-23T12:14:20.3958564Z ##[debug]loading INPUT_FAILONSTDERR
+2025-06-23T12:14:20.3960446Z ##[debug]loading ENDPOINT_AUTH_SYSTEMVSSCONNECTION
+2025-06-23T12:14:20.3961411Z ##[debug]loading ENDPOINT_AUTH_SCHEME_SYSTEMVSSCONNECTION
+2025-06-23T12:14:20.3962277Z ##[debug]loading ENDPOINT_AUTH_PARAMETER_SYSTEMVSSCONNECTION_ACCESSTOKEN
+2025-06-23T12:14:20.3970074Z ##[debug]loading SECRET_IB_APPLICATION_GATEWAY_SECRET
+2025-06-23T12:14:20.3972310Z ##[debug]loading SECRET_SERVICENOW_OA_DEV_CLIENT_SECRET
+2025-06-23T12:14:20.3973978Z ##[debug]loading SECRET_BUILDER_PASSWORD
+2025-06-23T12:14:20.3976489Z ##[debug]loading SECRET_TARGETHOSTPASSWORD
+2025-06-23T12:14:20.3977846Z ##[debug]loading SECRET_SERVICENOW_OA_ET_REFRESH_TOKEN
+2025-06-23T12:14:20.3980149Z ##[debug]loading SECRET_SOLO_FORTIFYSSC_ANALYSISUPLOADTOKEN
+2025-06-23T12:14:20.3981733Z ##[debug]loading SECRET_SERVICENOW_OA_ST_CLIENT_SECRET
+2025-06-23T12:14:20.3984420Z ##[debug]loading SECRET_XLD-SECURITY-USER-PWD
+2025-06-23T12:14:20.3985281Z ##[debug]loading SECRET_SERVICENOW_OA_PR_CLIENT_ID
+2025-06-23T12:14:20.3987012Z ##[debug]loading SECRET_XLRELEASE_TOKEN
+2025-06-23T12:14:20.3988613Z ##[debug]loading SECRET_SERVICENOW_OA_DEV_REFRESH_TOKEN
+2025-06-23T12:14:20.3989242Z ##[debug]loading SECRET_GLOBALREPORTPASSWORD
+2025-06-23T12:14:20.4016606Z ##[debug]loading SECRET_SERVICENOW_OA_PR_CLIENT_SECRET
+2025-06-23T12:14:20.4017528Z ##[debug]loading SECRET_SERVICENOW_OA_ET_CLIENT_SECRET
+2025-06-23T12:14:20.4018158Z ##[debug]loading SECRET_ANSIBLETOWER_USER_PART
+2025-06-23T12:14:20.4018858Z ##[debug]loading SECRET_ANSIBLETOWER_KEY
+2025-06-23T12:14:20.4019453Z ##[debug]loading SECRET_TARGETHOSTUSERNAME
+2025-06-23T12:14:20.4020146Z ##[debug]loading SECRET_XLD-SEC-USERPWD2
+2025-06-23T12:14:20.4020730Z ##[debug]loading SECRET_SERVICENOW_OA_PR_REFRESH_TOKEN
+2025-06-23T12:14:20.4021451Z ##[debug]loading SECRET_SERVICENOW_OA_ST_CLIENT_ID
+2025-06-23T12:14:20.4022027Z ##[debug]loading SECRET_SYSTEM_ACCESSTOKEN
+2025-06-23T12:14:20.4022712Z ##[debug]loading SECRET_XLDPRIVATEKEYFILE
+2025-06-23T12:14:20.4023456Z ##[debug]loading SECRET_SERVICENOW_OA_ET_CLIENT_ID
+2025-06-23T12:14:20.4024200Z ##[debug]loading SECRET_SERVICENOW_OA_ST_REFRESH_TOKEN
+2025-06-23T12:14:20.4024790Z ##[debug]loading SECRET_XLD-SEC-USERNAME2
+2025-06-23T12:14:20.4025508Z ##[debug]loading SECRET_SERVICENOW_OA_DEV_CLIENT_ID
+2025-06-23T12:14:20.4026133Z ##[debug]loaded 34
+2025-06-23T12:14:20.4026812Z ##[debug]Agent.ProxyUrl=undefined
+2025-06-23T12:14:20.4028103Z ##[debug]Agent.CAInfo=undefined
+2025-06-23T12:14:20.4028876Z ##[debug]Agent.ClientCert=undefined
+2025-06-23T12:14:20.4030336Z ##[debug]Agent.SkipCertValidation=undefined
+2025-06-23T12:14:20.4031667Z ##[debug]check path : /__w/_tasks/PythonScript_6392f95f-7e76-4a18-b3c7-7f078d2f7700/0.248.1/task.json
+2025-06-23T12:14:20.4032956Z ##[debug]adding resource file: /__w/_tasks/PythonScript_6392f95f-7e76-4a18-b3c7-7f078d2f7700/0.248.1/task.json
+2025-06-23T12:14:20.4033806Z ##[debug]system.culture=en-US
+2025-06-23T12:14:20.4034463Z ##[debug]scriptSource=filePath
+2025-06-23T12:14:20.4035067Z ##[debug]scriptPath=/__w/459/s/blocks/python/scripts/check_package_exist.py
+2025-06-23T12:14:20.4035919Z ##[debug]script=undefined
+2025-06-23T12:14:20.4036686Z ##[debug]arguments=BSRC_BUILDER *** abnamro_betl_src_poc 0.1.0
+2025-06-23T12:14:20.4037296Z ##[debug]pythonInterpreter=undefined
+2025-06-23T12:14:20.4037889Z ##[debug]workingDirectory=/__w/459/s
+2025-06-23T12:14:20.4038417Z ##[debug]failOnStderr=true
+2025-06-23T12:14:20.4039911Z ##[debug]which 'python'
+2025-06-23T12:14:20.4049570Z ##[debug]found: '/usr/local/bin/python'
+2025-06-23T12:14:20.4050152Z ##[debug]which '/usr/local/bin/python'
+2025-06-23T12:14:20.4050697Z ##[debug]found: '/usr/local/bin/python'
+2025-06-23T12:14:20.4051290Z ##[debug]/usr/local/bin/python arg: /__w/459/s/blocks/python/scripts/check_package_exist.py
+2025-06-23T12:14:20.4052179Z ##[debug]/usr/local/bin/python arg: BSRC_BUILDER *** abnamro_betl_src_poc 0.1.0
+2025-06-23T12:14:20.4064656Z ##[debug]exec tool: /usr/local/bin/python
+2025-06-23T12:14:20.4065429Z ##[debug]arguments:
+2025-06-23T12:14:20.4066173Z ##[debug]   /__w/459/s/blocks/python/scripts/check_package_exist.py
+2025-06-23T12:14:20.4067352Z ##[debug]   BSRC_BUILDER
+2025-06-23T12:14:20.4068105Z ##[debug]   ***
+2025-06-23T12:14:20.4068771Z ##[debug]   abnamro_betl_src_poc
+2025-06-23T12:14:20.4069581Z ##[debug]   0.1.0
+2025-06-23T12:14:20.4070307Z [command]/usr/local/bin/python /__w/459/s/blocks/python/scripts/check_package_exist.py BSRC_BUILDER *** abnamro_betl_src_poc 0.1.0
+2025-06-23T12:14:20.6970595Z Checking package at URL: https://p-nexus-3.development.nl.eu.abnamro.com:8443/repository/python-releases/packages/abnamro-betl-src-poc/0.1.0/abnamro_betl_src_poc-0.1.0-py3-none-any.whl
+2025-06-23T12:14:20.6971588Z Response Status Code: 200
+2025-06-23T12:14:20.6972253Z Package 'abnamro_betl_src_poc-0.1.0-py3-none-any.whl' already exists in Nexus repository 'python-releases'. To build new version, do a commit in your repo and run the pipeline again.
+2025-06-23T12:14:20.7146028Z 
+2025-06-23T12:14:20.7150500Z ##[debug]STDIO streams have closed and received exit code 1 and signal null for tool '/usr/local/bin/python'
+2025-06-23T12:14:20.7155169Z ##[debug]STDIO streams have closed and received exit code 1 and signal null for tool '/usr/local/bin/python'
+2025-06-23T12:14:20.7181277Z ##[debug]task result: Failed
+2025-06-23T12:14:20.7202729Z ##[error]The process '/usr/local/bin/python' failed with exit code 1
+2025-06-23T12:14:20.7209390Z ##[debug]Processed: ##vso[task.issue type=error;source=TaskInternal;correlationId=4aaf8ec7-0e85-4eda-bb25-c34eecea93f6;]The process '/usr/local/bin/python' failed with exit code 1
+2025-06-23T12:14:20.7215894Z ##[debug]Processed: ##vso[task.complete result=Failed;]The process '/usr/local/bin/python' failed with exit code 1
+2025-06-23T12:14:20.7230844Z ##[debug]Handler exit code: 0
+2025-06-23T12:14:20.7294697Z ##[section]Finishing: Check if package exists in Nexus3
