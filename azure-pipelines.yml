@@ -11,7 +11,7 @@ trigger:
 parameters:
 - name: run_nexus_lc_scan_prerelease
   type: boolean
-  default: false # Nexus Issue, Blocked to build application
+  default: true # Nexus Issue, Blocked to build application
 - name: run_fortify_scan_prerelease
   type: boolean
   default: true
@@ -28,7 +28,7 @@ parameters:
   # These are referenced in your pipeline yaml.
 variables:
   - group: Abnamro.Coesd.VariableGroup.GlobalVars
-  - group: TeamVars.BETL
+  - group: TeamVars.BSRC
 
 resources:
   repositories:
@@ -59,14 +59,14 @@ stages:
             path_precommit_config_file: .pre-commit-config.yaml
       - template: flows/python.yml@pipetemplates
         parameters:
-          nexus_lc_name: 'com.abnamro.betl.sourcing'
-          artifact_name: 'betl_etl_sourcing'
+          nexus_lc_name: 'abnamro_bsrc_etl'
+          artifact_name: 'bsrc_etl'
           fortify_project_name: 'com.abnamro.betl/sourcing'
-          test_requirements_files: ["requirements_test.txt"]                # optional; installs a list of additional requirements.txt files, (syntax: ["dev.txt", "test.txt"])
+          test_requirements_files: ["requirements_test.txt", "pre-installed-requirements.txt"]                # optional; installs a list of additional requirements.txt files, (syntax: ["dev.txt", "test.txt"])
           precommit_requirements_file: requirements_pre-commit.txt          # Optional; provide an additional requirements.txt location which is loaded for pre-commit works like ruff linting. Default: ''
           ruff_lint_breaking: true                                          # optional; Allow users of flow to make ruff linting step breaking. Default: false;
           requirements_files: ["requirements.txt"]                          # optional; requirements.txt location, Default: ['$(Build.SourcesDirectory)/requirements.txt']
-          run_nexus_lc_scan_prerelease: false                               # ${{ parameters.run_nexus_lc_scan_prerelease }}
+          run_nexus_lc_scan_prerelease: ${{ parameters.run_nexus_lc_scan_prerelease }}
           run_fortify_scan_prerelease: ${{ parameters.run_fortify_scan_prerelease }}
           run_publishing_prerelease: ${{ parameters.run_publishing_prerelease }}
           run_packaging_prerelease: true
