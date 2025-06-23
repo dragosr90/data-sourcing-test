@@ -1,0 +1,15 @@
+2025-06-23T08:31:32.8599481Z ##[section]Starting: Check if package exists in Nexus3
+2025-06-23T08:31:32.8604891Z ==============================================================================
+2025-06-23T08:31:32.8605028Z Task         : Python script
+2025-06-23T08:31:32.8605112Z Description  : Run a Python file or inline script
+2025-06-23T08:31:32.8605219Z Version      : 0.248.1
+2025-06-23T08:31:32.8605305Z Author       : Microsoft Corporation
+2025-06-23T08:31:32.8605392Z Help         : https://docs.microsoft.com/azure/devops/pipelines/tasks/utility/python-script
+2025-06-23T08:31:32.8605505Z ==============================================================================
+2025-06-23T08:31:33.0795011Z [command]/usr/local/bin/python /__w/1354/s/blocks/python/scripts/check_package_exist.py BSRC_BUILDER *** abnamro_betl_src_poc 0.1.0
+2025-06-23T08:31:33.2199498Z Checking package at URL: https://p-nexus-3.development.nl.eu.abnamro.com:8443/repository/python-releases/packages/abnamro-betl-src-poc/0.1.0/abnamro_betl_src_poc-0.1.0-py3-none-any.whl
+2025-06-23T08:31:33.2200923Z Response Status Code: 200
+2025-06-23T08:31:33.2201535Z Package 'abnamro_betl_src_poc-0.1.0-py3-none-any.whl' already exists in Nexus repository 'python-releases'. To build new version, do a commit in your repo and run the pipeline again.
+2025-06-23T08:31:33.2363840Z 
+2025-06-23T08:31:33.2413930Z ##[error]The process '/usr/local/bin/python' failed with exit code 1
+2025-06-23T08:31:33.2478912Z ##[section]Finishing: Check if package exists in Nexus3
