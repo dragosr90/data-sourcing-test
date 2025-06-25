@@ -1,0 +1,8 @@
+Logic
+
+Join CPxCF to get the facilities the counterparty is linked to
+Find the latest rating for all other counterparties linked to the same facility (or facilities)
+  1. Per facility get rating and approval date for rating with latest approval
+  2. Per counterparty, if multiple facilities, select the rating with the lowest approval date (rank and filter on 1)
+  --> 3. Perhaps this can be done with windowing functions in expressions
+  4. For counterparty without (valid) rating, pick that rating
