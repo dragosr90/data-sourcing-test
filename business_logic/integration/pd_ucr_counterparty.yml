@@ -1,0 +1,281 @@
+description: This YAML implements counterparty-based PD/UCR logic by finding the latest rating from other counterparties linked to the same facilities
+
+target: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_pd_ucr_counterparty
+
+sources:
+  - alias: PD_UCR_STEP1
+    source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_pd_ucr
+  - alias: INT_FACILITY
+    columns:
+      - LocalFacilityIdentifier
+      - SourceSystemIdentifier
+      - CounterpartyID
+      - CounterpartySourceSystemIdentifier
+    source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_integrated_facility
+  - alias: OTHER_FACILITY
+    columns:
+      - LocalFacilityIdentifier
+      - SourceSystemIdentifier
+      - CounterpartyID
+      - CounterpartySourceSystemIdentifier
+    source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_integrated_facility
+  - alias: OTHER_PD_UCR
+    source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_pd_ucr
+
+transformations:
+  # Step 1: Join main counterparties with their facilities
+  - join:
+      left_source: PD_UCR_STEP1
+      right_source: INT_FACILITY
+      condition:
+        - PD_UCR_STEP1.CounterpartyID = INT_FACILITY.CounterpartyID
+        - PD_UCR_STEP1.CounterpartySourceSystemIdentifier = INT_FACILITY.CounterpartySourceSystemIdentifier
+      how: left
+  
+  # Step 2: Find all other counterparties linked to the same facilities
+  - join:
+      right_source: OTHER_FACILITY
+      condition:
+        - INT_FACILITY.LocalFacilityIdentifier = OTHER_FACILITY.LocalFacilityIdentifier
+        - INT_FACILITY.SourceSystemIdentifier = OTHER_FACILITY.SourceSystemIdentifier
+      how: left
+  
+  # Step 3: Get PD/UCR data for other counterparties
+  - join:
+      right_source: OTHER_PD_UCR
+      condition:
+        - OTHER_FACILITY.CounterpartyID = OTHER_PD_UCR.CounterpartyID
+        - OTHER_FACILITY.CounterpartySourceSystemIdentifier = OTHER_PD_UCR.CounterpartySourceSystemIdentifier
+      how: left
+
+  # Step 4: Add ranking variables
+  - add_variables:
+      column_mapping:
+        # Exclude self-joins
+        is_different_counterparty: |
+          CASE 
+            WHEN PD_UCR_STEP1.CounterpartyID = OTHER_FACILITY.CounterpartyID 
+                 AND PD_UCR_STEP1.CounterpartySourceSystemIdentifier = OTHER_FACILITY.CounterpartySourceSystemIdentifier 
+            THEN 0 
+            ELSE 1 
+          END
+        # Check if other counterparty has valid rating
+        has_valid_rating: |
+          CASE 
+            WHEN OTHER_PD_UCR.UCRStep1 IS NOT NULL 
+                 AND OTHER_PD_UCR.UniformCounterpartyRatingDate IS NOT NULL 
+            THEN 1 
+            ELSE 0 
+          END
+        # Rank latest rating per facility
+        facility_rating_rank: |
+          CASE 
+            WHEN is_different_counterparty = 1 AND has_valid_rating = 1 
+            THEN ROW_NUMBER() OVER (
+              PARTITION BY 
+                PD_UCR_STEP1.CounterpartyID,
+                PD_UCR_STEP1.CounterpartySourceSystemIdentifier,
+                INT_FACILITY.LocalFacilityIdentifier,
+                INT_FACILITY.SourceSystemIdentifier
+              ORDER BY 
+                OTHER_PD_UCR.UniformCounterpartyRatingDate DESC
+            )
+            ELSE NULL
+          END
+        # For counterparties with multiple facilities, rank by oldest approval date
+        counterparty_rating_rank: |
+          CASE 
+            WHEN is_different_counterparty = 1 AND has_valid_rating = 1 AND facility_rating_rank = 1
+            THEN ROW_NUMBER() OVER (
+              PARTITION BY 
+                PD_UCR_STEP1.CounterpartyID,
+                PD_UCR_STEP1.CounterpartySourceSystemIdentifier
+              ORDER BY 
+                OTHER_PD_UCR.UniformCounterpartyRatingDate ASC
+            )
+            ELSE NULL
+          END
+
+expressions:
+  # Pass through all original fields from PD_UCR_STEP1
+  DeliveryEntity: PD_UCR_STEP1.DeliveryEntity
+  ReportingDate: PD_UCR_STEP1.ReportingDate
+  CounterpartyID: PD_UCR_STEP1.CounterpartyID
+  CounterpartySourceSystemIdentifier: PD_UCR_STEP1.CounterpartySourceSystemIdentifier
+  BcdbId: PD_UCR_STEP1.BcdbId
+  AacAlphaCode: PD_UCR_STEP1.AacAlphaCode
+  GlobalCounterpartyIdentifier: PD_UCR_STEP1.GlobalCounterpartyIdentifier
+  
+  # Use OTHER counterparty's rating if current counterparty has no valid rating
+  PDModelCode: |
+    CASE 
+      WHEN PD_UCR_STEP1.UCRStep1 IS NULL 
+           AND is_different_counterparty = 1 
+           AND has_valid_rating = 1 
+           AND counterparty_rating_rank = 1 
+      THEN OTHER_PD_UCR.PDModelCode
+      ELSE PD_UCR_STEP1.PDModelCode
+    END
+  
+  LastPerformingPDModelCode: |
+    CASE 
+      WHEN PD_UCR_STEP1.UCRStep1 IS NULL 
+           AND is_different_counterparty = 1 
+           AND has_valid_rating = 1 
+           AND counterparty_rating_rank = 1 
+      THEN OTHER_PD_UCR.LastPerformingPDModelCode
+      ELSE PD_UCR_STEP1.LastPerformingPDModelCode
+    END
+  
+  ApprovedUniformCounterpartyRating: |
+    CASE 
+      WHEN PD_UCR_STEP1.UCRStep1 IS NULL 
+           AND is_different_counterparty = 1 
+           AND has_valid_rating = 1 
+           AND counterparty_rating_rank = 1 
+      THEN OTHER_PD_UCR.ApprovedUniformCounterpartyRating
+      ELSE PD_UCR_STEP1.ApprovedUniformCounterpartyRating
+    END
+  
+  UCRStep1: |
+    CASE 
+      WHEN PD_UCR_STEP1.UCRStep1 IS NULL 
+           AND is_different_counterparty = 1 
+           AND has_valid_rating = 1 
+           AND counterparty_rating_rank = 1 
+      THEN OTHER_PD_UCR.UCRStep1
+      ELSE PD_UCR_STEP1.UCRStep1
+    END
+  
+  # New field to indicate final UCR including counterparty logic
+  UCRFinal: |
+    COALESCE(
+      PD_UCR_STEP1.UCRStep1,
+      CASE 
+        WHEN is_different_counterparty = 1 
+             AND has_valid_rating = 1 
+             AND counterparty_rating_rank = 1 
+        THEN OTHER_PD_UCR.UCRStep1
+      END
+    )
+  
+  ProbabilityOfDefaultBeforeConservatism: |
+    CASE 
+      WHEN PD_UCR_STEP1.UCRStep1 IS NULL 
+           AND is_different_counterparty = 1 
+           AND has_valid_rating = 1 
+           AND counterparty_rating_rank = 1 
+      THEN OTHER_PD_UCR.ProbabilityOfDefaultBeforeConservatism
+      ELSE PD_UCR_STEP1.ProbabilityOfDefaultBeforeConservatism
+    END
+  
+  ProbabilityOfDefault: |
+    CASE 
+      WHEN PD_UCR_STEP1.UCRStep1 IS NULL 
+           AND is_different_counterparty = 1 
+           AND has_valid_rating = 1 
+           AND counterparty_rating_rank = 1 
+      THEN OTHER_PD_UCR.ProbabilityOfDefault
+      ELSE PD_UCR_STEP1.ProbabilityOfDefault
+    END
+  
+  UniformCounterpartyRatingDate: |
+    CASE 
+      WHEN PD_UCR_STEP1.UCRStep1 IS NULL 
+           AND is_different_counterparty = 1 
+           AND has_valid_rating = 1 
+           AND counterparty_rating_rank = 1 
+      THEN OTHER_PD_UCR.UniformCounterpartyRatingDate
+      ELSE PD_UCR_STEP1.UniformCounterpartyRatingDate
+    END
+  
+  UniformCounterpartyRatingExpiryDate: |
+    CASE 
+      WHEN PD_UCR_STEP1.UCRStep1 IS NULL 
+           AND is_different_counterparty = 1 
+           AND has_valid_rating = 1 
+           AND counterparty_rating_rank = 1 
+      THEN OTHER_PD_UCR.UniformCounterpartyRatingExpiryDate
+      ELSE PD_UCR_STEP1.UniformCounterpartyRatingExpiryDate
+    END
+  
+  PDMarginOfConservatism: |
+    CASE 
+      WHEN PD_UCR_STEP1.UCRStep1 IS NULL 
+           AND is_different_counterparty = 1 
+           AND has_valid_rating = 1 
+           AND counterparty_rating_rank = 1 
+      THEN OTHER_PD_UCR.PDMarginOfConservatism
+      ELSE PD_UCR_STEP1.PDMarginOfConservatism
+    END
+  
+  # Update UCRCase to indicate when rating came from other counterparty
+  UCRCase: |
+    CASE 
+      WHEN PD_UCR_STEP1.UCRStep1 IS NULL 
+           AND is_different_counterparty = 1 
+           AND has_valid_rating = 1 
+           AND counterparty_rating_rank = 1 
+      THEN CONCAT('OTHER_CP_', OTHER_PD_UCR.UCRCase)
+      ELSE PD_UCR_STEP1.UCRCase
+    END
+  
+  # Track which counterparty the rating came from
+  RatingSourceCounterpartyID: |
+    CASE 
+      WHEN PD_UCR_STEP1.UCRStep1 IS NULL 
+           AND is_different_counterparty = 1 
+           AND has_valid_rating = 1 
+           AND counterparty_rating_rank = 1 
+      THEN OTHER_PD_UCR.CounterpartyID
+      ELSE PD_UCR_STEP1.CounterpartyID
+    END
+  
+  RatingSourceCounterpartySSI: |
+    CASE 
+      WHEN PD_UCR_STEP1.UCRStep1 IS NULL 
+           AND is_different_counterparty = 1 
+           AND has_valid_rating = 1 
+           AND counterparty_rating_rank = 1 
+      THEN OTHER_PD_UCR.CounterpartySourceSystemIdentifier
+      ELSE PD_UCR_STEP1.CounterpartySourceSystemIdentifier
+    END
+  
+  # Pass through remaining fields
+  fairid: |
+    CASE 
+      WHEN PD_UCR_STEP1.UCRStep1 IS NULL 
+           AND is_different_counterparty = 1 
+           AND has_valid_rating = 1 
+           AND counterparty_rating_rank = 1 
+      THEN OTHER_PD_UCR.fairid
+      ELSE PD_UCR_STEP1.fairid
+    END
+  
+  UniquePDRatingId: |
+    CASE 
+      WHEN PD_UCR_STEP1.UCRStep1 IS NULL 
+           AND is_different_counterparty = 1 
+           AND has_valid_rating = 1 
+           AND counterparty_rating_rank = 1 
+      THEN OTHER_PD_UCR.UniquePDRatingId
+      ELSE PD_UCR_STEP1.UniquePDRatingId
+    END
+  
+  CptyInRatingSystem: |
+    CASE 
+      WHEN PD_UCR_STEP1.UCRStep1 IS NULL 
+           AND is_different_counterparty = 1 
+           AND has_valid_rating = 1 
+           AND counterparty_rating_rank = 1 
+      THEN OTHER_PD_UCR.CptyInRatingSystem
+      ELSE PD_UCR_STEP1.CptyInRatingSystem
+    END
+  
+  InterCompanyIndicator: PD_UCR_STEP1.InterCompanyIndicator
+  Default: PD_UCR_STEP1.Default
+
+filter_target:
+  - is_different_counterparty = 0 OR (is_different_counterparty = 1 AND has_valid_rating = 1 AND counterparty_rating_rank = 1)
+
+drop_duplicates: true
