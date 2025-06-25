@@ -1,7 +1,7 @@
 # Instruction
 
 In this PoC, the data preprocessing is driven by YAML file, containing metadata about
-
+- `description`: This is a quick summary of the YAML
 - `target`: This is the name of the target output table in Databricks Unity Catalog
 - `sources`: List if sources, including aliases with column selection and (optionally) additional filters
 - `transformations`: Optional list of sequential transformations (join, add_variables, pivot, union, aggregation), using the input from the sources
