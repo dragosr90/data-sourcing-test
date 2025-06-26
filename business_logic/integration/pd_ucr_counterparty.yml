@@ -48,8 +48,8 @@ transformations:
   - add_variables:
       column_mapping:
         is_different_counterparty: CASE WHEN PD_UCR_STEP1.CounterpartyID = INT_CPXCF_OTHER.ParticipatingCounterparty AND PD_UCR_STEP1.CounterpartySourceSystemIdentifier = INT_CPXCF_OTHER.ParticipatingCounterpartySourceSystemIdentifier THEN 0 ELSE 1 END
-        needs_rating: CASE WHEN PD_UCR_STEP1.UCRStep1 IS NULL THEN 1 ELSE 0 END
-        other_has_rating: CASE WHEN OTHER_CP_RATINGS.UCRStep1 IS NOT NULL AND OTHER_CP_RATINGS.UniformCounterpartyRatingDate IS NOT NULL THEN 1 ELSE 0 END
+        needs_rating: CASE WHEN PD_UCR_STEP1.UCRStep1 IS NULL OR (PD_UCR_STEP1.UniformCounterpartyRatingDate IS NOT NULL AND DATEADD(month, 12, PD_UCR_STEP1.UniformCounterpartyRatingDate) < PD_UCR_STEP1.ReportingDate) THEN 1 ELSE 0 END
+        other_has_rating: CASE WHEN OTHER_CP_RATINGS.UCRStep1 IS NOT NULL AND OTHER_CP_RATINGS.UniformCounterpartyRatingDate IS NOT NULL AND DATEADD(month, 12, OTHER_CP_RATINGS.UniformCounterpartyRatingDate) >= OTHER_CP_RATINGS.ReportingDate THEN 1 ELSE 0 END
         facility_rank: CASE WHEN needs_rating = 1 AND is_different_counterparty = 1 AND other_has_rating = 1 THEN ROW_NUMBER() OVER (PARTITION BY PD_UCR_STEP1.CounterpartyID, PD_UCR_STEP1.CounterpartySourceSystemIdentifier, INT_CPXCF.CreditFacility, INT_CPXCF.CreditFacilitySourceSystemIdentifier ORDER BY OTHER_CP_RATINGS.UniformCounterpartyRatingDate DESC) ELSE NULL END
         counterparty_rank: CASE WHEN needs_rating = 1 AND is_different_counterparty = 1 AND other_has_rating = 1 AND facility_rank = 1 THEN ROW_NUMBER() OVER (PARTITION BY PD_UCR_STEP1.CounterpartyID, PD_UCR_STEP1.CounterpartySourceSystemIdentifier ORDER BY OTHER_CP_RATINGS.UniformCounterpartyRatingDate ASC) ELSE NULL END
 
