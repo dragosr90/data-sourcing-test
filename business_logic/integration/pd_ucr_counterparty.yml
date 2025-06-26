@@ -47,11 +47,55 @@ transformations:
       how: left
   - add_variables:
       column_mapping:
-        is_different_counterparty: CASE WHEN PD_UCR_STEP1.CounterpartyID = INT_CPXCF_OTHER.ParticipatingCounterparty AND PD_UCR_STEP1.CounterpartySourceSystemIdentifier = INT_CPXCF_OTHER.ParticipatingCounterpartySourceSystemIdentifier THEN 0 ELSE 1 END
-        needs_rating: CASE WHEN PD_UCR_STEP1.UCRStep1 IS NULL OR (PD_UCR_STEP1.UniformCounterpartyRatingDate IS NOT NULL AND DATEADD(month, 12, PD_UCR_STEP1.UniformCounterpartyRatingDate) < PD_UCR_STEP1.ReportingDate) THEN 1 ELSE 0 END
-        other_has_rating: CASE WHEN OTHER_CP_RATINGS.UCRStep1 IS NOT NULL AND OTHER_CP_RATINGS.UniformCounterpartyRatingDate IS NOT NULL AND DATEADD(month, 12, OTHER_CP_RATINGS.UniformCounterpartyRatingDate) >= OTHER_CP_RATINGS.ReportingDate THEN 1 ELSE 0 END
-        facility_rank: CASE WHEN needs_rating = 1 AND is_different_counterparty = 1 AND other_has_rating = 1 THEN ROW_NUMBER() OVER (PARTITION BY PD_UCR_STEP1.CounterpartyID, PD_UCR_STEP1.CounterpartySourceSystemIdentifier, INT_CPXCF.CreditFacility, INT_CPXCF.CreditFacilitySourceSystemIdentifier ORDER BY OTHER_CP_RATINGS.UniformCounterpartyRatingDate DESC) ELSE NULL END
-        counterparty_rank: CASE WHEN needs_rating = 1 AND is_different_counterparty = 1 AND other_has_rating = 1 AND facility_rank = 1 THEN ROW_NUMBER() OVER (PARTITION BY PD_UCR_STEP1.CounterpartyID, PD_UCR_STEP1.CounterpartySourceSystemIdentifier ORDER BY OTHER_CP_RATINGS.UniformCounterpartyRatingDate ASC) ELSE NULL END
+        is_different_counterparty: >
+          CASE 
+            WHEN PD_UCR_STEP1.CounterpartyID = INT_CPXCF_OTHER.ParticipatingCounterparty 
+                 AND PD_UCR_STEP1.CounterpartySourceSystemIdentifier = INT_CPXCF_OTHER.ParticipatingCounterpartySourceSystemIdentifier 
+            THEN 0 
+            ELSE 1 
+          END
+        needs_rating: >
+          CASE 
+            WHEN PD_UCR_STEP1.UCRStep1 IS NULL 
+                 OR (PD_UCR_STEP1.UniformCounterpartyRatingDate IS NOT NULL 
+                     AND DATEADD(month, 12, PD_UCR_STEP1.UniformCounterpartyRatingDate) < PD_UCR_STEP1.ReportingDate) 
+            THEN 1 
+            ELSE 0 
+          END
+        other_has_rating: >
+          CASE 
+            WHEN OTHER_CP_RATINGS.UCRStep1 IS NOT NULL 
+                 AND OTHER_CP_RATINGS.UniformCounterpartyRatingDate IS NOT NULL 
+                 AND DATEADD(month, 12, OTHER_CP_RATINGS.UniformCounterpartyRatingDate) >= OTHER_CP_RATINGS.ReportingDate 
+            THEN 1 
+            ELSE 0 
+          END
+        facility_rank: >
+          CASE 
+            WHEN needs_rating = 1 AND is_different_counterparty = 1 AND other_has_rating = 1
+            THEN ROW_NUMBER() OVER (
+              PARTITION BY 
+                PD_UCR_STEP1.CounterpartyID,
+                PD_UCR_STEP1.CounterpartySourceSystemIdentifier,
+                INT_CPXCF.CreditFacility,
+                INT_CPXCF.CreditFacilitySourceSystemIdentifier
+              ORDER BY 
+                OTHER_CP_RATINGS.UniformCounterpartyRatingDate DESC
+            )
+            ELSE NULL
+          END
+        counterparty_rank: >
+          CASE 
+            WHEN needs_rating = 1 AND is_different_counterparty = 1 AND other_has_rating = 1 AND facility_rank = 1
+            THEN ROW_NUMBER() OVER (
+              PARTITION BY 
+                PD_UCR_STEP1.CounterpartyID,
+                PD_UCR_STEP1.CounterpartySourceSystemIdentifier
+              ORDER BY 
+                OTHER_CP_RATINGS.UniformCounterpartyRatingDate ASC
+            )
+            ELSE NULL
+          END
 
 expressions:
   DeliveryEntity: PD_UCR_STEP1.DeliveryEntity
@@ -61,22 +105,114 @@ expressions:
   BcdbId: PD_UCR_STEP1.BcdbId
   AacAlphaCode: PD_UCR_STEP1.AacAlphaCode
   GlobalCounterpartyIdentifier: PD_UCR_STEP1.GlobalCounterpartyIdentifier
-  PDModelCode: CASE WHEN needs_rating = 1 AND is_different_counterparty = 1 AND other_has_rating = 1 AND counterparty_rank = 1 THEN OTHER_CP_RATINGS.PDModelCode ELSE PD_UCR_STEP1.PDModelCode END
-  LastPerformingPDModelCode: CASE WHEN needs_rating = 1 AND is_different_counterparty = 1 AND other_has_rating = 1 AND counterparty_rank = 1 THEN OTHER_CP_RATINGS.LastPerformingPDModelCode ELSE PD_UCR_STEP1.LastPerformingPDModelCode END
-  ApprovedUniformCounterpartyRating: CASE WHEN needs_rating = 1 AND is_different_counterparty = 1 AND other_has_rating = 1 AND counterparty_rank = 1 THEN OTHER_CP_RATINGS.ApprovedUniformCounterpartyRating ELSE PD_UCR_STEP1.ApprovedUniformCounterpartyRating END
-  UCRStep2: CASE WHEN needs_rating = 1 AND is_different_counterparty = 1 AND other_has_rating = 1 AND counterparty_rank = 1 THEN OTHER_CP_RATINGS.UCRStep1 ELSE PD_UCR_STEP1.UCRStep1 END
-  ProbabilityOfDefaultBeforeConservatism: CASE WHEN needs_rating = 1 AND is_different_counterparty = 1 AND other_has_rating = 1 AND counterparty_rank = 1 THEN OTHER_CP_RATINGS.ProbabilityOfDefaultBeforeConservatism ELSE PD_UCR_STEP1.ProbabilityOfDefaultBeforeConservatism END
-  ProbabilityOfDefault: CASE WHEN needs_rating = 1 AND is_different_counterparty = 1 AND other_has_rating = 1 AND counterparty_rank = 1 THEN OTHER_CP_RATINGS.ProbabilityOfDefault ELSE PD_UCR_STEP1.ProbabilityOfDefault END
-  UniformCounterpartyRatingDate: CASE WHEN needs_rating = 1 AND is_different_counterparty = 1 AND other_has_rating = 1 AND counterparty_rank = 1 THEN OTHER_CP_RATINGS.UniformCounterpartyRatingDate ELSE PD_UCR_STEP1.UniformCounterpartyRatingDate END
-  UniformCounterpartyRatingExpiryDate: CASE WHEN needs_rating = 1 AND is_different_counterparty = 1 AND other_has_rating = 1 AND counterparty_rank = 1 THEN OTHER_CP_RATINGS.UniformCounterpartyRatingExpiryDate ELSE PD_UCR_STEP1.UniformCounterpartyRatingExpiryDate END
-  PDMarginOfConservatism: CASE WHEN needs_rating = 1 AND is_different_counterparty = 1 AND other_has_rating = 1 AND counterparty_rank = 1 THEN OTHER_CP_RATINGS.PDMarginOfConservatism ELSE PD_UCR_STEP1.PDMarginOfConservatism END
-  UCRCase: CASE WHEN needs_rating = 1 AND is_different_counterparty = 1 AND other_has_rating = 1 AND counterparty_rank = 1 THEN 'CPxCF' ELSE PD_UCR_STEP1.UCRCase END
-  RatingSourceCounterpartyID: CASE WHEN needs_rating = 1 AND is_different_counterparty = 1 AND other_has_rating = 1 AND counterparty_rank = 1 THEN OTHER_CP_RATINGS.CounterpartyID ELSE PD_UCR_STEP1.CounterpartyID END
-  RatingSourceCounterpartySSI: CASE WHEN needs_rating = 1 AND is_different_counterparty = 1 AND other_has_rating = 1 AND counterparty_rank = 1 THEN OTHER_CP_RATINGS.CounterpartySourceSystemIdentifier ELSE PD_UCR_STEP1.CounterpartySourceSystemIdentifier END
-  fairid: CASE WHEN needs_rating = 1 AND is_different_counterparty = 1 AND other_has_rating = 1 AND counterparty_rank = 1 THEN OTHER_CP_RATINGS.fairid ELSE PD_UCR_STEP1.fairid END
-  UniquePDRatingId: CASE WHEN needs_rating = 1 AND is_different_counterparty = 1 AND other_has_rating = 1 AND counterparty_rank = 1 THEN OTHER_CP_RATINGS.UniquePDRatingId ELSE PD_UCR_STEP1.UniquePDRatingId END
-  CptyInRatingSystem: CASE WHEN needs_rating = 1 AND is_different_counterparty = 1 AND other_has_rating = 1 AND counterparty_rank = 1 THEN OTHER_CP_RATINGS.CptyInRatingSystem ELSE PD_UCR_STEP1.CptyInRatingSystem END
+  
+  PDModelCode: >
+    CASE 
+      WHEN needs_rating = 1 AND is_different_counterparty = 1 AND other_has_rating = 1 AND counterparty_rank = 1
+      THEN OTHER_CP_RATINGS.PDModelCode
+      ELSE PD_UCR_STEP1.PDModelCode
+    END
+  
+  LastPerformingPDModelCode: >
+    CASE 
+      WHEN needs_rating = 1 AND is_different_counterparty = 1 AND other_has_rating = 1 AND counterparty_rank = 1
+      THEN OTHER_CP_RATINGS.LastPerformingPDModelCode
+      ELSE PD_UCR_STEP1.LastPerformingPDModelCode
+    END
+  
+  ApprovedUniformCounterpartyRating: >
+    CASE 
+      WHEN needs_rating = 1 AND is_different_counterparty = 1 AND other_has_rating = 1 AND counterparty_rank = 1
+      THEN OTHER_CP_RATINGS.ApprovedUniformCounterpartyRating
+      ELSE PD_UCR_STEP1.ApprovedUniformCounterpartyRating
+    END
+  
+  UCRStep2: >
+    CASE 
+      WHEN needs_rating = 1 AND is_different_counterparty = 1 AND other_has_rating = 1 AND counterparty_rank = 1
+      THEN OTHER_CP_RATINGS.UCRStep1
+      ELSE PD_UCR_STEP1.UCRStep1
+    END
+  
+  ProbabilityOfDefaultBeforeConservatism: >
+    CASE 
+      WHEN needs_rating = 1 AND is_different_counterparty = 1 AND other_has_rating = 1 AND counterparty_rank = 1
+      THEN OTHER_CP_RATINGS.ProbabilityOfDefaultBeforeConservatism
+      ELSE PD_UCR_STEP1.ProbabilityOfDefaultBeforeConservatism
+    END
+  
+  ProbabilityOfDefault: >
+    CASE 
+      WHEN needs_rating = 1 AND is_different_counterparty = 1 AND other_has_rating = 1 AND counterparty_rank = 1
+      THEN OTHER_CP_RATINGS.ProbabilityOfDefault
+      ELSE PD_UCR_STEP1.ProbabilityOfDefault
+    END
+  
+  UniformCounterpartyRatingDate: >
+    CASE 
+      WHEN needs_rating = 1 AND is_different_counterparty = 1 AND other_has_rating = 1 AND counterparty_rank = 1
+      THEN OTHER_CP_RATINGS.UniformCounterpartyRatingDate
+      ELSE PD_UCR_STEP1.UniformCounterpartyRatingDate
+    END
+  
+  UniformCounterpartyRatingExpiryDate: >
+    CASE 
+      WHEN needs_rating = 1 AND is_different_counterparty = 1 AND other_has_rating = 1 AND counterparty_rank = 1
+      THEN OTHER_CP_RATINGS.UniformCounterpartyRatingExpiryDate
+      ELSE PD_UCR_STEP1.UniformCounterpartyRatingExpiryDate
+    END
+  
+  PDMarginOfConservatism: >
+    CASE 
+      WHEN needs_rating = 1 AND is_different_counterparty = 1 AND other_has_rating = 1 AND counterparty_rank = 1
+      THEN OTHER_CP_RATINGS.PDMarginOfConservatism
+      ELSE PD_UCR_STEP1.PDMarginOfConservatism
+    END
+  
+  UCRCase: >
+    CASE 
+      WHEN needs_rating = 1 AND is_different_counterparty = 1 AND other_has_rating = 1 AND counterparty_rank = 1
+      THEN 'CPxCF'
+      ELSE PD_UCR_STEP1.UCRCase
+    END
+  
+  RatingSourceCounterpartyID: >
+    CASE 
+      WHEN needs_rating = 1 AND is_different_counterparty = 1 AND other_has_rating = 1 AND counterparty_rank = 1
+      THEN OTHER_CP_RATINGS.CounterpartyID
+      ELSE PD_UCR_STEP1.CounterpartyID
+    END
+  
+  RatingSourceCounterpartySSI: >
+    CASE 
+      WHEN needs_rating = 1 AND is_different_counterparty = 1 AND other_has_rating = 1 AND counterparty_rank = 1
+      THEN OTHER_CP_RATINGS.CounterpartySourceSystemIdentifier
+      ELSE PD_UCR_STEP1.CounterpartySourceSystemIdentifier
+    END
+  
+  fairid: >
+    CASE 
+      WHEN needs_rating = 1 AND is_different_counterparty = 1 AND other_has_rating = 1 AND counterparty_rank = 1
+      THEN OTHER_CP_RATINGS.fairid
+      ELSE PD_UCR_STEP1.fairid
+    END
+  
+  UniquePDRatingId: >
+    CASE 
+      WHEN needs_rating = 1 AND is_different_counterparty = 1 AND other_has_rating = 1 AND counterparty_rank = 1
+      THEN OTHER_CP_RATINGS.UniquePDRatingId
+      ELSE PD_UCR_STEP1.UniquePDRatingId
+    END
+  
+  CptyInRatingSystem: >
+    CASE 
+      WHEN needs_rating = 1 AND is_different_counterparty = 1 AND other_has_rating = 1 AND counterparty_rank = 1
+      THEN OTHER_CP_RATINGS.CptyInRatingSystem
+      ELSE PD_UCR_STEP1.CptyInRatingSystem
+    END
+  
   InterCompanyIndicator: PD_UCR_STEP1.InterCompanyIndicator
+  
   Default: PD_UCR_STEP1.Default
 
 filter_target:
