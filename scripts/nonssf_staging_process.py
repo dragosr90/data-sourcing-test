@@ -25,7 +25,7 @@ def process_single_file(
     log_config: ProcessLogConfig,
 ) -> None:
     """Process a single file through all stages.
-    
+
     Args:
         extraction: ExtractNonSSFData instance
         file: Dictionary with source_system and file_name
@@ -34,7 +34,7 @@ def process_single_file(
     source_system = file["source_system"]
     file_name = file["file_name"]
     file_comment = f"Processing {Path(file_name).stem}"
-    
+
     # Start the process for corresponding trigger file
     append_to_process_log(
         **log_config,
@@ -44,9 +44,7 @@ def process_single_file(
     )
 
     # 1. Initial checks
-    if not extraction.initial_checks(
-        file_name=file_name, source_system=source_system
-    ):
+    if not extraction.initial_checks(file_name=file_name, source_system=source_system):
         append_to_process_log(
             **log_config,
             source_system=source_system,
@@ -129,63 +127,80 @@ def process_single_file(
     )
 
 
-def get_deadline_from_metadata(extraction: ExtractNonSSFData, source_system: str) -> datetime | None:
+def get_deadline_from_metadata(
+    extraction: ExtractNonSSFData, source_system: str
+) -> datetime | None:
     """Get the earliest deadline from metadata for a given source system.
-    
+
     Args:
         extraction: ExtractNonSSFData instance
         source_system: Source system to check
-        
+
     Returns:
         Earliest deadline datetime or None if no deadlines found
     """
-    deadlines = extraction.meta_data.filter(
-        extraction.meta_data.SourceSystem == source_system
-    ).select("Deadline").distinct().collect()
-    
+    deadlines = (
+        extraction.meta_data.filter(extraction.meta_data.SourceSystem == source_system)
+        .select("Deadline")
+        .distinct()
+        .collect()
+    )
+
     earliest_deadline = None
     for row in deadlines:
         if row["Deadline"]:
             file_deadline = row["Deadline"]
             if isinstance(file_deadline, str):
-                file_deadline_dt = datetime.strptime(file_deadline, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+                file_deadline_dt = datetime.strptime(file_deadline, "%Y-%m-%d").replace(
+                    tzinfo=timezone.utc
+                )
             else:
-                file_deadline_dt = datetime.combine(file_deadline, datetime.min.time()).replace(tzinfo=timezone.utc)
-            
+                file_deadline_dt = datetime.combine(
+                    file_deadline, datetime.min.time()
+                ).replace(tzinfo=timezone.utc)
+
             if earliest_deadline is None or file_deadline_dt < earliest_deadline:
                 earliest_deadline = file_deadline_dt
-    
+
     return earliest_deadline
 
 
-def check_finob_nme_deadlines(extraction: ExtractNonSSFData, current_dt: datetime) -> dict[str, bool]:
+def check_finob_nme_deadlines(
+    extraction: ExtractNonSSFData, current_dt: datetime
+) -> dict[str, bool]:
     """Check which FINOB/NME files have passed their deadlines.
-    
+
     Args:
         extraction: ExtractNonSSFData instance
         current_dt: Current datetime
-        
+
     Returns:
         Dictionary of file paths that have passed their deadline
     """
     finob_nme_deadlines = {}
     for source in ["finob", "nme"]:
-        deadlines = extraction.meta_data.filter(
-            extraction.meta_data.SourceSystem == source
-        ).select("SourceFileName", "Deadline").collect()
-        
+        deadlines = (
+            extraction.meta_data.filter(extraction.meta_data.SourceSystem == source)
+            .select("SourceFileName", "Deadline")
+            .collect()
+        )
+
         for row in deadlines:
             if row["Deadline"]:
                 file_deadline = row["Deadline"]
                 if isinstance(file_deadline, str):
-                    file_deadline_dt = datetime.strptime(file_deadline, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+                    file_deadline_dt = datetime.strptime(
+                        file_deadline, "%Y-%m-%d"
+                    ).replace(tzinfo=timezone.utc)
                 else:
-                    file_deadline_dt = datetime.combine(file_deadline, datetime.min.time()).replace(tzinfo=timezone.utc)
-                
+                    file_deadline_dt = datetime.combine(
+                        file_deadline, datetime.min.time()
+                    ).replace(tzinfo=timezone.utc)
+
                 # Check if this specific file's deadline has passed
                 if current_dt >= file_deadline_dt:
                     finob_nme_deadlines[f"{source}/{row['SourceFileName']}"] = True
-    
+
     return finob_nme_deadlines
 
 
@@ -214,7 +229,7 @@ def non_ssf_load(
         spark (SparkSession): Spark session
         run_month (str): Run month in yyyymm format
         run_id (int, optional): Run ID. Defaults to 1.
-        deadline_date (str | None, optional): Deadline date in YYYY-MM-DD format. 
+        deadline_date (str | None, optional): Deadline date in YYYY-MM-DD format.
             If not provided, gets deadline from metadata table.
 
     Raises:
@@ -238,32 +253,33 @@ def non_ssf_load(
     append_to_process_log(**log_config, comments="", source_system="", status="Started")
 
     extraction = ExtractNonSSFData(spark, run_month=run_month)
-    
+
     # Get deadline from metadata if not provided
     current_dt = datetime.now(tz=timezone.utc)
-    
+
     # Get the earliest deadline from metadata for LRD_STATIC files
     deadline_dt = get_deadline_from_metadata(extraction, "lrd_static")
-    
+
     # Override with command line argument if provided
     if deadline_date:
         try:
-            deadline_dt = datetime.strptime(deadline_date, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+            deadline_dt = datetime.strptime(deadline_date, "%Y-%m-%d").replace(
+                tzinfo=timezone.utc
+            )
             logger.info(f"Using deadline date from command line: {deadline_dt}")
         except ValueError:
             logger.exception(
                 f"Invalid deadline_date format: {deadline_date}. Expected YYYY-MM-DD"
             )
-    
+
     deadline_passed = deadline_dt is not None and current_dt >= deadline_dt
-    
+
     # Get all files from basel-nonssf-landing container and place static data
     # Pass deadline information to the extraction class
     files_per_delivery_entity = extraction.get_all_files(
-        deadline_passed=deadline_passed,
-        deadline_date=deadline_dt
+        deadline_passed=deadline_passed, deadline_date=deadline_dt
     )
-    
+
     if not files_per_delivery_entity:
         logger.error("No files found in basel-nonssf-landing container. ")
     else:
@@ -273,7 +289,7 @@ def non_ssf_load(
 
     # Check for deadline violations for FINOB and NME files
     finob_nme_deadlines = check_finob_nme_deadlines(extraction, current_dt)
-    
+
     # If any FINOB/NME file has passed its deadline, check for violations
     if finob_nme_deadlines:
         extraction.check_deadline_violations(files_per_delivery_entity, log_config)
@@ -334,7 +350,7 @@ def append_to_process_log(
 
 if __name__ == "__main__":
     # Get args:
-    if len(sys.argv) not in [1, 2, 3]:
+    if len(sys.argv) not in [2, 3, 4]:
         logger.error(
             "Incorrect number of parameters, expected 1, 2 or 3: "
             "run_month[ run_id][ deadline_date]"
@@ -344,10 +360,10 @@ if __name__ == "__main__":
     run_month, *remaining_args = sys.argv
     run_id = 1
     deadline_date = None
-    
+
     if len(remaining_args) >= MIN_ARGS_FOR_RUN_ID:
         run_id = int(remaining_args[0])
     if len(remaining_args) >= MIN_ARGS_FOR_DEADLINE:
         deadline_date = remaining_args[1]
-    
+
     non_ssf_load(spark, run_month, run_id, deadline_date)  # type: ignore[name-defined]
