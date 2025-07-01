@@ -1,0 +1,37 @@
+pre-commit run --all-files
+ruff lint................................................................Failed
+- hook id: ruff
+- exit code: 1
+
+All checks passed!
+test\staging\test_extract_non_ssf_data.py:607:24: F821 Undefined name `NonSSFExtractionError`
+    |
+606 |     # Call check_deadline_violations - should raise exception
+607 |     with pytest.raises(NonSSFExtractionError) as exc_info:
+    |                        ^^^^^^^^^^^^^^^^^^^^^ F821
+608 |         extraction.check_deadline_violations(files_per_delivery_entity, log_config)
+    |
+
+test\staging\test_extract_non_ssf_data.py:726:12: F821 Undefined name `NonSSFExtractionError`
+    |
+724 |     try:
+725 |         extraction.check_deadline_violations(files_per_delivery_entity, log_config)
+726 |     except NonSSFExtractionError:
+    |            ^^^^^^^^^^^^^^^^^^^^^ F821
+727 |         pytest.fail("Should not raise exception for future deadline")
+    |
+
+Found 2 errors.
+All checks passed!
+All checks passed!
+
+ruff format..............................................................Failed
+- hook id: ruff
+- files were modified by this hook
+
+21 files left unchanged
+21 files left unchanged
+21 files left unchanged
+1 file reformatted, 20 files left unchanged
+
+mypy.....................................................................Passed
