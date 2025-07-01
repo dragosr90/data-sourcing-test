@@ -11,8 +11,8 @@ test\staging\test_extract_non_ssf_data.py ....F.                                
 ================================================================================================ FAILURES ================================================================================================ 
 ____________________________________________________________________ test_check_deadline_violations_with_dates[202503-test-container] ____________________________________________________________________ 
 
-spark_session = <pyspark.sql.session.SparkSession object at 0x000001C626E67700>, mocker = <pytest_mock.plugin.MockerFixture object at 0x000001C6270F9030>, run_month = '202503'
-source_container = 'test-container', caplog = <_pytest.logging.LogCaptureFixture object at 0x000001C6271B44F0>
+spark_session = <pyspark.sql.session.SparkSession object at 0x000002188B2C8580>, mocker = <pytest_mock.plugin.MockerFixture object at 0x000002188B4CE3B0>, run_month = '202503'
+source_container = 'test-container', caplog = <_pytest.logging.LogCaptureFixture object at 0x000002188B4EC850>
 
     @pytest.mark.parametrize(
         ("run_month", "source_container"),
@@ -120,43 +120,25 @@ source_container = 'test-container', caplog = <_pytest.logging.LogCaptureFixture
 
         # Check that the error message includes deadline dates
         error_msg = str(exc_info.value)
-        assert f"Deadline passed ({yesterday} 00:00:00 UTC)" in error_msg
-        assert "Missing expected file" in error_msg
+>       assert f"Deadline passed ({yesterday} 00:00:00 UTC)" in error_msg
+E       assert 'Deadline passed (2025-06-30 00:00:00 UTC)' in "Step 'Received / Placed' failed. Deadline violation: Missing files after deadline - finob/MISSING_FINOB_FILE (deadline: 2025-06-30 00:00:00 UTC), nme/MISSING_NME_FILE (deadline: 2025-06-30 00:00:00 UTC)"
 
-        # Check log messages include deadline dates
-        assert (
-            f"Deadline passed ({yesterday} 00:00:00 UTC): Missing expected file MISSING_FINOB_FILE from finob"  # noqa: E501
-            in caplog.text
-        )
-        assert (
-            f"Deadline passed ({yesterday} 00:00:00 UTC): Missing expected file MISSING_NME_FILE from nme"  # noqa: E501
-            in caplog.text
-        )
-
-        # Verify update_log_metadata was called with deadline in comment
-        # Check that saveAsTable was called for metadata updates
-        metadata_calls = [
-            call
-            for call in mock_save_table.call_args_list
-            if "metadata_nonssf" in str(call)
-        ]
->       assert len(metadata_calls) >= 2  # At least one for each missing file
-E       AssertionError: assert 1 >= 2
-E        +  where 1 = len([call('bsrc_d.metadata_202503.metadata_nonssf')])
-
-test\staging\test_extract_non_ssf_data.py:633: AssertionError
+test\staging\test_extract_non_ssf_data.py:613: AssertionError
 ------------------------------------------------------------------------------------------ Captured stdout call ------------------------------------------------------------------------------------------ 
-2025-07-01 15:26:24 [ERROR] check_deadline_violations:  Deadline passed (2025-06-30 00:00:00 UTC): Missing expected file MISSING_FINOB_FILE from finob
-2025-07-01 15:26:24 [ERROR] check_deadline_violations:  Deadline passed (2025-06-30 00:00:00 UTC): Missing expected file MISSING_FINOB_FILE from finob
-2025-07-01 15:26:24 [ERROR] check_deadline_violations:  Deadline passed (2025-06-30 00:00:00 UTC): Missing expected file MISSING_NME_FILE from nme
-2025-07-01 15:26:24 [ERROR] check_deadline_violations:  Deadline passed (2025-06-30 00:00:00 UTC): Missing expected file MISSING_NME_FILE from nme
-2025-07-01 15:26:24 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for MISSING_NME_FILE
-2025-07-01 15:26:24 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for MISSING_NME_FILE
+2025-07-01 15:52:29 [ERROR] check_deadline_violations:  Deadline passed (2025-06-30 00:00:00 UTC): Missing expected file MISSING_FINOB_FILE from finob
+2025-07-01 15:52:29 [ERROR] check_deadline_violations:  Deadline passed (2025-06-30 00:00:00 UTC): Missing expected file MISSING_FINOB_FILE from finob
+2025-07-01 15:52:29 [ERROR] check_deadline_violations:  Deadline passed (2025-06-30 00:00:00 UTC): Missing expected file MISSING_NME_FILE from nme
+2025-07-01 15:52:29 [ERROR] check_deadline_violations:  Deadline passed (2025-06-30 00:00:00 UTC): Missing expected file MISSING_NME_FILE from nme
+2025-07-01 15:52:29 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for MISSING_FINOB_FILE
+2025-07-01 15:52:29 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for MISSING_FINOB_FILE
+2025-07-01 15:52:31 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for MISSING_NME_FILE
+2025-07-01 15:52:31 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for MISSING_NME_FILE
 ------------------------------------------------------------------------------------------ Captured stderr call ------------------------------------------------------------------------------------------ 
 
 ------------------------------------------------------------------------------------------- Captured log call -------------------------------------------------------------------------------------------- 
 ERROR    betl_src_poc_logger:extract_nonssf_data.py:334 Deadline passed (2025-06-30 00:00:00 UTC): Missing expected file MISSING_FINOB_FILE from finob
 ERROR    betl_src_poc_logger:extract_nonssf_data.py:334 Deadline passed (2025-06-30 00:00:00 UTC): Missing expected file MISSING_NME_FILE from nme
+INFO     betl_src_poc_logger:extract_base.py:205 FileDeliveryStatus: Received / Placed for MISSING_FINOB_FILE
 INFO     betl_src_poc_logger:extract_base.py:205 FileDeliveryStatus: Received / Placed for MISSING_NME_FILE
 ============================================================================================ warnings summary ============================================================================================ 
 ..\bsrc-etl-venv\lib\site-packages\holidays\deprecations\v1_incompatibility.py:40
@@ -202,7 +184,7 @@ src\month_setup\setup_new_month.py                 13     13     0%   17-84
 src\staging\__init__.py                             0      0   100%
 src\staging\extract_base.py                        65      8    88%   156, 162-164, 304-312
 src\staging\extract_dial_data.py                   65     65     0%   16-360
-src\staging\extract_nonssf_data.py                147     21    86%   133-137, 146-150, 182-183, 216-218, 316, 372, 419-440, 471-475
+src\staging\extract_nonssf_data.py                146     28    81%   133-137, 146-150, 182-183, 216-218, 316, 382-400, 414-435, 466-470
 src\staging\extract_ssf_data.py                   164    164     0%   26-620
 src\staging\status.py                              57      5    91%   18, 53-54, 107, 151
 src\transform\__init__.py                           0      0   100%
@@ -229,12 +211,12 @@ src\validate\transformations.py                   192    192     0%   21-593
 src\validate\validate_sql.py                       54     54     0%   13-130
 src\validate\yaml.py                               18     18     0%   3-34
 -----------------------------------------------------------------------------
-TOTAL                                            1474   1021    31%
+TOTAL                                            1473   1028    30%
 Coverage HTML written to dir htmlcov
 
 ======================================================================================== short test summary info ========================================================================================= 
-FAILED test/staging/test_extract_non_ssf_data.py::test_check_deadline_violations_with_dates[202503-test-container] - AssertionError: assert 1 >= 2
-=========================================================================== 1 failed, 5 passed, 1 warning in 112.25s (0:01:52) =========================================================================== 
-(bsrc-etl-venv) PS C:\Users\B25712\bsrc-etl-venv\bsrc-etl> SUCCESS: The process with PID 15832 (child process of PID 27580) has been terminated.
-SUCCESS: The process with PID 27580 (child process of PID 26344) has been terminated.
-SUCCESS: The process with PID 26344 (child process of PID 24024) has been terminated.
+FAILED test/staging/test_extract_non_ssf_data.py::test_check_deadline_violations_with_dates[202503-test-container] - assert 'Deadline passed (2025-06-30 00:00:00 UTC)' in "Step 'Received / Placed' failed. Deadline violation: Missing files after deadline - finob/MISSING_FINOB_FILE (deadline: 2025-06-30 00:00:00 UTC...
+=========================================================================== 1 failed, 5 passed, 1 warning in 119.72s (0:01:59) =========================================================================== 
+SUCCESS: The process with PID 13424 (child process of PID 30520) has been terminated.
+SUCCESS: The process with PID 30520 (child process of PID 25012) has been terminated.
+SUCCESS: The process with PID 25012 (child process of PID 31776) has been terminated.
