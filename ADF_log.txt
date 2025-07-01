@@ -1,0 +1,57 @@
+2025-07-01 06:34:29 [ERROR] write_to_log:  Error writing to process log table log_/Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/scripts/nonssf_staging_process.py.process_log
+Traceback (most recent call last):
+  File "/Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/src/utils/table_logging.py", line 33, in write_to_log
+    log_entry_df.write.mode("append").saveAsTable(
+  File "/databricks/spark/python/pyspark/sql/connect/readwriter.py", line 713, in saveAsTable
+    _, _, ei = self._spark.client.execute_command(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/databricks/spark/python/pyspark/sql/connect/client/core.py", line 1303, in execute_command
+    data, _, metrics, observed_metrics, properties = self._execute_and_fetch(
+                                                     ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/databricks/spark/python/pyspark/sql/connect/client/core.py", line 1761, in _execute_and_fetch
+    for response in self._execute_and_fetch_as_iterator(
+  File "/databricks/spark/python/pyspark/sql/connect/client/core.py", line 1737, in _execute_and_fetch_as_iterator
+    self._handle_error(error)
+  File "/databricks/spark/python/pyspark/sql/connect/client/core.py", line 2053, in _handle_error
+    self._handle_rpc_error(error)
+  File "/databricks/spark/python/pyspark/sql/connect/client/core.py", line 2162, in _handle_rpc_error
+    raise convert_exception(
+pyspark.errors.exceptions.connect.ParseException: 
+[PARSE_SYNTAX_ERROR] Syntax error at or near '/'. SQLSTATE: 42601 (line 1, pos 11)
+
+== SQL ==
+REDACTED_LOCAL_PART@nl.abnamro.com/bsrc-etl/scripts/nonssf_staging_process.py.process_log
+-----------^^^
+
+
+JVM stacktrace:
+org.apache.spark.sql.catalyst.parser.ParseException
+	at org.apache.spark.sql.catalyst.parser.ParseException.withCommand(parsers.scala:429)
+	at org.apache.spark.sql.catalyst.parser.AbstractParser.parse(parsers.scala:117)
+	at org.apache.spark.sql.execution.SparkSqlParser.parse(SparkSqlParser.scala:140)
+	at org.apache.spark.sql.catalyst.parser.AbstractSqlParser.parseMultipartIdentifier(AbstractSqlParser.scala:88)
+	at com.databricks.sql.parser.DatabricksSqlParser.parseMultipartIdentifier(DatabricksSqlParser.scala:62)
+	at org.apache.spark.sql.DataFrameWriter.saveAsTable(DataFrameWriter.scala:677)
+	at org.apache.spark.sql.connect.planner.SparkConnectPlanner.handleWriteOperation(SparkConnectPlanner.scala:3346)
+	at org.apache.spark.sql.connect.planner.SparkConnectPlanner.process(SparkConnectPlanner.scala:2857)
+	at org.apache.spark.sql.connect.execution.ExecuteThreadRunner.handleCommand(ExecuteThreadRunner.scala:366)
+	at org.apache.spark.sql.connect.execution.ExecuteThreadRunner.$anonfun$executeInternal$1(ExecuteThreadRunner.scala:280)
+	at org.apache.spark.sql.connect.execution.ExecuteThreadRunner.$anonfun$executeInternal$1$adapted(ExecuteThreadRunner.scala:210)
+	at org.apache.spark.sql.connect.service.SessionHolder.$anonfun$withSession$2(SessionHolder.scala:392)
+	at org.apache.spark.sql.SparkSession.withActive(SparkSession.scala:1210)
+	at org.apache.spark.sql.connect.service.SessionHolder.$anonfun$withSession$1(SessionHolder.scala:392)
+	at org.apache.spark.JobArtifactSet$.withActiveJobArtifactState(JobArtifactSet.scala:97)
+	at org.apache.spark.sql.artifact.ArtifactManager.$anonfun$withResources$1(ArtifactManager.scala:84)
+	at org.apache.spark.util.Utils$.withContextClassLoader(Utils.scala:240)
+	at org.apache.spark.sql.artifact.ArtifactManager.withResources(ArtifactManager.scala:83)
+	at org.apache.spark.sql.connect.service.SessionHolder.withSession(SessionHolder.scala:391)
+	at org.apache.spark.sql.connect.execution.ExecuteThreadRunner.executeInternal(ExecuteThreadRunner.scala:210)
+	at org.apache.spark.sql.connect.execution.ExecuteThreadRunner.org$apache$spark$sql$connect$execution$ExecuteThreadRunner$$execute(ExecuteThreadRunner.scala:125)
+	at org.apache.spark.sql.connect.execution.ExecuteThreadRunner$ExecutionThread.$anonfun$run$2(ExecuteThreadRunner.scala:592)
+	at scala.runtime.java8.JFunction0$mcV$sp.apply(JFunction0$mcV$sp.java:23)
+	at com.databricks.unity.UCSEphemeralState$Handle.runWith(UCSEphemeralState.scala:51)
+	at com.databricks.unity.HandleImpl.runWith(UCSHandle.scala:104)
+	at com.databricks.unity.HandleImpl.$anonfun$runWithAndClose$1(UCSHandle.scala:109)
+	at scala.util.Using$.resource(Using.scala:269)
+	at com.databricks.unity.HandleImpl.runWithAndClose(UCSHandle.scala:108)
+	at org.apache.spark.sql.connect.execution.ExecuteThreadRunner$ExecutionThread.run(ExecuteThreadRunner.scala:592)
