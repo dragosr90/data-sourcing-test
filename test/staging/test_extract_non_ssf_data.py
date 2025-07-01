@@ -1,13 +1,13 @@
 import re
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from unittest.mock import call
 
 import pytest
 from pyspark.sql.types import (
-    IntegerType, 
-    StringType, 
-    StructField, 
+    IntegerType,
+    StringType,
+    StructField,
     StructType,
     TimestampType,
 )
@@ -327,17 +327,19 @@ def test_extract_non_ssf_data_with_deadline(
     )
 
     # Create schema for log DataFrame
-    schema_log = StructType([
-        StructField("SourceSystem", StringType(), True),
-        StructField("SourceFileName", StringType(), True),
-        StructField("DeliveryNumber", IntegerType(), True),
-        StructField("FileDeliveryStep", IntegerType(), True),
-        StructField("FileDeliveryStatus", StringType(), True),
-        StructField("Result", StringType(), True),
-        StructField("LastUpdatedDateTimestamp", TimestampType(), True),
-        StructField("Comment", StringType(), True),
-    ])
-    
+    schema_log = StructType(
+        [
+            StructField("SourceSystem", StringType(), True),  # noqa: FBT003
+            StructField("SourceFileName", StringType(), True),  # noqa: FBT003
+            StructField("DeliveryNumber", IntegerType(), True),  # noqa: FBT003
+            StructField("FileDeliveryStep", IntegerType(), True),  # noqa: FBT003
+            StructField("FileDeliveryStatus", StringType(), True),  # noqa: FBT003
+            StructField("Result", StringType(), True),  # noqa: FBT003
+            StructField("LastUpdatedDateTimestamp", TimestampType(), True),  # noqa: FBT003
+            StructField("Comment", StringType(), True),  # noqa: FBT003
+        ]
+    )
+
     # Create empty DataFrame with schema
     mock_log = spark_session.createDataFrame([], schema=schema_log)
 
@@ -355,8 +357,8 @@ def test_extract_non_ssf_data_with_deadline(
     # Mock filesystem operations
     mock_dbutils_fs_ls = mocker.patch.object(extraction.dbutils.fs, "ls")
     mock_dbutils_fs_cp = mocker.patch.object(extraction.dbutils.fs, "cp")
-    
-    # Set up the mock file system - file is missing from LRD_STATIC but exists in processed
+
+    # Set up the mock file system - file is missing from LRD_STATIC but exists in processed # noqa: E501
     effect = [
         [],  # Empty NME folder
         [],  # Empty FINOB folder
@@ -364,7 +366,7 @@ def test_extract_non_ssf_data_with_deadline(
         [  # Processed folder contains the file
             FileInfoMock(
                 {
-                    "path": f"{test_container}/LRD_STATIC/processed/TEST_STATIC_FILE_20240101.txt",
+                    "path": f"{test_container}/LRD_STATIC/processed/TEST_STATIC_FILE_20240101.txt",  # noqa: E501
                     "name": "TEST_STATIC_FILE_20240101.txt",
                 }
             )
@@ -372,7 +374,7 @@ def test_extract_non_ssf_data_with_deadline(
         [  # Second call to processed folder for ls check
             FileInfoMock(
                 {
-                    "path": f"{test_container}/LRD_STATIC/processed/TEST_STATIC_FILE_20240101.txt",
+                    "path": f"{test_container}/LRD_STATIC/processed/TEST_STATIC_FILE_20240101.txt",  # noqa: E501
                     "name": "TEST_STATIC_FILE_20240101.txt",
                 }
             )
@@ -381,12 +383,15 @@ def test_extract_non_ssf_data_with_deadline(
     mock_dbutils_fs_ls.side_effect = effect
 
     # Set deadline date
-    deadline_date = datetime.now(timezone.utc) - timedelta(days=1) if deadline_passed else datetime.now(timezone.utc) + timedelta(days=1)
-    
+    deadline_date = (
+        datetime.now(timezone.utc) - timedelta(days=1)
+        if deadline_passed
+        else datetime.now(timezone.utc) + timedelta(days=1)
+    )
+
     # Call get_all_files with deadline information
     found_files = extraction.get_all_files(
-        deadline_passed=deadline_passed,
-        deadline_date=deadline_date
+        deadline_passed=deadline_passed, deadline_date=deadline_date
     )
 
     if deadline_passed:
@@ -398,7 +403,10 @@ def test_extract_non_ssf_data_with_deadline(
         # Check that the file was added to the list
         assert len(found_files) == 1
         assert found_files[0]["source_system"] == "LRD_STATIC"
-        assert found_files[0]["file_name"] == f"{test_container}/LRD_STATIC/TEST_STATIC_FILE.txt"
+        assert (
+            found_files[0]["file_name"]
+            == f"{test_container}/LRD_STATIC/TEST_STATIC_FILE.txt"
+        )
         # Check log message
         assert "Deadline has passed" in caplog.text
         assert "LRD_STATIC files copied from processed folder" in caplog.text
@@ -408,7 +416,10 @@ def test_extract_non_ssf_data_with_deadline(
         # No files should be found
         assert len(found_files) == 0
         # Check log messages
-        assert "File TEST_STATIC_FILE not delivered but deadline not reached yet" in caplog.text
+        assert (
+            "File TEST_STATIC_FILE not delivered but deadline not reached yet"
+            in caplog.text
+        )
         assert "Deadline not yet reached" in caplog.text
         assert "LRD_STATIC files will not be copied" in caplog.text
 
@@ -450,17 +461,19 @@ def test_place_static_data_keyword_only(
     )
 
     # Create schema for log DataFrame
-    schema_log = StructType([
-        StructField("SourceSystem", StringType(), True),
-        StructField("SourceFileName", StringType(), True),
-        StructField("DeliveryNumber", IntegerType(), True),
-        StructField("FileDeliveryStep", IntegerType(), True),
-        StructField("FileDeliveryStatus", StringType(), True),
-        StructField("Result", StringType(), True),
-        StructField("LastUpdatedDateTimestamp", TimestampType(), True),
-        StructField("Comment", StringType(), True),
-    ])
-    
+    schema_log = StructType(
+        [
+            StructField("SourceSystem", StringType(), True),  # noqa: FBT003
+            StructField("SourceFileName", StringType(), True),  # noqa: FBT003
+            StructField("DeliveryNumber", IntegerType(), True),  # noqa: FBT003
+            StructField("FileDeliveryStep", IntegerType(), True),  # noqa: FBT003
+            StructField("FileDeliveryStatus", StringType(), True),  # noqa: FBT003
+            StructField("Result", StringType(), True),  # noqa: FBT003
+            StructField("LastUpdatedDateTimestamp", TimestampType(), True),  # noqa: FBT003
+            StructField("Comment", StringType(), True),  # noqa: FBT003
+        ]
+    )
+
     # Create empty DataFrame with schema
     mock_log = spark_session.createDataFrame([], schema=schema_log)
 
@@ -479,7 +492,9 @@ def test_place_static_data_keyword_only(
     mocker.patch.object(extraction.dbutils.fs, "ls", return_value=[])
 
     # Test that calling with positional argument raises TypeError
-    with pytest.raises(TypeError, match="takes 2 positional arguments but 3 were given"):
+    with pytest.raises(
+        TypeError, match="takes 2 positional arguments but 3 were given"
+    ):
         extraction.place_static_data([], True)  # noqa: FBT003 - Testing that positional bool fails
 
     # Test that calling with keyword argument works
