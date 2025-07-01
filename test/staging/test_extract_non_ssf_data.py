@@ -500,3 +500,218 @@ def test_place_static_data_keyword_only(
     # Test that calling with keyword argument works
     result = extraction.place_static_data([], deadline_passed=True)  # This should work
     assert isinstance(result, list)
+@pytest.mark.parametrize(
+    ("run_month", "source_container"),
+    [("202503", "test-container")],
+)
+def test_check_deadline_violations_with_dates(
+    spark_session,
+    mocker,
+    run_month,
+    source_container,
+    caplog,
+):
+    """Test check_deadline_violations includes deadline dates in error messages."""
+    from datetime import date
+    
+    # Create mock metadata DataFrame with deadline information
+    schema_meta = [
+        "SourceSystem",
+        "SourceFileName",
+        "SourceFileFormat",
+        "SourceFileDelimiter",
+        "StgTableName",
+        "FileDeliveryStep",
+        "FileDeliveryStatus",
+        "Deadline",
+    ]
+    
+    # Set deadline to yesterday to ensure it's passed
+    yesterday = date.today() - timedelta(days=1)
+    
+    mock_meta = spark_session.createDataFrame(
+        [
+            (
+                "finob",
+                "MISSING_FINOB_FILE",
+                ".csv",
+                ",",
+                "test_finob",
+                0,
+                "Expected",
+                yesterday,
+            ),
+            (
+                "nme",
+                "MISSING_NME_FILE",
+                ".parquet",
+                ",",
+                "test_nme",
+                0,
+                "Expected",
+                yesterday,
+            ),
+        ],
+        schema=schema_meta,
+    )
+
+    # Create empty log DataFrame
+    schema_log = StructType(
+        [
+            StructField("SourceSystem", StringType(), True),
+            StructField("SourceFileName", StringType(), True),
+            StructField("DeliveryNumber", IntegerType(), True),
+            StructField("FileDeliveryStep", IntegerType(), True),
+            StructField("FileDeliveryStatus", StringType(), True),
+            StructField("Result", StringType(), True),
+            StructField("LastUpdatedDateTimestamp", TimestampType(), True),
+            StructField("Comment", StringType(), True),
+        ]
+    )
+    mock_log = spark_session.createDataFrame([], schema=schema_log)
+
+    # Mock spark.read
+    mock_read = mocker.patch("pyspark.sql.SparkSession.read", autospec=True)
+    mock_read.table.side_effect = [mock_meta, mock_log]
+
+    # Create extraction instance
+    extraction = ExtractNonSSFData(
+        spark_session,
+        run_month,
+        source_container=source_container,
+    )
+
+    # Mock write operations
+    mock_save_table = mocker.patch("pyspark.sql.DataFrameWriter.saveAsTable")
+
+    # Create log config
+    log_config = ProcessLogConfig(
+        spark=spark_session,
+        run_month=run_month,
+        record={
+            "RunID": 1,
+            "Timestamp": datetime.now(tz=timezone.utc),
+            "Workflow": "Staging",
+            "Component": "Non-SSF",
+            "Layer": "Staging",
+        }
+    )
+
+    # Empty list of files (no files delivered)
+    files_per_delivery_entity = []
+
+    # Call check_deadline_violations - should raise exception
+    with pytest.raises(NonSSFExtractionError) as exc_info:
+        extraction.check_deadline_violations(files_per_delivery_entity, log_config)
+
+    # Check that the error message includes deadline dates
+    error_msg = str(exc_info.value)
+    assert "Deadline violation: Missing files after deadline" in error_msg
+    assert f"finob/MISSING_FINOB_FILE (deadline: {yesterday} 00:00:00 UTC)" in error_msg
+    assert f"nme/MISSING_NME_FILE (deadline: {yesterday} 00:00:00 UTC)" in error_msg
+
+    # Check log messages include deadline dates
+    assert f"Deadline passed ({yesterday} 00:00:00 UTC): Missing expected file MISSING_FINOB_FILE from finob" in caplog.text
+    assert f"Deadline passed ({yesterday} 00:00:00 UTC): Missing expected file MISSING_NME_FILE from nme" in caplog.text
+
+    # Verify update_log_metadata was called with deadline in comment
+    # Check that saveAsTable was called for metadata updates
+    metadata_calls = [
+        call for call in mock_save_table.call_args_list 
+        if "metadata_nonssf" in str(call)
+    ]
+    assert len(metadata_calls) >= 2  # At least one for each missing file
+
+
+@pytest.mark.parametrize(
+    ("run_month", "source_container"),
+    [("202503", "test-container")],
+)
+def test_check_deadline_violations_future_deadline(
+    spark_session,
+    mocker,
+    run_month,
+    source_container,
+):
+    """Test that files with future deadlines don't trigger violations."""
+    from datetime import date
+    
+    # Create mock metadata DataFrame with future deadline
+    schema_meta = [
+        "SourceSystem",
+        "SourceFileName",
+        "SourceFileFormat",
+        "SourceFileDelimiter",
+        "StgTableName",
+        "FileDeliveryStep",
+        "FileDeliveryStatus",
+        "Deadline",
+    ]
+    
+    # Set deadline to tomorrow
+    tomorrow = date.today() + timedelta(days=1)
+    
+    mock_meta = spark_session.createDataFrame(
+        [
+            (
+                "finob",
+                "FUTURE_DEADLINE_FILE",
+                ".csv",
+                ",",
+                "test_finob",
+                0,
+                "Expected",
+                tomorrow,
+            ),
+        ],
+        schema=schema_meta,
+    )
+
+    # Create empty log DataFrame
+    schema_log = StructType(
+        [
+            StructField("SourceSystem", StringType(), True),
+            StructField("SourceFileName", StringType(), True),
+            StructField("DeliveryNumber", IntegerType(), True),
+            StructField("FileDeliveryStep", IntegerType(), True),
+            StructField("FileDeliveryStatus", StringType(), True),
+            StructField("Result", StringType(), True),
+            StructField("LastUpdatedDateTimestamp", TimestampType(), True),
+            StructField("Comment", StringType(), True),
+        ]
+    )
+    mock_log = spark_session.createDataFrame([], schema=schema_log)
+
+    # Mock spark.read
+    mock_read = mocker.patch("pyspark.sql.SparkSession.read", autospec=True)
+    mock_read.table.side_effect = [mock_meta, mock_log]
+
+    # Create extraction instance
+    extraction = ExtractNonSSFData(
+        spark_session,
+        run_month,
+        source_container=source_container,
+    )
+
+    # Create log config
+    log_config = ProcessLogConfig(
+        spark=spark_session,
+        run_month=run_month,
+        record={
+            "RunID": 1,
+            "Timestamp": datetime.now(tz=timezone.utc),
+            "Workflow": "Staging",
+            "Component": "Non-SSF",
+            "Layer": "Staging",
+        }
+    )
+
+    # Empty list of files (no files delivered)
+    files_per_delivery_entity = []
+
+    # Call check_deadline_violations - should NOT raise exception
+    # because deadline is in the future
+    try:
+        extraction.check_deadline_violations(files_per_delivery_entity, log_config)
+    except NonSSFExtractionError:
+        pytest.fail("Should not raise exception for future deadline")
