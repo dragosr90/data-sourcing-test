@@ -11,8 +11,8 @@ test\staging\test_extract_non_ssf_data.py ....F.                                
 ================================================================================================ FAILURES ================================================================================================ 
 ____________________________________________________________________ test_check_deadline_violations_with_dates[202503-test-container] ____________________________________________________________________ 
 
-spark_session = <pyspark.sql.session.SparkSession object at 0x000002188B2C8580>, mocker = <pytest_mock.plugin.MockerFixture object at 0x000002188B4CE3B0>, run_month = '202503'
-source_container = 'test-container', caplog = <_pytest.logging.LogCaptureFixture object at 0x000002188B4EC850>
+spark_session = <pyspark.sql.session.SparkSession object at 0x00000160363D70A0>, mocker = <pytest_mock.plugin.MockerFixture object at 0x0000016036689540>, run_month = '202503'
+source_container = 'test-container', caplog = <_pytest.logging.LogCaptureFixture object at 0x0000016036728760>
 
     @pytest.mark.parametrize(
         ("run_month", "source_container"),
@@ -120,19 +120,44 @@ source_container = 'test-container', caplog = <_pytest.logging.LogCaptureFixture
 
         # Check that the error message includes deadline dates
         error_msg = str(exc_info.value)
->       assert f"Deadline passed ({yesterday} 00:00:00 UTC)" in error_msg
-E       assert 'Deadline passed (2025-06-30 00:00:00 UTC)' in "Step 'Received / Placed' failed. Deadline violation: Missing files after deadline - finob/MISSING_FINOB_FILE (deadline: 2025-06-30 00:00:00 UTC), nme/MISSING_NME_FILE (deadline: 2025-06-30 00:00:00 UTC)"
+        assert f"deadline: {yesterday} 00:00:00 UTC" in error_msg
+        assert "Missing files after deadline" in error_msg
+        # Verify both files are mentioned
+        assert "finob/MISSING_FINOB_FILE" in error_msg
+        assert "nme/MISSING_NME_FILE" in error_msg
 
-test\staging\test_extract_non_ssf_data.py:613: AssertionError
+        # Check log messages include deadline dates
+        assert (
+            f"Deadline passed ({yesterday} 00:00:00 UTC): Missing expected file MISSING_FINOB_FILE from finob"  # noqa: E501
+            in caplog.text
+        )
+        assert (
+            f"Deadline passed ({yesterday} 00:00:00 UTC): Missing expected file MISSING_NME_FILE from nme"  # noqa: E501
+            in caplog.text
+        )
+
+        # Verify update_log_metadata was called with deadline in comment
+        # Check that saveAsTable was called for metadata updates
+        metadata_calls = [
+            call
+            for call in mock_save_table.call_args_list
+            if "metadata_nonssf" in str(call)
+        ]
+        # Due to the exception in _append_to_process_log, only one metadata update completes
+>       assert len(metadata_calls) == 1
+E       AssertionError: assert 2 == 1
+E        +  where 2 = len([call('bsrc_d.metadata_202503.metadata_nonssf'), call('bsrc_d.metadata_202503.metadata_nonssf')])
+
+test\staging\test_extract_non_ssf_data.py:637: AssertionError
 ------------------------------------------------------------------------------------------ Captured stdout call ------------------------------------------------------------------------------------------ 
-2025-07-01 15:52:29 [ERROR] check_deadline_violations:  Deadline passed (2025-06-30 00:00:00 UTC): Missing expected file MISSING_FINOB_FILE from finob
-2025-07-01 15:52:29 [ERROR] check_deadline_violations:  Deadline passed (2025-06-30 00:00:00 UTC): Missing expected file MISSING_FINOB_FILE from finob
-2025-07-01 15:52:29 [ERROR] check_deadline_violations:  Deadline passed (2025-06-30 00:00:00 UTC): Missing expected file MISSING_NME_FILE from nme
-2025-07-01 15:52:29 [ERROR] check_deadline_violations:  Deadline passed (2025-06-30 00:00:00 UTC): Missing expected file MISSING_NME_FILE from nme
-2025-07-01 15:52:29 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for MISSING_FINOB_FILE
-2025-07-01 15:52:29 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for MISSING_FINOB_FILE
-2025-07-01 15:52:31 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for MISSING_NME_FILE
-2025-07-01 15:52:31 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for MISSING_NME_FILE
+2025-07-01 16:02:38 [ERROR] check_deadline_violations:  Deadline passed (2025-06-30 00:00:00 UTC): Missing expected file MISSING_FINOB_FILE from finob
+2025-07-01 16:02:38 [ERROR] check_deadline_violations:  Deadline passed (2025-06-30 00:00:00 UTC): Missing expected file MISSING_FINOB_FILE from finob
+2025-07-01 16:02:38 [ERROR] check_deadline_violations:  Deadline passed (2025-06-30 00:00:00 UTC): Missing expected file MISSING_NME_FILE from nme
+2025-07-01 16:02:38 [ERROR] check_deadline_violations:  Deadline passed (2025-06-30 00:00:00 UTC): Missing expected file MISSING_NME_FILE from nme
+2025-07-01 16:02:38 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for MISSING_FINOB_FILE
+2025-07-01 16:02:38 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for MISSING_FINOB_FILE
+2025-07-01 16:02:39 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for MISSING_NME_FILE
+2025-07-01 16:02:39 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for MISSING_NME_FILE
 ------------------------------------------------------------------------------------------ Captured stderr call ------------------------------------------------------------------------------------------ 
 
 ------------------------------------------------------------------------------------------- Captured log call -------------------------------------------------------------------------------------------- 
@@ -215,8 +240,8 @@ TOTAL                                            1473   1028    30%
 Coverage HTML written to dir htmlcov
 
 ======================================================================================== short test summary info ========================================================================================= 
-FAILED test/staging/test_extract_non_ssf_data.py::test_check_deadline_violations_with_dates[202503-test-container] - assert 'Deadline passed (2025-06-30 00:00:00 UTC)' in "Step 'Received / Placed' failed. Deadline violation: Missing files after deadline - finob/MISSING_FINOB_FILE (deadline: 2025-06-30 00:00:00 UTC...
-=========================================================================== 1 failed, 5 passed, 1 warning in 119.72s (0:01:59) =========================================================================== 
-SUCCESS: The process with PID 13424 (child process of PID 30520) has been terminated.
-SUCCESS: The process with PID 30520 (child process of PID 25012) has been terminated.
-SUCCESS: The process with PID 25012 (child process of PID 31776) has been terminated.
+FAILED test/staging/test_extract_non_ssf_data.py::test_check_deadline_violations_with_dates[202503-test-container] - AssertionError: assert 2 == 1
+=========================================================================== 1 failed, 5 passed, 1 warning in 110.66s (0:01:50) =========================================================================== 
+SUCCESS: The process with PID 14680 (child process of PID 28468) has been terminated.
+SUCCESS: The process with PID 28468 (child process of PID 6664) has been terminated.
+SUCCESS: The process with PID 6664 (child process of PID 32972) has been terminated.
