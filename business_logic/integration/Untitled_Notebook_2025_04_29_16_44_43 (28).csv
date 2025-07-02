@@ -1,0 +1,5 @@
+DeliveryEntity,ReportingDate,CounterpartyID,CounterpartySourceSystemIdentifier,BcdbId,AacAlphaCode,GlobalCounterpartyIdentifier,PDModelCode,LastPerformingPDModelCode,ApprovedUniformCounterpartyRating,UCRStep1,ProbabilityOfDefaultBeforeConservatism,ProbabilityOfDefault,UniformCounterpartyRatingDate,UniformCounterpartyRatingExpiryDate,PDMarginOfConservatism,UCRCase,fairid,UniquePDRatingId,CptyInRatingSystem,InterCompanyIndicator,Default
+FBS,2024-12-31,BCA100142567,AAB.SYS.1861,100142567,null,000139741801,null,null,null,null,null,null,null,null,null,null,null,null,null,N,N
+FBS,2024-12-31,BCA2001814259,AAB.SYS.1861,2001814259,null,000148077544,PGCRWW03,PGCRWW03,4+,4+,0.006,0.006648,2024-12-02,2025-12-02,1.108,FAIR_BCDB,5402001814259,2903002,BYO,N,N
+FBS,2024-12-31,BCA2041032960,AAB.SYS.1861,2041032960,null,000747661731,null,null,null,null,null,null,null,null,null,null,null,null,null,N,N
+FBS,2024-12-31,BCA2052949615,AAB.SYS.1861,2052949615,null,000766172589,null,null,null,null,null,null,null,null,null,null,null,null,null,N,N
