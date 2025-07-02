@@ -38,7 +38,7 @@ transformations:
       condition:
         - INT_CPXCF.CreditFacility = INT_CPXCF_OTHER.CreditFacility
         - INT_CPXCF.CreditFacilitySourceSystemIdentifier = INT_CPXCF_OTHER.CreditFacilitySourceSystemIdentifier
-      how: inner
+      how: left
   - join:
       right_source: OTHER_CP_RATINGS
       condition:
@@ -216,6 +216,6 @@ expressions:
   Default: PD_UCR_STEP1.Default
 
 filter_target:
-  - needs_rating = 0 OR (needs_rating = 1 AND is_different_counterparty = 1 AND other_has_rating = 1 AND counterparty_rank = 1) OR (needs_rating = 1 AND INT_CPXCF_OTHER.ParticipatingCounterparty IS NULL)
+  - needs_rating = 0 OR (needs_rating = 1 AND is_different_counterparty = 1 AND other_has_rating = 1 AND counterparty_rank = 1) OR (needs_rating = 1 AND (INT_CPXCF.CreditFacility IS NULL OR INT_CPXCF_OTHER.ParticipatingCounterparty IS NULL))
 
 drop_duplicates: true
