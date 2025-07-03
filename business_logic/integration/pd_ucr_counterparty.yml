@@ -107,9 +107,7 @@ transformations:
         - PD_UCR_STEP1.UCRCase
         - PD_UCR_STEP1.fairid
         - PD_UCR_STEP1.UniquePDRatingId
-        - PD_UCR_STEP1.CptyInRatingSystem
         - PD_UCR_STEP1.InterCompanyIndicator
-        - PD_UCR_STEP1.Default
         - needs_rating
       column_mapping:
         best_other_pdmodelcode: FIRST(CASE WHEN is_different_counterparty = 1 AND other_has_rating = 1 AND facility_rank = 1 THEN OTHER_CP_RATINGS.PDModelCode END)
@@ -123,9 +121,9 @@ transformations:
         best_other_pdmarginofconservatism: FIRST(CASE WHEN is_different_counterparty = 1 AND other_has_rating = 1 AND facility_rank = 1 THEN OTHER_CP_RATINGS.PDMarginOfConservatism END)
         best_other_fairid: FIRST(CASE WHEN is_different_counterparty = 1 AND other_has_rating = 1 AND facility_rank = 1 THEN OTHER_CP_RATINGS.fairid END)
         best_other_uniquepdratindid: FIRST(CASE WHEN is_different_counterparty = 1 AND other_has_rating = 1 AND facility_rank = 1 THEN OTHER_CP_RATINGS.UniquePDRatingId END)
-        best_other_cptyinratingsystem: FIRST(CASE WHEN is_different_counterparty = 1 AND other_has_rating = 1 AND facility_rank = 1 THEN OTHER_CP_RATINGS.CptyInRatingSystem END)
         best_other_counterpartyid: FIRST(CASE WHEN is_different_counterparty = 1 AND other_has_rating = 1 AND facility_rank = 1 THEN OTHER_CP_RATINGS.CounterpartyID END)
         best_other_counterpartyssi: FIRST(CASE WHEN is_different_counterparty = 1 AND other_has_rating = 1 AND facility_rank = 1 THEN OTHER_CP_RATINGS.CounterpartySourceSystemIdentifier END)
+        best_other_ucrcase: FIRST(CASE WHEN is_different_counterparty = 1 AND other_has_rating = 1 AND facility_rank = 1 THEN OTHER_CP_RATINGS.UCRCase END)
         oldest_rating_date: MIN(CASE WHEN is_different_counterparty = 1 AND other_has_rating = 1 AND facility_rank = 1 THEN OTHER_CP_RATINGS.UniformCounterpartyRatingDate END)
 
 expressions:
@@ -136,6 +134,7 @@ expressions:
   BcdbId: BEST_RATINGS.BcdbId
   AacAlphaCode: BEST_RATINGS.AacAlphaCode
   GlobalCounterpartyIdentifier: BEST_RATINGS.GlobalCounterpartyIdentifier
+  InterCompanyIndicator: BEST_RATINGS.InterCompanyIndicator
   
   PDModelCode: >
     CASE 
@@ -157,6 +156,8 @@ expressions:
       THEN BEST_RATINGS.best_other_approveduniformcounterpartyrating
       ELSE BEST_RATINGS.ApprovedUniformCounterpartyRating
     END
+  
+  UCRStep1: BEST_RATINGS.UCRStep1
   
   UCRStep2: >
     CASE 
@@ -203,7 +204,7 @@ expressions:
   UCRCase: >
     CASE 
       WHEN BEST_RATINGS.needs_rating = 1 AND BEST_RATINGS.best_other_ucrstep1 IS NOT NULL
-      THEN 'CPxCF'
+      THEN CONCAT(BEST_RATINGS.UCRCase, '_DERIVED')
       ELSE BEST_RATINGS.UCRCase
     END
   
@@ -234,16 +235,5 @@ expressions:
       THEN BEST_RATINGS.best_other_uniquepdratindid
       ELSE BEST_RATINGS.UniquePDRatingId
     END
-  
-  CptyInRatingSystem: >
-    CASE 
-      WHEN BEST_RATINGS.needs_rating = 1 AND BEST_RATINGS.best_other_cptyinratingsystem IS NOT NULL
-      THEN BEST_RATINGS.best_other_cptyinratingsystem
-      ELSE BEST_RATINGS.CptyInRatingSystem
-    END
-  
-  InterCompanyIndicator: BEST_RATINGS.InterCompanyIndicator
-  
-  Default: BEST_RATINGS.Default
 
 drop_duplicates: true
