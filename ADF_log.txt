@@ -1,131 +1,159 @@
-[PARSE_SYNTAX_ERROR] Syntax error at or near '/'. SQLSTATE: 42601
----------------------------------------------------------------------------
-ParseException                            Traceback (most recent call last)
-File ~/.ipykernel/22385/command--1-2425712240:8
-      5 del sys
-      7 with open(filename, "rb") as f:
-----> 8   exec(compile(f.read(), filename, 'exec'))
-
-File /Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/scripts/nonssf_staging_process.py:228
-    226 run_month, *run_id_list = sys.argv
-    227 run_id = 1 if not run_id_list else int(run_id_list[0])
---> 228 non_ssf_load(spark, run_month, run_id)
-
-File /Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/scripts/nonssf_staging_process.py:63, in non_ssf_load(spark, run_month, run_id)
-     61 extraction = ExtractNonSSFData(spark, run_month=run_month)
-     62 # Get all files from basel-nonssf-landing container and place static data
----> 63 files_per_delivery_entity = extraction.get_all_files()
-     64 if not files_per_delivery_entity:
-     65     logger.error("No files found in basel-nonssf-landing container. ")
-
-File /Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/src/staging/extract_nonssf_data.py:151, in ExtractNonSSFData.get_all_files(self)
-    143 for subfolder in ["NME", "FINOB", "LRD_STATIC"]:
-    144     all_files[subfolder] = [
-    145         p.path
-    146         for p in self.dbutils.fs.ls(f"{self.source_container_url}/{subfolder}")
-    147         if (not p.isDir() or p.name.endswith(".parquet"))
-    148     ]
-    149     expected_files = [
-    150         row["SourceFileName"]
---> 151         for row in self.meta_data.select("SourceFileName").collect()
-    152     ]
-    153     for file in all_files[subfolder]:
-    154         # Check if the file has a matching record in the metadata
-    155         if Path(file).stem not in expected_files:
-
-File /databricks/spark/python/pyspark/sql/connect/dataframe.py:1892, in DataFrame.collect(self)
-   1891 def collect(self) -> List[Row]:
--> 1892     table, schema = self._to_table()
-   1894     # not all datatypes are supported in arrow based collect
-   1895     # here always verify the schema by from_arrow_schema
-   1896     schema2 = from_arrow_schema(table.schema, prefer_timestamp_ntz=True)
-
-File /databricks/spark/python/pyspark/sql/connect/dataframe.py:1971, in DataFrame._to_table(self)
-   1969 def _to_table(self) -> Tuple["pa.Table", Optional[StructType]]:
-   1970     query = self._plan.to_proto(self._session.client)
--> 1971     table, schema, self._execution_info = self._session.client.to_table(
-   1972         query, self._plan.observations
-   1973     )
-   1974     assert table is not None
-   1975     return (table, schema)
-
-File /databricks/spark/python/pyspark/sql/connect/client/core.py:1014, in SparkConnectClient.to_table(self, plan, observations)
-   1012 req = self._execute_plan_request_with_metadata()
-   1013 req.plan.CopyFrom(plan)
--> 1014 table, schema, metrics, observed_metrics, _ = self._execute_and_fetch(req, observations)
-   1016 # Create a query execution object.
-   1017 ei = ExecutionInfo(metrics, observed_metrics)
-
-File /databricks/spark/python/pyspark/sql/connect/client/core.py:1761, in SparkConnectClient._execute_and_fetch(self, req, observations, extra_request_metadata, self_destruct)
-   1758 properties: Dict[str, Any] = {}
-   1760 with Progress(handlers=self._progress_handlers, operation_id=req.operation_id) as progress:
--> 1761     for response in self._execute_and_fetch_as_iterator(
-   1762         req, observations, extra_request_metadata or [], progress=progress
-   1763     ):
-   1764         if isinstance(response, StructType):
-   1765             schema = response
-
-File /databricks/spark/python/pyspark/sql/connect/client/core.py:1737, in SparkConnectClient._execute_and_fetch_as_iterator(self, req, observations, extra_request_metadata, progress)
-   1735     raise kb
-   1736 except Exception as error:
--> 1737     self._handle_error(error)
-
-File /databricks/spark/python/pyspark/sql/connect/client/core.py:2053, in SparkConnectClient._handle_error(self, error)
-   2051 self.thread_local.inside_error_handling = True
-   2052 if isinstance(error, grpc.RpcError):
--> 2053     self._handle_rpc_error(error)
-   2054 elif isinstance(error, ValueError):
-   2055     if "Cannot invoke RPC" in str(error) and "closed" in str(error):
-
-File /databricks/spark/python/pyspark/sql/connect/client/core.py:2162, in SparkConnectClient._handle_rpc_error(self, rpc_error)
-   2148                 raise SparkConnectGrpcException(
-   2149                     "Python versions in the Spark Connect client and server are different. "
-   2150                     "To execute user-defined functions, client and server should have the "
-   (...)
-   2158                         "sqlState", default=SparkConnectGrpcException.CLIENT_UNEXPECTED_MISSING_SQL_STATE),
-   2159                 ) from None
-   2160             # END-EDGE
--> 2162             raise convert_exception(
-   2163                 info,
-   2164                 status.message,
-   2165                 self._fetch_enriched_error(info),
-   2166                 self._display_server_stack_trace(),
-   2167             ) from None
-   2169     raise SparkConnectGrpcException(
-   2170         message=status.message,
-   2171         sql_state=SparkConnectGrpcException.CLIENT_UNEXPECTED_MISSING_SQL_STATE,  # EDGE
-   2172     ) from None
-   2173 else:
-
-ParseException: 
-[PARSE_SYNTAX_ERROR] Syntax error at or near '/'. SQLSTATE: 42601 (line 1, pos 16)
-
-== SQL ==
-REDACTED_LOCAL_PART@nl.abnamro.com/bsrc-etl/scripts/nonssf_staging_process.py.metadata_nonssf
-----------------^^^
-
+2025-07-03 14:59:45 [INFO] validate:  YAML format validated successfully
+2025-07-03 14:59:51 [INFO] send_command:  Exception while sending command.
+Traceback (most recent call last):
+  File "/databricks/python/lib/python3.11/site-packages/IPython/core/interactiveshell.py", line 3526, in run_code
+    exec(code_obj, self.user_global_ns, self.user_ns)
+  File "/home/spark-e3dded5d-cd93-49d8-bdea-9d/.ipykernel/20125/command-5299601413073856-1989910526", line 1, in <module>
+    validate_business_logic_mapping(spark, business_logic_dict)
+  File "/Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/src/validate/run_all.py", line 48, in validate_business_logic_mapping
+    return all(
+           ^^^^
+  File "/Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/src/validate/run_all.py", line 49, in <genexpr>
+    _validate_logic_element(c, spark, business_logic)
+  File "/Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/src/validate/run_all.py", line 46, in _validate_logic_element
+    return cls(spark, business_logic).validate()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/src/validate/sources.py", line 40, in validate
+    .take(1)
+     ^^^^^^^
+  File "/databricks/spark/python/pyspark/sql/connect/dataframe.py", line 660, in take
+    return self.limit(num).collect()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/databricks/spark/python/pyspark/sql/connect/dataframe.py", line 1892, in collect
+    table, schema = self._to_table()
+                    ^^^^^^^^^^^^^^^^
+  File "/databricks/spark/python/pyspark/sql/connect/dataframe.py", line 1971, in _to_table
+    table, schema, self._execution_info = self._session.client.to_table(
+                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/databricks/spark/python/pyspark/sql/connect/client/core.py", line 1014, in to_table
+    table, schema, metrics, observed_metrics, _ = self._execute_and_fetch(req, observations)
+                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/databricks/spark/python/pyspark/sql/connect/client/core.py", line 1761, in _execute_and_fetch
+    for response in self._execute_and_fetch_as_iterator(
+  File "/databricks/spark/python/pyspark/sql/connect/client/core.py", line 1737, in _execute_and_fetch_as_iterator
+    self._handle_error(error)
+  File "/databricks/spark/python/pyspark/sql/connect/client/core.py", line 2053, in _handle_error
+    self._handle_rpc_error(error)
+  File "/databricks/spark/python/pyspark/sql/connect/client/core.py", line 2162, in _handle_rpc_error
+    raise convert_exception(
+pyspark.errors.exceptions.connect.SparkUpgradeException: [INCONSISTENT_BEHAVIOR_CROSS_VERSION.DATETIME_PATTERN_RECOGNITION] You may get a different result due to the upgrading to Spark >= 3.0:
+Fail to recognize 'YYYY' pattern in the DateTimeFormatter.
+1) You can set "spark.sql.legacy.timeParserPolicy" to "LEGACY" to restore the behavior before Spark 3.0.
+2) You can form a valid datetime pattern with the guide from 'https://spark.apache.org/docs/latest/sql-ref-datetime-pattern.html'. SQLSTATE: 42K0B
 
 JVM stacktrace:
-org.apache.spark.sql.catalyst.parser.ParseException
-	at org.apache.spark.sql.catalyst.parser.ParseException.withCommand(parsers.scala:429)
-	at org.apache.spark.sql.catalyst.parser.AbstractParser.parse(parsers.scala:117)
-	at org.apache.spark.sql.execution.SparkSqlParser.parse(SparkSqlParser.scala:140)
-	at org.apache.spark.sql.catalyst.parser.AbstractSqlParser.parseTableIdentifier(AbstractSqlParser.scala:69)
-	at com.databricks.sql.parser.DatabricksSqlParser.parseTableIdentifier(DatabricksSqlParser.scala:56)
-	at org.apache.spark.sql.connect.planner.SparkConnectPlanner.transformReadRel(SparkConnectPlanner.scala:1395)
-	at org.apache.spark.sql.connect.planner.SparkConnectPlanner.$anonfun$transformRelation$1(SparkConnectPlanner.scala:176)
-	at org.apache.spark.sql.connect.service.SessionHolder.$anonfun$usePlanCache$3(SessionHolder.scala:529)
+org.apache.spark.SparkUpgradeException
+	at org.apache.spark.sql.errors.ExecutionErrors.failToRecognizePatternAfterUpgradeError(ExecutionErrors.scala:74)
+	at org.apache.spark.sql.errors.ExecutionErrors.failToRecognizePatternAfterUpgradeError$(ExecutionErrors.scala:66)
+	at org.apache.spark.sql.errors.ExecutionErrors$.failToRecognizePatternAfterUpgradeError(ExecutionErrors.scala:233)
+	at org.apache.spark.sql.catalyst.util.DateTimeFormatterHelper$$anonfun$checkLegacyFormatter$1.applyOrElse(DateTimeFormatterHelper.scala:182)
+	at org.apache.spark.sql.catalyst.util.DateTimeFormatterHelper$$anonfun$checkLegacyFormatter$1.applyOrElse(DateTimeFormatterHelper.scala:175)
+	at scala.runtime.AbstractPartialFunction.apply(AbstractPartialFunction.scala:38)
+	at org.apache.spark.sql.catalyst.util.Iso8601TimestampFormatter.validatePatternString(TimestampFormatter.scala:259)
+	at org.apache.spark.sql.catalyst.util.TimestampFormatter$.getFormatter(TimestampFormatter.scala:529)
+	at org.apache.spark.sql.catalyst.util.TimestampFormatter$.apply(TimestampFormatter.scala:590)
+	at org.apache.spark.sql.catalyst.expressions.TimestampFormatterHelper.getFormatter(datetimeExpressions.scala:96)
+	at org.apache.spark.sql.catalyst.expressions.TimestampFormatterHelper.getFormatter$(datetimeExpressions.scala:90)
+	at org.apache.spark.sql.catalyst.expressions.ToTimestamp.getFormatter(datetimeExpressions.scala:1274)
+	at org.apache.spark.sql.catalyst.expressions.TimestampFormatterHelper.$anonfun$formatterOption$1(datetimeExpressions.scala:87)
+	at scala.Option.map(Option.scala:230)
+	at org.apache.spark.sql.catalyst.expressions.TimestampFormatterHelper.formatterOption(datetimeExpressions.scala:87)
+	at org.apache.spark.sql.catalyst.expressions.TimestampFormatterHelper.formatterOption$(datetimeExpressions.scala:85)
+	at org.apache.spark.sql.catalyst.expressions.ToTimestamp.formatterOption$lzycompute(datetimeExpressions.scala:1274)
+	at org.apache.spark.sql.catalyst.expressions.ToTimestamp.formatterOption(datetimeExpressions.scala:1274)
+	at org.apache.spark.sql.catalyst.expressions.ToTimestamp.doGenCode(datetimeExpressions.scala:1355)
+	at org.apache.spark.sql.catalyst.expressions.Expression.genCodeInternal(Expression.scala:268)
+	at com.databricks.sql.expressions.codegen.EdgeExpressionCodegen$.$anonfun$genCodeWithFallback$2(EdgeExpressionCodegen.scala:268)
 	at scala.Option.getOrElse(Option.scala:189)
-	at org.apache.spark.sql.connect.service.SessionHolder.usePlanCache(SessionHolder.scala:528)
-	at org.apache.spark.sql.connect.planner.SparkConnectPlanner.transformRelation(SparkConnectPlanner.scala:171)
-	at org.apache.spark.sql.connect.planner.SparkConnectPlanner.transformRelation(SparkConnectPlanner.scala:158)
-	at org.apache.spark.sql.connect.planner.SparkConnectPlanner.transformProject(SparkConnectPlanner.scala:1541)
-	at org.apache.spark.sql.connect.planner.SparkConnectPlanner.$anonfun$transformRelation$1(SparkConnectPlanner.scala:177)
-	at org.apache.spark.sql.connect.service.SessionHolder.$anonfun$usePlanCache$3(SessionHolder.scala:529)
+	at com.databricks.sql.expressions.codegen.EdgeExpressionCodegen$.$anonfun$genCodeWithFallback$1(EdgeExpressionCodegen.scala:268)
 	at scala.Option.getOrElse(Option.scala:189)
-	at org.apache.spark.sql.connect.service.SessionHolder.usePlanCache(SessionHolder.scala:528)
-	at org.apache.spark.sql.connect.planner.SparkConnectPlanner.transformRelation(SparkConnectPlanner.scala:171)
-	at org.apache.spark.sql.connect.execution.SparkConnectPlanExecution.handlePlan(SparkConnectPlanExecution.scala:91)
+	at com.databricks.sql.expressions.codegen.EdgeExpressionCodegen$.genCodeWithFallback(EdgeExpressionCodegen.scala:266)
+	at com.databricks.sql.expressions.codegen.EdgeExpressionCodegen$.streamlineIRCodeGen(EdgeExpressionCodegen.scala:315)
+	at com.databricks.sql.expressions.codegen.EdgeExpressionCodegen$.streamlineCodeGen(EdgeExpressionCodegen.scala:307)
+	at com.databricks.sql.expressions.codegen.EdgeExpressionCodegen$.doGenCode(EdgeExpressionCodegen.scala:1301)
+	at com.databricks.sql.expressions.codegen.EdgeExpressionCodegen$.genCode(EdgeExpressionCodegen.scala:202)
+	at org.apache.spark.sql.catalyst.expressions.Expression.genCode(Expression.scala:237)
+	at org.apache.spark.sql.catalyst.expressions.Or.doGenCode(predicates.scala:1551)
+	at org.apache.spark.sql.catalyst.expressions.Expression.genCodeInternal(Expression.scala:268)
+	at org.apache.spark.sql.catalyst.expressions.Expression.$anonfun$genCode$2(Expression.scala:244)
+	at scala.Option.getOrElse(Option.scala:189)
+	at org.apache.spark.sql.catalyst.expressions.Expression.genCode(Expression.scala:244)
+	at org.apache.spark.sql.catalyst.expressions.Or.doGenCode(predicates.scala:1551)
+	at org.apache.spark.sql.catalyst.expressions.Expression.genCodeInternal(Expression.scala:268)
+	at com.databricks.sql.expressions.codegen.EdgeExpressionCodegen$.$anonfun$genCodeWithFallback$2(EdgeExpressionCodegen.scala:268)
+	at scala.Option.getOrElse(Option.scala:189)
+	at com.databricks.sql.expressions.codegen.EdgeExpressionCodegen$.$anonfun$genCodeWithFallback$1(EdgeExpressionCodegen.scala:268)
+	at scala.Option.getOrElse(Option.scala:189)
+	at com.databricks.sql.expressions.codegen.EdgeExpressionCodegen$.genCodeWithFallback(EdgeExpressionCodegen.scala:266)
+	at org.apache.spark.sql.catalyst.expressions.codegen.CodegenContext.generateExpression(CodeGenerator.scala:1496)
+	at org.apache.spark.sql.execution.FilterExec.genPredicate$2(basicPhysicalOperators.scala:264)
+	at org.apache.spark.sql.execution.FilterExec.$anonfun$doConsume$4(basicPhysicalOperators.scala:314)
+	at scala.collection.TraversableLike.$anonfun$map$1(TraversableLike.scala:286)
+	at scala.collection.mutable.ResizableArray.foreach(ResizableArray.scala:62)
+	at scala.collection.mutable.ResizableArray.foreach$(ResizableArray.scala:55)
+	at scala.collection.mutable.ArrayBuffer.foreach(ArrayBuffer.scala:49)
+	at scala.collection.TraversableLike.map(TraversableLike.scala:286)
+	at scala.collection.TraversableLike.map$(TraversableLike.scala:279)
+	at scala.collection.AbstractTraversable.map(Traversable.scala:108)
+	at org.apache.spark.sql.execution.FilterExec.doConsume(basicPhysicalOperators.scala:289)
+	at org.apache.spark.sql.execution.CodegenSupport.consume(WholeStageCodegenExec.scala:205)
+	at org.apache.spark.sql.execution.CodegenSupport.consume$(WholeStageCodegenExec.scala:158)
+	at org.apache.spark.sql.execution.ColumnarToRowExec.consume(Columnar.scala:75)
+	at org.apache.spark.sql.execution.ColumnarToRowExec.doProduce(Columnar.scala:215)
+	at org.apache.spark.sql.execution.CodegenSupport.$anonfun$produce$1(WholeStageCodegenExec.scala:103)
+	at org.apache.spark.sql.execution.SparkPlan$.org$apache$spark$sql$execution$SparkPlan$$withExecuteQueryLogging(SparkPlan.scala:132)
+	at org.apache.spark.sql.execution.SparkPlan.$anonfun$executeQuery$1(SparkPlan.scala:399)
+	at org.apache.spark.rdd.RDDOperationScope$.withScope(RDDOperationScope.scala:165)
+	at org.apache.spark.sql.execution.SparkPlan.executeQuery(SparkPlan.scala:395)
+	at org.apache.spark.sql.execution.CodegenSupport.produce(WholeStageCodegenExec.scala:98)
+	at org.apache.spark.sql.execution.CodegenSupport.produce$(WholeStageCodegenExec.scala:97)
+	at org.apache.spark.sql.execution.ColumnarToRowExec.produce(Columnar.scala:75)
+	at org.apache.spark.sql.execution.FilterExec.doProduce(basicPhysicalOperators.scala:250)
+	at org.apache.spark.sql.execution.CodegenSupport.$anonfun$produce$1(WholeStageCodegenExec.scala:103)
+	at org.apache.spark.sql.execution.SparkPlan$.org$apache$spark$sql$execution$SparkPlan$$withExecuteQueryLogging(SparkPlan.scala:132)
+	at org.apache.spark.sql.execution.SparkPlan.$anonfun$executeQuery$1(SparkPlan.scala:399)
+	at org.apache.spark.rdd.RDDOperationScope$.withScope(RDDOperationScope.scala:165)
+	at org.apache.spark.sql.execution.SparkPlan.executeQuery(SparkPlan.scala:395)
+	at org.apache.spark.sql.execution.CodegenSupport.produce(WholeStageCodegenExec.scala:98)
+	at org.apache.spark.sql.execution.CodegenSupport.produce$(WholeStageCodegenExec.scala:97)
+	at org.apache.spark.sql.execution.FilterExec.produce(basicPhysicalOperators.scala:216)
+	at org.apache.spark.sql.execution.ProjectExec.doProduce(basicPhysicalOperators.scala:59)
+	at org.apache.spark.sql.execution.CodegenSupport.$anonfun$produce$1(WholeStageCodegenExec.scala:103)
+	at org.apache.spark.sql.execution.SparkPlan$.org$apache$spark$sql$execution$SparkPlan$$withExecuteQueryLogging(SparkPlan.scala:132)
+	at org.apache.spark.sql.execution.SparkPlan.$anonfun$executeQuery$1(SparkPlan.scala:399)
+	at org.apache.spark.rdd.RDDOperationScope$.withScope(RDDOperationScope.scala:165)
+	at org.apache.spark.sql.execution.SparkPlan.executeQuery(SparkPlan.scala:395)
+	at org.apache.spark.sql.execution.CodegenSupport.produce(WholeStageCodegenExec.scala:98)
+	at org.apache.spark.sql.execution.CodegenSupport.produce$(WholeStageCodegenExec.scala:97)
+	at org.apache.spark.sql.execution.ProjectExec.produce(basicPhysicalOperators.scala:46)
+	at org.apache.spark.sql.execution.WholeStageCodegenExec.doCodeGen(WholeStageCodegenExec.scala:714)
+	at org.apache.spark.sql.execution.WholeStageCodegenExec.doExecute(WholeStageCodegenExec.scala:777)
+	at org.apache.spark.sql.execution.SparkPlan.$anonfun$execute$2(SparkPlan.scala:341)
+	at com.databricks.spark.util.FrameProfiler$.record(FrameProfiler.scala:94)
+	at org.apache.spark.sql.execution.SparkPlan.$anonfun$execute$1(SparkPlan.scala:341)
+	at org.apache.spark.sql.execution.SparkPlan$.org$apache$spark$sql$execution$SparkPlan$$withExecuteQueryLogging(SparkPlan.scala:132)
+	at org.apache.spark.sql.execution.SparkPlan.$anonfun$executeQuery$1(SparkPlan.scala:399)
+	at org.apache.spark.rdd.RDDOperationScope$.withScope(RDDOperationScope.scala:165)
+	at org.apache.spark.sql.execution.SparkPlan.executeQuery(SparkPlan.scala:395)
+	at org.apache.spark.sql.execution.SparkPlan.execute(SparkPlan.scala:336)
+	at org.apache.spark.sql.execution.CollectLimitExec.doExecute(limit.scala:70)
+	at org.apache.spark.sql.execution.SparkPlan.$anonfun$execute$2(SparkPlan.scala:341)
+	at com.databricks.spark.util.FrameProfiler$.record(FrameProfiler.scala:94)
+	at org.apache.spark.sql.execution.SparkPlan.$anonfun$execute$1(SparkPlan.scala:341)
+	at org.apache.spark.sql.execution.SparkPlan$.org$apache$spark$sql$execution$SparkPlan$$withExecuteQueryLogging(SparkPlan.scala:132)
+	at org.apache.spark.sql.execution.SparkPlan.$anonfun$executeQuery$1(SparkPlan.scala:399)
+	at org.apache.spark.rdd.RDDOperationScope$.withScope(RDDOperationScope.scala:165)
+	at org.apache.spark.sql.execution.SparkPlan.executeQuery(SparkPlan.scala:395)
+	at org.apache.spark.sql.execution.SparkPlan.execute(SparkPlan.scala:336)
+	at org.apache.spark.sql.connect.execution.SparkConnectPlanExecution.$anonfun$processAsArrowBatches$8(SparkConnectPlanExecution.scala:307)
+	at org.apache.spark.sql.execution.SQLExecution$.$anonfun$withNewExecutionId0$10(SQLExecution.scala:475)
+	at org.apache.spark.sql.execution.SQLExecution$.withSQLConfPropagated(SQLExecution.scala:826)
+	at org.apache.spark.sql.execution.SQLExecution$.$anonfun$withNewExecutionId0$1(SQLExecution.scala:334)
+	at org.apache.spark.sql.SparkSession.withActive(SparkSession.scala:1210)
+	at org.apache.spark.sql.execution.SQLExecution$.withNewExecutionId0(SQLExecution.scala:207)
+	at org.apache.spark.sql.execution.SQLExecution$.withNewExecutionId(SQLExecution.scala:763)
+	at org.apache.spark.sql.connect.execution.SparkConnectPlanExecution.processAsArrowBatches(SparkConnectPlanExecution.scala:283)
+	at org.apache.spark.sql.connect.execution.SparkConnectPlanExecution.handlePlan(SparkConnectPlanExecution.scala:127)
 	at org.apache.spark.sql.connect.execution.ExecuteThreadRunner.handlePlan(ExecuteThreadRunner.scala:356)
 	at org.apache.spark.sql.connect.execution.ExecuteThreadRunner.$anonfun$executeInternal$1(ExecuteThreadRunner.scala:281)
 	at org.apache.spark.sql.connect.execution.ExecuteThreadRunner.$anonfun$executeInternal$1$adapted(ExecuteThreadRunner.scala:210)
@@ -147,45 +175,137 @@ org.apache.spark.sql.catalyst.parser.ParseException
 	at scala.util.Using$.resource(Using.scala:269)
 	at com.databricks.unity.HandleImpl.runWithAndClose(UCSHandle.scala:108)
 	at org.apache.spark.sql.connect.execution.ExecuteThreadRunner$ExecutionThread.run(ExecuteThreadRunner.scala:592)
-Workload failed, see run output for details
-2025-07-03 09:08:59 [ERROR] write_to_log:  Error writing to process log table log_/Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/scripts/nonssf_staging_process.py.process_log
-Traceback (most recent call last):
-  File "/Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/src/utils/table_logging.py", line 33, in write_to_log
-    log_entry_df.write.mode("append").saveAsTable(
-  File "/databricks/spark/python/pyspark/sql/connect/readwriter.py", line 713, in saveAsTable
-    _, _, ei = self._spark.client.execute_command(
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/databricks/spark/python/pyspark/sql/connect/client/core.py", line 1303, in execute_command
-    data, _, metrics, observed_metrics, properties = self._execute_and_fetch(
-                                                     ^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/databricks/spark/python/pyspark/sql/connect/client/core.py", line 1761, in _execute_and_fetch
-    for response in self._execute_and_fetch_as_iterator(
-  File "/databricks/spark/python/pyspark/sql/connect/client/core.py", line 1737, in _execute_and_fetch_as_iterator
-    self._handle_error(error)
-  File "/databricks/spark/python/pyspark/sql/connect/client/core.py", line 2053, in _handle_error
-    self._handle_rpc_error(error)
-  File "/databricks/spark/python/pyspark/sql/connect/client/core.py", line 2162, in _handle_rpc_error
-    raise convert_exception(
-pyspark.errors.exceptions.connect.ParseException: 
-[PARSE_SYNTAX_ERROR] Syntax error at or near '/'. SQLSTATE: 42601 (line 1, pos 11)
-
-== SQL ==
-REDACTED_LOCAL_PART@nl.abnamro.com/bsrc-etl/scripts/nonssf_staging_process.py.process_log
------------^^^
-
-
-JVM stacktrace:
-org.apache.spark.sql.catalyst.parser.ParseException
-	at org.apache.spark.sql.catalyst.parser.ParseException.withCommand(parsers.scala:429)
-	at org.apache.spark.sql.catalyst.parser.AbstractParser.parse(parsers.scala:117)
-	at org.apache.spark.sql.execution.SparkSqlParser.parse(SparkSqlParser.scala:140)
-	at org.apache.spark.sql.catalyst.parser.AbstractSqlParser.parseMultipartIdentifier(AbstractSqlParser.scala:88)
-	at com.databricks.sql.parser.DatabricksSqlParser.parseMultipartIdentifier(DatabricksSqlParser.scala:62)
-	at org.apache.spark.sql.DataFrameWriter.saveAsTable(DataFrameWriter.scala:677)
-	at org.apache.spark.sql.connect.planner.SparkConnectPlanner.handleWriteOperation(SparkConnectPlanner.scala:3346)
-	at org.apache.spark.sql.connect.planner.SparkConnectPlanner.process(SparkConnectPlanner.scala:2857)
-	at org.apache.spark.sql.connect.execution.ExecuteThreadRunner.handleCommand(ExecuteThreadRunner.scala:366)
-	at org.apache.spark.sql.connect.execution.ExecuteThreadRunner.$anonfun$executeInternal$1(ExecuteThreadRunner.scala:280)
+Caused by: org.apache.spark.SparkIllegalArgumentException: [INCONSISTENT_BEHAVIOR_CROSS_VERSION.DATETIME_WEEK_BASED_PATTERN] You may get a different result due to the upgrading to Spark >= 3.0:
+All week-based patterns are unsupported since Spark 3.0, detected week-based character: Y.
+Please use the SQL function EXTRACT instead. SQLSTATE: 42K0B
+	at org.apache.spark.sql.catalyst.util.DateTimeFormatterHelper$.$anonfun$convertIncompatiblePattern$4(DateTimeFormatterHelper.scala:317)
+	at org.apache.spark.sql.catalyst.util.DateTimeFormatterHelper$.$anonfun$convertIncompatiblePattern$4$adapted(DateTimeFormatterHelper.scala:314)
+	at scala.collection.TraversableLike$WithFilter.$anonfun$foreach$1(TraversableLike.scala:985)
+	at scala.collection.IndexedSeqOptimized.foreach(IndexedSeqOptimized.scala:36)
+	at scala.collection.IndexedSeqOptimized.foreach$(IndexedSeqOptimized.scala:33)
+	at scala.collection.immutable.StringOps.foreach(StringOps.scala:33)
+	at scala.collection.TraversableLike$WithFilter.foreach(TraversableLike.scala:984)
+	at org.apache.spark.sql.catalyst.util.DateTimeFormatterHelper$.$anonfun$convertIncompatiblePattern$2(DateTimeFormatterHelper.scala:314)
+	at scala.collection.TraversableLike.$anonfun$map$1(TraversableLike.scala:286)
+	at scala.collection.IndexedSeqOptimized.foreach(IndexedSeqOptimized.scala:36)
+	at scala.collection.IndexedSeqOptimized.foreach$(IndexedSeqOptimized.scala:33)
+	at scala.collection.mutable.ArrayOps$ofRef.foreach(ArrayOps.scala:198)
+	at scala.collection.TraversableLike.map(TraversableLike.scala:286)
+	at scala.collection.TraversableLike.map$(TraversableLike.scala:279)
+	at scala.collection.mutable.ArrayOps$ofRef.map(ArrayOps.scala:198)
+	at org.apache.spark.sql.catalyst.util.DateTimeFormatterHelper$.convertIncompatiblePattern(DateTimeFormatterHelper.scala:311)
+	at org.apache.spark.sql.catalyst.util.DateTimeFormatterHelper.getOrCreateFormatter(DateTimeFormatterHelper.scala:121)
+	at org.apache.spark.sql.catalyst.util.DateTimeFormatterHelper.getOrCreateFormatter$(DateTimeFormatterHelper.scala:117)
+	at org.apache.spark.sql.catalyst.util.Iso8601TimestampFormatter.getOrCreateFormatter(TimestampFormatter.scala:154)
+	at org.apache.spark.sql.catalyst.util.Iso8601TimestampFormatter.formatter$lzycompute(TimestampFormatter.scala:163)
+	at org.apache.spark.sql.catalyst.util.Iso8601TimestampFormatter.formatter(TimestampFormatter.scala:162)
+	at org.apache.spark.sql.catalyst.util.Iso8601TimestampFormatter.validatePatternString(TimestampFormatter.scala:258)
+	at org.apache.spark.sql.catalyst.util.TimestampFormatter$.getFormatter(TimestampFormatter.scala:529)
+	at org.apache.spark.sql.catalyst.util.TimestampFormatter$.apply(TimestampFormatter.scala:590)
+	at org.apache.spark.sql.catalyst.expressions.TimestampFormatterHelper.getFormatter(datetimeExpressions.scala:96)
+	at org.apache.spark.sql.catalyst.expressions.TimestampFormatterHelper.getFormatter$(datetimeExpressions.scala:90)
+	at org.apache.spark.sql.catalyst.expressions.ToTimestamp.getFormatter(datetimeExpressions.scala:1274)
+	at org.apache.spark.sql.catalyst.expressions.TimestampFormatterHelper.$anonfun$formatterOption$1(datetimeExpressions.scala:87)
+	at scala.Option.map(Option.scala:230)
+	at org.apache.spark.sql.catalyst.expressions.TimestampFormatterHelper.formatterOption(datetimeExpressions.scala:87)
+	at org.apache.spark.sql.catalyst.expressions.TimestampFormatterHelper.formatterOption$(datetimeExpressions.scala:85)
+	at org.apache.spark.sql.catalyst.expressions.ToTimestamp.formatterOption$lzycompute(datetimeExpressions.scala:1274)
+	at org.apache.spark.sql.catalyst.expressions.ToTimestamp.formatterOption(datetimeExpressions.scala:1274)
+	at org.apache.spark.sql.catalyst.expressions.ToTimestamp.doGenCode(datetimeExpressions.scala:1355)
+	at org.apache.spark.sql.catalyst.expressions.Expression.genCodeInternal(Expression.scala:268)
+	at com.databricks.sql.expressions.codegen.EdgeExpressionCodegen$.$anonfun$genCodeWithFallback$2(EdgeExpressionCodegen.scala:268)
+	at scala.Option.getOrElse(Option.scala:189)
+	at com.databricks.sql.expressions.codegen.EdgeExpressionCodegen$.$anonfun$genCodeWithFallback$1(EdgeExpressionCodegen.scala:268)
+	at scala.Option.getOrElse(Option.scala:189)
+	at com.databricks.sql.expressions.codegen.EdgeExpressionCodegen$.genCodeWithFallback(EdgeExpressionCodegen.scala:266)
+	at com.databricks.sql.expressions.codegen.EdgeExpressionCodegen$.streamlineIRCodeGen(EdgeExpressionCodegen.scala:315)
+	at com.databricks.sql.expressions.codegen.EdgeExpressionCodegen$.streamlineCodeGen(EdgeExpressionCodegen.scala:307)
+	at com.databricks.sql.expressions.codegen.EdgeExpressionCodegen$.doGenCode(EdgeExpressionCodegen.scala:1301)
+	at com.databricks.sql.expressions.codegen.EdgeExpressionCodegen$.genCode(EdgeExpressionCodegen.scala:202)
+	at org.apache.spark.sql.catalyst.expressions.Expression.genCode(Expression.scala:237)
+	at org.apache.spark.sql.catalyst.expressions.Or.doGenCode(predicates.scala:1551)
+	at org.apache.spark.sql.catalyst.expressions.Expression.genCodeInternal(Expression.scala:268)
+	at org.apache.spark.sql.catalyst.expressions.Expression.$anonfun$genCode$2(Expression.scala:244)
+	at scala.Option.getOrElse(Option.scala:189)
+	at org.apache.spark.sql.catalyst.expressions.Expression.genCode(Expression.scala:244)
+	at org.apache.spark.sql.catalyst.expressions.Or.doGenCode(predicates.scala:1551)
+	at org.apache.spark.sql.catalyst.expressions.Expression.genCodeInternal(Expression.scala:268)
+	at com.databricks.sql.expressions.codegen.EdgeExpressionCodegen$.$anonfun$genCodeWithFallback$2(EdgeExpressionCodegen.scala:268)
+	at scala.Option.getOrElse(Option.scala:189)
+	at com.databricks.sql.expressions.codegen.EdgeExpressionCodegen$.$anonfun$genCodeWithFallback$1(EdgeExpressionCodegen.scala:268)
+	at scala.Option.getOrElse(Option.scala:189)
+	at com.databricks.sql.expressions.codegen.EdgeExpressionCodegen$.genCodeWithFallback(EdgeExpressionCodegen.scala:266)
+	at org.apache.spark.sql.catalyst.expressions.codegen.CodegenContext.generateExpression(CodeGenerator.scala:1496)
+	at org.apache.spark.sql.execution.FilterExec.genPredicate$2(basicPhysicalOperators.scala:264)
+	at org.apache.spark.sql.execution.FilterExec.$anonfun$doConsume$4(basicPhysicalOperators.scala:314)
+	at scala.collection.TraversableLike.$anonfun$map$1(TraversableLike.scala:286)
+	at scala.collection.mutable.ResizableArray.foreach(ResizableArray.scala:62)
+	at scala.collection.mutable.ResizableArray.foreach$(ResizableArray.scala:55)
+	at scala.collection.mutable.ArrayBuffer.foreach(ArrayBuffer.scala:49)
+	at scala.collection.TraversableLike.map(TraversableLike.scala:286)
+	at scala.collection.TraversableLike.map$(TraversableLike.scala:279)
+	at scala.collection.AbstractTraversable.map(Traversable.scala:108)
+	at org.apache.spark.sql.execution.FilterExec.doConsume(basicPhysicalOperators.scala:289)
+	at org.apache.spark.sql.execution.CodegenSupport.consume(WholeStageCodegenExec.scala:205)
+	at org.apache.spark.sql.execution.CodegenSupport.consume$(WholeStageCodegenExec.scala:158)
+	at org.apache.spark.sql.execution.ColumnarToRowExec.consume(Columnar.scala:75)
+	at org.apache.spark.sql.execution.ColumnarToRowExec.doProduce(Columnar.scala:215)
+	at org.apache.spark.sql.execution.CodegenSupport.$anonfun$produce$1(WholeStageCodegenExec.scala:103)
+	at org.apache.spark.sql.execution.SparkPlan$.org$apache$spark$sql$execution$SparkPlan$$withExecuteQueryLogging(SparkPlan.scala:132)
+	at org.apache.spark.sql.execution.SparkPlan.$anonfun$executeQuery$1(SparkPlan.scala:399)
+	at org.apache.spark.rdd.RDDOperationScope$.withScope(RDDOperationScope.scala:165)
+	at org.apache.spark.sql.execution.SparkPlan.executeQuery(SparkPlan.scala:395)
+	at org.apache.spark.sql.execution.CodegenSupport.produce(WholeStageCodegenExec.scala:98)
+	at org.apache.spark.sql.execution.CodegenSupport.produce$(WholeStageCodegenExec.scala:97)
+	at org.apache.spark.sql.execution.ColumnarToRowExec.produce(Columnar.scala:75)
+	at org.apache.spark.sql.execution.FilterExec.doProduce(basicPhysicalOperators.scala:250)
+	at org.apache.spark.sql.execution.CodegenSupport.$anonfun$produce$1(WholeStageCodegenExec.scala:103)
+	at org.apache.spark.sql.execution.SparkPlan$.org$apache$spark$sql$execution$SparkPlan$$withExecuteQueryLogging(SparkPlan.scala:132)
+	at org.apache.spark.sql.execution.SparkPlan.$anonfun$executeQuery$1(SparkPlan.scala:399)
+	at org.apache.spark.rdd.RDDOperationScope$.withScope(RDDOperationScope.scala:165)
+	at org.apache.spark.sql.execution.SparkPlan.executeQuery(SparkPlan.scala:395)
+	at org.apache.spark.sql.execution.CodegenSupport.produce(WholeStageCodegenExec.scala:98)
+	at org.apache.spark.sql.execution.CodegenSupport.produce$(WholeStageCodegenExec.scala:97)
+	at org.apache.spark.sql.execution.FilterExec.produce(basicPhysicalOperators.scala:216)
+	at org.apache.spark.sql.execution.ProjectExec.doProduce(basicPhysicalOperators.scala:59)
+	at org.apache.spark.sql.execution.CodegenSupport.$anonfun$produce$1(WholeStageCodegenExec.scala:103)
+	at org.apache.spark.sql.execution.SparkPlan$.org$apache$spark$sql$execution$SparkPlan$$withExecuteQueryLogging(SparkPlan.scala:132)
+	at org.apache.spark.sql.execution.SparkPlan.$anonfun$executeQuery$1(SparkPlan.scala:399)
+	at org.apache.spark.rdd.RDDOperationScope$.withScope(RDDOperationScope.scala:165)
+	at org.apache.spark.sql.execution.SparkPlan.executeQuery(SparkPlan.scala:395)
+	at org.apache.spark.sql.execution.CodegenSupport.produce(WholeStageCodegenExec.scala:98)
+	at org.apache.spark.sql.execution.CodegenSupport.produce$(WholeStageCodegenExec.scala:97)
+	at org.apache.spark.sql.execution.ProjectExec.produce(basicPhysicalOperators.scala:46)
+	at org.apache.spark.sql.execution.WholeStageCodegenExec.doCodeGen(WholeStageCodegenExec.scala:714)
+	at org.apache.spark.sql.execution.WholeStageCodegenExec.doExecute(WholeStageCodegenExec.scala:777)
+	at org.apache.spark.sql.execution.SparkPlan.$anonfun$execute$2(SparkPlan.scala:341)
+	at com.databricks.spark.util.FrameProfiler$.record(FrameProfiler.scala:94)
+	at org.apache.spark.sql.execution.SparkPlan.$anonfun$execute$1(SparkPlan.scala:341)
+	at org.apache.spark.sql.execution.SparkPlan$.org$apache$spark$sql$execution$SparkPlan$$withExecuteQueryLogging(SparkPlan.scala:132)
+	at org.apache.spark.sql.execution.SparkPlan.$anonfun$executeQuery$1(SparkPlan.scala:399)
+	at org.apache.spark.rdd.RDDOperationScope$.withScope(RDDOperationScope.scala:165)
+	at org.apache.spark.sql.execution.SparkPlan.executeQuery(SparkPlan.scala:395)
+	at org.apache.spark.sql.execution.SparkPlan.execute(SparkPlan.scala:336)
+	at org.apache.spark.sql.execution.CollectLimitExec.doExecute(limit.scala:70)
+	at org.apache.spark.sql.execution.SparkPlan.$anonfun$execute$2(SparkPlan.scala:341)
+	at com.databricks.spark.util.FrameProfiler$.record(FrameProfiler.scala:94)
+	at org.apache.spark.sql.execution.SparkPlan.$anonfun$execute$1(SparkPlan.scala:341)
+	at org.apache.spark.sql.execution.SparkPlan$.org$apache$spark$sql$execution$SparkPlan$$withExecuteQueryLogging(SparkPlan.scala:132)
+	at org.apache.spark.sql.execution.SparkPlan.$anonfun$executeQuery$1(SparkPlan.scala:399)
+	at org.apache.spark.rdd.RDDOperationScope$.withScope(RDDOperationScope.scala:165)
+	at org.apache.spark.sql.execution.SparkPlan.executeQuery(SparkPlan.scala:395)
+	at org.apache.spark.sql.execution.SparkPlan.execute(SparkPlan.scala:336)
+	at org.apache.spark.sql.connect.execution.SparkConnectPlanExecution.$anonfun$processAsArrowBatches$8(SparkConnectPlanExecution.scala:307)
+	at org.apache.spark.sql.execution.SQLExecution$.$anonfun$withNewExecutionId0$10(SQLExecution.scala:475)
+	at org.apache.spark.sql.execution.SQLExecution$.withSQLConfPropagated(SQLExecution.scala:826)
+	at org.apache.spark.sql.execution.SQLExecution$.$anonfun$withNewExecutionId0$1(SQLExecution.scala:334)
+	at org.apache.spark.sql.SparkSession.withActive(SparkSession.scala:1210)
+	at org.apache.spark.sql.execution.SQLExecution$.withNewExecutionId0(SQLExecution.scala:207)
+	at org.apache.spark.sql.execution.SQLExecution$.withNewExecutionId(SQLExecution.scala:763)
+	at org.apache.spark.sql.connect.execution.SparkConnectPlanExecution.processAsArrowBatches(SparkConnectPlanExecution.scala:283)
+	at org.apache.spark.sql.connect.execution.SparkConnectPlanExecution.handlePlan(SparkConnectPlanExecution.scala:127)
+	at org.apache.spark.sql.connect.execution.ExecuteThreadRunner.handlePlan(ExecuteThreadRunner.scala:356)
+	at org.apache.spark.sql.connect.execution.ExecuteThreadRunner.$anonfun$executeInternal$1(ExecuteThreadRunner.scala:281)
 	at org.apache.spark.sql.connect.execution.ExecuteThreadRunner.$anonfun$executeInternal$1$adapted(ExecuteThreadRunner.scala:210)
 	at org.apache.spark.sql.connect.service.SessionHolder.$anonfun$withSession$2(SessionHolder.scala:392)
 	at org.apache.spark.sql.SparkSession.withActive(SparkSession.scala:1210)
@@ -205,3 +325,45 @@ org.apache.spark.sql.catalyst.parser.ParseException
 	at scala.util.Using$.resource(Using.scala:269)
 	at com.databricks.unity.HandleImpl.runWithAndClose(UCSHandle.scala:108)
 	at org.apache.spark.sql.connect.execution.ExecuteThreadRunner$ExecutionThread.run(ExecuteThreadRunner.scala:592)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/databricks/spark/python/lib/py4j-0.10.9.7-src.zip/py4j/clientserver.py", line 528, in send_command
+    self.socket.sendall(command.encode("utf-8"))
+ConnectionResetError: [Errno 104] Connection reset by peer
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/databricks/spark/python/lib/py4j-0.10.9.7-src.zip/py4j/java_gateway.py", line 1038, in send_command
+    response = connection.send_command(command)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/databricks/spark/python/lib/py4j-0.10.9.7-src.zip/py4j/clientserver.py", line 531, in send_command
+    raise Py4JNetworkError(
+py4j.protocol.Py4JNetworkError: Error while sending
+[INCONSISTENT_BEHAVIOR_CROSS_VERSION.DATETIME_PATTERN_RECOGNITION] You may get a different result due to the upgrading to Spark >= 3.0:
+Fail to recognize 'YYYY' pattern in the DateTimeFormatter.
+1) You can set "spark.sql.legacy.timeParserPolicy" to "LEGACY" to restore the behavior before Spark 3.0.
+2) You can form a valid datetime pattern with the guide from 'https://spark.apache.org/docs/latest/sql-ref-datetime-pattern.html'. SQLSTATE: 42K0B
+File <command-5299601413073856>, line 1
+----> 1 validate_business_logic_mapping(spark, business_logic_dict)
+File /databricks/spark/python/pyspark/sql/connect/client/core.py:2162, in SparkConnectClient._handle_rpc_error(self, rpc_error)
+   2148                 raise SparkConnectGrpcException(
+   2149                     "Python versions in the Spark Connect client and server are different. "
+   2150                     "To execute user-defined functions, client and server should have the "
+   (...)
+   2158                         "sqlState", default=SparkConnectGrpcException.CLIENT_UNEXPECTED_MISSING_SQL_STATE),
+   2159                 ) from None
+   2160             # END-EDGE
+-> 2162             raise convert_exception(
+   2163                 info,
+   2164                 status.message,
+   2165                 self._fetch_enriched_error(info),
+   2166                 self._display_server_stack_trace(),
+   2167             ) from None
+   2169     raise SparkConnectGrpcException(
+   2170         message=status.message,
+   2171         sql_state=SparkConnectGrpcException.CLIENT_UNEXPECTED_MISSING_SQL_STATE,  # EDGE
+   2172     ) from None
+   2173 else:
