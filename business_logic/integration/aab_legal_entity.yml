@@ -21,7 +21,7 @@ sources:
     - HierarchicalLevel
     - LeavingGroupDate
     filter: |
-      (TO_DATE(SUBSTR(LTRIM(LEAVINGGROUPDATE),1,4),'YYYY') >= last_day(to_date('{{ RUN_MONTH }}','yyyyMM')) 
+      (TO_DATE(SUBSTR(LTRIM(LEAVINGGROUPDATE),1,4),'yyyy') >= last_day(to_date('{{ RUN_MONTH }}','yyyyMM')) 
       OR LEAVINGGROUPDATE IS NULL OR TRIM(LEAVINGGROUPDATE) = '')
     source: stg_202412.dial_ggop_exp_entities
 
