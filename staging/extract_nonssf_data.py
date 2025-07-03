@@ -175,11 +175,10 @@ class ExtractNonSSFData(ExtractStagingData):
                             ),
                         )
                     except OSError as e:
-                        error_msg = f"Failed to copy {latest_processed_file} to {target_file}: {str(e)}"
+                        error_msg = f"Failed to copy {latest_processed_file} to {target_file}: {e!s}"  # noqa: E501
                         logger.error(error_msg)
                         raise NonSSFExtractionError(
-                            NonSSFStepStatus.RECEIVED,
-                            additional_info=error_msg
+                            NonSSFStepStatus.RECEIVED, additional_info=error_msg
                         )
 
         return new_files
@@ -347,7 +346,7 @@ class ExtractNonSSFData(ExtractStagingData):
                     key=Path(file_path.split("/")[1]).stem,
                     file_delivery_status=NonSSFStepStatus.RECEIVED,
                     result="ERROR",
-                    comment=f"Deadline passed ({deadline}): Missing expected file {file_path.upper()}",
+                    comment=f"Deadline passed ({deadline}): Missing expected file {file_path.upper()}",  # noqa: E501
                 )
 
             # Create error message with all missing files
