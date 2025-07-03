@@ -1,60 +1,27 @@
-(bsrc-etl-venv) PS C:\Users\B25712\bsrc-etl-venv\bsrc-etl> pre-commit run --all-files
+
+Generating script.
+========================== Starting Command Output ===========================
+/usr/bin/bash --noprofile --norc /__w/_temp/75018d3c-8135-42d6-983f-7b5ceaad601e.sh
+[INFO] Initializing environment for local.
+[INFO] Installing environment for local.
+[INFO] Once installed this environment will be reused.
+[INFO] This may take a few minutes...
 ruff lint................................................................Failed
 - hook id: ruff
 - exit code: 1
 
 All checks passed!
-test\staging\test_extract_non_ssf_data.py:594:5: F841 Local variable `log_config` is assigned to but never used
+test/staging/test_extract_non_ssf_data.py:594:5: F841 Local variable `log_config` is assigned to but never used
     |
 593 |     # Create log config
 594 |     log_config = ProcessLogConfig(
-595 |         spark=spark_session,
-596 |         run_month=run_month,
-    |
-    = help: Remove assignment to unused variable `log_config`
-595 |         spark=spark_session,
-596 |         run_month=run_month,
-    |
-    = help: Remove assignment to unused variable `log_config`
-
-test\staging\test_extract_non_ssf_data.py:714:5: F841 Local variable `log_config` is assigned to but never used
-    |
-713 |     # Create log config
-714 |     log_config = ProcessLogConfig(
     |     ^^^^^^^^^^ F841
 595 |         spark=spark_session,
 596 |         run_month=run_month,
     |
     = help: Remove assignment to unused variable `log_config`
 
-test\staging\test_extract_non_ssf_data.py:714:5: F841 Local variable `log_config` is assigned to but never used
-    |
-713 |     # Create log config
-714 |     log_config = ProcessLogConfig(
-595 |         spark=spark_session,
-596 |         run_month=run_month,
-    |
-    = help: Remove assignment to unused variable `log_config`
-
-test\staging\test_extract_non_ssf_data.py:714:5: F841 Local variable `log_config` is assigned to but never used
-    |
-595 |         spark=spark_session,
-596 |         run_month=run_month,
-    |
-    = help: Remove assignment to unused variable `log_config`
-
-test\staging\test_extract_non_ssf_data.py:714:5: F841 Local variable `log_config` is assigned to but never used
-596 |         run_month=run_month,
-    |
-    = help: Remove assignment to unused variable `log_config`
-
-test\staging\test_extract_non_ssf_data.py:714:5: F841 Local variable `log_config` is assigned to but never used
-    = help: Remove assignment to unused variable `log_config`
-
-test\staging\test_extract_non_ssf_data.py:714:5: F841 Local variable `log_config` is assigned to but never used
-
-test\staging\test_extract_non_ssf_data.py:714:5: F841 Local variable `log_config` is assigned to but never used
-test\staging\test_extract_non_ssf_data.py:714:5: F841 Local variable `log_config` is assigned to but never used
+test/staging/test_extract_non_ssf_data.py:714:5: F841 Local variable `log_config` is assigned to but never used
     |
 713 |     # Create log config
 714 |     log_config = ProcessLogConfig(
@@ -70,12 +37,4 @@ All checks passed!
 All checks passed!
 
 ruff format..............................................................Passed
-mypy.....................................................................Failed
-- hook id: mypy
-- exit code: 1
-
-Success: no issues found in 13 source files
-Success: no issues found in 13 source files
-scripts\nonssf_staging_process.py:295: error: Too many arguments for "check_deadline_violations" of "ExtractNonSSFData"  [call-arg]
-Found 1 error in 1 file (checked 13 source files)
-Success: no issues found in 13 source files
+mypy.....................................................................Passe
