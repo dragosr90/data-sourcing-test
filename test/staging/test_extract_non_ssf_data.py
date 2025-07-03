@@ -12,7 +12,11 @@ from pyspark.sql.types import (
     TimestampType,
 )
 
-from src.staging.extract_nonssf_data import ExtractNonSSFData
+from src.staging.extract_nonssf_data import (
+    ExtractNonSSFData,
+    NonSSFExtractionError,
+    ProcessLogConfig,
+)
 
 
 class FileInfoMock(dict):
@@ -500,7 +504,8 @@ def test_place_static_data_keyword_only(
     # Test that calling with keyword argument works
     result = extraction.place_static_data([], deadline_passed=True)  # This should work
     assert isinstance(result, list)
-    
+
+
 @pytest.mark.parametrize(
     ("run_month", "source_container"),
     [("202503", "test-container")],
@@ -616,11 +621,11 @@ def test_check_deadline_violations_with_dates(
 
     # Check log messages include deadline dates for both files
     assert (
-        f"Deadline passed ({yesterday} 00:00:00 UTC): Missing expected file MISSING_FINOB_FILE from finob"
+        f"Deadline passed ({yesterday} 00:00:00 UTC): Missing expected file MISSING_FINOB_FILE from finob"  # noqa: E501
         in caplog.text
     )
     assert (
-        f"Deadline passed ({yesterday} 00:00:00 UTC): Missing expected file MISSING_NME_FILE from nme"
+        f"Deadline passed ({yesterday} 00:00:00 UTC): Missing expected file MISSING_NME_FILE from nme"  # noqa: E501
         in caplog.text
     )
 
@@ -647,7 +652,7 @@ def test_check_deadline_violations_future_deadline(
 ):
     """Test that files with future deadlines don't trigger violations."""
     from datetime import date
-    
+
     # Create mock metadata DataFrame with future deadline
     schema_meta = [
         "SourceSystem",
@@ -659,10 +664,10 @@ def test_check_deadline_violations_future_deadline(
         "FileDeliveryStatus",
         "Deadline",
     ]
-    
+
     # Set deadline to tomorrow
-    tomorrow = date.today() + timedelta(days=1)
-    
+    tomorrow = date.today() + timedelta(days=1)  # noqa: DTZ011
+
     mock_meta = spark_session.createDataFrame(
         [
             (
@@ -682,14 +687,14 @@ def test_check_deadline_violations_future_deadline(
     # Create empty log DataFrame
     schema_log = StructType(
         [
-            StructField("SourceSystem", StringType(), True),
-            StructField("SourceFileName", StringType(), True),
-            StructField("DeliveryNumber", IntegerType(), True),
-            StructField("FileDeliveryStep", IntegerType(), True),
-            StructField("FileDeliveryStatus", StringType(), True),
-            StructField("Result", StringType(), True),
-            StructField("LastUpdatedDateTimestamp", TimestampType(), True),
-            StructField("Comment", StringType(), True),
+            StructField("SourceSystem", StringType(), True),  # noqa: FBT003
+            StructField("SourceFileName", StringType(), True),  # noqa: FBT003
+            StructField("DeliveryNumber", IntegerType(), True),  # noqa: FBT003
+            StructField("FileDeliveryStep", IntegerType(), True),  # noqa: FBT003
+            StructField("FileDeliveryStatus", StringType(), True),  # noqa: FBT003
+            StructField("Result", StringType(), True),  # noqa: FBT003
+            StructField("LastUpdatedDateTimestamp", TimestampType(), True),  # noqa: FBT003
+            StructField("Comment", StringType(), True),  # noqa: FBT003
         ]
     )
     mock_log = spark_session.createDataFrame([], schema=schema_log)
@@ -715,7 +720,7 @@ def test_check_deadline_violations_future_deadline(
             "Workflow": "Staging",
             "Component": "Non-SSF",
             "Layer": "Staging",
-        }
+        },
     )
 
     # Empty list of files (no files delivered)
