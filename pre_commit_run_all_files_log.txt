@@ -1,37 +1,12 @@
 (bsrc-etl-venv) PS C:\Users\B25712\bsrc-etl-venv\bsrc-etl> pre-commit run --all-files
-ruff lint................................................................Failed
-- hook id: ruff
+ruff lint................................................................Passed
+ruff format..............................................................Passed
+mypy.....................................................................Failed
+- hook id: mypy
 - exit code: 1
 
-src\staging\extract_nonssf_data.py:179:25: TRY400 Use `logging.exception` instead of `logging.error`
-    |
-177 |                     except OSError as e:
-178 |                         error_msg = f"Failed to copy {latest_processed_file} to {target_file}: {e!s}"  # noqa: E501
-179 |                         logger.error(error_msg)
-    |                         ^^^^^^^^^^^^^^^^^^^^^^^ TRY400
-180 |                         raise NonSSFExtractionError(
-181 |                             NonSSFStepStatus.RECEIVED, additional_info=error_msg
-    |
-    = help: Replace with `exception`
-
-src\staging\extract_nonssf_data.py:180:25: B904 Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling       
-    |
-178 |                           error_msg = f"Failed to copy {latest_processed_file} to {target_file}: {e!s}"  # noqa: E501
-179 |                           logger.error(error_msg)
-180 |                           raise NonSSFExtractionError(
-    |  _________________________^
-181 | |                             NonSSFStepStatus.RECEIVED, additional_info=error_msg
-182 | |                         )
-    | |_________________________^ B904
-183 |
-184 |           return new_files
-    |
-
-Found 2 errors.
-No fixes available (1 hidden fix can be enabled with the `--unsafe-fixes` option).
-All checks passed!
-All checks passed!
-All checks passed!
-
-ruff format..............................................................Passed
-mypy.....................................................................Passed
+Success: no issues found in 13 source files
+Success: no issues found in 13 source files
+scripts\nonssf_staging_process.py:295: error: Too many arguments for "check_deadline_violations" of "ExtractNonSSFData"  [call-arg]
+Found 1 error in 1 file (checked 13 source files)
+Success: no issues found in 13 source files
