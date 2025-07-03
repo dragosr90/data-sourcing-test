@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 
-from pyspark.sql import DataFrame, SparkSession
+from pyspark.sql import DataFrame
 from pyspark.sql.functions import col
 
 from src.config.exceptions import NonSSFExtractionError
@@ -12,7 +12,7 @@ from src.staging.status import NonSSFStepStatus
 from src.utils.export_parquet import export_to_parquet
 from src.utils.get_env import get_container_path
 from src.utils.logging_util import get_logger
-from src.utils.table_logging import get_result, write_to_log
+from src.utils.table_logging import get_result
 
 logger = get_logger()
 
@@ -137,17 +137,12 @@ class ExtractNonSSFData(ExtractStagingData):
                     continue
 
                 # Check if the file is already in the processed folder
-                try:
-                    processed_files = [
-                        file.path
-                        for file in self.dbutils.fs.ls(processed_folder)
-                        if file.name.startswith(file_name)
-                    ]
-                except OSError:
-                    logger.exception(
-                        f"Error accessing processed folder {processed_folder}"
-                    )
-                    continue
+                # Let any OSError propagate - don't catch and continue
+                processed_files = [
+                    file.path
+                    for file in self.dbutils.fs.ls(processed_folder)
+                    if file.name.startswith(file_name)
+                ]
 
                 if not processed_files:
                     logger.error(
@@ -179,9 +174,12 @@ class ExtractNonSSFData(ExtractStagingData):
                                 f"folder after deadline."
                             ),
                         )
-                    except OSError:
-                        logger.exception(
-                            f"Failed to copy {latest_processed_file} to {target_file}"
+                    except OSError as e:
+                        error_msg = f"Failed to copy {latest_processed_file} to {target_file}: {str(e)}"
+                        logger.error(error_msg)
+                        raise NonSSFExtractionError(
+                            NonSSFStepStatus.RECEIVED,
+                            additional_info=error_msg
                         )
 
         return new_files
@@ -270,134 +268,101 @@ class ExtractNonSSFData(ExtractStagingData):
         ]
 
     def check_deadline_violations(
-    self,
-    files_per_delivery_entity: list[dict[str, str]],
-    log_config: ProcessLogConfig,
-) -> None:
-    """Check for deadline violations for FINOB and NME files.
-
-    Raises error if deadline has passed and expected files are missing.
-
-    Args:
-        files_per_delivery_entity: List of files found
-        log_config: Process log configuration
-
-    Raises:
-        NonSSFExtractionError: If deadline violations are found
-    """
-    current_dt = datetime.now(tz=timezone.utc)
-
-    # Get expected files for FINOB and NME from metadata with their deadlines
-    finob_nme_expected = (
-        self.meta_data.filter(
-            self.meta_data.SourceSystem.isin(["finob", "nme"])  # Use lowercase
-        )
-        .select("SourceFileName", "SourceSystem", "Deadline")
-        .collect()
-    )
-
-    # Get delivered files for FINOB and NME
-    delivered_files = {
-        Path(file["file_name"]).stem: file["source_system"].lower()
-        for file in files_per_delivery_entity
-        if file["source_system"].lower() in ["finob", "nme"]
-    }
-
-    # Check for missing files
-    missing_files = []
-    for row in finob_nme_expected:
-        expected_file = row["SourceFileName"]
-        source_system = row["SourceSystem"]
-        deadline = row["Deadline"]
-
-        if expected_file not in delivered_files and deadline:
-            # Convert deadline to datetime
-            if isinstance(deadline, str):
-                deadline_dt = datetime.strptime(deadline, "%Y-%m-%d").replace(
-                    tzinfo=timezone.utc
-                )
-            else:
-                deadline_dt = datetime.combine(
-                    deadline, datetime.min.time()
-                ).replace(tzinfo=timezone.utc)
-
-            # Only report violation if deadline has passed
-            if current_dt >= deadline_dt:
-                deadline_str = deadline_dt.strftime("%Y-%m-%d %H:%M:%S UTC")
-                missing_files.append(
-                    {
-                        "file": f"{source_system}/{expected_file}",
-                        "deadline": deadline_str,
-                        "source_system": source_system,
-                    }
-                )
-                logger.error(
-                    f"Deadline passed ({deadline_str}): Missing expected file "
-                    f"{expected_file} from {source_system}"
-                )
-
-    if missing_files:
-        # First, update metadata for ALL missing files
-        for missing_file_info in missing_files:
-            source_system = missing_file_info["source_system"]
-            file_path = missing_file_info["file"]
-            deadline = missing_file_info["deadline"]
-
-            # Update log metadata with deadline information
-            self.update_log_metadata(
-                source_system=source_system.upper(),
-                key=Path(file_path.split("/")[1]).stem,
-                file_delivery_status=NonSSFStepStatus.RECEIVED,
-                result="ERROR",
-                comment=f"Deadline passed ({deadline}): Missing expected file {file_path.upper()}",
-            )
-
-        # Create error message with all missing files
-        missing_files_list = [
-            f"{mf['file']} (deadline: {mf['deadline']})" for mf in missing_files
-        ]
-        error_msg = (
-            f"Deadline violation: Missing files after deadline - "
-            f"{', '.join(missing_files_list)}"
-        )
-
-        # Now raise the exception with the comprehensive error message
-        # We don't call _append_to_process_log here because it would raise an exception
-        # Instead, we raise the exception directly with all the information
-        raise NonSSFExtractionError(
-            NonSSFStepStatus.RECEIVED, additional_info=error_msg
-        )
-
-    def _append_to_process_log(
         self,
-        spark: SparkSession,
-        run_month: str,
-        record: dict,
-        source_system: str,
-        comments: str,
-        status: str = "Completed",
-        file_delivery_status: NonSSFStepStatus = NonSSFStepStatus.COMPLETED,
+        files_per_delivery_entity: list[dict[str, str]],
+        log_config: ProcessLogConfig,  # noqa: ARG002
     ) -> None:
-        """Helper method to append to process log."""
-        record["Status"] = status
-        record["Comments"] = comments
-        record["SourceSystem"] = source_system
-        write_to_log(
-            spark=spark,
-            run_month=run_month,
-            record=dict(record),
-            log_table="process_log",
-        )
-        if status == "Failed":
-            # Overall process should be set to failed as well
-            record["SourceSystem"] = ""
-            write_to_log(
-                spark=spark,
-                run_month=run_month,
-                record=dict(record),
-                log_table="process_log",
+        """Check for deadline violations for FINOB and NME files.
+
+        Raises error if deadline has passed and expected files are missing.
+
+        Args:
+            files_per_delivery_entity: List of files found
+            log_config: Process log configuration
+
+        Raises:
+            NonSSFExtractionError: If deadline violations are found
+        """
+        current_dt = datetime.now(tz=timezone.utc)
+
+        # Get expected files for FINOB and NME from metadata with their deadlines
+        finob_nme_expected = (
+            self.meta_data.filter(
+                self.meta_data.SourceSystem.isin(["finob", "nme"])  # Use lowercase
             )
-            raise NonSSFExtractionError(file_delivery_status, additional_info=comments)
+            .select("SourceFileName", "SourceSystem", "Deadline")
+            .collect()
+        )
+
+        # Get delivered files for FINOB and NME
+        delivered_files = {
+            Path(file["file_name"]).stem: file["source_system"].lower()
+            for file in files_per_delivery_entity
+            if file["source_system"].lower() in ["finob", "nme"]
+        }
+
+        # Check for missing files
+        missing_files = []
+        for row in finob_nme_expected:
+            expected_file = row["SourceFileName"]
+            source_system = row["SourceSystem"]
+            deadline = row["Deadline"]
+
+            if expected_file not in delivered_files and deadline:
+                # Convert deadline to datetime
+                if isinstance(deadline, str):
+                    deadline_dt = datetime.strptime(deadline, "%Y-%m-%d").replace(
+                        tzinfo=timezone.utc
+                    )
+                else:
+                    deadline_dt = datetime.combine(
+                        deadline, datetime.min.time()
+                    ).replace(tzinfo=timezone.utc)
+
+                # Only report violation if deadline has passed
+                if current_dt >= deadline_dt:
+                    deadline_str = deadline_dt.strftime("%Y-%m-%d %H:%M:%S UTC")
+                    missing_files.append(
+                        {
+                            "file": f"{source_system}/{expected_file}",
+                            "deadline": deadline_str,
+                            "source_system": source_system,
+                        }
+                    )
+                    logger.error(
+                        f"Deadline passed ({deadline_str}): Missing expected file "
+                        f"{expected_file} from {source_system}"
+                    )
+
+        if missing_files:
+            # First, update metadata for ALL missing files
+            for missing_file_info in missing_files:
+                source_system = missing_file_info["source_system"]
+                file_path = missing_file_info["file"]
+                deadline = missing_file_info["deadline"]
+
+                # Update log metadata with deadline information
+                self.update_log_metadata(
+                    source_system=source_system.upper(),
+                    key=Path(file_path.split("/")[1]).stem,
+                    file_delivery_status=NonSSFStepStatus.RECEIVED,
+                    result="ERROR",
+                    comment=f"Deadline passed ({deadline}): Missing expected file {file_path.upper()}",
+                )
+
+            # Create error message with all missing files
+            missing_files_list = [
+                f"{mf['file']} (deadline: {mf['deadline']})" for mf in missing_files
+            ]
+            error_msg = (
+                f"Deadline violation: Missing files after deadline - "
+                f"{', '.join(missing_files_list)}"
+            )
+
+            # Now raise the exception with the comprehensive error message
+            raise NonSSFExtractionError(
+                NonSSFStepStatus.RECEIVED, additional_info=error_msg
+            )
 
     def get_deadline_from_metadata(
         self, source_system: str, file_name: str
