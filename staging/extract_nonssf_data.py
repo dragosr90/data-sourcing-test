@@ -6,7 +6,6 @@ from pyspark.sql import DataFrame
 from pyspark.sql.functions import col
 
 from src.config.exceptions import NonSSFExtractionError
-from src.config.process import ProcessLogConfig
 from src.staging.extract_base import ExtractStagingData
 from src.staging.status import NonSSFStepStatus
 from src.utils.export_parquet import export_to_parquet
@@ -176,10 +175,10 @@ class ExtractNonSSFData(ExtractStagingData):
                         )
                     except OSError as e:
                         error_msg = f"Failed to copy {latest_processed_file} to {target_file}: {e!s}"  # noqa: E501
-                        logger.error(error_msg)
+                        logger.exception(error_msg)
                         raise NonSSFExtractionError(
                             NonSSFStepStatus.RECEIVED, additional_info=error_msg
-                        )
+                        ) from e
 
         return new_files
 
@@ -269,7 +268,6 @@ class ExtractNonSSFData(ExtractStagingData):
     def check_deadline_violations(
         self,
         files_per_delivery_entity: list[dict[str, str]],
-        log_config: ProcessLogConfig,  # noqa: ARG002
     ) -> None:
         """Check for deadline violations for FINOB and NME files.
 
@@ -277,7 +275,6 @@ class ExtractNonSSFData(ExtractStagingData):
 
         Args:
             files_per_delivery_entity: List of files found
-            log_config: Process log configuration
 
         Raises:
             NonSSFExtractionError: If deadline violations are found
