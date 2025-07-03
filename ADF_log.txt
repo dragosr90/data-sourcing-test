@@ -1,4 +1,154 @@
-2025-07-01 06:34:29 [ERROR] write_to_log:  Error writing to process log table log_/Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/scripts/nonssf_staging_process.py.process_log
+[PARSE_SYNTAX_ERROR] Syntax error at or near '/'. SQLSTATE: 42601
+---------------------------------------------------------------------------
+ParseException                            Traceback (most recent call last)
+File ~/.ipykernel/22385/command--1-2425712240:8
+      5 del sys
+      7 with open(filename, "rb") as f:
+----> 8   exec(compile(f.read(), filename, 'exec'))
+
+File /Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/scripts/nonssf_staging_process.py:228
+    226 run_month, *run_id_list = sys.argv
+    227 run_id = 1 if not run_id_list else int(run_id_list[0])
+--> 228 non_ssf_load(spark, run_month, run_id)
+
+File /Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/scripts/nonssf_staging_process.py:63, in non_ssf_load(spark, run_month, run_id)
+     61 extraction = ExtractNonSSFData(spark, run_month=run_month)
+     62 # Get all files from basel-nonssf-landing container and place static data
+---> 63 files_per_delivery_entity = extraction.get_all_files()
+     64 if not files_per_delivery_entity:
+     65     logger.error("No files found in basel-nonssf-landing container. ")
+
+File /Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/src/staging/extract_nonssf_data.py:151, in ExtractNonSSFData.get_all_files(self)
+    143 for subfolder in ["NME", "FINOB", "LRD_STATIC"]:
+    144     all_files[subfolder] = [
+    145         p.path
+    146         for p in self.dbutils.fs.ls(f"{self.source_container_url}/{subfolder}")
+    147         if (not p.isDir() or p.name.endswith(".parquet"))
+    148     ]
+    149     expected_files = [
+    150         row["SourceFileName"]
+--> 151         for row in self.meta_data.select("SourceFileName").collect()
+    152     ]
+    153     for file in all_files[subfolder]:
+    154         # Check if the file has a matching record in the metadata
+    155         if Path(file).stem not in expected_files:
+
+File /databricks/spark/python/pyspark/sql/connect/dataframe.py:1892, in DataFrame.collect(self)
+   1891 def collect(self) -> List[Row]:
+-> 1892     table, schema = self._to_table()
+   1894     # not all datatypes are supported in arrow based collect
+   1895     # here always verify the schema by from_arrow_schema
+   1896     schema2 = from_arrow_schema(table.schema, prefer_timestamp_ntz=True)
+
+File /databricks/spark/python/pyspark/sql/connect/dataframe.py:1971, in DataFrame._to_table(self)
+   1969 def _to_table(self) -> Tuple["pa.Table", Optional[StructType]]:
+   1970     query = self._plan.to_proto(self._session.client)
+-> 1971     table, schema, self._execution_info = self._session.client.to_table(
+   1972         query, self._plan.observations
+   1973     )
+   1974     assert table is not None
+   1975     return (table, schema)
+
+File /databricks/spark/python/pyspark/sql/connect/client/core.py:1014, in SparkConnectClient.to_table(self, plan, observations)
+   1012 req = self._execute_plan_request_with_metadata()
+   1013 req.plan.CopyFrom(plan)
+-> 1014 table, schema, metrics, observed_metrics, _ = self._execute_and_fetch(req, observations)
+   1016 # Create a query execution object.
+   1017 ei = ExecutionInfo(metrics, observed_metrics)
+
+File /databricks/spark/python/pyspark/sql/connect/client/core.py:1761, in SparkConnectClient._execute_and_fetch(self, req, observations, extra_request_metadata, self_destruct)
+   1758 properties: Dict[str, Any] = {}
+   1760 with Progress(handlers=self._progress_handlers, operation_id=req.operation_id) as progress:
+-> 1761     for response in self._execute_and_fetch_as_iterator(
+   1762         req, observations, extra_request_metadata or [], progress=progress
+   1763     ):
+   1764         if isinstance(response, StructType):
+   1765             schema = response
+
+File /databricks/spark/python/pyspark/sql/connect/client/core.py:1737, in SparkConnectClient._execute_and_fetch_as_iterator(self, req, observations, extra_request_metadata, progress)
+   1735     raise kb
+   1736 except Exception as error:
+-> 1737     self._handle_error(error)
+
+File /databricks/spark/python/pyspark/sql/connect/client/core.py:2053, in SparkConnectClient._handle_error(self, error)
+   2051 self.thread_local.inside_error_handling = True
+   2052 if isinstance(error, grpc.RpcError):
+-> 2053     self._handle_rpc_error(error)
+   2054 elif isinstance(error, ValueError):
+   2055     if "Cannot invoke RPC" in str(error) and "closed" in str(error):
+
+File /databricks/spark/python/pyspark/sql/connect/client/core.py:2162, in SparkConnectClient._handle_rpc_error(self, rpc_error)
+   2148                 raise SparkConnectGrpcException(
+   2149                     "Python versions in the Spark Connect client and server are different. "
+   2150                     "To execute user-defined functions, client and server should have the "
+   (...)
+   2158                         "sqlState", default=SparkConnectGrpcException.CLIENT_UNEXPECTED_MISSING_SQL_STATE),
+   2159                 ) from None
+   2160             # END-EDGE
+-> 2162             raise convert_exception(
+   2163                 info,
+   2164                 status.message,
+   2165                 self._fetch_enriched_error(info),
+   2166                 self._display_server_stack_trace(),
+   2167             ) from None
+   2169     raise SparkConnectGrpcException(
+   2170         message=status.message,
+   2171         sql_state=SparkConnectGrpcException.CLIENT_UNEXPECTED_MISSING_SQL_STATE,  # EDGE
+   2172     ) from None
+   2173 else:
+
+ParseException: 
+[PARSE_SYNTAX_ERROR] Syntax error at or near '/'. SQLSTATE: 42601 (line 1, pos 16)
+
+== SQL ==
+REDACTED_LOCAL_PART@nl.abnamro.com/bsrc-etl/scripts/nonssf_staging_process.py.metadata_nonssf
+----------------^^^
+
+
+JVM stacktrace:
+org.apache.spark.sql.catalyst.parser.ParseException
+	at org.apache.spark.sql.catalyst.parser.ParseException.withCommand(parsers.scala:429)
+	at org.apache.spark.sql.catalyst.parser.AbstractParser.parse(parsers.scala:117)
+	at org.apache.spark.sql.execution.SparkSqlParser.parse(SparkSqlParser.scala:140)
+	at org.apache.spark.sql.catalyst.parser.AbstractSqlParser.parseTableIdentifier(AbstractSqlParser.scala:69)
+	at com.databricks.sql.parser.DatabricksSqlParser.parseTableIdentifier(DatabricksSqlParser.scala:56)
+	at org.apache.spark.sql.connect.planner.SparkConnectPlanner.transformReadRel(SparkConnectPlanner.scala:1395)
+	at org.apache.spark.sql.connect.planner.SparkConnectPlanner.$anonfun$transformRelation$1(SparkConnectPlanner.scala:176)
+	at org.apache.spark.sql.connect.service.SessionHolder.$anonfun$usePlanCache$3(SessionHolder.scala:529)
+	at scala.Option.getOrElse(Option.scala:189)
+	at org.apache.spark.sql.connect.service.SessionHolder.usePlanCache(SessionHolder.scala:528)
+	at org.apache.spark.sql.connect.planner.SparkConnectPlanner.transformRelation(SparkConnectPlanner.scala:171)
+	at org.apache.spark.sql.connect.planner.SparkConnectPlanner.transformRelation(SparkConnectPlanner.scala:158)
+	at org.apache.spark.sql.connect.planner.SparkConnectPlanner.transformProject(SparkConnectPlanner.scala:1541)
+	at org.apache.spark.sql.connect.planner.SparkConnectPlanner.$anonfun$transformRelation$1(SparkConnectPlanner.scala:177)
+	at org.apache.spark.sql.connect.service.SessionHolder.$anonfun$usePlanCache$3(SessionHolder.scala:529)
+	at scala.Option.getOrElse(Option.scala:189)
+	at org.apache.spark.sql.connect.service.SessionHolder.usePlanCache(SessionHolder.scala:528)
+	at org.apache.spark.sql.connect.planner.SparkConnectPlanner.transformRelation(SparkConnectPlanner.scala:171)
+	at org.apache.spark.sql.connect.execution.SparkConnectPlanExecution.handlePlan(SparkConnectPlanExecution.scala:91)
+	at org.apache.spark.sql.connect.execution.ExecuteThreadRunner.handlePlan(ExecuteThreadRunner.scala:356)
+	at org.apache.spark.sql.connect.execution.ExecuteThreadRunner.$anonfun$executeInternal$1(ExecuteThreadRunner.scala:281)
+	at org.apache.spark.sql.connect.execution.ExecuteThreadRunner.$anonfun$executeInternal$1$adapted(ExecuteThreadRunner.scala:210)
+	at org.apache.spark.sql.connect.service.SessionHolder.$anonfun$withSession$2(SessionHolder.scala:392)
+	at org.apache.spark.sql.SparkSession.withActive(SparkSession.scala:1210)
+	at org.apache.spark.sql.connect.service.SessionHolder.$anonfun$withSession$1(SessionHolder.scala:392)
+	at org.apache.spark.JobArtifactSet$.withActiveJobArtifactState(JobArtifactSet.scala:97)
+	at org.apache.spark.sql.artifact.ArtifactManager.$anonfun$withResources$1(ArtifactManager.scala:84)
+	at org.apache.spark.util.Utils$.withContextClassLoader(Utils.scala:240)
+	at org.apache.spark.sql.artifact.ArtifactManager.withResources(ArtifactManager.scala:83)
+	at org.apache.spark.sql.connect.service.SessionHolder.withSession(SessionHolder.scala:391)
+	at org.apache.spark.sql.connect.execution.ExecuteThreadRunner.executeInternal(ExecuteThreadRunner.scala:210)
+	at org.apache.spark.sql.connect.execution.ExecuteThreadRunner.org$apache$spark$sql$connect$execution$ExecuteThreadRunner$$execute(ExecuteThreadRunner.scala:125)
+	at org.apache.spark.sql.connect.execution.ExecuteThreadRunner$ExecutionThread.$anonfun$run$2(ExecuteThreadRunner.scala:592)
+	at scala.runtime.java8.JFunction0$mcV$sp.apply(JFunction0$mcV$sp.java:23)
+	at com.databricks.unity.UCSEphemeralState$Handle.runWith(UCSEphemeralState.scala:51)
+	at com.databricks.unity.HandleImpl.runWith(UCSHandle.scala:104)
+	at com.databricks.unity.HandleImpl.$anonfun$runWithAndClose$1(UCSHandle.scala:109)
+	at scala.util.Using$.resource(Using.scala:269)
+	at com.databricks.unity.HandleImpl.runWithAndClose(UCSHandle.scala:108)
+	at org.apache.spark.sql.connect.execution.ExecuteThreadRunner$ExecutionThread.run(ExecuteThreadRunner.scala:592)
+Workload failed, see run output for details
+2025-07-03 09:08:59 [ERROR] write_to_log:  Error writing to process log table log_/Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/scripts/nonssf_staging_process.py.process_log
 Traceback (most recent call last):
   File "/Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/src/utils/table_logging.py", line 33, in write_to_log
     log_entry_df.write.mode("append").saveAsTable(
