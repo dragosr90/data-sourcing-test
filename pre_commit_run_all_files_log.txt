@@ -1,4 +1,4 @@
-PS C:\Users\B25712\bsrc-etl-venv\bsrc-etl> pre-commit run --all-files
+(bsrc-etl-venv) PS C:\Users\B25712\bsrc-etl-venv\bsrc-etl> pre-commit run --all-files
 ruff lint................................................................Failed
 - hook id: ruff
 - exit code: 1
@@ -12,7 +12,48 @@ test\staging\test_extract_non_ssf_data.py:594:5: F841 Local variable `log_config
 596 |         run_month=run_month,
     |
     = help: Remove assignment to unused variable `log_config`
+595 |         spark=spark_session,
+596 |         run_month=run_month,
+    |
+    = help: Remove assignment to unused variable `log_config`
 
+test\staging\test_extract_non_ssf_data.py:714:5: F841 Local variable `log_config` is assigned to but never used
+    |
+713 |     # Create log config
+714 |     log_config = ProcessLogConfig(
+    |     ^^^^^^^^^^ F841
+595 |         spark=spark_session,
+596 |         run_month=run_month,
+    |
+    = help: Remove assignment to unused variable `log_config`
+
+test\staging\test_extract_non_ssf_data.py:714:5: F841 Local variable `log_config` is assigned to but never used
+    |
+713 |     # Create log config
+714 |     log_config = ProcessLogConfig(
+595 |         spark=spark_session,
+596 |         run_month=run_month,
+    |
+    = help: Remove assignment to unused variable `log_config`
+
+test\staging\test_extract_non_ssf_data.py:714:5: F841 Local variable `log_config` is assigned to but never used
+    |
+595 |         spark=spark_session,
+596 |         run_month=run_month,
+    |
+    = help: Remove assignment to unused variable `log_config`
+
+test\staging\test_extract_non_ssf_data.py:714:5: F841 Local variable `log_config` is assigned to but never used
+596 |         run_month=run_month,
+    |
+    = help: Remove assignment to unused variable `log_config`
+
+test\staging\test_extract_non_ssf_data.py:714:5: F841 Local variable `log_config` is assigned to but never used
+    = help: Remove assignment to unused variable `log_config`
+
+test\staging\test_extract_non_ssf_data.py:714:5: F841 Local variable `log_config` is assigned to but never used
+
+test\staging\test_extract_non_ssf_data.py:714:5: F841 Local variable `log_config` is assigned to but never used
 test\staging\test_extract_non_ssf_data.py:714:5: F841 Local variable `log_config` is assigned to but never used
     |
 713 |     # Create log config
