@@ -1,0 +1,86 @@
+description: Integration dataset for AAB Legal Entity data from GGOP source system
+
+target: int_{{ RUN_MONTH }}.aab_legal_entity
+
+sources:
+  - alias: ENTITIES
+    columns:
+    - LegacyID
+    - Name
+    - CountryCode
+    - LegalEntityType
+    - ReportingEntityLegacyID
+    - ConsolidationMethodName
+    - CurrencyCode
+    - Basel2SecurizationVehicle
+    - ReportingEntityCompanyID
+    - GlobalID
+    - Status
+    - BankLicense
+    - AABGlobalIndustryCode
+    - HierarchicalLevel
+    - LeavingGroupDate
+    filter: |
+      (TO_DATE(SUBSTR(LTRIM(LEAVINGGROUPDATE),1,4),'YYYY') >= last_day(to_date('{{ RUN_MONTH }}','yyyyMM')) 
+      OR LEAVINGGROUPDATE IS NULL OR TRIM(LEAVINGGROUPDATE) = '')
+    source: stg_202412.dial_ggop_exp_entities
+
+transformations:
+  - add_variables:
+      var_LE_TYPE: |
+        CASE 
+          WHEN UPPER(ENTITIES.Status) IN ('ABN AMRO BRANCH', 'BRANCH') THEN 'AAB_BRANCH'
+          WHEN UPPER(TRIM(ENTITIES.Basel2SecurizationVehicle)) IN ('YES', 'TRUE') THEN 'SPESEC'
+          ELSE 'AAB_SUBSID'
+        END
+
+expressions:
+  LegacyId: LPAD(ENTITIES.LegacyID, 5, '0')
+  Name: ENTITIES.Name
+  CountryCode: ENTITIES.CountryCode
+  LegalEntityType: ENTITIES.LegalEntityType
+  ReportingEntityLegacyID: LPAD(ENTITIES.ReportingEntityLegacyID, 5, '0')
+  ConsolidationMethodName: ENTITIES.ConsolidationMethodName
+  CurrencyCode: ENTITIES.CurrencyCode
+  Basel2SecurizationVehicle: |
+    CASE UPPER(TRIM(ENTITIES.Basel2SecurizationVehicle))
+      WHEN 'TRUE' THEN 'YES'
+      WHEN 'FALSE' THEN 'NO'
+      ELSE ''
+    END
+  ReportingEntityCompanyID: ENTITIES.ReportingEntityCompanyID
+  GlobalBcId: ENTITIES.GlobalID
+  Status: ENTITIES.Status
+  var_LeTYPE: var_LE_TYPE
+  BaselCounterpartyType: |
+    CASE 
+      WHEN UPPER(ENTITIES.BankLicense) = 'YES' THEN
+        CASE 
+          WHEN var_LE_TYPE IN ('AAB_SUBSID', 'AAB_BRANCH') THEN 'CI'
+          ELSE 'CORP'
+        END
+      WHEN var_LE_TYPE = 'SPESEC' THEN 'SPESEC'
+      ELSE 'CORP'
+    END
+  AABGlobalIndustryCode: |
+    CASE 
+      WHEN TRIM(ENTITIES.AABGlobalIndustryCode) = '' OR ENTITIES.AABGlobalIndustryCode IS NULL 
+      THEN '9999'
+      ELSE ENTITIES.AABGlobalIndustryCode
+    END
+  ReportingEntity: |
+    CASE 
+      WHEN UPPER(ENTITIES.HierarchicalLevel) IN ('FBNK_NL_CENTRAL', 'FBNK_BE_CENTRAL') 
+      THEN SUBSTR(TRIM(ENTITIES.ReportingEntityLegacyID), -4, 4)
+      ELSE CAST(ENTITIES.ReportingEntityCompanyID AS STRING)
+    END
+  LeType: var_LE_TYPE
+  ManagingEntity: "'GF'"
+  ConsolidatedInd: |
+    CASE 
+      WHEN UPPER(ENTITIES.Status) IN ('ABN AMRO BRANCH', 'BRANCH') THEN 'Y'
+      WHEN UPPER(TRIM(ENTITIES.Basel2SecurizationVehicle)) = 'YES' THEN 'N'
+      ELSE 'Y'
+    END
+
+drop_duplicates: true
