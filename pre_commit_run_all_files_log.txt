@@ -1,247 +1,37 @@
-(bsrc-etl-venv) PS C:\Users\B25712\bsrc-etl-venv\bsrc-etl> pytest test/staging/test_extract_non_ssf_data.py
-========================================================================================== test session starts ===========================================================================================
-platform win32 -- Python 3.10.11, pytest-8.3.3, pluggy-1.5.0
-rootdir: C:\Users\B25712\bsrc-etl-venv\bsrc-etl
-configfile: pyproject.toml
-plugins: cov-6.0.0, mock-3.14.0
-collected 6 items
+(bsrc-etl-venv) PS C:\Users\B25712\bsrc-etl-venv\bsrc-etl> pre-commit run --all-files
+ruff lint................................................................Failed
+- hook id: ruff
+- exit code: 1
 
-test\staging\test_extract_non_ssf_data.py ....F.                                                                                                                                                    [100%]
+src\staging\extract_nonssf_data.py:179:25: TRY400 Use `logging.exception` instead of `logging.error`
+    |
+177 |                     except OSError as e:
+178 |                         error_msg = f"Failed to copy {latest_processed_file} to {target_file}: {e!s}"  # noqa: E501
+179 |                         logger.error(error_msg)
+    |                         ^^^^^^^^^^^^^^^^^^^^^^^ TRY400
+180 |                         raise NonSSFExtractionError(
+181 |                             NonSSFStepStatus.RECEIVED, additional_info=error_msg
+    |
+    = help: Replace with `exception`
 
-================================================================================================ FAILURES ================================================================================================ 
-____________________________________________________________________ test_check_deadline_violations_with_dates[202503-test-container] ____________________________________________________________________ 
+src\staging\extract_nonssf_data.py:180:25: B904 Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling       
+    |
+178 |                           error_msg = f"Failed to copy {latest_processed_file} to {target_file}: {e!s}"  # noqa: E501
+179 |                           logger.error(error_msg)
+180 |                           raise NonSSFExtractionError(
+    |  _________________________^
+181 | |                             NonSSFStepStatus.RECEIVED, additional_info=error_msg
+182 | |                         )
+    | |_________________________^ B904
+183 |
+184 |           return new_files
+    |
 
-spark_session = <pyspark.sql.session.SparkSession object at 0x00000160363D70A0>, mocker = <pytest_mock.plugin.MockerFixture object at 0x0000016036689540>, run_month = '202503'
-source_container = 'test-container', caplog = <_pytest.logging.LogCaptureFixture object at 0x0000016036728760>
+Found 2 errors.
+No fixes available (1 hidden fix can be enabled with the `--unsafe-fixes` option).
+All checks passed!
+All checks passed!
+All checks passed!
 
-    @pytest.mark.parametrize(
-        ("run_month", "source_container"),
-        [("202503", "test-container")],
-    )
-    def test_check_deadline_violations_with_dates(
-        spark_session,
-        mocker,
-        run_month,
-        source_container,
-        caplog,
-    ):
-        """Test check_deadline_violations includes deadline dates in error messages."""
-        from datetime import date
-
-        # Create mock metadata DataFrame with deadline information
-        schema_meta = [
-            "SourceSystem",
-            "SourceFileName",
-            "SourceFileFormat",
-            "SourceFileDelimiter",
-            "StgTableName",
-            "FileDeliveryStep",
-            "FileDeliveryStatus",
-            "Deadline",
-        ]
-
-        # Set deadline to yesterday to ensure it's passed
-        yesterday = date.today() - timedelta(days=1)  # noqa: DTZ011
-
-        mock_meta = spark_session.createDataFrame(
-            [
-                (
-                    "finob",
-                    "MISSING_FINOB_FILE",
-                    ".csv",
-                    ",",
-                    "test_finob",
-                    0,
-                    "Expected",
-                    yesterday,
-                ),
-                (
-                    "nme",
-                    "MISSING_NME_FILE",
-                    ".parquet",
-                    ",",
-                    "test_nme",
-                    0,
-                    "Expected",
-                    yesterday,
-                ),
-            ],
-            schema=schema_meta,
-        )
-
-        # Create empty log DataFrame
-        schema_log = StructType(
-            [
-                StructField("SourceSystem", StringType(), True),  # noqa: FBT003
-                StructField("SourceFileName", StringType(), True),  # noqa: FBT003
-                StructField("DeliveryNumber", IntegerType(), True),  # noqa: FBT003
-                StructField("FileDeliveryStep", IntegerType(), True),  # noqa: FBT003
-                StructField("FileDeliveryStatus", StringType(), True),  # noqa: FBT003
-                StructField("Result", StringType(), True),  # noqa: FBT003
-                StructField("LastUpdatedDateTimestamp", TimestampType(), True),  # noqa: FBT003
-                StructField("Comment", StringType(), True),  # noqa: FBT003
-            ]
-        )
-        mock_log = spark_session.createDataFrame([], schema=schema_log)
-
-        # Mock spark.read
-        mock_read = mocker.patch("pyspark.sql.SparkSession.read", autospec=True)
-        mock_read.table.side_effect = [mock_meta, mock_log]
-
-        # Create extraction instance
-        extraction = ExtractNonSSFData(
-            spark_session,
-            run_month,
-            source_container=source_container,
-        )
-
-        # Mock write operations
-        mock_save_table = mocker.patch("pyspark.sql.DataFrameWriter.saveAsTable")
-
-        # Create log config
-        log_config = ProcessLogConfig(
-            spark=spark_session,
-            run_month=run_month,
-            record={
-                "RunID": 1,
-                "Timestamp": datetime.now(tz=timezone.utc),
-                "Workflow": "Staging",
-                "Component": "Non-SSF",
-                "Layer": "Staging",
-            },
-        )
-
-        # Empty list of files (no files delivered)
-        files_per_delivery_entity = []
-
-        # Call check_deadline_violations - should raise exception
-        with pytest.raises(NonSSFExtractionError) as exc_info:
-            extraction.check_deadline_violations(files_per_delivery_entity, log_config)
-
-        # Check that the error message includes deadline dates
-        error_msg = str(exc_info.value)
-        assert f"deadline: {yesterday} 00:00:00 UTC" in error_msg
-        assert "Missing files after deadline" in error_msg
-        # Verify both files are mentioned
-        assert "finob/MISSING_FINOB_FILE" in error_msg
-        assert "nme/MISSING_NME_FILE" in error_msg
-
-        # Check log messages include deadline dates
-        assert (
-            f"Deadline passed ({yesterday} 00:00:00 UTC): Missing expected file MISSING_FINOB_FILE from finob"  # noqa: E501
-            in caplog.text
-        )
-        assert (
-            f"Deadline passed ({yesterday} 00:00:00 UTC): Missing expected file MISSING_NME_FILE from nme"  # noqa: E501
-            in caplog.text
-        )
-
-        # Verify update_log_metadata was called with deadline in comment
-        # Check that saveAsTable was called for metadata updates
-        metadata_calls = [
-            call
-            for call in mock_save_table.call_args_list
-            if "metadata_nonssf" in str(call)
-        ]
-        # Due to the exception in _append_to_process_log, only one metadata update completes
->       assert len(metadata_calls) == 1
-E       AssertionError: assert 2 == 1
-E        +  where 2 = len([call('bsrc_d.metadata_202503.metadata_nonssf'), call('bsrc_d.metadata_202503.metadata_nonssf')])
-
-test\staging\test_extract_non_ssf_data.py:637: AssertionError
------------------------------------------------------------------------------------------- Captured stdout call ------------------------------------------------------------------------------------------ 
-2025-07-01 16:02:38 [ERROR] check_deadline_violations:  Deadline passed (2025-06-30 00:00:00 UTC): Missing expected file MISSING_FINOB_FILE from finob
-2025-07-01 16:02:38 [ERROR] check_deadline_violations:  Deadline passed (2025-06-30 00:00:00 UTC): Missing expected file MISSING_FINOB_FILE from finob
-2025-07-01 16:02:38 [ERROR] check_deadline_violations:  Deadline passed (2025-06-30 00:00:00 UTC): Missing expected file MISSING_NME_FILE from nme
-2025-07-01 16:02:38 [ERROR] check_deadline_violations:  Deadline passed (2025-06-30 00:00:00 UTC): Missing expected file MISSING_NME_FILE from nme
-2025-07-01 16:02:38 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for MISSING_FINOB_FILE
-2025-07-01 16:02:38 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for MISSING_FINOB_FILE
-2025-07-01 16:02:39 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for MISSING_NME_FILE
-2025-07-01 16:02:39 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for MISSING_NME_FILE
------------------------------------------------------------------------------------------- Captured stderr call ------------------------------------------------------------------------------------------ 
-
-------------------------------------------------------------------------------------------- Captured log call -------------------------------------------------------------------------------------------- 
-ERROR    betl_src_poc_logger:extract_nonssf_data.py:334 Deadline passed (2025-06-30 00:00:00 UTC): Missing expected file MISSING_FINOB_FILE from finob
-ERROR    betl_src_poc_logger:extract_nonssf_data.py:334 Deadline passed (2025-06-30 00:00:00 UTC): Missing expected file MISSING_NME_FILE from nme
-INFO     betl_src_poc_logger:extract_base.py:205 FileDeliveryStatus: Received / Placed for MISSING_FINOB_FILE
-INFO     betl_src_poc_logger:extract_base.py:205 FileDeliveryStatus: Received / Placed for MISSING_NME_FILE
-============================================================================================ warnings summary ============================================================================================ 
-..\bsrc-etl-venv\lib\site-packages\holidays\deprecations\v1_incompatibility.py:40
-  C:\Users\B25712\bsrc-etl-venv\bsrc-etl-venv\lib\site-packages\holidays\deprecations\v1_incompatibility.py:40: FutureIncompatibilityWarning:
-
-  This is a future version incompatibility warning from Holidays v0.62
-  to inform you about an upcoming change in our API versioning strategy that may affect your
-  project's dependencies. Starting from version 1.0 onwards, we will be following a loose form of
-  Semantic Versioning (SemVer, https://semver.org) to provide clearer communication regarding any
-  potential breaking changes.
-
-  This means that while we strive to maintain backward compatibility, there might be occasional
-  updates that introduce breaking changes to our API. To ensure the stability of your projects,
-  we highly recommend pinning the version of our API that you rely on. You can pin your current
-  holidays v0.x dependency (e.g., holidays==0.62) or limit it (e.g., holidays<1.0) in order to
-  avoid potentially unwanted upgrade to the version 1.0 when it's released (ETA 2025Q1-Q2).
-
-  If you have any questions or concerns regarding this change, please don't hesitate to reach out
-  to us via https://github.com/vacanza/holidays/discussions/1800.
-
-    warnings.warn(
-
--- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
-
----------- coverage: platform win32, python 3.10.11-final-0 ----------
-Name                                            Stmts   Miss  Cover   Missing
------------------------------------------------------------------------------
-src\__init__.py                                     0      0   100%
-src\config\__init__.py                              0      0   100%
-src\config\business_logic.py                       52      0   100%
-src\config\constants.py                             1      0   100%
-src\config\exceptions.py                           21      0   100%
-src\config\process.py                               4      0   100%
-src\config\schema.py                                4      4     0%   3-52
-src\dq\__init__.py                                  0      0   100%
-src\dq\dq_validation.py                           141     88    38%   54-55, 69, 77-78, 88, 176-181, 201-249, 269-286, 323-350, 377-392, 414-486
-src\extract\__init__.py                             0      0   100%
-src\extract\master_data_sql.py                     90     71    21%   31-33, 37-38, 42, 59-88, 109-137, 149-156, 162-164, 188, 222-231, 285-300, 329-356
-src\month_setup\__init__.py                         0      0   100%
-src\month_setup\dial_derive_snapshotdate.py        32     27    16%   12-18, 28-37, 47-50, 69-85
-src\month_setup\metadata_log_tables.py             32     25    22%   23-84, 159, 166-203
-src\month_setup\setup_new_month.py                 13     13     0%   17-84
-src\staging\__init__.py                             0      0   100%
-src\staging\extract_base.py                        65      8    88%   156, 162-164, 304-312
-src\staging\extract_dial_data.py                   65     65     0%   16-360
-src\staging\extract_nonssf_data.py                146     28    81%   133-137, 146-150, 182-183, 216-218, 316, 382-400, 414-435, 466-470
-src\staging\extract_ssf_data.py                   164    164     0%   26-620
-src\staging\status.py                              57      5    91%   18, 53-54, 107, 151
-src\transform\__init__.py                           0      0   100%
-src\transform\table_write_and_comment.py           72     72     0%   14-237
-src\transform\transform_business_logic_sql.py       6      6     0%   6-25
-src\utils\__init__.py                               0      0   100%
-src\utils\alias_util.py                            13     13     0%   10-109
-src\utils\export_parquet.py                        15      6    60%   49-54, 67-68
-src\utils\get_dbutils.py                            2      0   100%
-src\utils\get_env.py                               10      0   100%
-src\utils\logging_util.py                           6      0   100%
-src\utils\parameter_utils.py                       23     13    43%   34, 38-42, 79-84, 105-116
-src\utils\parse_yaml.py                            22     22     0%   11-127
-src\utils\sources_util.py                          52     52     0%   7-218
-src\utils\table_logging.py                         14      0   100%
-src\utils\table_schema.py                           3      3     0%   8-16
-src\utils\transformations_util.py                  17     12    29%   20-25, 39, 51, 65-68
-src\validate\__init__.py                            0      0   100%
-src\validate\base.py                                4      4     0%   4-7
-src\validate\expressions.py                        27     27     0%   15-75
-src\validate\run_all.py                             7      7     0%   12-48
-src\validate\sources.py                            29     29     0%   7-67
-src\validate\transformations.py                   192    192     0%   21-593
-src\validate\validate_sql.py                       54     54     0%   13-130
-src\validate\yaml.py                               18     18     0%   3-34
------------------------------------------------------------------------------
-TOTAL                                            1473   1028    30%
-Coverage HTML written to dir htmlcov
-
-======================================================================================== short test summary info ========================================================================================= 
-FAILED test/staging/test_extract_non_ssf_data.py::test_check_deadline_violations_with_dates[202503-test-container] - AssertionError: assert 2 == 1
-=========================================================================== 1 failed, 5 passed, 1 warning in 110.66s (0:01:50) =========================================================================== 
-SUCCESS: The process with PID 14680 (child process of PID 28468) has been terminated.
-SUCCESS: The process with PID 28468 (child process of PID 6664) has been terminated.
-SUCCESS: The process with PID 6664 (child process of PID 32972) has been terminated.
+ruff format..............................................................Passed
+mypy.....................................................................Passed
