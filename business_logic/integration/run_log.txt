@@ -1,21 +1,37 @@
-2025-07-08 12:27:09 [INFO] validate:  YAML format validated successfully
-2025-07-08 12:27:17 [INFO] validate:  Sources validated successfully
-2025-07-08 12:27:18 [INFO] validate_join:  Joins validated successfully
-2025-07-08 12:27:18 [ERROR] validate_sql_expressions:  Problem with expression(s):
-2025-07-08 12:27:18 [ERROR] validate_sql_expressions:  PD_UCR_STEP1.CreditFacility = FACILITY_WITH_CP_RATINGS.CreditFacility: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `PD_UCR_STEP1`.`CreditFacility` cannot be resolved. Did you mean one of the following? [`PD_UCR_STEP1`.`deliveryentity`, `PD_UCR_STEP1`.`fairid`, `PD_UCR_STEP1`.`bcdbid`, `PD_UCR_STEP1`.`reportingdate`, `PD_UCR_STEP1`.`aacalphacode`]. SQLSTATE: 42703
-PD_UCR_STEP1.CreditFacilitySourceSystemIdentifier = FACILITY_WITH_CP_RATINGS.CreditFacilitySourceSystemIdentifier: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `PD_UCR_STEP1`.`CreditFacilitySourceSystemIdentifier` cannot be resolved. Did you mean one of the following? [`PD_UCR_STEP1`.`counterpartysourcesystemidentifier`, `PD_UCR_STEP1`.`globalcounterpartyidentifier`, `FACILITY_WITH_CP_RATINGS`.`creditfacilitysourcesystemidentifier`, `PD_UCR_STEP1`.`deliveryentity`, `PD_UCR_STEP1`.`pdmarginofconservatism`]. SQLSTATE: 42703
-2025-07-08 12:27:18 [ERROR] validate_sql_expressions:  Problem with expression(s):
-2025-07-08 12:27:18 [ERROR] validate_sql_expressions:  CASE 
+2025-07-08 12:48:06 [INFO] validate:  YAML format validated successfully
+2025-07-08 12:48:14 [INFO] validate:  Sources validated successfully
+2025-07-08 12:48:15 [INFO] validate_join:  Joins validated successfully
+2025-07-08 12:48:15 [INFO] validate_join:  Joins validated successfully
+2025-07-08 12:48:15 [INFO] validate_join:  Joins validated successfully
+2025-07-08 12:48:16 [ERROR] validate_sql_expressions:  Problem with expression(s):
+2025-07-08 12:48:16 [ERROR] validate_sql_expressions:  CASE 
+  WHEN PD_UCR_WITH_FACILITY.UCRStep1 IS NULL 
+    OR (PD_UCR_WITH_FACILITY.UniformCounterpartyRatingDate IS NOT NULL 
+        AND DATEADD(month, 12, PD_UCR_WITH_FACILITY.UniformCounterpartyRatingDate) < PD_UCR_WITH_FACILITY.ReportingDate)
+  THEN 1 ELSE 0 END: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `PD_UCR_WITH_FACILITY`.`UCRStep1` cannot be resolved. Did you mean one of the following? [`OTHER_CP_RATINGS`.`ucrstep1`, `OTHER_CP_RATINGS`.`bcdbid`, `OTHER_CP_RATINGS`.`fairid`, `OTHER_CP_RATINGS`.`ucrcase`, `FACILITY_LINKED_CP`.`ucrstep1`]. SQLSTATE: 42703
+CASE
   WHEN needs_rating = 1 AND other_has_rating = 1
   THEN ROW_NUMBER() OVER (
-    PARTITION BY 
-      PD_UCR_STEP1.CounterpartyID,
-      PD_UCR_STEP1.CounterpartySourceSystemIdentifier,
-      INT_CPXCF.CreditFacility,
-      INT_CPXCF.CreditFacilitySourceSystemIdentifier
-    ORDER BY 
-      FACILITY_WITH_CP_RATINGS.UniformCounterpartyRatingDate DESC
+    PARTITION BY
+      PD_UCR_WITH_FACILITY.CounterpartyID,
+      PD_UCR_WITH_FACILITY.CounterpartySourceSystemIdentifier
+    ORDER BY
+      OTHER_CP_RATINGS.UniformCounterpartyRatingDate DESC
   )
-  ELSE NULL
-END: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `INT_CPXCF`.`CreditFacility` cannot be resolved. Did you mean one of the following? [`PD_UCR_STEP1`.`fairid`, `needs_rating`, `PD_UCR_STEP1`.`bcdbid`, `other_has_rating`, `PD_UCR_STEP1`.`ucrcase`]. SQLSTATE: 42703
-2025-07-08 12:27:24 [INFO] validate_aggregation:  Aggregations validated successfully
+  ELSE NULL END: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `needs_rating` cannot be resolved. Did you mean one of the following? [`other_has_rating`, `OTHER_CP_RATINGS`.`fairid`, `OTHER_CP_RATINGS`.`bcdbid`, `FACILITY_LINKED_CP`.`fairid`, `OTHER_CP_RATINGS`.`ucrcase`]. SQLSTATE: 42703
+2025-07-08 12:48:17 [ERROR] validate_sql_expressions:  Problem with expression(s):
+2025-07-08 12:48:17 [ERROR] validate_sql_expressions:  FIRST(CASE WHEN facility_rank = 1 THEN OTHER_CP_RATINGS.PDModelCode END): [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `PD_UCR_WITH_FACILITY`.`DeliveryEntity` cannot be resolved. Did you mean one of the following? [`OTHER_CP_RATINGS`.`deliveryentity`, `FACILITY_LINKED_CP`.`deliveryentity`, `OTHER_CP_RATINGS`.`fairid`, `FACILITY_LINKED_CP`.`bcdbid`, `OTHER_CP_RATINGS`.`counterpartyid`]. SQLSTATE: 42703
+FIRST(CASE WHEN facility_rank = 1 THEN OTHER_CP_RATINGS.LastPerformingPDModelCode END): [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `PD_UCR_WITH_FACILITY`.`DeliveryEntity` cannot be resolved. Did you mean one of the following? [`OTHER_CP_RATINGS`.`deliveryentity`, `FACILITY_LINKED_CP`.`deliveryentity`, `OTHER_CP_RATINGS`.`fairid`, `FACILITY_LINKED_CP`.`bcdbid`, `OTHER_CP_RATINGS`.`counterpartyid`]. SQLSTATE: 42703
+FIRST(CASE WHEN facility_rank = 1 THEN OTHER_CP_RATINGS.ApprovedUniformCounterpartyRating END): [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `PD_UCR_WITH_FACILITY`.`DeliveryEntity` cannot be resolved. Did you mean one of the following? [`OTHER_CP_RATINGS`.`deliveryentity`, `FACILITY_LINKED_CP`.`deliveryentity`, `OTHER_CP_RATINGS`.`fairid`, `FACILITY_LINKED_CP`.`bcdbid`, `OTHER_CP_RATINGS`.`counterpartyid`]. SQLSTATE: 42703
+FIRST(CASE WHEN facility_rank = 1 THEN OTHER_CP_RATINGS.UCRStep1 END): [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `PD_UCR_WITH_FACILITY`.`DeliveryEntity` cannot be resolved. Did you mean one of the following? [`OTHER_CP_RATINGS`.`deliveryentity`, `FACILITY_LINKED_CP`.`deliveryentity`, `OTHER_CP_RATINGS`.`fairid`, `FACILITY_LINKED_CP`.`bcdbid`, `OTHER_CP_RATINGS`.`counterpartyid`]. SQLSTATE: 42703
+FIRST(CASE WHEN facility_rank = 1 THEN OTHER_CP_RATINGS.ProbabilityOfDefaultBeforeConservatism END): [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `PD_UCR_WITH_FACILITY`.`DeliveryEntity` cannot be resolved. Did you mean one of the following? [`OTHER_CP_RATINGS`.`deliveryentity`, `FACILITY_LINKED_CP`.`deliveryentity`, `OTHER_CP_RATINGS`.`fairid`, `FACILITY_LINKED_CP`.`bcdbid`, `OTHER_CP_RATINGS`.`counterpartyid`]. SQLSTATE: 42703
+FIRST(CASE WHEN facility_rank = 1 THEN OTHER_CP_RATINGS.ProbabilityOfDefault END): [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `PD_UCR_WITH_FACILITY`.`DeliveryEntity` cannot be resolved. Did you mean one of the following? [`OTHER_CP_RATINGS`.`deliveryentity`, `FACILITY_LINKED_CP`.`deliveryentity`, `OTHER_CP_RATINGS`.`fairid`, `FACILITY_LINKED_CP`.`bcdbid`, `OTHER_CP_RATINGS`.`counterpartyid`]. SQLSTATE: 42703
+FIRST(CASE WHEN facility_rank = 1 THEN OTHER_CP_RATINGS.UniformCounterpartyRatingDate END): [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `PD_UCR_WITH_FACILITY`.`DeliveryEntity` cannot be resolved. Did you mean one of the following? [`OTHER_CP_RATINGS`.`deliveryentity`, `FACILITY_LINKED_CP`.`deliveryentity`, `OTHER_CP_RATINGS`.`fairid`, `FACILITY_LINKED_CP`.`bcdbid`, `OTHER_CP_RATINGS`.`counterpartyid`]. SQLSTATE: 42703
+FIRST(CASE WHEN facility_rank = 1 THEN OTHER_CP_RATINGS.UniformCounterpartyRatingExpiryDate END): [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `PD_UCR_WITH_FACILITY`.`DeliveryEntity` cannot be resolved. Did you mean one of the following? [`OTHER_CP_RATINGS`.`deliveryentity`, `FACILITY_LINKED_CP`.`deliveryentity`, `OTHER_CP_RATINGS`.`fairid`, `FACILITY_LINKED_CP`.`bcdbid`, `OTHER_CP_RATINGS`.`counterpartyid`]. SQLSTATE: 42703
+FIRST(CASE WHEN facility_rank = 1 THEN OTHER_CP_RATINGS.PDMarginOfConservatism END): [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `PD_UCR_WITH_FACILITY`.`DeliveryEntity` cannot be resolved. Did you mean one of the following? [`OTHER_CP_RATINGS`.`deliveryentity`, `FACILITY_LINKED_CP`.`deliveryentity`, `OTHER_CP_RATINGS`.`fairid`, `FACILITY_LINKED_CP`.`bcdbid`, `OTHER_CP_RATINGS`.`counterpartyid`]. SQLSTATE: 42703
+FIRST(CASE WHEN facility_rank = 1 THEN OTHER_CP_RATINGS.fairid END): [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `PD_UCR_WITH_FACILITY`.`DeliveryEntity` cannot be resolved. Did you mean one of the following? [`OTHER_CP_RATINGS`.`deliveryentity`, `FACILITY_LINKED_CP`.`deliveryentity`, `OTHER_CP_RATINGS`.`fairid`, `FACILITY_LINKED_CP`.`bcdbid`, `OTHER_CP_RATINGS`.`counterpartyid`]. SQLSTATE: 42703
+FIRST(CASE WHEN facility_rank = 1 THEN OTHER_CP_RATINGS.UniquePDRatingId END): [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `PD_UCR_WITH_FACILITY`.`DeliveryEntity` cannot be resolved. Did you mean one of the following? [`OTHER_CP_RATINGS`.`deliveryentity`, `FACILITY_LINKED_CP`.`deliveryentity`, `OTHER_CP_RATINGS`.`fairid`, `FACILITY_LINKED_CP`.`bcdbid`, `OTHER_CP_RATINGS`.`counterpartyid`]. SQLSTATE: 42703
+FIRST(CASE WHEN facility_rank = 1 THEN OTHER_CP_RATINGS.CounterpartyID END): [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `PD_UCR_WITH_FACILITY`.`DeliveryEntity` cannot be resolved. Did you mean one of the following? [`OTHER_CP_RATINGS`.`deliveryentity`, `FACILITY_LINKED_CP`.`deliveryentity`, `OTHER_CP_RATINGS`.`fairid`, `FACILITY_LINKED_CP`.`bcdbid`, `OTHER_CP_RATINGS`.`counterpartyid`]. SQLSTATE: 42703
+FIRST(CASE WHEN facility_rank = 1 THEN OTHER_CP_RATINGS.CounterpartySourceSystemIdentifier END): [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `PD_UCR_WITH_FACILITY`.`DeliveryEntity` cannot be resolved. Did you mean one of the following? [`OTHER_CP_RATINGS`.`deliveryentity`, `FACILITY_LINKED_CP`.`deliveryentity`, `OTHER_CP_RATINGS`.`fairid`, `FACILITY_LINKED_CP`.`bcdbid`, `OTHER_CP_RATINGS`.`counterpartyid`]. SQLSTATE: 42703
+FIRST(CASE WHEN facility_rank = 1 THEN OTHER_CP_RATINGS.UCRCase END): [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `PD_UCR_WITH_FACILITY`.`DeliveryEntity` cannot be resolved. Did you mean one of the following? [`OTHER_CP_RATINGS`.`deliveryentity`, `FACILITY_LINKED_CP`.`deliveryentity`, `OTHER_CP_RATINGS`.`fairid`, `FACILITY_LINKED_CP`.`bcdbid`, `OTHER_CP_RATINGS`.`counterpartyid`]. SQLSTATE: 42703
+2025-07-08 12:48:17 [ERROR] validate_aggregation:  Issue with aggregated data BEST_RATINGS
