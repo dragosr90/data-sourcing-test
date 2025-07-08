@@ -3,8 +3,14 @@ from functools import reduce
 from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql.functions import col, expr
 
+from src.config.business_logic import BusinessLogicConfig
 from src.utils.logging_util import get_logger
-from src.utils.sources_util import get_required_arguments, get_source
+from src.utils.transformations_util import (
+    get_required_arguments,
+    get_source,
+    get_table_name,
+    get_tf_step,
+)
 
 logger = get_logger()
 
@@ -15,7 +21,7 @@ class GetIntegratedData:
     def __init__(
         self,
         spark: SparkSession,
-        business_logic: dict,
+        business_logic: BusinessLogicConfig,
     ) -> None:
         """
         Args:
@@ -60,7 +66,7 @@ class GetIntegratedData:
         # Get Integrated dataset from sequential list of transformations
         for tf in self.transformations:
             # Get the transformation type and parameters
-            tf_step = next(iter(tf))
+            tf_step = get_tf_step(tf)
             tf_params = tf[tf_step]
             tf_params_req = get_required_arguments(tf, self, tf_step)
 
@@ -116,9 +122,15 @@ class GetIntegratedData:
         elif actual_step == "filter":
             result = self.filter(transformed_data, **tf_params)
         elif actual_step == "union":
-            data_union_keys = list(tf_params["column_mapping"].keys())[1:]
-            union_dataframes = [data_dict[k] for k in data_union_keys]
-            result = self.union(transformed_data, union_dataframes, **tf_params)
+            union_dataframes = [
+                data_dict[
+                    get_table_name(union_key)
+                    if isinstance(union_key, dict)
+                    else union_key
+                ]
+                for union_key in tf_params["column_mapping"]
+            ]
+            result = self.union(union_dataframes, **tf_params)
         else:
             # This should never happen as we validate transformation types
             logger.warning(f"Unknown transformation type: {tf_step}")
@@ -240,34 +252,57 @@ class GetIntegratedData:
 
     @staticmethod
     def union(
-        data: DataFrame,
         data_union: list[DataFrame],
         alias: str,
-        column_mapping: dict[str, dict[str, str]],
+        column_mapping: list[str | dict[str, dict[str, str]]],
+        *,
+        allow_missing_columns: bool = False,
     ) -> DataFrame:
-        """Update input data dictionary, with unioned datasets.
+        """Perform a union on a list of DataFrames with optional column mapping.
+
+        This method unions multiple DataFrames, optionally renaming or mapping
+        columns based on the provided `column_mapping`. If `allow_missing_columns`
+        is set to True, missing columns in some DataFrames will be filled with null
+        values.
 
         Args:
-            data_dict (dict[str, DataFrame]): Input sources as dictionary of DataFrames.
-            unions (dict[str, dict[str, dict[str, str]]): Nested dictionary with
-                unions configurations
+            data_union (list[DataFrame]): A list of DataFrames to be unioned.
+            alias (str): The alias for the resulting unioned DataFrame.
+            column_mapping (list[str | dict[str, dict[str, str]]]): A list where
+                each element corresponds to a DataFrame in `data_union`. Each
+                element can either be:
+                - A string (indicating no column mapping for the corresponding
+                  DataFrame).
+                - A dictionary where the key is the table name and the value is
+                  another dictionary mapping column names to their expressions
+                  (used for renaming or transforming columns).
+            allow_missing_columns (bool, optional): Whether to allow missing
+                columns during the union. Defaults to False.
 
         Returns:
-            dict[str, DataFrame]: Input sources and unioned sources.
+            DataFrame: The resulting unioned DataFrame with the specified alias.
         """
-        keys_unions = list(column_mapping.keys())
-        input_dataframes = [data, *data_union]
-        data_frames = [
-            # 1st union from transformed_data. 2nd one from data_union
-            d.selectExpr(
-                [
-                    f"{col_expr} AS {col_name}"
-                    for col_name, col_expr in column_mapping[k].items()
-                ]
-            )
-            for d, k in zip(input_dataframes, keys_unions, strict=False)
-        ]
-        return reduce(DataFrame.unionAll, data_frames).alias(alias)
+        dataframe_list = []
+        for idx, d in enumerate(data_union):
+            table_map = column_mapping[idx]
+            if isinstance(table_map, dict):
+                table_name = get_table_name(table_map)
+                dataframe_list.append(
+                    d.selectExpr(
+                        [
+                            f"{col_expr} AS {col_name}"
+                            for col_name, col_expr in table_map[table_name].items()
+                        ]
+                    )
+                )
+            elif isinstance(table_map, str):
+                dataframe_list.append(d)
+        return reduce(
+            lambda df1, df2: df1.unionByName(
+                df2, allowMissingColumns=allow_missing_columns
+            ),
+            dataframe_list,
+        ).alias(alias)
 
     @staticmethod
     def filter(
