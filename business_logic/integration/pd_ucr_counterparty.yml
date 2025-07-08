@@ -23,7 +23,6 @@ sources:
     source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_pd_ucr
 
 transformations:
-  # STEP 1: Map each CP to Credit Facility
   - join:
       left_source: PD_UCR_STEP1
       right_source: INT_CPXCF
@@ -33,7 +32,6 @@ transformations:
       how: left
       alias: PD_UCR_WITH_FACILITY
 
-  # STEP 2: For each facility, map all linked CP ratings
   - join:
       left_source: PD_UCR_WITH_FACILITY
       right_source: INT_CPXCF
@@ -43,7 +41,6 @@ transformations:
       how: left
       alias: FACILITY_LINKED_CP
 
-  # STEP 3: Attach ratings of all CPs on the facility
   - join:
       left_source: FACILITY_LINKED_CP
       right_source: OTHER_CP_RATINGS
@@ -52,7 +49,6 @@ transformations:
         - FACILITY_LINKED_CP.ParticipatingCounterpartySourceSystemIdentifier = OTHER_CP_RATINGS.CounterpartySourceSystemIdentifier
       how: left
 
-  # STEP 4: Derive flags
   - add_variables:
       column_mapping:
         needs_rating: >
@@ -81,7 +77,6 @@ transformations:
             )
             ELSE NULL END
 
-  # STEP 5: Aggregate best ratings for CP needing ratings
   - aggregation:
       alias: BEST_RATINGS
       group:
