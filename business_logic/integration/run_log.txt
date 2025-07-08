@@ -1,93 +1,12 @@
-[AMBIGUOUS_REFERENCE] Reference `FACILITY_LINKED_CP`.`ParticipatingCounterparty` is ambiguous, could be: [`FACILITY_LINKED_CP`.`ParticipatingCounterparty`, `FACILITY_LINKED_CP`.`ParticipatingCounterparty`]. SQLSTATE: 42704
-File <command-5672784372380167>, line 1
-----> 1 data = GetIntegratedData(spark, business_logic_dict).get_integrated_data()
-File /Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/src/extract/master_data_sql.py:38, in GetIntegratedData.get_integrated_data(self)
-     36 """Get integrated dataset by reading, filtering, joining and aggregating."""
-     37 data_dict = self.read_source_data()
----> 38 return self.transform_data(data_dict=data_dict)
-File /Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/src/extract/master_data_sql.py:79, in GetIntegratedData.transform_data(self, data_dict)
-     77     transformed_data = data_dict[new_source]
-     78 # Apply the transformation
----> 79 transformed_data = self._apply_transformation(
-     80     tf_step=tf_step,
-     81     tf_params=tf_params_req,
-     82     transformed_data=transformed_data,
-     83     data_dict=data_dict,
-     84 )
-     85 # Add alias to original source data dictionary if specified
-     86 if tf_params.get("alias"):
-File /Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/src/extract/master_data_sql.py:119, in GetIntegratedData._apply_transformation(self, tf_step, tf_params, transformed_data, data_dict)
-    117     result = self.add_variables(transformed_data, **tf_params)
-    118 elif actual_step == "aggregation":
---> 119     result = self.aggregation(transformed_data, **tf_params)
-    120 elif actual_step == "pivot":
-    121     result = self.pivot(transformed_data, **tf_params)
-File /Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/src/extract/master_data_sql.py:189, in GetIntegratedData.aggregation(data, group, column_mapping, alias)
-    166 @staticmethod
-    167 def aggregation(
-    168     data: DataFrame, group: list, column_mapping: dict, alias: str
-    169 ) -> DataFrame:
-    170     """Aggregate Integrated Dataset.
-    171 
-    172     Since columns are aggregated, table aliases will be lost.
-   (...)
-    186         DataFrame: Aggregated integrated dataset
-    187     """
-    188     return (
---> 189         data.groupBy(group)
-    190         .agg(*[expr(v).alias(k) for k, v in column_mapping.items()])
-    191         .alias(alias)
-    192     )
-File /databricks/spark/python/pyspark/sql/connect/dataframe.py:536, in DataFrame.groupBy(self, *cols)
-    534     _cols.append(c)
-    535 elif isinstance(c, str):
---> 536     _cols.append(self[c])
-    537 elif isinstance(c, int) and not isinstance(c, bool):
-    538     if c < 1:
-File /databricks/spark/python/pyspark/sql/connect/dataframe.py:1860, in DataFrame.__getitem__(self, item)
-   1856     from pyspark.sql.connect.types import verify_col_name
-   1858     # Try best to verify the column name with cached schema
-   1859     # If fails, fall back to the server side validation
--> 1860     if not verify_col_name(item, self.schema):
-   1861         self.select(item).isLocal()
-   1863 return self._col(item)
-File /databricks/spark/python/pyspark/sql/connect/dataframe.py:2000, in DataFrame.schema(self)
-   1998 if self._cached_schema is None:
-   1999     query = self._plan.to_proto(self._session.client)
--> 2000     self._cached_schema = self._session.client.schema(query)
-   2001 return copy.deepcopy(self._cached_schema)
-File /databricks/spark/python/pyspark/sql/connect/client/core.py:1268, in SparkConnectClient.schema(self, plan)
-   1266 if logger.isEnabledFor(logging.INFO):
-   1267     logger.info(f"Schema for plan: {self._proto_to_string(plan, True)}")
--> 1268 schema = self._analyze(method="schema", plan=plan).schema
-   1269 assert schema is not None
-   1270 # Server side should populate the struct field which is the schema.
-File /databricks/spark/python/pyspark/sql/connect/client/core.py:1546, in SparkConnectClient._analyze(self, method, **kwargs)
-   1544     raise SparkConnectException("Invalid state during retry exception handling.")
-   1545 except Exception as error:
--> 1546     self._handle_error(error)
-File /databricks/spark/python/pyspark/sql/connect/client/core.py:2053, in SparkConnectClient._handle_error(self, error)
-   2051 self.thread_local.inside_error_handling = True
-   2052 if isinstance(error, grpc.RpcError):
--> 2053     self._handle_rpc_error(error)
-   2054 elif isinstance(error, ValueError):
-   2055     if "Cannot invoke RPC" in str(error) and "closed" in str(error):
-File /databricks/spark/python/pyspark/sql/connect/client/core.py:2162, in SparkConnectClient._handle_rpc_error(self, rpc_error)
-   2148                 raise SparkConnectGrpcException(
-   2149                     "Python versions in the Spark Connect client and server are different. "
-   2150                     "To execute user-defined functions, client and server should have the "
-   (...)
-   2158                         "sqlState", default=SparkConnectGrpcException.CLIENT_UNEXPECTED_MISSING_SQL_STATE),
-   2159                 ) from None
-   2160             # END-EDGE
--> 2162             raise convert_exception(
-   2163                 info,
-   2164                 status.message,
-   2165                 self._fetch_enriched_error(info),
-   2166                 self._display_server_stack_trace(),
-   2167             ) from None
-   2169     raise SparkConnectGrpcException(
-   2170         message=status.message,
-   2171         sql_state=SparkConnectGrpcException.CLIENT_UNEXPECTED_MISSING_SQL_STATE,  # EDGE
-   2172     ) from None
-   2173 else:
+2025-07-08 13:18:54 [INFO] validate:  YAML format validated successfully
+2025-07-08 13:19:00 [INFO] validate:  Sources validated successfully
+2025-07-08 13:19:00 [ERROR] validate_sql_expressions:  Problem with expression(s):
+2025-07-08 13:19:00 [ERROR] validate_sql_expressions:  PD_UCR_STEP1.CounterpartyID = INT_CPXCF.LinkedParticipatingCounterparty: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `INT_CPXCF`.`LinkedParticipatingCounterparty` cannot be resolved. Did you mean one of the following? [`INT_CPXCF`.`reportingdate`, `INT_CPXCF`.`counterpartyrole`, `INT_CPXCF`.`creditfacility`, `INT_CPXCF`.`deliveryentity`, `PD_UCR_STEP1`.`counterpartyid`]. SQLSTATE: 42703
+PD_UCR_STEP1.CounterpartySourceSystemIdentifier = INT_CPXCF.LinkedParticipatingCounterpartySourceSystemIdentifier: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `INT_CPXCF`.`LinkedParticipatingCounterpartySourceSystemIdentifier` cannot be resolved. Did you mean one of the following? [`PD_UCR_STEP1`.`counterpartysourcesystemidentifier`, `INT_CPXCF`.`creditfacilitysourcesystemidentifier`, `INT_CPXCF`.`counterpartyrole`, `PD_UCR_STEP1`.`globalcounterpartyidentifier`, `INT_CPXCF`.`participatingcounterparty as linkedparticipatingcounterparty`]. SQLSTATE: 42703
+2025-07-08 13:19:01 [INFO] validate_join:  Joins validated successfully
+2025-07-08 13:19:01 [ERROR] validate_sql_expressions:  Problem with expression(s):
+2025-07-08 13:19:01 [ERROR] validate_sql_expressions:  FACILITY_LINKED_CP.ParticipatingCounterparty = OTHER_CP_RATINGS.CounterpartyID: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `FACILITY_LINKED_CP`.`ParticipatingCounterparty` cannot be resolved. Did you mean one of the following? [`FACILITY_LINKED_CP`.`counterpartyid`, `FACILITY_LINKED_CP`.`counterpartyrole`, `FACILITY_LINKED_CP`.`reportingdate`, `FACILITY_LINKED_CP`.`aacalphacode`, `FACILITY_LINKED_CP`.`intercompanyindicator`]. SQLSTATE: 42703
+FACILITY_LINKED_CP.ParticipatingCounterpartySourceSystemIdentifier = OTHER_CP_RATINGS.CounterpartySourceSystemIdentifier: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `FACILITY_LINKED_CP`.`ParticipatingCounterpartySourceSystemIdentifier` cannot be resolved. Did you mean one of the following? [`FACILITY_LINKED_CP`.`counterpartysourcesystemidentifier`, `FACILITY_LINKED_CP`.`creditfacilitysourcesystemidentifier`, `FACILITY_LINKED_CP`.`globalcounterpartyidentifier`, `OTHER_CP_RATINGS`.`counterpartysourcesystemidentifier`, `FACILITY_LINKED_CP`.`uniformcounterpartyratingdate`]. SQLSTATE: 42703
+2025-07-08 13:19:01 [INFO] validate_add_variables:  Variables validated successfully
+2025-07-08 13:19:06 [INFO] validate_aggregation:  Aggregations validated successfully
+False
