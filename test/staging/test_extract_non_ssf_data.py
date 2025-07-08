@@ -15,7 +15,6 @@ from pyspark.sql.types import (
 from src.staging.extract_nonssf_data import (
     ExtractNonSSFData,
     NonSSFExtractionError,
-    ProcessLogConfig,
 )
 
 
@@ -590,25 +589,12 @@ def test_check_deadline_violations_with_dates(
     # Mock write operations
     mock_save_table = mocker.patch("pyspark.sql.DataFrameWriter.saveAsTable")
 
-    # Create log config
-    log_config = ProcessLogConfig(
-        spark=spark_session,
-        run_month=run_month,
-        record={
-            "RunID": 1,
-            "Timestamp": datetime.now(tz=timezone.utc),
-            "Workflow": "Staging",
-            "Component": "Non-SSF",
-            "Layer": "Staging",
-        },
-    )
-
     # Empty list of files (no files delivered)
     files_per_delivery_entity = []
 
     # Call check_deadline_violations - should raise exception
     with pytest.raises(NonSSFExtractionError) as exc_info:
-        extraction.check_deadline_violations(files_per_delivery_entity, log_config)
+        extraction.check_deadline_violations(files_per_delivery_entity)
 
     # Check that the error message includes deadline dates
     error_msg = str(exc_info.value)
@@ -710,25 +696,12 @@ def test_check_deadline_violations_future_deadline(
         source_container=source_container,
     )
 
-    # Create log config
-    log_config = ProcessLogConfig(
-        spark=spark_session,
-        run_month=run_month,
-        record={
-            "RunID": 1,
-            "Timestamp": datetime.now(tz=timezone.utc),
-            "Workflow": "Staging",
-            "Component": "Non-SSF",
-            "Layer": "Staging",
-        },
-    )
-
     # Empty list of files (no files delivered)
     files_per_delivery_entity = []
 
     # Call check_deadline_violations - should NOT raise exception
     # because deadline is in the future
     try:
-        extraction.check_deadline_violations(files_per_delivery_entity, log_config)
+        extraction.check_deadline_violations(files_per_delivery_entity)
     except NonSSFExtractionError:
         pytest.fail("Should not raise exception for future deadline")
