@@ -1,12 +1,4 @@
-2025-07-08 13:18:54 [INFO] validate:  YAML format validated successfully
-2025-07-08 13:19:00 [INFO] validate:  Sources validated successfully
-2025-07-08 13:19:00 [ERROR] validate_sql_expressions:  Problem with expression(s):
-2025-07-08 13:19:00 [ERROR] validate_sql_expressions:  PD_UCR_STEP1.CounterpartyID = INT_CPXCF.LinkedParticipatingCounterparty: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `INT_CPXCF`.`LinkedParticipatingCounterparty` cannot be resolved. Did you mean one of the following? [`INT_CPXCF`.`reportingdate`, `INT_CPXCF`.`counterpartyrole`, `INT_CPXCF`.`creditfacility`, `INT_CPXCF`.`deliveryentity`, `PD_UCR_STEP1`.`counterpartyid`]. SQLSTATE: 42703
-PD_UCR_STEP1.CounterpartySourceSystemIdentifier = INT_CPXCF.LinkedParticipatingCounterpartySourceSystemIdentifier: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `INT_CPXCF`.`LinkedParticipatingCounterpartySourceSystemIdentifier` cannot be resolved. Did you mean one of the following? [`PD_UCR_STEP1`.`counterpartysourcesystemidentifier`, `INT_CPXCF`.`creditfacilitysourcesystemidentifier`, `INT_CPXCF`.`counterpartyrole`, `PD_UCR_STEP1`.`globalcounterpartyidentifier`, `INT_CPXCF`.`participatingcounterparty as linkedparticipatingcounterparty`]. SQLSTATE: 42703
-2025-07-08 13:19:01 [INFO] validate_join:  Joins validated successfully
-2025-07-08 13:19:01 [ERROR] validate_sql_expressions:  Problem with expression(s):
-2025-07-08 13:19:01 [ERROR] validate_sql_expressions:  FACILITY_LINKED_CP.ParticipatingCounterparty = OTHER_CP_RATINGS.CounterpartyID: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `FACILITY_LINKED_CP`.`ParticipatingCounterparty` cannot be resolved. Did you mean one of the following? [`FACILITY_LINKED_CP`.`counterpartyid`, `FACILITY_LINKED_CP`.`counterpartyrole`, `FACILITY_LINKED_CP`.`reportingdate`, `FACILITY_LINKED_CP`.`aacalphacode`, `FACILITY_LINKED_CP`.`intercompanyindicator`]. SQLSTATE: 42703
-FACILITY_LINKED_CP.ParticipatingCounterpartySourceSystemIdentifier = OTHER_CP_RATINGS.CounterpartySourceSystemIdentifier: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `FACILITY_LINKED_CP`.`ParticipatingCounterpartySourceSystemIdentifier` cannot be resolved. Did you mean one of the following? [`FACILITY_LINKED_CP`.`counterpartysourcesystemidentifier`, `FACILITY_LINKED_CP`.`creditfacilitysourcesystemidentifier`, `FACILITY_LINKED_CP`.`globalcounterpartyidentifier`, `OTHER_CP_RATINGS`.`counterpartysourcesystemidentifier`, `FACILITY_LINKED_CP`.`uniformcounterpartyratingdate`]. SQLSTATE: 42703
-2025-07-08 13:19:01 [INFO] validate_add_variables:  Variables validated successfully
-2025-07-08 13:19:06 [INFO] validate_aggregation:  Aggregations validated successfully
+2025-07-08 13:32:29 [INFO] validate:  YAML format validated successfully
+2025-07-08 13:32:35 [INFO] validate:  Sources validated successfully
+2025-07-08 13:32:35 [ERROR] validate_ambiguous_join:  Risk on ambiguous columns, using multiple times the right_source(s) ['INT_CPXCF']
 False
