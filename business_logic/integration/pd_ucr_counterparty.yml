@@ -24,22 +24,24 @@ sources:
 
 transformations:
   - join:
+      alias: PD_UCR_WITH_FACILITY
       left_source: PD_UCR_STEP1
       right_source: INT_CPXCF
       condition:
         - PD_UCR_STEP1.CounterpartyID = INT_CPXCF.ParticipatingCounterparty
         - PD_UCR_STEP1.CounterpartySourceSystemIdentifier = INT_CPXCF.ParticipatingCounterpartySourceSystemIdentifier
       how: left
-      alias: PD_UCR_WITH_FACILITY
+      
 
   - join:
+      alias: FACILITY_LINKED_CP
       left_source: PD_UCR_WITH_FACILITY
       right_source: INT_CPXCF
       condition:
         - PD_UCR_WITH_FACILITY.CreditFacility = INT_CPXCF.CreditFacility
         - PD_UCR_WITH_FACILITY.CreditFacilitySourceSystemIdentifier = INT_CPXCF.CreditFacilitySourceSystemIdentifier
       how: left
-      alias: FACILITY_LINKED_CP
+      
 
   - join:
       left_source: FACILITY_LINKED_CP
