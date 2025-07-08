@@ -1,10 +1,13 @@
-description: This YAML implements Step-2 of PD-UCR logic by applying ratings via CPxCF when counterparties don't have their own ratings
+description: >
+  Step 2 of PD-UCR: Applies rating propagation via facility-level linkage from CPxCF,
+  ensuring all CPs under the same Credit Facility inherit ratings if needed.
 
 target: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_pd_ucr_step2
 
 sources:
   - alias: PD_UCR_STEP1
     source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_pd_ucr
+
   - alias: INT_CPXCF
     columns:
       - DeliveryEntity
@@ -15,17 +18,12 @@ sources:
       - ParticipatingCounterparty
       - ParticipatingCounterpartySourceSystemIdentifier
     source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_integrated_cpxcf
-  - alias: INT_CPXCF_OTHER
-    columns:
-      - CreditFacility
-      - CreditFacilitySourceSystemIdentifier
-      - ParticipatingCounterparty
-      - ParticipatingCounterpartySourceSystemIdentifier
-    source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_integrated_cpxcf
+
   - alias: OTHER_CP_RATINGS
     source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_pd_ucr
 
 transformations:
+  # STEP 1: Map each CP to Credit Facility
   - join:
       left_source: PD_UCR_STEP1
       right_source: INT_CPXCF
@@ -33,98 +31,96 @@ transformations:
         - PD_UCR_STEP1.CounterpartyID = INT_CPXCF.ParticipatingCounterparty
         - PD_UCR_STEP1.CounterpartySourceSystemIdentifier = INT_CPXCF.ParticipatingCounterpartySourceSystemIdentifier
       how: left
+      alias: PD_UCR_WITH_FACILITY
+
+  # STEP 2: For each facility, map all linked CP ratings
   - join:
-      right_source: INT_CPXCF_OTHER
+      left_source: PD_UCR_WITH_FACILITY
+      right_source: INT_CPXCF
       condition:
-        - INT_CPXCF.CreditFacility = INT_CPXCF_OTHER.CreditFacility
-        - INT_CPXCF.CreditFacilitySourceSystemIdentifier = INT_CPXCF_OTHER.CreditFacilitySourceSystemIdentifier
+        - PD_UCR_WITH_FACILITY.CreditFacility = INT_CPXCF.CreditFacility
+        - PD_UCR_WITH_FACILITY.CreditFacilitySourceSystemIdentifier = INT_CPXCF.CreditFacilitySourceSystemIdentifier
       how: left
+      alias: FACILITY_LINKED_CP
+
+  # STEP 3: Attach ratings of all CPs on the facility
   - join:
+      left_source: FACILITY_LINKED_CP
       right_source: OTHER_CP_RATINGS
       condition:
-        - INT_CPXCF_OTHER.ParticipatingCounterparty = OTHER_CP_RATINGS.CounterpartyID
-        - INT_CPXCF_OTHER.ParticipatingCounterpartySourceSystemIdentifier = OTHER_CP_RATINGS.CounterpartySourceSystemIdentifier
+        - FACILITY_LINKED_CP.ParticipatingCounterparty = OTHER_CP_RATINGS.CounterpartyID
+        - FACILITY_LINKED_CP.ParticipatingCounterpartySourceSystemIdentifier = OTHER_CP_RATINGS.CounterpartySourceSystemIdentifier
       how: left
+
+  # STEP 4: Derive flags
   - add_variables:
       column_mapping:
-        is_different_counterparty: >
-          CASE 
-            WHEN INT_CPXCF_OTHER.ParticipatingCounterparty IS NULL THEN NULL
-            WHEN PD_UCR_STEP1.CounterpartyID = INT_CPXCF_OTHER.ParticipatingCounterparty 
-                 AND PD_UCR_STEP1.CounterpartySourceSystemIdentifier = INT_CPXCF_OTHER.ParticipatingCounterpartySourceSystemIdentifier 
-            THEN 0 
-            ELSE 1 
-          END
         needs_rating: >
           CASE 
-            WHEN PD_UCR_STEP1.UCRStep1 IS NULL 
-                 OR (PD_UCR_STEP1.UniformCounterpartyRatingDate IS NOT NULL 
-                     AND DATEADD(month, 12, PD_UCR_STEP1.UniformCounterpartyRatingDate) < PD_UCR_STEP1.ReportingDate) 
-            THEN 1 
-            ELSE 0 
-          END
+            WHEN PD_UCR_WITH_FACILITY.UCRStep1 IS NULL 
+              OR (PD_UCR_WITH_FACILITY.UniformCounterpartyRatingDate IS NOT NULL 
+                  AND DATEADD(month, 12, PD_UCR_WITH_FACILITY.UniformCounterpartyRatingDate) < PD_UCR_WITH_FACILITY.ReportingDate)
+            THEN 1 ELSE 0 END
+
         other_has_rating: >
-          CASE 
-            WHEN OTHER_CP_RATINGS.UCRStep1 IS NOT NULL 
-                 AND OTHER_CP_RATINGS.UniformCounterpartyRatingDate IS NOT NULL 
-                 AND DATEADD(month, 12, OTHER_CP_RATINGS.UniformCounterpartyRatingDate) >= OTHER_CP_RATINGS.ReportingDate 
-            THEN 1 
-            ELSE 0 
-          END
+          CASE
+            WHEN OTHER_CP_RATINGS.UCRStep1 IS NOT NULL
+              AND OTHER_CP_RATINGS.UniformCounterpartyRatingDate IS NOT NULL
+              AND DATEADD(month, 12, OTHER_CP_RATINGS.UniformCounterpartyRatingDate) >= OTHER_CP_RATINGS.ReportingDate
+            THEN 1 ELSE 0 END
+
         facility_rank: >
-          CASE 
-            WHEN needs_rating = 1 AND is_different_counterparty = 1 AND other_has_rating = 1
+          CASE
+            WHEN needs_rating = 1 AND other_has_rating = 1
             THEN ROW_NUMBER() OVER (
-              PARTITION BY 
-                PD_UCR_STEP1.CounterpartyID,
-                PD_UCR_STEP1.CounterpartySourceSystemIdentifier,
-                INT_CPXCF.CreditFacility,
-                INT_CPXCF.CreditFacilitySourceSystemIdentifier
-              ORDER BY 
+              PARTITION BY
+                PD_UCR_WITH_FACILITY.CounterpartyID,
+                PD_UCR_WITH_FACILITY.CounterpartySourceSystemIdentifier
+              ORDER BY
                 OTHER_CP_RATINGS.UniformCounterpartyRatingDate DESC
             )
-            ELSE NULL
-          END
+            ELSE NULL END
+
+  # STEP 5: Aggregate best ratings for CP needing ratings
   - aggregation:
       alias: BEST_RATINGS
       group:
-        - PD_UCR_STEP1.DeliveryEntity
-        - PD_UCR_STEP1.ReportingDate
-        - PD_UCR_STEP1.CounterpartyID
-        - PD_UCR_STEP1.CounterpartySourceSystemIdentifier
-        - PD_UCR_STEP1.BcdbId
-        - PD_UCR_STEP1.AacAlphaCode
-        - PD_UCR_STEP1.GlobalCounterpartyIdentifier
-        - PD_UCR_STEP1.PDModelCode
-        - PD_UCR_STEP1.LastPerformingPDModelCode
-        - PD_UCR_STEP1.ApprovedUniformCounterpartyRating
-        - PD_UCR_STEP1.UCRStep1
-        - PD_UCR_STEP1.ProbabilityOfDefaultBeforeConservatism
-        - PD_UCR_STEP1.ProbabilityOfDefault
-        - PD_UCR_STEP1.UniformCounterpartyRatingDate
-        - PD_UCR_STEP1.UniformCounterpartyRatingExpiryDate
-        - PD_UCR_STEP1.PDMarginOfConservatism
-        - PD_UCR_STEP1.UCRCase
-        - PD_UCR_STEP1.fairid
-        - PD_UCR_STEP1.UniquePDRatingId
-        - PD_UCR_STEP1.InterCompanyIndicator
+        - PD_UCR_WITH_FACILITY.DeliveryEntity
+        - PD_UCR_WITH_FACILITY.ReportingDate
+        - PD_UCR_WITH_FACILITY.CounterpartyID
+        - PD_UCR_WITH_FACILITY.CounterpartySourceSystemIdentifier
+        - PD_UCR_WITH_FACILITY.BcdbId
+        - PD_UCR_WITH_FACILITY.AacAlphaCode
+        - PD_UCR_WITH_FACILITY.GlobalCounterpartyIdentifier
+        - PD_UCR_WITH_FACILITY.PDModelCode
+        - PD_UCR_WITH_FACILITY.LastPerformingPDModelCode
+        - PD_UCR_WITH_FACILITY.ApprovedUniformCounterpartyRating
+        - PD_UCR_WITH_FACILITY.UCRStep1
+        - PD_UCR_WITH_FACILITY.ProbabilityOfDefaultBeforeConservatism
+        - PD_UCR_WITH_FACILITY.ProbabilityOfDefault
+        - PD_UCR_WITH_FACILITY.UniformCounterpartyRatingDate
+        - PD_UCR_WITH_FACILITY.UniformCounterpartyRatingExpiryDate
+        - PD_UCR_WITH_FACILITY.PDMarginOfConservatism
+        - PD_UCR_WITH_FACILITY.UCRCase
+        - PD_UCR_WITH_FACILITY.fairid
+        - PD_UCR_WITH_FACILITY.UniquePDRatingId
+        - PD_UCR_WITH_FACILITY.InterCompanyIndicator
         - needs_rating
       column_mapping:
-        best_other_pdmodelcode: FIRST(CASE WHEN is_different_counterparty = 1 AND other_has_rating = 1 AND facility_rank = 1 THEN OTHER_CP_RATINGS.PDModelCode END)
-        best_other_lastperformingpdmodelcode: FIRST(CASE WHEN is_different_counterparty = 1 AND other_has_rating = 1 AND facility_rank = 1 THEN OTHER_CP_RATINGS.LastPerformingPDModelCode END)
-        best_other_approveduniformcounterpartyrating: FIRST(CASE WHEN is_different_counterparty = 1 AND other_has_rating = 1 AND facility_rank = 1 THEN OTHER_CP_RATINGS.ApprovedUniformCounterpartyRating END)
-        best_other_ucrstep1: FIRST(CASE WHEN is_different_counterparty = 1 AND other_has_rating = 1 AND facility_rank = 1 THEN OTHER_CP_RATINGS.UCRStep1 END)
-        best_other_probabilityofdefaultbeforeconservatism: FIRST(CASE WHEN is_different_counterparty = 1 AND other_has_rating = 1 AND facility_rank = 1 THEN OTHER_CP_RATINGS.ProbabilityOfDefaultBeforeConservatism END)
-        best_other_probabilityofdefault: FIRST(CASE WHEN is_different_counterparty = 1 AND other_has_rating = 1 AND facility_rank = 1 THEN OTHER_CP_RATINGS.ProbabilityOfDefault END)
-        best_other_uniformcounterpartyratingdate: FIRST(CASE WHEN is_different_counterparty = 1 AND other_has_rating = 1 AND facility_rank = 1 THEN OTHER_CP_RATINGS.UniformCounterpartyRatingDate END)
-        best_other_uniformcounterpartyratingexpirydate: FIRST(CASE WHEN is_different_counterparty = 1 AND other_has_rating = 1 AND facility_rank = 1 THEN OTHER_CP_RATINGS.UniformCounterpartyRatingExpiryDate END)
-        best_other_pdmarginofconservatism: FIRST(CASE WHEN is_different_counterparty = 1 AND other_has_rating = 1 AND facility_rank = 1 THEN OTHER_CP_RATINGS.PDMarginOfConservatism END)
-        best_other_fairid: FIRST(CASE WHEN is_different_counterparty = 1 AND other_has_rating = 1 AND facility_rank = 1 THEN OTHER_CP_RATINGS.fairid END)
-        best_other_uniquepdratindid: FIRST(CASE WHEN is_different_counterparty = 1 AND other_has_rating = 1 AND facility_rank = 1 THEN OTHER_CP_RATINGS.UniquePDRatingId END)
-        best_other_counterpartyid: FIRST(CASE WHEN is_different_counterparty = 1 AND other_has_rating = 1 AND facility_rank = 1 THEN OTHER_CP_RATINGS.CounterpartyID END)
-        best_other_counterpartyssi: FIRST(CASE WHEN is_different_counterparty = 1 AND other_has_rating = 1 AND facility_rank = 1 THEN OTHER_CP_RATINGS.CounterpartySourceSystemIdentifier END)
-        best_other_ucrcase: FIRST(CASE WHEN is_different_counterparty = 1 AND other_has_rating = 1 AND facility_rank = 1 THEN OTHER_CP_RATINGS.UCRCase END)
-        oldest_rating_date: MIN(CASE WHEN is_different_counterparty = 1 AND other_has_rating = 1 AND facility_rank = 1 THEN OTHER_CP_RATINGS.UniformCounterpartyRatingDate END)
+        best_other_pdmodelcode: FIRST(CASE WHEN facility_rank = 1 THEN OTHER_CP_RATINGS.PDModelCode END)
+        best_other_lastperformingpdmodelcode: FIRST(CASE WHEN facility_rank = 1 THEN OTHER_CP_RATINGS.LastPerformingPDModelCode END)
+        best_other_approveduniformcounterpartyrating: FIRST(CASE WHEN facility_rank = 1 THEN OTHER_CP_RATINGS.ApprovedUniformCounterpartyRating END)
+        best_other_ucrstep1: FIRST(CASE WHEN facility_rank = 1 THEN OTHER_CP_RATINGS.UCRStep1 END)
+        best_other_probabilityofdefaultbeforeconservatism: FIRST(CASE WHEN facility_rank = 1 THEN OTHER_CP_RATINGS.ProbabilityOfDefaultBeforeConservatism END)
+        best_other_probabilityofdefault: FIRST(CASE WHEN facility_rank = 1 THEN OTHER_CP_RATINGS.ProbabilityOfDefault END)
+        best_other_uniformcounterpartyratingdate: FIRST(CASE WHEN facility_rank = 1 THEN OTHER_CP_RATINGS.UniformCounterpartyRatingDate END)
+        best_other_uniformcounterpartyratingexpirydate: FIRST(CASE WHEN facility_rank = 1 THEN OTHER_CP_RATINGS.UniformCounterpartyRatingExpiryDate END)
+        best_other_pdmarginofconservatism: FIRST(CASE WHEN facility_rank = 1 THEN OTHER_CP_RATINGS.PDMarginOfConservatism END)
+        best_other_fairid: FIRST(CASE WHEN facility_rank = 1 THEN OTHER_CP_RATINGS.fairid END)
+        best_other_uniquepdratindid: FIRST(CASE WHEN facility_rank = 1 THEN OTHER_CP_RATINGS.UniquePDRatingId END)
+        best_other_counterpartyid: FIRST(CASE WHEN facility_rank = 1 THEN OTHER_CP_RATINGS.CounterpartyID END)
+        best_other_counterpartyssi: FIRST(CASE WHEN facility_rank = 1 THEN OTHER_CP_RATINGS.CounterpartySourceSystemIdentifier END)
+        best_other_ucrcase: FIRST(CASE WHEN facility_rank = 1 THEN OTHER_CP_RATINGS.UCRCase END)
 
 expressions:
   DeliveryEntity: BEST_RATINGS.DeliveryEntity
@@ -135,105 +131,63 @@ expressions:
   AacAlphaCode: BEST_RATINGS.AacAlphaCode
   GlobalCounterpartyIdentifier: BEST_RATINGS.GlobalCounterpartyIdentifier
   InterCompanyIndicator: BEST_RATINGS.InterCompanyIndicator
-  
+
   PDModelCode: >
-    CASE 
-      WHEN BEST_RATINGS.needs_rating = 1 AND BEST_RATINGS.best_other_pdmodelcode IS NOT NULL
-      THEN BEST_RATINGS.best_other_pdmodelcode
-      ELSE BEST_RATINGS.PDModelCode
-    END
-  
+    CASE WHEN BEST_RATINGS.needs_rating = 1 AND BEST_RATINGS.best_other_pdmodelcode IS NOT NULL
+    THEN BEST_RATINGS.best_other_pdmodelcode ELSE BEST_RATINGS.PDModelCode END
+
   LastPerformingPDModelCode: >
-    CASE 
-      WHEN BEST_RATINGS.needs_rating = 1 AND BEST_RATINGS.best_other_lastperformingpdmodelcode IS NOT NULL
-      THEN BEST_RATINGS.best_other_lastperformingpdmodelcode
-      ELSE BEST_RATINGS.LastPerformingPDModelCode
-    END
-  
+    CASE WHEN BEST_RATINGS.needs_rating = 1 AND BEST_RATINGS.best_other_lastperformingpdmodelcode IS NOT NULL
+    THEN BEST_RATINGS.best_other_lastperformingpdmodelcode ELSE BEST_RATINGS.LastPerformingPDModelCode END
+
   ApprovedUniformCounterpartyRating: >
-    CASE 
-      WHEN BEST_RATINGS.needs_rating = 1 AND BEST_RATINGS.best_other_approveduniformcounterpartyrating IS NOT NULL
-      THEN BEST_RATINGS.best_other_approveduniformcounterpartyrating
-      ELSE BEST_RATINGS.ApprovedUniformCounterpartyRating
-    END
-  
+    CASE WHEN BEST_RATINGS.needs_rating = 1 AND BEST_RATINGS.best_other_approveduniformcounterpartyrating IS NOT NULL
+    THEN BEST_RATINGS.best_other_approveduniformcounterpartyrating ELSE BEST_RATINGS.ApprovedUniformCounterpartyRating END
+
   UCRStep1: BEST_RATINGS.UCRStep1
-  
+
   UCRStep2: >
-    CASE 
-      WHEN BEST_RATINGS.needs_rating = 1 AND BEST_RATINGS.best_other_ucrstep1 IS NOT NULL
-      THEN BEST_RATINGS.best_other_ucrstep1
-      ELSE BEST_RATINGS.UCRStep1
-    END
-  
+    CASE WHEN BEST_RATINGS.needs_rating = 1 AND BEST_RATINGS.best_other_ucrstep1 IS NOT NULL
+    THEN BEST_RATINGS.best_other_ucrstep1 ELSE BEST_RATINGS.UCRStep1 END
+
   ProbabilityOfDefaultBeforeConservatism: >
-    CASE 
-      WHEN BEST_RATINGS.needs_rating = 1 AND BEST_RATINGS.best_other_probabilityofdefaultbeforeconservatism IS NOT NULL
-      THEN BEST_RATINGS.best_other_probabilityofdefaultbeforeconservatism
-      ELSE BEST_RATINGS.ProbabilityOfDefaultBeforeConservatism
-    END
-  
+    CASE WHEN BEST_RATINGS.needs_rating = 1 AND BEST_RATINGS.best_other_probabilityofdefaultbeforeconservatism IS NOT NULL
+    THEN BEST_RATINGS.best_other_probabilityofdefaultbeforeconservatism ELSE BEST_RATINGS.ProbabilityOfDefaultBeforeConservatism END
+
   ProbabilityOfDefault: >
-    CASE 
-      WHEN BEST_RATINGS.needs_rating = 1 AND BEST_RATINGS.best_other_probabilityofdefault IS NOT NULL
-      THEN BEST_RATINGS.best_other_probabilityofdefault
-      ELSE BEST_RATINGS.ProbabilityOfDefault
-    END
-  
+    CASE WHEN BEST_RATINGS.needs_rating = 1 AND BEST_RATINGS.best_other_probabilityofdefault IS NOT NULL
+    THEN BEST_RATINGS.best_other_probabilityofdefault ELSE BEST_RATINGS.ProbabilityOfDefault END
+
   UniformCounterpartyRatingDate: >
-    CASE 
-      WHEN BEST_RATINGS.needs_rating = 1 AND BEST_RATINGS.best_other_uniformcounterpartyratingdate IS NOT NULL
-      THEN BEST_RATINGS.best_other_uniformcounterpartyratingdate
-      ELSE BEST_RATINGS.UniformCounterpartyRatingDate
-    END
-  
+    CASE WHEN BEST_RATINGS.needs_rating = 1 AND BEST_RATINGS.best_other_uniformcounterpartyratingdate IS NOT NULL
+    THEN BEST_RATINGS.best_other_uniformcounterpartyratingdate ELSE BEST_RATINGS.UniformCounterpartyRatingDate END
+
   UniformCounterpartyRatingExpiryDate: >
-    CASE 
-      WHEN BEST_RATINGS.needs_rating = 1 AND BEST_RATINGS.best_other_uniformcounterpartyratingexpirydate IS NOT NULL
-      THEN BEST_RATINGS.best_other_uniformcounterpartyratingexpirydate
-      ELSE BEST_RATINGS.UniformCounterpartyRatingExpiryDate
-    END
-  
+    CASE WHEN BEST_RATINGS.needs_rating = 1 AND BEST_RATINGS.best_other_uniformcounterpartyratingexpirydate IS NOT NULL
+    THEN BEST_RATINGS.best_other_uniformcounterpartyratingexpirydate ELSE BEST_RATINGS.UniformCounterpartyRatingExpiryDate END
+
   PDMarginOfConservatism: >
-    CASE 
-      WHEN BEST_RATINGS.needs_rating = 1 AND BEST_RATINGS.best_other_pdmarginofconservatism IS NOT NULL
-      THEN BEST_RATINGS.best_other_pdmarginofconservatism
-      ELSE BEST_RATINGS.PDMarginOfConservatism
-    END
-  
+    CASE WHEN BEST_RATINGS.needs_rating = 1 AND BEST_RATINGS.best_other_pdmarginofconservatism IS NOT NULL
+    THEN BEST_RATINGS.best_other_pdmarginofconservatism ELSE BEST_RATINGS.PDMarginOfConservatism END
+
   UCRCase: >
-    CASE 
-      WHEN BEST_RATINGS.needs_rating = 1 AND BEST_RATINGS.best_other_ucrstep1 IS NOT NULL
-      THEN CONCAT(BEST_RATINGS.UCRCase, '_DERIVED')
-      ELSE BEST_RATINGS.UCRCase
-    END
-  
+    CASE WHEN BEST_RATINGS.needs_rating = 1 AND BEST_RATINGS.best_other_ucrstep1 IS NOT NULL
+    THEN CONCAT(BEST_RATINGS.UCRCase, '_DERIVED') ELSE BEST_RATINGS.UCRCase END
+
   RatingSourceCounterpartyID: >
-    CASE 
-      WHEN BEST_RATINGS.needs_rating = 1 AND BEST_RATINGS.best_other_counterpartyid IS NOT NULL
-      THEN BEST_RATINGS.best_other_counterpartyid
-      ELSE BEST_RATINGS.CounterpartyID
-    END
-  
+    CASE WHEN BEST_RATINGS.needs_rating = 1 AND BEST_RATINGS.best_other_counterpartyid IS NOT NULL
+    THEN BEST_RATINGS.best_other_counterpartyid ELSE BEST_RATINGS.CounterpartyID END
+
   RatingSourceCounterpartySSI: >
-    CASE 
-      WHEN BEST_RATINGS.needs_rating = 1 AND BEST_RATINGS.best_other_counterpartyssi IS NOT NULL
-      THEN BEST_RATINGS.best_other_counterpartyssi
-      ELSE BEST_RATINGS.CounterpartySourceSystemIdentifier
-    END
-  
+    CASE WHEN BEST_RATINGS.needs_rating = 1 AND BEST_RATINGS.best_other_counterpartyssi IS NOT NULL
+    THEN BEST_RATINGS.best_other_counterpartyssi ELSE BEST_RATINGS.CounterpartySourceSystemIdentifier END
+
   fairid: >
-    CASE 
-      WHEN BEST_RATINGS.needs_rating = 1 AND BEST_RATINGS.best_other_fairid IS NOT NULL
-      THEN BEST_RATINGS.best_other_fairid
-      ELSE BEST_RATINGS.fairid
-    END
-  
+    CASE WHEN BEST_RATINGS.needs_rating = 1 AND BEST_RATINGS.best_other_fairid IS NOT NULL
+    THEN BEST_RATINGS.best_other_fairid ELSE BEST_RATINGS.fairid END
+
   UniquePDRatingId: >
-    CASE 
-      WHEN BEST_RATINGS.needs_rating = 1 AND BEST_RATINGS.best_other_uniquepdratindid IS NOT NULL
-      THEN BEST_RATINGS.best_other_uniquepdratindid
-      ELSE BEST_RATINGS.UniquePDRatingId
-    END
+    CASE WHEN BEST_RATINGS.needs_rating = 1 AND BEST_RATINGS.best_other_uniquepdratindid IS NOT NULL
+    THEN BEST_RATINGS.best_other_uniquepdratindid ELSE BEST_RATINGS.UniquePDRatingId END
 
 drop_duplicates: true
