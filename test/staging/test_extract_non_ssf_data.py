@@ -944,7 +944,8 @@ def test_place_static_data_with_redelivery_status(
     ]
 
     mock_dbutils_fs_cp = mocker.patch.object(extraction.dbutils.fs, "cp")
-    mock_save_table = mocker.patch("pyspark.sql.DataFrameWriter.saveAsTable")
+    # Also mock saveAsTable to prevent actual writes
+    mocker.patch("pyspark.sql.DataFrameWriter.saveAsTable")
 
     # Call place_static_data with deadline passed - should process REDELIVERY files
     result = extraction.place_static_data([], deadline_passed=True)
