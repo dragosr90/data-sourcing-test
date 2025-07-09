@@ -4,32 +4,49 @@ ruff lint................................................................Failed
 - exit code: 1
 
 All checks passed!
-test\staging\test_extract_non_ssf_data.py:1246:5: F841 Local variable `test_container` is assigned to but never used
-     |
-1244 | ):
-1245 |     """Test place_static_data skips files not in expected status."""
-1246 |     test_container = f"abfss://{source_container}@bsrcdadls.dfs.core.windows.net"
-     |     ^^^^^^^^^^^^^^ F841
-1247 |     # Create mock metadata DataFrame with non-expected status
-1248 |     schema_meta = [
-     |
-     = help: Remove assignment to unused variable `test_container`
+test\staging\test_extract_non_ssf_data.py:945:5: F841 Local variable `mock_save_table` is assigned to but never used
+    |
+944 |     mock_dbutils_fs_cp = mocker.patch.object(extraction.dbutils.fs, "cp")
+945 |     mock_save_table = mocker.patch("pyspark.sql.DataFrameWriter.saveAsTable")
+    |     ^^^^^^^^^^^^^^^ F841
+946 |
+947 |     # Call place_static_data with deadline passed - should process REDELIVERY files
+    |
+    = help: Remove assignment to unused variable `mock_save_table`
 
-test\staging\test_extract_non_ssf_data.py:1315:5: F841 Local variable `test_container` is assigned to but never used
+test\staging\test_extract_non_ssf_data.py:1128:5: F841 Local variable `mock_save_table` is assigned to but never used
      |
-1313 | ):
-1314 |     """Test place_static_data when no processed files are found."""
-1315 |     test_container = f"abfss://{source_container}@bsrcdadls.dfs.core.windows.net"
-     |     ^^^^^^^^^^^^^^ F841
-1316 |     # Create mock metadata DataFrame
-1317 |     schema_meta = [
+1127 |     mock_dbutils_fs_cp = mocker.patch.object(extraction.dbutils.fs, "cp")
+1128 |     mock_save_table = mocker.patch("pyspark.sql.DataFrameWriter.saveAsTable")
+     |     ^^^^^^^^^^^^^^^ F841
+1129 |
+1130 |     # Call place_static_data with deadline passed
      |
-     = help: Remove assignment to unused variable `test_container`
+     = help: Remove assignment to unused variable `mock_save_table`
 
-Found 2 errors.
-No fixes available (2 hidden fixes can be enabled with the `--unsafe-fixes` option).
+test\staging\test_extract_non_ssf_data.py:2161:5: F841 Local variable `mock_save_table` is assigned to but never used
+     |
+2159 |     ]
+2160 |
+2161 |     mock_save_table = mocker.patch("pyspark.sql.DataFrameWriter.saveAsTable")
+     |     ^^^^^^^^^^^^^^^ F841
+2162 |
+2163 |     # Call get_all_files
+     |
+     = help: Remove assignment to unused variable `mock_save_table`
+
+Found 3 errors.
+No fixes available (3 hidden fixes can be enabled with the `--unsafe-fixes` option).
 All checks passed!
 All checks passed!
 
-ruff format..............................................................Passed
+ruff format..............................................................Failed
+- hook id: ruff
+- files were modified by this hook
+
+21 files left unchanged
+21 files left unchanged
+21 files left unchanged
+1 file reformatted, 20 files left unchanged
+
 mypy.....................................................................Passed
