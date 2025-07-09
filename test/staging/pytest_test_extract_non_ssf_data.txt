@@ -1,30 +1,343 @@
 (bsrc-etl-venv) PS C:\Users\B25712\bsrc-etl-venv\bsrc-etl> pytest test/staging/test_extract_non_ssf_data.py
-====================================================================================== test session starts =======================================================================================
+========================================================================================== test session starts ===========================================================================================
 platform win32 -- Python 3.10.11, pytest-8.3.3, pluggy-1.5.0
 rootdir: C:\Users\B25712\bsrc-etl-venv\bsrc-etl
 configfile: pyproject.toml
 plugins: cov-6.0.0, mock-3.14.0
-collected 4 items
+collected 26 items
 
-test\staging\test_extract_non_ssf_data.py ...F                                                                                                                                              [100%]
+test\staging\test_extract_non_ssf_data.py ........F...F.F.....FF..FF                                                                                                                                [100%]
 
-============================================================================================ FAILURES ============================================================================================ 
-___________________________________________________________________ test_place_static_data_keyword_only[202503-test-container] ___________________________________________________________________ 
+================================================================================================ FAILURES ================================================================================================ 
+__________________________________________________________________ test_place_static_data_with_redelivery_status[202503-test-container] __________________________________________________________________ 
 
-spark_session = <pyspark.sql.session.SparkSession object at 0x00000222FF6C25C0>, mocker = <pytest_mock.plugin.MockerFixture object at 0x00000222FF952A40>, run_month = '202503'
+self = <MagicMock name='cp' id='2048433921696'>
+
+    def assert_called_once(self):
+        """assert that the mock was called only once.
+        """
+        if not self.call_count == 1:
+            msg = ("Expected '%s' to have been called once. Called %s times.%s"
+                   % (self._mock_name or 'mock',
+                      self.call_count,
+                      self._calls_repr()))
+>           raise AssertionError(msg)
+E           AssertionError: Expected 'cp' to have been called once. Called 0 times.
+
+C:\Program Files\Python310\lib\unittest\mock.py:908: AssertionError
+
+During handling of the above exception, another exception occurred:
+
+spark_session = <pyspark.sql.session.SparkSession object at 0x000001DCF00AC0A0>, mocker = <pytest_mock.plugin.MockerFixture object at 0x000001DCF010D4B0>, run_month = '202503'
+source_container = 'test-container', caplog = <_pytest.logging.LogCaptureFixture object at 0x000001DCF010DAB0>
+
+    @pytest.mark.parametrize(
+        ("run_month", "source_container"),
+        [("202503", "test-container")],
+    )
+    def test_place_static_data_with_redelivery_status(
+        spark_session,
+        mocker,
+        run_month,
+        source_container,
+        caplog,
+    ):
+        """Test place_static_data processes files with REDELIVERY status."""
+        test_container = f"abfss://{source_container}@bsrcdadls.dfs.core.windows.net"
+
+        # Create mock metadata DataFrame with REDELIVERY status
+        schema_meta = [
+            "SourceSystem",
+            "SourceFileName",
+            "SourceFileFormat",
+            "SourceFileDelimiter",
+            "StgTableName",
+            "FileDeliveryStep",
+            "FileDeliveryStatus",
+        ]
+        mock_meta = spark_session.createDataFrame(
+            [
+                (
+                    "lrd_static",
+                    "TEST_FILE",
+                    ".txt",
+                    "|",
+                    "test_file",
+                    10,  # REDELIVERY status
+                    "Expected",
+                ),
+            ],
+            schema=schema_meta,
+        )
+
+        schema_log = StructType(
+            [
+                StructField("SourceSystem", StringType(), True),  # noqa: FBT003
+                StructField("SourceFileName", StringType(), True),  # noqa: FBT003
+                StructField("DeliveryNumber", IntegerType(), True),  # noqa: FBT003
+                StructField("FileDeliveryStep", IntegerType(), True),  # noqa: FBT003
+                StructField("FileDeliveryStatus", StringType(), True),  # noqa: FBT003
+                StructField("Result", StringType(), True),  # noqa: FBT003
+                StructField("LastUpdatedDateTimestamp", TimestampType(), True),  # noqa: FBT003
+                StructField("Comment", StringType(), True),  # noqa: FBT003
+            ]
+        )
+        mock_log = spark_session.createDataFrame([], schema=schema_log)
+
+        mock_read = mocker.patch("pyspark.sql.SparkSession.read", autospec=True)
+        mock_read.table.side_effect = [mock_meta, mock_log]
+
+        extraction = ExtractNonSSFData(
+            spark_session,
+            run_month,
+            source_container=source_container,
+        )
+    
+        # Mock filesystem operations
+        mock_dbutils_fs_ls = mocker.patch.object(extraction.dbutils.fs, "ls")
+        mock_dbutils_fs_ls.side_effect = [
+            [
+                FileInfoMock(
+                    {
+                        "path": f"{test_container}/LRD_STATIC/processed/TEST_FILE_20240101.txt",  # noqa: E501
+                        "name": "TEST_FILE_20240101.txt",
+                    }
+                )
+            ],
+            [
+                FileInfoMock(
+                    {
+                        "path": f"{test_container}/LRD_STATIC/processed/TEST_FILE_20240101.txt",  # noqa: E501
+                        "name": "TEST_FILE_20240101.txt",
+                    }
+                )
+            ],
+        ]
+
+        mock_dbutils_fs_cp = mocker.patch.object(extraction.dbutils.fs, "cp")
+
+        # Call place_static_data with deadline passed - should process REDELIVERY files
+        result = extraction.place_static_data([], deadline_passed=True)
+
+        # Verify that the file was copied
+>       mock_dbutils_fs_cp.assert_called_once()
+E       AssertionError: Expected 'cp' to have been called once. Called 0 times.
+
+test\staging\test_extract_non_ssf_data.py:950: AssertionError
+------------------------------------------------------------------------------------------ Captured stdout call ------------------------------------------------------------------------------------------ 
+2025-07-09 11:41:32 [INFO] place_static_data:  File TEST_FILE is not in expected status. Skipping copy from processed folder.
+2025-07-09 11:41:32 [INFO] place_static_data:  File TEST_FILE is not in expected status. Skipping copy from processed folder.
+------------------------------------------------------------------------------------------ Captured stderr call ------------------------------------------------------------------------------------------ 
+
+------------------------------------------------------------------------------------------- Captured log call -------------------------------------------------------------------------------------------- 
+INFO     betl_src_poc_logger:extract_nonssf_data.py:132 File TEST_FILE is not in expected status. Skipping copy from processed folder.
+___________________________________________________________________ test_get_deadline_from_metadata_variations[202503-test-container] ____________________________________________________________________ 
+
+spark_session = <pyspark.sql.session.SparkSession object at 0x000001DCF00AC0A0>, mocker = <pytest_mock.plugin.MockerFixture object at 0x000001DCF010D360>, run_month = '202503'
 source_container = 'test-container'
 
     @pytest.mark.parametrize(
         ("run_month", "source_container"),
         [("202503", "test-container")],
     )
-    def test_place_static_data_keyword_only(
+    def test_get_deadline_from_metadata_variations(
         spark_session,
         mocker,
         run_month,
         source_container,
     ):
-        """Test that place_static_data requires deadline_passed as keyword argument."""
+        """Test get_deadline_from_metadata with different deadline formats."""
+        # Test with string deadline
+        schema_meta = [
+            "SourceSystem",
+            "SourceFileName",
+            "SourceFileFormat",
+            "SourceFileDelimiter",
+            "StgTableName",
+            "FileDeliveryStep",
+            "FileDeliveryStatus",
+            "Deadline",
+        ]
+        mock_meta = spark_session.createDataFrame(
+            [
+                (
+                    "nme",
+                    "TEST_FILE",
+                    ".csv",
+                    ",",
+                    "test_file",
+                    0,
+                    "Expected",
+                    "2025-07-01",  # String deadline
+                ),
+            ],
+            schema=schema_meta,
+        )
+
+        schema_log = StructType(
+            [
+                StructField("SourceSystem", StringType(), True),  # noqa: FBT003
+                StructField("SourceFileName", StringType(), True),  # noqa: FBT003
+                StructField("DeliveryNumber", IntegerType(), True),  # noqa: FBT003
+                StructField("FileDeliveryStep", IntegerType(), True),  # noqa: FBT003
+                StructField("FileDeliveryStatus", StringType(), True),  # noqa: FBT003
+                StructField("Result", StringType(), True),  # noqa: FBT003
+                StructField("LastUpdatedDateTimestamp", TimestampType(), True),  # noqa: FBT003
+                StructField("Comment", StringType(), True),  # noqa: FBT003
+            ]
+        )
+        mock_log = spark_session.createDataFrame([], schema=schema_log)
+
+        mock_read = mocker.patch("pyspark.sql.SparkSession.read", autospec=True)
+        mock_read.table.side_effect = [mock_meta, mock_log]
+
+        extraction = ExtractNonSSFData(
+            spark_session,
+            run_month,
+            source_container=source_container,
+        )
+
+        # Test with string deadline
+        deadline = extraction.get_deadline_from_metadata("nme", "TEST_FILE")
+        assert deadline is not None
+        assert deadline.strftime("%Y-%m-%d") == "2025-07-01"
+
+        # Test with date object deadline
+        mock_meta2 = spark_session.createDataFrame(
+            [
+                (
+                    "finob",
+                    "TEST_FILE2",
+                    ".csv",
+                    ",",
+                    "test_file2",
+                    0,
+                    "Expected",
+                    date(2025, 7, 2),  # Date object
+                ),
+            ],
+            schema=schema_meta,
+        )
+        mock_read.table.side_effect = [mock_meta2, mock_log]
+        extraction2 = ExtractNonSSFData(
+            spark_session,
+            run_month,
+            source_container=source_container,
+        )
+        deadline2 = extraction2.get_deadline_from_metadata("finob", "TEST_FILE2")
+        assert deadline2 is not None
+        assert deadline2.strftime("%Y-%m-%d") == "2025-07-02"
+
+        # Test with no deadline
+>       mock_meta3 = spark_session.createDataFrame(
+            [
+                (
+                    "lrd_static",
+                    "TEST_FILE3",
+                    ".txt",
+                    "|",
+                    "test_file3",
+                    0,
+                    "Expected",
+                    None,  # No deadline
+                ),
+            ],
+            schema=schema_meta,
+        )
+
+test\staging\test_extract_non_ssf_data.py:1309: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _  
+..\bsrc-etl-venv\lib\site-packages\pyspark\sql\session.py:1443: in createDataFrame
+    return self._create_dataframe(
+..\bsrc-etl-venv\lib\site-packages\pyspark\sql\session.py:1485: in _create_dataframe
+    rdd, struct = self._createFromLocal(map(prepare, data), schema)
+..\bsrc-etl-venv\lib\site-packages\pyspark\sql\session.py:1093: in _createFromLocal
+    struct = self._inferSchemaFromList(data, names=schema)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _  
+
+self = <pyspark.sql.session.SparkSession object at 0x000001DCF00AC0A0>, data = [('lrd_static', 'TEST_FILE3', '.txt', '|', 'test_file3', 0, ...)]
+names = ['SourceSystem', 'SourceFileName', 'SourceFileFormat', 'SourceFileDelimiter', 'StgTableName', 'FileDeliveryStep', ...]
+
+    def _inferSchemaFromList(
+        self, data: Iterable[Any], names: Optional[List[str]] = None
+    ) -> StructType:
+        """
+        Infer schema from list of Row, dict, or tuple.
+
+        Parameters
+        ----------
+        data : iterable
+            list of Row, dict, or tuple
+        names : list, optional
+            list of column names
+
+        Returns
+        -------
+        :class:`pyspark.sql.types.StructType`
+        """
+        if not data:
+            raise PySparkValueError(
+                error_class="CANNOT_INFER_EMPTY_SCHEMA",
+                message_parameters={},
+            )
+        infer_dict_as_struct = self._jconf.inferDictAsStruct()
+        infer_array_from_first_element = self._jconf.legacyInferArrayTypeFromFirstElement()
+        prefer_timestamp_ntz = is_timestamp_ntz_preferred()
+        schema = reduce(
+            _merge_type,
+            (
+                _infer_schema(
+                    row,
+                    names,
+                    infer_dict_as_struct=infer_dict_as_struct,
+                    infer_array_from_first_element=infer_array_from_first_element,
+                    prefer_timestamp_ntz=prefer_timestamp_ntz,
+                )
+                for row in data
+            ),
+        )
+        if _has_nulltype(schema):
+>           raise PySparkValueError(
+                error_class="CANNOT_DETERMINE_TYPE",
+                message_parameters={},
+            )
+E           pyspark.errors.exceptions.base.PySparkValueError: [CANNOT_DETERMINE_TYPE] Some of types cannot be determined after inferring.
+
+..\bsrc-etl-venv\lib\site-packages\pyspark\sql\session.py:969: PySparkValueError
+------------------------------------------------------------------------------------------ Captured stderr call ------------------------------------------------------------------------------------------ 
+
+___________________________________________________________________ test_convert_to_parquet_unsupported_format[202503-test-container] ____________________________________________________________________ 
+
+self = <MagicMock name='saveAsTable' id='2048434212144'>
+
+    def assert_called(self):
+        """assert that the mock was called at least once
+        """
+        if self.call_count == 0:
+            msg = ("Expected '%s' to have been called." %
+                   (self._mock_name or 'mock'))
+>           raise AssertionError(msg)
+E           AssertionError: Expected 'saveAsTable' to have been called.
+
+C:\Program Files\Python310\lib\unittest\mock.py:898: AssertionError
+
+During handling of the above exception, another exception occurred:
+
+spark_session = <pyspark.sql.session.SparkSession object at 0x000001DCF00AC0A0>, mocker = <pytest_mock.plugin.MockerFixture object at 0x000001DCF038B460>, run_month = '202503'
+source_container = 'test-container', caplog = <_pytest.logging.LogCaptureFixture object at 0x000001DCF00E6B00>
+
+    @pytest.mark.parametrize(
+        ("run_month", "source_container"),
+        [("202503", "test-container")],
+    )
+    def test_convert_to_parquet_unsupported_format(
+        spark_session,
+        mocker,
+        run_month,
+        source_container,
+        caplog,
+    ):
+        """Test convert_to_parquet with unsupported file format."""
         # Create mock metadata DataFrame
         schema_meta = [
             "SourceSystem",
@@ -38,10 +351,10 @@ source_container = 'test-container'
         mock_meta = spark_session.createDataFrame(
             [
                 (
-                    "LRD_STATIC",  # Uppercase
+                    "nme",
                     "TEST_FILE",
-                    ".txt",
-                    "|",
+                    ".json",  # Unsupported format
+                    ",",
                     "test_file",
                     0,
                     "Expected",
@@ -50,7 +363,7 @@ source_container = 'test-container'
             schema=schema_meta,
         )
 
-        # Create schema for log DataFrame
+        # Create empty log DataFrame
         schema_log = StructType(
             [
                 StructField("SourceSystem", StringType(), True),  # noqa: FBT003
@@ -63,58 +376,618 @@ source_container = 'test-container'
                 StructField("Comment", StringType(), True),  # noqa: FBT003
             ]
         )
-
-        # Create empty DataFrame with schema
         mock_log = spark_session.createDataFrame([], schema=schema_log)
 
         # Mock spark.read
         mock_read = mocker.patch("pyspark.sql.SparkSession.read", autospec=True)
         mock_read.table.side_effect = [mock_meta, mock_log]
 
-        # Create extraction instance
         extraction = ExtractNonSSFData(
             spark_session,
             run_month,
             source_container=source_container,
         )
 
-        # Test that calling with positional argument raises TypeError
-        with pytest.raises(
-            TypeError, match="takes 2 positional arguments but 3 were given"
-        ):
-            extraction.place_static_data([], True)  # noqa: FBT003 - Testing that positional bool fails
+        # Mock saveAsTable
+        mock_save_table = mocker.patch("pyspark.sql.DataFrameWriter.saveAsTable")
 
-        # Test that calling with keyword argument works
->       result = extraction.place_static_data([], deadline_passed=True)  # This should work
+        # Test convert_to_parquet
+        result = extraction.convert_to_parquet("NME", "TEST_FILE.json")
+        assert result is False
+        assert "Unsupported file format: .json" in caplog.text
+        # Verify that update_log_metadata was called with FAILURE
+>       mock_save_table.assert_called()
+E       AssertionError: Expected 'saveAsTable' to have been called.
 
-test\staging\test_extract_non_ssf_data.py:498:
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _  
-src\staging\extract_nonssf_data.py:136: in place_static_data
-    for file in self.dbutils.fs.ls(processed_folder)
-..\bsrc-etl-venv\lib\site-packages\databricks\sdk\dbutils.py:59: in ls
-    return [
-..\bsrc-etl-venv\lib\site-packages\databricks\sdk\dbutils.py:59: in <listcomp>
-    return [
-..\bsrc-etl-venv\lib\site-packages\databricks\sdk\mixins\files.py:620: in list
-    p = self._path(path)
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _  
+test\staging\test_extract_non_ssf_data.py:1470: AssertionError
+------------------------------------------------------------------------------------------ Captured stdout call ------------------------------------------------------------------------------------------ 
+2025-07-09 11:41:51 [ERROR] convert_to_parquet:  Unsupported file format: .json. Only .csv, .txt and .parquet are supported.
+2025-07-09 11:41:51 [ERROR] convert_to_parquet:  Unsupported file format: .json. Only .csv, .txt and .parquet are supported.
+------------------------------------------------------------------------------------------ Captured stderr call ------------------------------------------------------------------------------------------ 
 
-self = <databricks.sdk.mixins.files.DbfsExt object at 0x00000222FF9C85E0>
-src = ParseResult(scheme='abfss', netloc='test-container@bsrcdadls.dfs.core.windows.net', path='/LRD_STATIC/processed', params='', query='', fragment='')
+------------------------------------------------------------------------------------------- Captured log call -------------------------------------------------------------------------------------------- 
+ERROR    betl_src_poc_logger:extract_nonssf_data.py:427 Unsupported file format: .json. Only .csv, .txt and .parquet are supported.
+_________________________________________________________________ test_check_deadline_violations_mixed_scenarios[202503-test-container] __________________________________________________________________ 
 
-    def _path(self, src):
-        src = parse.urlparse(str(src))
-        if src.scheme and src.scheme not in self.__ALLOWED_SCHEMES:
->           raise ValueError(
-                f'unsupported scheme "{src.scheme}". DBUtils in the SDK only supports local, root DBFS, and '
-                "UC Volumes paths, not external locations or DBFS mount points."
+spark_session = <pyspark.sql.session.SparkSession object at 0x000001DCF00AC0A0>, mocker = <pytest_mock.plugin.MockerFixture object at 0x000001DCF0202410>, run_month = '202503'
+source_container = 'test-container', caplog = <_pytest.logging.LogCaptureFixture object at 0x000001DCF0388850>
+
+    @pytest.mark.parametrize(
+        ("run_month", "source_container"),
+        [("202503", "test-container")],
+    )
+    def test_check_deadline_violations_mixed_scenarios(
+        spark_session,
+        mocker,
+        run_month,
+        source_container,
+        caplog,
+    ):
+        """Test check_deadline_violations with mixed scenarios."""
+        # Create mock metadata DataFrame with various scenarios
+        schema_meta = [
+            "SourceSystem",
+            "SourceFileName",
+            "SourceFileFormat",
+            "SourceFileDelimiter",
+            "StgTableName",
+            "FileDeliveryStep",
+            "FileDeliveryStatus",
+            "Deadline",
+        ]
+
+        yesterday = date.today() - timedelta(days=1)  # noqa: DTZ011
+        tomorrow = date.today() + timedelta(days=1)  # noqa: DTZ011
+
+        mock_meta = spark_session.createDataFrame(
+            [
+                # File with passed deadline, not delivered
+                (
+                    "finob",
+                    "MISSING_FILE",
+                    ".csv",
+                    ",",
+                    "test_finob",
+                    0,
+                    "Expected",
+                    yesterday,
+                ),
+                # File with future deadline, not delivered (should not trigger violation)
+                (
+                    "nme",
+                    "FUTURE_FILE",
+                    ".parquet",
+                    ",",
+                    "test_nme",
+                    0,
+                    "Expected",
+                    tomorrow,
+                ),
+                # File with no deadline, not delivered (should not trigger violation)
+                (
+                    "finob",
+                    "NO_DEADLINE_FILE",
+                    ".csv",
+                    ",",
+                    "test_finob2",
+                    0,
+                    "Expected",
+                    None,
+                ),
+                # File with passed deadline as string
+                (
+                    "nme",
+                    "STRING_DEADLINE_FILE",
+                    ".csv",
+                    ",",
+                    "test_nme2",
+                    0,
+                    "Expected",
+                    yesterday.strftime("%Y-%m-%d"),
+                ),
+            ],
+            schema=schema_meta,
+        )
+
+        # Create empty log DataFrame
+        schema_log = StructType(
+            [
+                StructField("SourceSystem", StringType(), True),  # noqa: FBT003
+                StructField("SourceFileName", StringType(), True),  # noqa: FBT003
+                StructField("DeliveryNumber", IntegerType(), True),  # noqa: FBT003
+                StructField("FileDeliveryStep", IntegerType(), True),  # noqa: FBT003
+                StructField("FileDeliveryStatus", StringType(), True),  # noqa: FBT003
+                StructField("Result", StringType(), True),  # noqa: FBT003
+                StructField("LastUpdatedDateTimestamp", TimestampType(), True),  # noqa: FBT003
+                StructField("Comment", StringType(), True),  # noqa: FBT003
+            ]
+        )
+        mock_log = spark_session.createDataFrame([], schema=schema_log)
+
+        # Mock spark.read
+        mock_read = mocker.patch("pyspark.sql.SparkSession.read", autospec=True)
+        mock_read.table.side_effect = [mock_meta, mock_log]
+
+        extraction = ExtractNonSSFData(
+            spark_session,
+            run_month,
+            source_container=source_container,
+        )
+
+        # Mock write operations
+        mock_save_table = mocker.patch("pyspark.sql.DataFrameWriter.saveAsTable")
+
+        # Files delivered (only one file)
+        files_per_delivery_entity = [
+            {"source_system": "FINOB", "file_name": "NO_DEADLINE_FILE.csv"}
+        ]
+
+        # Call check_deadline_violations - should raise exception for 2 files
+        with pytest.raises(NonSSFExtractionError) as exc_info:
+>           extraction.check_deadline_violations(files_per_delivery_entity)
+
+test\staging\test_extract_non_ssf_data.py:1938:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _  
+src\staging\extract_nonssf_data.py:310: in check_deadline_violations
+    deadline_dt = datetime.strptime(deadline, "%Y-%m-%d").replace(
+C:\Program Files\Python310\lib\_strptime.py:568: in _strptime_datetime
+    tt, fraction, gmtoff_fraction = _strptime(data_string, format)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _  
+
+data_string = 'java.util.GregorianCalendar[time=?,areFieldsSet=false,areAllFieldsSet=false,lenient=true,zone=sun.util.calendar.ZoneI...WEEK=?,DAY_OF_WEEK_IN_MONTH=?,AM_PM=0,HOUR=0,HOUR_OF_DAY=0,MINUTE=0,SECOND=0,MILLISECOND=?,ZONE_OFFSET=?,DST_OFFSET=?]'
+format = '%Y-%m-%d'
+
+    def _strptime(data_string, format="%a %b %d %H:%M:%S %Y"):
+        """Return a 2-tuple consisting of a time struct and an int containing
+        the number of microseconds based on the input string and the
+        format string."""
+
+        for index, arg in enumerate([data_string, format]):
+            if not isinstance(arg, str):
+                msg = "strptime() argument {} must be str, not {}"
+                raise TypeError(msg.format(index, type(arg)))
+
+        global _TimeRE_cache, _regex_cache
+        with _cache_lock:
+            locale_time = _TimeRE_cache.locale_time
+            if (_getlang() != locale_time.lang or
+                time.tzname != locale_time.tzname or
+                time.daylight != locale_time.daylight):
+                _TimeRE_cache = TimeRE()
+                _regex_cache.clear()
+                locale_time = _TimeRE_cache.locale_time
+            if len(_regex_cache) > _CACHE_MAX_SIZE:
+                _regex_cache.clear()
+            format_regex = _regex_cache.get(format)
+            if not format_regex:
+                try:
+                    format_regex = _TimeRE_cache.compile(format)
+                # KeyError raised when a bad format is found; can be specified as
+                # \\, in which case it was a stray % but with a space after it
+                except KeyError as err:
+                    bad_directive = err.args[0]
+                    if bad_directive == "\\":
+                        bad_directive = "%"
+                    del err
+                    raise ValueError("'%s' is a bad directive in format '%s'" %
+                                        (bad_directive, format)) from None
+                # IndexError only occurs when the format string is "%"
+                except IndexError:
+                    raise ValueError("stray %% in format '%s'" % format) from None
+                _regex_cache[format] = format_regex
+        found = format_regex.match(data_string)
+        if not found:
+>           raise ValueError("time data %r does not match format %r" %
+                             (data_string, format))
+E           ValueError: time data 'java.util.GregorianCalendar[time=?,areFieldsSet=false,areAllFieldsSet=false,lenient=true,zone=sun.util.calendar.ZoneInfo[id="Europe/Bucharest",offset=7200000,dstSavings=3600000,useDaylight=true,transitions=136,lastRule=java.util.SimpleTimeZone[id=Europe/Bucharest,offset=7200000,dstSavings=3600000,useDaylight=true,startYear=0,startMode=2,startMonth=2,startDay=-1,startDayOfWeek=1,startTime=3600000,startTimeMode=2,endMode=2,endMonth=9,endDay=-1,endDayOfWeek=1,endTime=3600000,endTimeMode=2]],firstDayOfWeek=2,minimalDaysInFirstWeek=4,ERA=?,YEAR=2025,MONTH=6,WEEK_OF_YEAR=?,WEEK_OF_MONTH=?,DAY_OF_MONTH=8,DAY_OF_YEAR=?,DAY_OF_WEEK=?,DAY_OF_WEEK_IN_MONTH=?,AM_PM=0,HOUR=0,HOUR_OF_DAY=0,MINUTE=0,SECOND=0,MILLISECOND=?,ZONE_OFFSET=?,DST_OFFSET=?]' does not match format '%Y-%m-%d'
+
+C:\Program Files\Python310\lib\_strptime.py:349: ValueError
+------------------------------------------------------------------------------------------ Captured stderr call ------------------------------------------------------------------------------------------ 
+
+___________________________________________________________________ test_check_deadline_violations_no_metadata[202503-test-container] ____________________________________________________________________ 
+
+spark_session = <pyspark.sql.session.SparkSession object at 0x000001DCF00AC0A0>, mocker = <pytest_mock.plugin.MockerFixture object at 0x000001DCF031A740>, run_month = '202503'
+source_container = 'test-container'
+
+    @pytest.mark.parametrize(
+        ("run_month", "source_container"),
+        [("202503", "test-container")],
+    )
+    def test_check_deadline_violations_no_metadata(
+        spark_session,
+        mocker,
+        run_month,
+        source_container,
+    ):
+        """Test check_deadline_violations with empty metadata."""
+        # Create empty metadata DataFrame
+        schema_meta = [
+            "SourceSystem",
+            "SourceFileName",
+            "SourceFileFormat",
+            "SourceFileDelimiter",
+            "StgTableName",
+            "FileDeliveryStep",
+            "FileDeliveryStatus",
+            "Deadline",
+        ]
+>       mock_meta = spark_session.createDataFrame([], schema=schema_meta)
+
+test\staging\test_extract_non_ssf_data.py:1978:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _  
+..\bsrc-etl-venv\lib\site-packages\pyspark\sql\session.py:1443: in createDataFrame
+    return self._create_dataframe(
+..\bsrc-etl-venv\lib\site-packages\pyspark\sql\session.py:1485: in _create_dataframe
+    rdd, struct = self._createFromLocal(map(prepare, data), schema)
+..\bsrc-etl-venv\lib\site-packages\pyspark\sql\session.py:1093: in _createFromLocal
+    struct = self._inferSchemaFromList(data, names=schema)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _  
+
+self = <pyspark.sql.session.SparkSession object at 0x000001DCF00AC0A0>, data = []
+names = ['SourceSystem', 'SourceFileName', 'SourceFileFormat', 'SourceFileDelimiter', 'StgTableName', 'FileDeliveryStep', ...]
+
+    def _inferSchemaFromList(
+        self, data: Iterable[Any], names: Optional[List[str]] = None
+    ) -> StructType:
+        """
+        Infer schema from list of Row, dict, or tuple.
+
+        Parameters
+        ----------
+        data : iterable
+            list of Row, dict, or tuple
+        names : list, optional
+            list of column names
+
+        Returns
+        -------
+        :class:`pyspark.sql.types.StructType`
+        """
+        if not data:
+>           raise PySparkValueError(
+                error_class="CANNOT_INFER_EMPTY_SCHEMA",
+                message_parameters={},
             )
-E           ValueError: unsupported scheme "abfss". DBUtils in the SDK only supports local, root DBFS, and UC Volumes paths, not external locations or DBFS mount points.
+E           pyspark.errors.exceptions.base.PySparkValueError: [CANNOT_INFER_EMPTY_SCHEMA] Can not infer schema from empty dataset.
 
-..\bsrc-etl-venv\lib\site-packages\databricks\sdk\mixins\files.py:638: ValueError
--------------------------------------------------------------------------------------- Captured stderr call -------------------------------------------------------------------------------------- 
+..\bsrc-etl-venv\lib\site-packages\pyspark\sql\session.py:948: PySparkValueError
+_________________________________________________________________________ test_save_to_stg_table_failure[202503-test-container] __________________________________________________________________________ 
 
-======================================================================================== warnings summary ======================================================================================== 
+self = <unittest.mock._patch object at 0x000001DCF031BAF0>
+
+    def __enter__(self):
+        """Perform the patch."""
+        new, spec, spec_set = self.new, self.spec, self.spec_set
+        autospec, kwargs = self.autospec, self.kwargs
+        new_callable = self.new_callable
+        self.target = self.getter()
+
+        # normalise False to None
+        if spec is False:
+            spec = None
+        if spec_set is False:
+            spec_set = None
+        if autospec is False:
+            autospec = None
+
+        if spec is not None and autospec is not None:
+            raise TypeError("Can't specify spec and autospec")
+        if ((spec is not None or autospec is not None) and
+            spec_set not in (True, None)):
+            raise TypeError("Can't provide explicit spec_set *and* spec or autospec")
+
+        original, local = self.get_original()
+
+        if new is DEFAULT and autospec is None:
+            inherit = False
+            if spec is True:
+                # set spec to the object we are replacing
+                spec = original
+                if spec_set is True:
+                    spec_set = original
+                    spec = None
+            elif spec is not None:
+                if spec_set is True:
+                    spec_set = spec
+                    spec = None
+            elif spec_set is True:
+                spec_set = original
+
+            if spec is not None or spec_set is not None:
+                if original is DEFAULT:
+                    raise TypeError("Can't use 'spec' with create=True")
+                if isinstance(original, type):
+                    # If we're patching out a class and there is a spec
+                    inherit = True
+            if spec is None and _is_async_obj(original):
+                Klass = AsyncMock
+            else:
+                Klass = MagicMock
+            _kwargs = {}
+            if new_callable is not None:
+                Klass = new_callable
+            elif spec is not None or spec_set is not None:
+                this_spec = spec
+                if spec_set is not None:
+                    this_spec = spec_set
+                if _is_list(this_spec):
+                    not_callable = '__call__' not in this_spec
+                else:
+                    not_callable = not callable(this_spec)
+                if _is_async_obj(this_spec):
+                    Klass = AsyncMock
+                elif not_callable:
+                    Klass = NonCallableMagicMock
+
+            if spec is not None:
+                _kwargs['spec'] = spec
+            if spec_set is not None:
+                _kwargs['spec_set'] = spec_set
+
+            # add a name to mocks
+            if (isinstance(Klass, type) and
+                issubclass(Klass, NonCallableMock) and self.attribute):
+                _kwargs['name'] = self.attribute
+
+            _kwargs.update(kwargs)
+            new = Klass(**_kwargs)
+
+            if inherit and _is_instance_mock(new):
+                # we can only tell if the instance should be callable if the
+                # spec is not a list
+                this_spec = spec
+                if spec_set is not None:
+                    this_spec = spec_set
+                if (not _is_list(this_spec) and not
+                    _instance_callable(this_spec)):
+                    Klass = NonCallableMagicMock
+
+                _kwargs.pop('name')
+                new.return_value = Klass(_new_parent=new, _new_name='()',
+                                         **_kwargs)
+        elif autospec is not None:
+            # spec is ignored, new *must* be default, spec_set is treated
+            # as a boolean. Should we check spec is not None and that spec_set
+            # is a bool?
+            if new is not DEFAULT:
+                raise TypeError(
+                    "autospec creates the mock for you. Can't specify "
+                    "autospec and new."
+                )
+            if original is DEFAULT:
+                raise TypeError("Can't use 'autospec' with create=True")
+            spec_set = bool(spec_set)
+            if autospec is True:
+                autospec = original
+
+            if _is_instance_mock(self.target):
+                raise InvalidSpecError(
+                    f'Cannot autospec attr {self.attribute!r} as the patch '
+                    f'target has already been mocked out. '
+                    f'[target={self.target!r}, attr={autospec!r}]')
+            if _is_instance_mock(autospec):
+                target_name = getattr(self.target, '__name__', self.target)
+                raise InvalidSpecError(
+                    f'Cannot autospec attr {self.attribute!r} from target '
+                    f'{target_name!r} as it has already been mocked out. '
+                    f'[target={self.target!r}, attr={autospec!r}]')
+
+            new = create_autospec(autospec, spec_set=spec_set,
+                                  _name=self.attribute, **kwargs)
+        elif kwargs:
+            # can't set keyword args when we aren't creating the mock
+            # XXXX If new is a Mock we could call new.configure_mock(**kwargs)
+            raise TypeError("Can't pass kwargs to a mock we aren't creating")
+
+        new_attr = new
+
+        self.temp_original = original
+        self.is_local = local
+        self._exit_stack = contextlib.ExitStack()
+        try:
+>           setattr(self.target, self.attribute, new_attr)
+E           AttributeError: can't set attribute 'write'
+
+C:\Program Files\Python310\lib\unittest\mock.py:1556: AttributeError
+
+During handling of the above exception, another exception occurred:
+
+spark_session = <pyspark.sql.session.SparkSession object at 0x000001DCF00AC0A0>, mocker = <pytest_mock.plugin.MockerFixture object at 0x000001DCF0313130>, run_month = '202503'
+source_container = 'test-container'
+
+    @pytest.mark.parametrize(
+        ("run_month", "source_container"),
+        [("202503", "test-container")],
+    )
+    def test_save_to_stg_table_failure(
+        spark_session,
+        mocker,
+        run_month,
+        source_container,
+    ):
+        """Test save_to_stg_table failure handling."""
+        # Create mock metadata DataFrame
+        schema_meta = [
+            "SourceSystem",
+            "SourceFileName",
+            "SourceFileFormat",
+            "SourceFileDelimiter",
+            "StgTableName",
+            "FileDeliveryStep",
+            "FileDeliveryStatus",
+        ]
+        mock_meta = spark_session.createDataFrame(
+            [
+                (
+                    "nme",
+                    "TEST_FILE",
+                    ".csv",
+                    ",",
+                    "test_file",
+                    0,
+                    "Expected",
+                ),
+            ],
+            schema=schema_meta,
+        )
+
+        schema_log = StructType(
+            [
+                StructField("SourceSystem", StringType(), True),  # noqa: FBT003
+                StructField("SourceFileName", StringType(), True),  # noqa: FBT003
+                StructField("DeliveryNumber", IntegerType(), True),  # noqa: FBT003
+                StructField("FileDeliveryStep", IntegerType(), True),  # noqa: FBT003
+                StructField("FileDeliveryStatus", StringType(), True),  # noqa: FBT003
+                StructField("Result", StringType(), True),  # noqa: FBT003
+                StructField("LastUpdatedDateTimestamp", TimestampType(), True),  # noqa: FBT003
+                StructField("Comment", StringType(), True),  # noqa: FBT003
+            ]
+        )
+        mock_log = spark_session.createDataFrame([], schema=schema_log)
+
+        mock_read = mocker.patch("pyspark.sql.SparkSession.read", autospec=True)
+        mock_read.table.side_effect = [mock_meta, mock_log]
+
+        extraction = ExtractNonSSFData(
+            spark_session,
+            run_month,
+            source_container=source_container,
+        )
+
+        # Create a dummy DataFrame
+        dummy_df = spark_session.createDataFrame([(1, "test")], ["id", "value"])
+
+        # Mock the write operation to fail
+>       mock_write = mocker.patch.object(dummy_df, "write", new_callable=MagicMock)
+
+test\staging\test_extract_non_ssf_data.py:2231:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _  
+..\bsrc-etl-venv\lib\site-packages\pytest_mock\plugin.py:289: in object
+    return self._start_patch(
+..\bsrc-etl-venv\lib\site-packages\pytest_mock\plugin.py:258: in _start_patch
+    mocked: MockType = p.start()
+C:\Program Files\Python310\lib\unittest\mock.py:1595: in start
+    result = self.__enter__()
+C:\Program Files\Python310\lib\unittest\mock.py:1569: in __enter__
+    if not self.__exit__(*sys.exc_info()):
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _  
+
+self = <unittest.mock._patch object at 0x000001DCF031BAF0>, exc_info = (<class 'AttributeError'>, AttributeError("can't set attribute 'write'"), <traceback object at 0x000001DCF081A700>)
+
+    def __exit__(self, *exc_info):
+        """Undo the patch."""
+        if self.is_local and self.temp_original is not DEFAULT:
+            setattr(self.target, self.attribute, self.temp_original)
+        else:
+>           delattr(self.target, self.attribute)
+E           AttributeError: can't delete attribute 'write'
+
+C:\Program Files\Python310\lib\unittest\mock.py:1577: AttributeError
+_______________________________________________________________________ test_validate_data_quality_failure[202503-test-container] ________________________________________________________________________ 
+
+spark_session = <pyspark.sql.session.SparkSession object at 0x000001DCF00AC0A0>, mocker = <pytest_mock.plugin.MockerFixture object at 0x000001DCF03EBE50>, run_month = '202503'
+source_container = 'test-container'
+
+    @pytest.mark.parametrize(
+        ("run_month", "source_container"),
+        [("202503", "test-container")],
+    )
+    def test_validate_data_quality_failure(
+        spark_session,
+        mocker,
+        run_month,
+        source_container,
+    ):
+        """Test validate_data_quality failure handling."""
+        # Create mock metadata DataFrame
+        schema_meta = [
+            "SourceSystem",
+            "SourceFileName",
+            "SourceFileFormat",
+            "SourceFileDelimiter",
+            "StgTableName",
+            "FileDeliveryStep",
+            "FileDeliveryStatus",
+        ]
+        mock_meta = spark_session.createDataFrame(
+            [
+                (
+                    "nme",
+                    "TEST_FILE",
+                    ".csv",
+                    ",",
+                    "test_file",
+                    0,
+                    "Expected",
+                ),
+            ],
+            schema=schema_meta,
+        )
+
+        schema_log = StructType(
+            [
+                StructField("SourceSystem", StringType(), True),  # noqa: FBT003
+                StructField("SourceFileName", StringType(), True),  # noqa: FBT003
+                StructField("DeliveryNumber", IntegerType(), True),  # noqa: FBT003
+                StructField("FileDeliveryStep", IntegerType(), True),  # noqa: FBT003
+                StructField("FileDeliveryStatus", StringType(), True),  # noqa: FBT003
+                StructField("Result", StringType(), True),  # noqa: FBT003
+                StructField("LastUpdatedDateTimestamp", TimestampType(), True),  # noqa: FBT003
+                StructField("Comment", StringType(), True),  # noqa: FBT003
+            ]
+        )
+        mock_log = spark_session.createDataFrame([], schema=schema_log)
+
+        mock_read = mocker.patch("pyspark.sql.SparkSession.read", autospec=True)
+        mock_read.table.side_effect = [mock_meta, mock_log]
+
+        extraction = ExtractNonSSFData(
+            spark_session,
+            run_month,
+            source_container=source_container,
+        )
+
+        # Mock spark.read.table to raise exception when reading staging table
+        mock_read.table.side_effect = Exception("Table not found")
+
+        # Test validate_data_quality with failure
+>       result = extraction.validate_data_quality(
+            source_system="NME",
+            file_name="TEST_FILE.csv",
+            stg_table_name="test_file",
+        )
+
+test\staging\test_extract_non_ssf_data.py:2307:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _  
+src\staging\extract_base.py:386: in validate_data_quality
+    result = DQValidation(
+src\dq\dq_validation.py:52: in __init__
+    self.table = self.spark.read.table(f"{self.schema}.{table_name}")
+C:\Program Files\Python310\lib\unittest\mock.py:1114: in __call__
+    return self._mock_call(*args, **kwargs)
+C:\Program Files\Python310\lib\unittest\mock.py:1118: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _  
+
+self = <MagicMock name='read.table' id='2048434178368'>, args = ('stg_202503.test_file',), kwargs = {}, effect = Exception('Table not found')
+
+    def _execute_mock_call(self, /, *args, **kwargs):
+        # separate from _increment_mock_call so that awaited functions are
+        # executed separately from their call, also AsyncMock overrides this method
+
+        effect = self.side_effect
+        if effect is not None:
+            if _is_exception(effect):
+>               raise effect
+E               Exception: Table not found
+
+C:\Program Files\Python310\lib\unittest\mock.py:1173: Exception
+------------------------------------------------------------------------------------------ Captured stdout call ------------------------------------------------------------------------------------------ 
+2025-07-09 11:42:10 [INFO] standardize_delivery_entity:  Standardized delivery entity 'NME' to 'nme'
+2025-07-09 11:42:10 [INFO] standardize_delivery_entity:  Standardized delivery entity 'NME' to 'nme'
+------------------------------------------------------------------------------------------- Captured log call -------------------------------------------------------------------------------------------- 
+INFO     betl_src_poc_logger:parameter_utils.py:49 Standardized delivery entity 'NME' to 'nme'
+============================================================================================ warnings summary ============================================================================================ 
 ..\bsrc-etl-venv\lib\site-packages\holidays\deprecations\v1_incompatibility.py:40
   C:\Users\B25712\bsrc-etl-venv\bsrc-etl-venv\lib\site-packages\holidays\deprecations\v1_incompatibility.py:40: FutureIncompatibilityWarning:
 
@@ -144,7 +1017,7 @@ src\__init__.py                                     0      0   100%
 src\config\__init__.py                              0      0   100%
 src\config\business_logic.py                       52      0   100%
 src\config\constants.py                             1      0   100%
-src\config\exceptions.py                           21     21     0%   6-48
+src\config\exceptions.py                           21      0   100%
 src\config\process.py                               4      4     0%   7-10
 src\config\schema.py                                4      4     0%   3-52
 src\dq\__init__.py                                  0      0   100%
@@ -158,7 +1031,7 @@ src\month_setup\setup_new_month.py                 13     13     0%   17-84
 src\staging\__init__.py                             0      0   100%
 src\staging\extract_base.py                        65      8    88%   156, 162-164, 304-312
 src\staging\extract_dial_data.py                   65     65     0%   16-360
-src\staging\extract_nonssf_data.py                103     13    87%   126-130, 140-143, 146-150, 175-176, 209-211, 291-295
+src\staging\extract_nonssf_data.py                135      0   100%
 src\staging\extract_ssf_data.py                   164    164     0%   26-620
 src\staging\status.py                              57      5    91%   18, 53-54, 107, 151
 src\transform\__init__.py                           0      0   100%
@@ -185,12 +1058,18 @@ src\validate\transformations.py                   192    192     0%   21-593
 src\validate\validate_sql.py                       54     54     0%   13-130
 src\validate\yaml.py                               18     18     0%   3-34
 -----------------------------------------------------------------------------
-TOTAL                                            1430   1038    27%
+TOTAL                                            1462   1004    31%
 Coverage HTML written to dir htmlcov
 
-==================================================================================== short test summary info =====================================================================================
-FAILED test/staging/test_extract_non_ssf_data.py::test_place_static_data_keyword_only[202503-test-container] - ValueError: unsupported scheme "abfss". DBUtils in the SDK only supports local, root DBFS, and UC Volumes paths, not external locations or DBFS mount points.
-======================================================================= 1 failed, 3 passed, 1 warning in 99.91s (0:01:39) ======================================================================== 
-SUCCESS: The process with PID 2572 (child process of PID 24128) has been terminated.
-SUCCESS: The process with PID 24128 (child process of PID 24880) has been terminated.
-SUCCESS: The process with PID 24880 (child process of PID 20200) has been terminated.
+======================================================================================== short test summary info ========================================================================================= 
+FAILED test/staging/test_extract_non_ssf_data.py::test_place_static_data_with_redelivery_status[202503-test-container] - AssertionError: Expected 'cp' to have been called once. Called 0 times.
+FAILED test/staging/test_extract_non_ssf_data.py::test_get_deadline_from_metadata_variations[202503-test-container] - pyspark.errors.exceptions.base.PySparkValueError: [CANNOT_DETERMINE_TYPE] Some of types cannot be determined after inferring.
+FAILED test/staging/test_extract_non_ssf_data.py::test_convert_to_parquet_unsupported_format[202503-test-container] - AssertionError: Expected 'saveAsTable' to have been called.
+FAILED test/staging/test_extract_non_ssf_data.py::test_check_deadline_violations_mixed_scenarios[202503-test-container] - ValueError: time data 'java.util.GregorianCalendar[time=?,areFieldsSet=false,areAllFieldsSet=false,lenient=true,zone=sun.util.calendar.ZoneInfo[id="Europe/Bucharest",offset=7200000,dstSavings=360000...
+FAILED test/staging/test_extract_non_ssf_data.py::test_check_deadline_violations_no_metadata[202503-test-container] - pyspark.errors.exceptions.base.PySparkValueError: [CANNOT_INFER_EMPTY_SCHEMA] Can not infer schema from empty dataset.
+FAILED test/staging/test_extract_non_ssf_data.py::test_save_to_stg_table_failure[202503-test-container] - AttributeError: can't delete attribute 'write'
+FAILED test/staging/test_extract_non_ssf_data.py::test_validate_data_quality_failure[202503-test-container] - Exception: Table not found
+========================================================================== 7 failed, 19 passed, 1 warning in 172.98s (0:02:52) =========================================================================== 
+SUCCESS: The process with PID 8028 (child process of PID 3936) has been terminated.
+SUCCESS: The process with PID 3936 (child process of PID 11112) has been terminated.
+SUCCESS: The process with PID 11112 (child process of PID 4032) has been terminated.
