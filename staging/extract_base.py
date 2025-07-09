@@ -321,35 +321,45 @@ class ExtractStagingData:
         return log_entry
 
     def save_to_stg_table(
-        self,
-        data: DataFrame,
-        stg_table_name: str,
-        **kwargs: str,
-    ) -> bool:
-        """Save the input PySpark DataFrame to the staging schema in Unity Catalog.
+    self,
+    data: DataFrame,
+    stg_table_name: str,
+    source_system: str,
+    file_name: str,
+) -> bool:
+    """Save DataFrame to staging table.
 
-        This method writes the provided DataFrame to the specified staging table in UC.
-        It updates the log metadata with the result of the operation and returns
-        whether the operation was successful.
+    Args:
+        data: DataFrame to save
+        stg_table_name: Staging table name
+        source_system: Source system name
+        file_name: Source file name
 
-        Args:
-            data (DataFrame): The PySpark DataFrame to be saved.
-            stg_table_name (str): The name of the staging table in Unity Catalog.
-            **kwargs (str): Additional keyword arguments for log metadata updates.
-
-        Returns:
-            bool: True if the DataFrame was successfully saved, False otherwise.
-        """
-        full_path = f"{self.catalog}.stg_{self.run_month}.{stg_table_name}"
+    Returns:
+        bool: True if successful, False otherwise
+    """
+    full_path = f"bsrc_d.stg_{self.run_month}.{stg_table_name}"
+    
+    try:
         comment = self.write_table_with_exception(data, full_path)
-        result = not comment.startswith("ERROR")
         self.update_log_metadata(
-            file_delivery_status=self.file_delivery_status.LOADED_STG,
-            result=get_result(result),
+            source_system=source_system,
+            key=Path(file_name).stem,
+            file_delivery_status=self.file_delivery_status.SAVED_STG,
+            result="SUCCESS",
             comment=comment,
-            **self.update_kwargs(**kwargs),
         )
-        return result
+        return True
+    except Exception as e:
+        logger.error(f"Failed to save to staging table {full_path}: {str(e)}")
+        self.update_log_metadata(
+            source_system=source_system,
+            key=Path(file_name).stem,
+            file_delivery_status=self.file_delivery_status.SAVED_STG,
+            result="FAILURE",
+            comment=f"Failed to save to staging table: {str(e)}",
+        )
+        return False
 
     def validate_data_quality(
         self,
