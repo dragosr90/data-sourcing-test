@@ -1,0 +1,123 @@
+(bsrc-etl-venv) PS C:\Users\B25712\bsrc-etl-venv\bsrc-etl> pytest test/staging/test_extract_ssf_data.py     
+========================================================================================== test session starts ===========================================================================================
+platform win32 -- Python 3.10.11, pytest-8.3.3, pluggy-1.5.0
+rootdir: C:\Users\B25712\bsrc-etl-venv\bsrc-etl
+configfile: pyproject.toml
+plugins: cov-6.0.0, mock-3.14.0
+collected 10 items
+
+test\staging\test_extract_ssf_data.py ......FF..                                                                                                                                                    [100%]
+
+================================================================================================ FAILURES ================================================================================================ 
+_____________________________________________________________________________________________ test_dq_checks _____________________________________________________________________________________________ 
+
+spark_session = <pyspark.sql.session.SparkSession object at 0x000001B3D5476500>
+
+    def test_dq_checks(spark_session):
+>       assert ExtractSSFData(spark_session, run_month="999912").validate_data_quality(
+            delivery_entity="ALFAM",
+            ssf_table="col",
+            stg_table_name="col",
+        )
+E       TypeError: ExtractStagingData.validate_data_quality() missing 2 required positional arguments: 'source_system' and 'file_name'
+
+test\staging\test_extract_ssf_data.py:414: TypeError
+------------------------------------------------------------------------------------------ Captured stderr call ------------------------------------------------------------------------------------------ 
+
+___________________________________________________________________________________________ test_staging_load ____________________________________________________________________________________________ 
+
+spark_session = <pyspark.sql.session.SparkSession object at 0x000001B3D5476500>, mock_spark_write = <MagicMock name='saveAsTable' id='1871892162656'>
+
+    def test_staging_load(spark_session, mock_spark_write):
+>       assert ExtractSSFData(spark_session, run_month="999912").save_to_stg_table(
+            data=SparkLocal(spark_session).spark_read_local("col"),
+            stg_table_name="ssf_alfam_col",
+            delivery_entity="ALFAM",
+            ssf_table="col",
+        )
+E       TypeError: ExtractStagingData.save_to_stg_table() missing 2 required positional arguments: 'source_system' and 'file_name'
+
+test\staging\test_extract_ssf_data.py:422: TypeError
+------------------------------------------------------------------------------------------ Captured stderr call ------------------------------------------------------------------------------------------ 
+
+============================================================================================ warnings summary ============================================================================================ 
+..\bsrc-etl-venv\lib\site-packages\holidays\deprecations\v1_incompatibility.py:40
+  C:\Users\B25712\bsrc-etl-venv\bsrc-etl-venv\lib\site-packages\holidays\deprecations\v1_incompatibility.py:40: FutureIncompatibilityWarning:
+
+  This is a future version incompatibility warning from Holidays v0.62
+  to inform you about an upcoming change in our API versioning strategy that may affect your
+  project's dependencies. Starting from version 1.0 onwards, we will be following a loose form of
+  Semantic Versioning (SemVer, https://semver.org) to provide clearer communication regarding any
+  potential breaking changes.
+
+  This means that while we strive to maintain backward compatibility, there might be occasional
+  updates that introduce breaking changes to our API. To ensure the stability of your projects,
+  we highly recommend pinning the version of our API that you rely on. You can pin your current
+  holidays v0.x dependency (e.g., holidays==0.62) or limit it (e.g., holidays<1.0) in order to
+  avoid potentially unwanted upgrade to the version 1.0 when it's released (ETA 2025Q1-Q2).
+
+  If you have any questions or concerns regarding this change, please don't hesitate to reach out
+  to us via https://github.com/vacanza/holidays/discussions/1800.
+
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+
+---------- coverage: platform win32, python 3.10.11-final-0 ----------
+Name                                            Stmts   Miss  Cover   Missing
+-----------------------------------------------------------------------------
+src\__init__.py                                     0      0   100%
+src\config\__init__.py                              0      0   100%
+src\config\business_logic.py                       52      0   100%
+src\config\constants.py                             1      0   100%
+src\config\exceptions.py                           21     21     0%   6-48
+src\config\process.py                               4      4     0%   7-10
+src\config\schema.py                                4      4     0%   3-52
+src\dq\__init__.py                                  0      0   100%
+src\dq\dq_validation.py                           141    132     6%   47-112, 166-181, 197-249, 265-286, 318-350, 372-392, 414-486
+src\extract\__init__.py                             0      0   100%
+src\extract\master_data_sql.py                     90     71    21%   31-33, 37-38, 42, 59-88, 109-137, 149-156, 162-164, 188, 222-231, 285-300, 329-356
+src\month_setup\__init__.py                         0      0   100%
+src\month_setup\dial_derive_snapshotdate.py        32     27    16%   12-18, 28-37, 47-50, 69-85
+src\month_setup\metadata_log_tables.py             32     25    22%   23-84, 159, 166-203
+src\month_setup\setup_new_month.py                 13     13     0%   17-84
+src\staging\__init__.py                             0      0   100%
+src\staging\extract_base.py                       100     50    50%   168-173, 293, 296-318, 344-348, 352-354, 358-360, 385-412, 435-469, 485
+src\staging\extract_dial_data.py                   65     65     0%   16-360
+src\staging\extract_nonssf_data.py                136    136     0%   16-532
+src\staging\extract_ssf_data.py                   164     17    90%   269-273, 299-305, 320-321, 352, 459-460, 512-513, 516-519, 614-617
+src\staging\status.py                              57      5    91%   18, 53-54, 107, 129
+src\transform\__init__.py                           0      0   100%
+src\transform\table_write_and_comment.py           72     72     0%   14-237
+src\transform\transform_business_logic_sql.py       6      6     0%   6-25
+src\utils\__init__.py                               0      0   100%
+src\utils\alias_util.py                            13     13     0%   10-109
+src\utils\export_parquet.py                        15      6    60%   49-54, 67-68
+src\utils\get_dbutils.py                            2      0   100%
+src\utils\get_env.py                               10      0   100%
+src\utils\logging_util.py                           6      0   100%
+src\utils\parameter_utils.py                       23     13    43%   34, 38-42, 79-84, 105-116
+src\utils\parse_yaml.py                            22     22     0%   11-127
+src\utils\sources_util.py                          52     52     0%   7-218
+src\utils\table_logging.py                         14      3    79%   36-37, 55
+src\utils\table_schema.py                           3      3     0%   8-16
+src\utils\transformations_util.py                  17     12    29%   20-25, 39, 51, 65-68
+src\validate\__init__.py                            0      0   100%
+src\validate\base.py                                4      4     0%   4-7
+src\validate\expressions.py                        27     27     0%   15-75
+src\validate\run_all.py                             7      7     0%   12-48
+src\validate\sources.py                            29     29     0%   7-67
+src\validate\transformations.py                   192    192     0%   21-593
+src\validate\validate_sql.py                       54     54     0%   13-130
+src\validate\yaml.py                               18     18     0%   3-34
+-----------------------------------------------------------------------------
+TOTAL                                            1498   1103    26%
+Coverage HTML written to dir htmlcov
+
+======================================================================================== short test summary info ========================================================================================= 
+FAILED test/staging/test_extract_ssf_data.py::test_dq_checks - TypeError: ExtractStagingData.validate_data_quality() missing 2 required positional arguments: 'source_system' and 'file_name'
+FAILED test/staging/test_extract_ssf_data.py::test_staging_load - TypeError: ExtractStagingData.save_to_stg_table() missing 2 required positional arguments: 'source_system' and 'file_name'
+=========================================================================== 2 failed, 8 passed, 1 warning in 127.67s (0:02:07) =========================================================================== 
+SUCCESS: The process with PID 792 (child process of PID 15992) has been terminated.
+SUCCESS: The process with PID 15992 (child process of PID 17608) has been terminated.
+SUCCESS: The process with PID 17608 (child process of PID 16300) has been terminated.
