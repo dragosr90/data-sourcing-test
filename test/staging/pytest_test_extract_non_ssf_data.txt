@@ -6,144 +6,13 @@ configfile: pyproject.toml
 plugins: cov-6.0.0, mock-3.14.0
 collected 26 items
 
-test\staging\test_extract_non_ssf_data.py ........F.....F.........F.                                                                                                                                [100%]
+test\staging\test_extract_non_ssf_data.py ..............F...........                                                                                                                                [100%]
 
 ================================================================================================ FAILURES ================================================================================================ 
-__________________________________________________________________ test_place_static_data_with_redelivery_status[202503-test-container] __________________________________________________________________ 
-
-self = <MagicMock name='cp' id='1638260182992'>
-args = ('abfss://test-container@bsrcdadls.dfs.core.windows.net/LRD_STATIC/processed/TEST_FILE_20240101.txt', 'abfss://test-container@bsrcdadls.dfs.core.windows.net/LRD_STATIC/TEST_FILE.txt'), kwargs = {}
-msg = "Expected 'cp' to be called once. Called 0 times."
-
-    def assert_called_once_with(self, /, *args, **kwargs):
-        """assert that the mock was called exactly once and that that call was
-        with the specified arguments."""
-        if not self.call_count == 1:
-            msg = ("Expected '%s' to be called once. Called %s times.%s"
-                   % (self._mock_name or 'mock',
-                      self.call_count,
-                      self._calls_repr()))
->           raise AssertionError(msg)
-E           AssertionError: Expected 'cp' to be called once. Called 0 times.
-
-C:\Program Files\Python310\lib\unittest\mock.py:940: AssertionError
-
-During handling of the above exception, another exception occurred:
-
-spark_session = <pyspark.sql.session.SparkSession object at 0x0000017D6FCFC370>, mocker = <pytest_mock.plugin.MockerFixture object at 0x0000017D6FF4EC20>, run_month = '202503'
-source_container = 'test-container', caplog = <_pytest.logging.LogCaptureFixture object at 0x0000017D6FD5D420>
-
-    @pytest.mark.parametrize(
-        ("run_month", "source_container"),
-        [("202503", "test-container")],
-    )
-    def test_place_static_data_with_redelivery_status(
-        spark_session,
-        mocker,
-        run_month,
-        source_container,
-        caplog,
-    ):
-        """Test place_static_data processes files with REDELIVERY status."""
-        test_container = f"abfss://{source_container}@bsrcdadls.dfs.core.windows.net"
-
-        # Create mock metadata DataFrame with REDELIVERY status
-        schema_meta = [
-            "SourceSystem",
-            "SourceFileName",
-            "SourceFileFormat",
-            "SourceFileDelimiter",
-            "StgTableName",
-            "FileDeliveryStep",
-            "FileDeliveryStatus",
-        ]
-        mock_meta = spark_session.createDataFrame(
-            [
-                (
-                    "lrd_static",
-                    "TEST_FILE",
-                    ".txt",
-                    "|",
-                    "test_file",
-                    10,  # REDELIVERY status
-                    "Expected",
-                ),
-            ],
-            schema=schema_meta,
-        )
-
-        schema_log = StructType(
-            [
-                StructField("SourceSystem", StringType(), True),  # noqa: FBT003
-                StructField("SourceFileName", StringType(), True),  # noqa: FBT003
-                StructField("DeliveryNumber", IntegerType(), True),  # noqa: FBT003
-                StructField("FileDeliveryStep", IntegerType(), True),  # noqa: FBT003
-                StructField("FileDeliveryStatus", StringType(), True),  # noqa: FBT003
-                StructField("Result", StringType(), True),  # noqa: FBT003
-                StructField("LastUpdatedDateTimestamp", TimestampType(), True),  # noqa: FBT003
-                StructField("Comment", StringType(), True),  # noqa: FBT003
-            ]
-        )
-        mock_log = spark_session.createDataFrame([], schema=schema_log)
-
-        mock_read = mocker.patch("pyspark.sql.SparkSession.read", autospec=True)
-        mock_read.table.side_effect = [mock_meta, mock_log]
-
-        extraction = ExtractNonSSFData(
-            spark_session,
-            run_month,
-            source_container=source_container,
-        )
-
-        # Mock filesystem operations
-        mock_dbutils_fs_ls = mocker.patch.object(extraction.dbutils.fs, "ls")
-
-        # Return the processed file when checking the processed folder
-        mock_dbutils_fs_ls.side_effect = [
-            [
-                FileInfoMock(
-                    {
-                        "path": f"{test_container}/LRD_STATIC/processed/TEST_FILE_20240101.txt",  # noqa: E501
-                        "name": "TEST_FILE_20240101.txt",
-                    }
-                )
-            ],
-            [
-                FileInfoMock(
-                    {
-                        "path": f"{test_container}/LRD_STATIC/processed/TEST_FILE_20240101.txt",  # noqa: E501
-                        "name": "TEST_FILE_20240101.txt",
-                    }
-                )
-            ],
-        ]
-
-        mock_dbutils_fs_cp = mocker.patch.object(extraction.dbutils.fs, "cp")
-        # Also mock saveAsTable to prevent actual writes
-        mocker.patch("pyspark.sql.DataFrameWriter.saveAsTable")
-
-        # Call place_static_data with deadline passed - should process REDELIVERY files
-        result = extraction.place_static_data([], deadline_passed=True)
-
-        # Verify that the file was copied
->       mock_dbutils_fs_cp.assert_called_once_with(
-            f"{test_container}/LRD_STATIC/processed/TEST_FILE_20240101.txt",
-            f"{test_container}/LRD_STATIC/TEST_FILE.txt",
-        )
-E       AssertionError: Expected 'cp' to be called once. Called 0 times.
-
-test\staging\test_extract_non_ssf_data.py:954: AssertionError
------------------------------------------------------------------------------------------- Captured stdout call ------------------------------------------------------------------------------------------ 
-2025-07-09 15:10:58 [INFO] place_static_data:  File TEST_FILE is not in expected status. Skipping copy from processed folder.
-2025-07-09 15:10:58 [INFO] place_static_data:  File TEST_FILE is not in expected status. Skipping copy from processed folder.
------------------------------------------------------------------------------------------- Captured stderr call ------------------------------------------------------------------------------------------ 
-
-------------------------------------------------------------------------------------------- Captured log call -------------------------------------------------------------------------------------------- 
-INFO     betl_src_poc_logger:extract_nonssf_data.py:132 File TEST_FILE is not in expected status. Skipping copy from processed folder.
 ___________________________________________________________________ test_convert_to_parquet_unsupported_format[202503-test-container] ____________________________________________________________________ 
 
-spark_session = <pyspark.sql.session.SparkSession object at 0x0000017D6FCFC370>, mocker = <pytest_mock.plugin.MockerFixture object at 0x0000017D6FE2FC40>, run_month = '202503'
-source_container = 'test-container', caplog = <_pytest.logging.LogCaptureFixture object at 0x0000017D6FCFEE30>
+spark_session = <pyspark.sql.session.SparkSession object at 0x000001E7DE9D83D0>, mocker = <pytest_mock.plugin.MockerFixture object at 0x000001E7DEB63A30>, run_month = '202503'
+source_container = 'test-container', caplog = <_pytest.logging.LogCaptureFixture object at 0x000001E7DEC09090>
 
     @pytest.mark.parametrize(
         ("run_month", "source_container"),
@@ -196,7 +65,7 @@ source_container = 'test-container', caplog = <_pytest.logging.LogCaptureFixture
             ]
         )
         mock_log = spark_session.createDataFrame([], schema=schema_log)
-    
+
         # Mock spark.read
         mock_read = mocker.patch("pyspark.sql.SparkSession.read", autospec=True)
         mock_read.table.side_effect = [mock_meta, mock_log]
@@ -216,180 +85,17 @@ source_container = 'test-container', caplog = <_pytest.logging.LogCaptureFixture
         assert "Unsupported file format: .json" in caplog.text
         # Verify that update_log_metadata was called with FAILURE
         mock_update.assert_called_once()
-        assert mock_update.call_args[1]["result"] == "FAILURE"
->       assert "Unsupported file format: .json" in call_kwargs["comment"]  # type: ignore  # noqa: F821, PGH003
-E       NameError: name 'call_kwargs' is not defined
+>       call_kwargs = mock.update.call.args[1]
+E       AttributeError: module 'unittest.mock' has no attribute 'update'
 
-test\staging\test_extract_non_ssf_data.py:1495: NameError
------------------------------------------------------------------------------------------- Captured stdout call ------------------------------------------------------------------------------------------ 
-2025-07-09 15:11:17 [ERROR] convert_to_parquet:  Unsupported file format: .json. Only .csv, .txt and .parquet are supported.
-2025-07-09 15:11:17 [ERROR] convert_to_parquet:  Unsupported file format: .json. Only .csv, .txt and .parquet are supported.
+test\staging\test_extract_non_ssf_data.py:1495: AttributeError
+------------------------------------------------------------------------------------------ Captured stdout call ------------------------------------------------------------------------------------------
+2025-07-09 17:12:32 [ERROR] convert_to_parquet:  Unsupported file format: .json. Only .csv, .txt and .parquet are supported.
+2025-07-09 17:12:32 [ERROR] convert_to_parquet:  Unsupported file format: .json. Only .csv, .txt and .parquet are supported.
 ------------------------------------------------------------------------------------------ Captured stderr call ------------------------------------------------------------------------------------------ 
 
 ------------------------------------------------------------------------------------------- Captured log call -------------------------------------------------------------------------------------------- 
 ERROR    betl_src_poc_logger:extract_nonssf_data.py:428 Unsupported file format: .json. Only .csv, .txt and .parquet are supported.
-_________________________________________________________________________ test_save_to_stg_table_failure[202503-test-container] __________________________________________________________________________ 
-
-spark_session = <pyspark.sql.session.SparkSession object at 0x0000017D6FCFC370>, mocker = <pytest_mock.plugin.MockerFixture object at 0x0000017D6FFCF3A0>, run_month = '202503'
-source_container = 'test-container'
-
-    @pytest.mark.parametrize(
-        ("run_month", "source_container"),
-        [("202503", "test-container")],
-    )
-    def test_save_to_stg_table_failure(
-        spark_session,
-        mocker,
-        run_month,
-        source_container,
-    ):
-        """Test save_to_stg_table failure handling."""
-        # Create mock metadata DataFrame
-        schema_meta = [
-            "SourceSystem",
-            "SourceFileName",
-            "SourceFileFormat",
-            "SourceFileDelimiter",
-            "StgTableName",
-            "FileDeliveryStep",
-            "FileDeliveryStatus",
-        ]
-        mock_meta = spark_session.createDataFrame(
-            [
-                (
-                    "nme",
-                    "TEST_FILE",
-                    ".csv",
-                    ",",
-                    "test_file",
-                    0,
-                    "Expected",
-                ),
-            ],
-            schema=schema_meta,
-        )
-
-        schema_log = StructType(
-            [
-                StructField("SourceSystem", StringType(), True),  # noqa: FBT003
-                StructField("SourceFileName", StringType(), True),  # noqa: FBT003
-                StructField("DeliveryNumber", IntegerType(), True),  # noqa: FBT003
-                StructField("FileDeliveryStep", IntegerType(), True),  # noqa: FBT003
-                StructField("FileDeliveryStatus", StringType(), True),  # noqa: FBT003
-                StructField("Result", StringType(), True),  # noqa: FBT003
-                StructField("LastUpdatedDateTimestamp", TimestampType(), True),  # noqa: FBT003
-                StructField("Comment", StringType(), True),  # noqa: FBT003
-            ]
-        )
-        mock_log = spark_session.createDataFrame([], schema=schema_log)
-
-        mock_read = mocker.patch("pyspark.sql.SparkSession.read", autospec=True)
-        mock_read.table.side_effect = [mock_meta, mock_log]
-
-        extraction = ExtractNonSSFData(
-            spark_session,
-            run_month,
-            source_container=source_container,
-        )
-
-        # Create a dummy DataFrame
-        dummy_df = spark_session.createDataFrame([(1, "test")], ["id", "value"])
-
-        # Mock the saveAsTable to fail by patching at the method level
-        mock_save_table = mocker.patch("pyspark.sql.DataFrameWriter.saveAsTable")
-        mock_save_table.side_effect = Exception("Write failed")
-
-        # Test save_to_stg_table with failure
->       result = extraction.save_to_stg_table(
-            data=dummy_df,
-            stg_table_name="test_table",
-            source_system="NME",
-            file_name="TEST_FILE.csv",
-        )
-
-test\staging\test_extract_non_ssf_data.py:2270:
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _  
-src\staging\extract_base.py:396: in save_to_stg_table
-    self.update_log_metadata(
-src\staging\extract_base.py:218: in update_log_metadata
-    write_to_log(
-src\utils\table_logging.py:33: in write_to_log
-    log_entry_df.write.mode("append").saveAsTable(
-C:\Program Files\Python310\lib\unittest\mock.py:1114: in __call__
-    return self._mock_call(*args, **kwargs)
-C:\Program Files\Python310\lib\unittest\mock.py:1118: in _mock_call
-    return self._execute_mock_call(*args, **kwargs)
-C:\Program Files\Python310\lib\unittest\mock.py:1173: in _execute_mock_call
-    raise effect
-src\staging\extract_base.py:393: in save_to_stg_table
-    comment = self.write_table_with_exception(data, full_path)
-src\staging\extract_base.py:118: in write_table_with_exception
-    data.write.mode("overwrite").saveAsTable(full_table_name)
-C:\Program Files\Python310\lib\unittest\mock.py:1114: in __call__
-    return self._mock_call(*args, **kwargs)
-C:\Program Files\Python310\lib\unittest\mock.py:1118: in _mock_call
-    return self._execute_mock_call(*args, **kwargs)
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-
-self = <MagicMock name='saveAsTable' id='1638261563328'>, args = ('bsrc_d.stg_202503.test_table',), kwargs = {}, effect = Exception('Write failed')
-
-    def _execute_mock_call(self, /, *args, **kwargs):
-        # separate from _increment_mock_call so that awaited functions are
-        # executed separately from their call, also AsyncMock overrides this method
-
-        effect = self.side_effect
-        if effect is not None:
-            if _is_exception(effect):
->               raise effect
-E               Exception: Write failed
-
-C:\Program Files\Python310\lib\unittest\mock.py:1173: Exception
------------------------------------------------------------------------------------------- Captured stdout call ------------------------------------------------------------------------------------------ 
-2025-07-09 15:11:40 [ERROR] save_to_stg_table:  Failed to save to staging table bsrc_d.stg_202503.test_table
-Traceback (most recent call last):
-  File "C:\Users\B25712\bsrc-etl-venv\bsrc-etl\src\staging\extract_base.py", line 393, in save_to_stg_table
-    comment = self.write_table_with_exception(data, full_path)
-  File "C:\Users\B25712\bsrc-etl-venv\bsrc-etl\src\staging\extract_base.py", line 118, in write_table_with_exception
-    data.write.mode("overwrite").saveAsTable(full_table_name)
-  File "C:\Program Files\Python310\lib\unittest\mock.py", line 1114, in __call__
-    return self._mock_call(*args, **kwargs)
-  File "C:\Program Files\Python310\lib\unittest\mock.py", line 1118, in _mock_call
-    return self._execute_mock_call(*args, **kwargs)
-  File "C:\Program Files\Python310\lib\unittest\mock.py", line 1173, in _execute_mock_call
-    raise effect
-Exception: Write failed
-2025-07-09 15:11:40 [ERROR] save_to_stg_table:  Failed to save to staging table bsrc_d.stg_202503.test_table
-Traceback (most recent call last):
-  File "C:\Users\B25712\bsrc-etl-venv\bsrc-etl\src\staging\extract_base.py", line 393, in save_to_stg_table
-    comment = self.write_table_with_exception(data, full_path)
-  File "C:\Users\B25712\bsrc-etl-venv\bsrc-etl\src\staging\extract_base.py", line 118, in write_table_with_exception
-    data.write.mode("overwrite").saveAsTable(full_table_name)
-  File "C:\Program Files\Python310\lib\unittest\mock.py", line 1114, in __call__
-    return self._mock_call(*args, **kwargs)
-  File "C:\Program Files\Python310\lib\unittest\mock.py", line 1118, in _mock_call
-    return self._execute_mock_call(*args, **kwargs)
-  File "C:\Program Files\Python310\lib\unittest\mock.py", line 1173, in _execute_mock_call
-    raise effect
-Exception: Write failed
-2025-07-09 15:11:40 [INFO] update_log_metadata:  FileDeliveryStatus: Loaded Staging table for TEST_FILE
-2025-07-09 15:11:40 [INFO] update_log_metadata:  FileDeliveryStatus: Loaded Staging table for TEST_FILE
------------------------------------------------------------------------------------------- Captured stderr call ------------------------------------------------------------------------------------------ 
-
-------------------------------------------------------------------------------------------- Captured log call -------------------------------------------------------------------------------------------- 
-ERROR    betl_src_poc_logger:extract_base.py:395 Failed to save to staging table bsrc_d.stg_202503.test_table
-Traceback (most recent call last):
-  File "C:\Users\B25712\bsrc-etl-venv\bsrc-etl\src\staging\extract_base.py", line 393, in save_to_stg_table
-    comment = self.write_table_with_exception(data, full_path)
-  File "C:\Users\B25712\bsrc-etl-venv\bsrc-etl\src\staging\extract_base.py", line 118, in write_table_with_exception
-    data.write.mode("overwrite").saveAsTable(full_table_name)
-  File "C:\Program Files\Python310\lib\unittest\mock.py", line 1114, in __call__
-    return self._mock_call(*args, **kwargs)
-  File "C:\Program Files\Python310\lib\unittest\mock.py", line 1118, in _mock_call
-    return self._execute_mock_call(*args, **kwargs)
-  File "C:\Program Files\Python310\lib\unittest\mock.py", line 1173, in _execute_mock_call
-    raise effect
-Exception: Write failed
-INFO     betl_src_poc_logger:extract_base.py:214 FileDeliveryStatus: Loaded Staging table for TEST_FILE
 ============================================================================================ warnings summary ============================================================================================ 
 ..\bsrc-etl-venv\lib\site-packages\holidays\deprecations\v1_incompatibility.py:40
   C:\Users\B25712\bsrc-etl-venv\bsrc-etl-venv\lib\site-packages\holidays\deprecations\v1_incompatibility.py:40: FutureIncompatibilityWarning:
@@ -432,7 +138,7 @@ src\month_setup\dial_derive_snapshotdate.py        32     27    16%   12-18, 28-
 src\month_setup\metadata_log_tables.py             32     25    22%   23-84, 159, 166-203
 src\month_setup\setup_new_month.py                 13     13     0%   17-84
 src\staging\__init__.py                             0      0   100%
-src\staging\extract_base.py                       100     21    79%   165, 171-173, 313-321, 344-348, 354, 360, 386, 388, 403, 436, 438, 485
+src\staging\extract_base.py                       100     20    80%   165, 171-173, 313-321, 344-348, 354, 360, 386, 388, 436, 438, 485
 src\staging\extract_dial_data.py                   65     65     0%   16-360
 src\staging\extract_nonssf_data.py                136      1    99%   310
 src\staging\extract_ssf_data.py                   164    164     0%   26-620
@@ -461,14 +167,12 @@ src\validate\transformations.py                   192    192     0%   21-593
 src\validate\validate_sql.py                       54     54     0%   13-130
 src\validate\yaml.py                               18     18     0%   3-34
 -----------------------------------------------------------------------------
-TOTAL                                            1498   1039    31%
+TOTAL                                            1498   1038    31%
 Coverage HTML written to dir htmlcov
 
-======================================================================================== short test summary info =========================================================================================
-FAILED test/staging/test_extract_non_ssf_data.py::test_place_static_data_with_redelivery_status[202503-test-container] - AssertionError: Expected 'cp' to be called once. Called 0 times.
-FAILED test/staging/test_extract_non_ssf_data.py::test_convert_to_parquet_unsupported_format[202503-test-container] - NameError: name 'call_kwargs' is not defined
-FAILED test/staging/test_extract_non_ssf_data.py::test_save_to_stg_table_failure[202503-test-container] - Exception: Write failed
-========================================================================== 3 failed, 23 passed, 1 warning in 171.62s (0:02:51) =========================================================================== 
-SUCCESS: The process with PID 3792 (child process of PID 2452) has been terminated.
-SUCCESS: The process with PID 2452 (child process of PID 8144) has been terminated.
-SUCCESS: The process with PID 8144 (child process of PID 9988) has been terminated.
+======================================================================================== short test summary info ========================================================================================= 
+FAILED test/staging/test_extract_non_ssf_data.py::test_convert_to_parquet_unsupported_format[202503-test-container] - AttributeError: module 'unittest.mock' has no attribute 'update'
+========================================================================== 1 failed, 25 passed, 1 warning in 176.73s (0:02:56) =========================================================================== 
+SUCCESS: The process with PID 18080 (child process of PID 17564) has been terminated.
+SUCCESS: The process with PID 17564 (child process of PID 16336) has been terminated.
+SUCCESS: The process with PID 16336 (child process of PID 11360) has been terminated.
