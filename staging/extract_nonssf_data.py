@@ -435,7 +435,7 @@ class ExtractNonSSFData(ExtractStagingData):
             key=Path(file_name).stem,
             file_delivery_status=NonSSFStepStatus.CONVERTED_PARQUET,
             result="FAILURE",
-            comment=f"Unsupported file format: {source_file_format}"
+            comment=f"Unsupported file format: {source_file_format}. Only .csv, .txt and .parquet are supported."
         )
         return False
         
