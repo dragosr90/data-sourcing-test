@@ -3,177 +3,49 @@ ruff lint................................................................Failed
 - hook id: ruff
 - exit code: 1
 
-src\staging\extract_base.py:346:21: F821 Undefined name `Path`
+src\staging\extract_base.py:385:13: F841 Local variable `dq_validator` is assigned to but never used
     |
-344 |             self.update_log_metadata(
-345 |                 source_system=source_system,
-346 |                 key=Path(file_name).stem,
-    |                     ^^^^ F821
-347 |                 file_delivery_status=self.file_delivery_status.SAVED_STG,
-348 |                 result="SUCCESS",
+383 |         try:
+384 |             # Create DQValidation instance
+385 |             dq_validator = DQValidation(
+    |             ^^^^^^^^^^^^ F841
+386 |                 self.spark,
+387 |                 run_month=self.run_month,
     |
-
-src\staging\extract_base.py:351:13: TRY300 Consider moving this statement to an `else` block
-    |
-349 |                 comment=comment,
-350 |             )
-351 |             return True
-    |             ^^^^^^^^^^^ TRY300
-352 |         except Exception as e:
-353 |             logger.error(f"Failed to save to staging table {full_path}: {e!s}")
-    |
-
-src\staging\extract_base.py:352:16: BLE001 Do not catch blind exception: `Exception`
-    |
-350 |             )
-351 |             return True
-352 |         except Exception as e:
-    |                ^^^^^^^^^ BLE001
-353 |             logger.error(f"Failed to save to staging table {full_path}: {e!s}")
-354 |             self.update_log_metadata(
-    |
-
-src\staging\extract_base.py:353:13: TRY400 Use `logging.exception` instead of `logging.error`
-    |
-351 |             return True
-352 |         except Exception as e:
-353 |             logger.error(f"Failed to save to staging table {full_path}: {e!s}")
-    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ TRY400
-354 |             self.update_log_metadata(
-355 |                 source_system=source_system,
-    |
-    = help: Replace with `exception`
-
-src\staging\extract_base.py:356:21: F821 Undefined name `Path`
-    |
-354 |             self.update_log_metadata(
-355 |                 source_system=source_system,
-356 |                 key=Path(file_name).stem,
-    |                     ^^^^ F821
-357 |                 file_delivery_status=self.file_delivery_status.SAVED_STG,
-358 |                 result="FAILURE",
-    |
-
-src\staging\extract_base.py:390:21: F821 Undefined name `Path`
-    |
-388 |             self.update_log_metadata(
-389 |                 source_system=source_system,
-390 |                 key=Path(file_name).stem,
-    |                     ^^^^ F821
-391 |                 file_delivery_status=self.file_delivery_status.DQ_VALIDATED,
-392 |                 result=get_result(result),
-    |
-
-src\staging\extract_base.py:395:13: TRY300 Consider moving this statement to an `else` block
-    |
-393 |                 comment="Data quality validation completed",
-394 |             )
-395 |             return result
-    |             ^^^^^^^^^^^^^ TRY300
-396 |         except Exception as e:
-397 |             logger.error(
-    |
-
-src\staging\extract_base.py:396:16: BLE001 Do not catch blind exception: `Exception`
-    |
-394 |             )
-395 |             return result
-396 |         except Exception as e:
-    |                ^^^^^^^^^ BLE001
-397 |             logger.error(
-398 |                 f"Data quality validation failed for {stg_table_name}: {e!s}"
-    |
-
-src\staging\extract_base.py:397:13: TRY400 Use `logging.exception` instead of `logging.error`
-    |
-395 |               return result
-396 |           except Exception as e:
-397 |               logger.error(
-    |  _____________^
-398 | |                 f"Data quality validation failed for {stg_table_name}: {e!s}"
-399 | |             )
-    | |_____________^ TRY400
-400 |               self.update_log_metadata(
-401 |                   source_system=source_system,
-    |
-    = help: Replace with `exception`
-
-src\staging\extract_base.py:402:21: F821 Undefined name `Path`
-    |
-400 |             self.update_log_metadata(
-401 |                 source_system=source_system,
-402 |                 key=Path(file_name).stem,
-    |                     ^^^^ F821
-403 |                 file_delivery_status=self.file_delivery_status.DQ_VALIDATED,
-404 |                 result="FAILURE",
-    |
-
-Found 10 errors.
-No fixes available (2 hidden fixes can be enabled with the `--unsafe-fixes` option).
-test\staging\test_extract_non_ssf_data.py:947:5: F841 Local variable `mock_save_table` is assigned to but never used
-    |
-946 |     mock_dbutils_fs_cp = mocker.patch.object(extraction.dbutils.fs, "cp")
-947 |     mock_save_table = mocker.patch("pyspark.sql.DataFrameWriter.saveAsTable")
-    |     ^^^^^^^^^^^^^^^ F841
-948 |
-949 |     # Call place_static_data with deadline passed - should process REDELIVERY files
-    |
-    = help: Remove assignment to unused variable `mock_save_table`
+    = help: Remove assignment to unused variable `dq_validator`
 
 Found 1 error.
 No fixes available (1 hidden fix can be enabled with the `--unsafe-fixes` option).
 All checks passed!
 All checks passed!
+All checks passed!
 
-ruff format..............................................................Failed
-- hook id: ruff
-- files were modified by this hook
-
-21 files left unchanged
-1 file reformatted, 20 files left unchanged
-21 files left unchanged
-21 files left unchanged
-
+ruff format..............................................................Passed
 mypy.....................................................................Failed
 - hook id: mypy
 - exit code: 1
 
 Success: no issues found in 13 source files
-src\staging\extract_base.py:346: error: Name "Path" is not defined  [name-defined]
-src\staging\extract_base.py:347: error: Item "EnumMeta" of "type[DialStepStatus] | type[NonSSFStepStatus] | type[SSFStepStatus]" has no attribute "SAVED_STG"  [union-attr]
-src\staging\extract_base.py:356: error: Name "Path" is not defined  [name-defined]
-src\staging\extract_base.py:357: error: Item "EnumMeta" of "type[DialStepStatus] | type[NonSSFStepStatus] | type[SSFStepStatus]" has no attribute "SAVED_STG"  [union-attr]
-src\staging\extract_base.py:380: error: "DQValidation" has no attribute "execute_rules"  [attr-defined]
-src\staging\extract_base.py:390: error: Name "Path" is not defined  [name-defined]
-src\staging\extract_base.py:391: error: Item "EnumMeta" of "type[DialStepStatus] | type[NonSSFStepStatus] | type[SSFStepStatus]" has no attribute "DQ_VALIDATED"  [union-attr]
-src\staging\extract_base.py:400: error: Name "Path" is not defined  [name-defined]
-src\staging\extract_base.py:401: error: Item "EnumMeta" of "type[DialStepStatus] | type[NonSSFStepStatus] | type[SSFStepStatus]" has no attribute "DQ_VALIDATED"  [union-attr]
+src\staging\extract_base.py:352: error: Argument "file_delivery_status" to "update_log_metadata" of "ExtractStagingData" has incompatible type "int"; expected "DialStepStatus | NonSSFStepStatus | SSFStepStatus"  [arg-type]
+src\staging\extract_base.py:361: error: Argument "file_delivery_status" to "update_log_metadata" of "ExtractStagingData" has incompatible type "int"; expected "DialStepStatus | NonSSFStepStatus | SSFStepStatus"  [arg-type]
+src\staging\extract_base.py:402: error: Argument "file_delivery_status" to "update_log_metadata" of "ExtractStagingData" has incompatible type "int"; expected "DialStepStatus | NonSSFStepStatus | SSFStepStatus"  [arg-type]
+src\staging\extract_base.py:411: error: Argument "file_delivery_status" to "update_log_metadata" of "ExtractStagingData" has incompatible type "int"; expected "DialStepStatus | NonSSFStepStatus | SSFStepStatus"  [arg-type]
 scripts\ssf_staging_process.py:128: error: Unexpected keyword argument "ssf_table" for "save_to_stg_table" of "ExtractStagingData"  [call-arg]
-src\staging\extract_base.py:323: note: "save_to_stg_table" of "ExtractStagingData" defined here
+src\staging\extract_base.py:324: note: "save_to_stg_table" of "ExtractStagingData" defined here
 scripts\ssf_staging_process.py:128: error: Unexpected keyword argument "delivery_entity" for "save_to_stg_table" of "ExtractStagingData"  [call-arg]
-src\staging\extract_base.py:323: note: "save_to_stg_table" of "ExtractStagingData" defined here
+src\staging\extract_base.py:324: note: "save_to_stg_table" of "ExtractStagingData" defined here
 scripts\ssf_staging_process.py:145: error: Unexpected keyword argument "delivery_entity" for "validate_data_quality" of "ExtractStagingData"  [call-arg]
-src\staging\extract_base.py:363: note: "validate_data_quality" of "ExtractStagingData" defined here
+src\staging\extract_base.py:367: note: "validate_data_quality" of "ExtractStagingData" defined here
 scripts\ssf_staging_process.py:145: error: Unexpected keyword argument "ssf_table" for "validate_data_quality" of "ExtractStagingData"  [call-arg]
-src\staging\extract_base.py:363: note: "validate_data_quality" of "ExtractStagingData" defined here
-Found 13 errors in 2 files (checked 13 source files)
-src\staging\extract_base.py:346: error: Name "Path" is not defined  [name-defined]
-src\staging\extract_base.py:347: error: Item "EnumMeta" of "type[DialStepStatus] | type[NonSSFStepStatus] | type[SSFStepStatus]" has no attribute "SAVED_STG"  [union-attr]
-src\staging\extract_base.py:356: error: Name "Path" is not defined  [name-defined]
-src\staging\extract_base.py:357: error: Item "EnumMeta" of "type[DialStepStatus] | type[NonSSFStepStatus] | type[SSFStepStatus]" has no attribute "SAVED_STG"  [union-attr]
-src\staging\extract_base.py:380: error: "DQValidation" has no attribute "execute_rules"  [attr-defined]
-src\staging\extract_base.py:390: error: Name "Path" is not defined  [name-defined]
-src\staging\extract_base.py:391: error: Item "EnumMeta" of "type[DialStepStatus] | type[NonSSFStepStatus] | type[SSFStepStatus]" has no attribute "DQ_VALIDATED"  [union-attr]
-src\staging\extract_base.py:400: error: Name "Path" is not defined  [name-defined]
-src\staging\extract_base.py:401: error: Item "EnumMeta" of "type[DialStepStatus] | type[NonSSFStepStatus] | type[SSFStepStatus]" has no attribute "DQ_VALIDATED"  [union-attr]
-Found 9 errors in 1 file (checked 13 source files)
-src\staging\extract_base.py:346: error: Name "Path" is not defined  [name-defined]
-src\staging\extract_base.py:347: error: Item "EnumMeta" of "type[DialStepStatus] | type[NonSSFStepStatus] | type[SSFStepStatus]" has no attribute "SAVED_STG"  [union-attr]
-src\staging\extract_base.py:356: error: Name "Path" is not defined  [name-defined]
-src\staging\extract_base.py:357: error: Item "EnumMeta" of "type[DialStepStatus] | type[NonSSFStepStatus] | type[SSFStepStatus]" has no attribute "SAVED_STG"  [union-attr]
-src\staging\extract_base.py:380: error: "DQValidation" has no attribute "execute_rules"  [attr-defined]
-src\staging\extract_base.py:390: error: Name "Path" is not defined  [name-defined]
-src\staging\extract_base.py:391: error: Item "EnumMeta" of "type[DialStepStatus] | type[NonSSFStepStatus] | type[SSFStepStatus]" has no attribute "DQ_VALIDATED"  [union-attr]
-src\staging\extract_base.py:400: error: Name "Path" is not defined  [name-defined]
-src\staging\extract_base.py:401: error: Item "EnumMeta" of "type[DialStepStatus] | type[NonSSFStepStatus] | type[SSFStepStatus]" has no attribute "DQ_VALIDATED"  [union-attr]
-Found 9 errors in 1 file (checked 13 source files)
+src\staging\extract_base.py:367: note: "validate_data_quality" of "ExtractStagingData" defined here
+Found 8 errors in 2 files (checked 13 source files)
+src\staging\extract_base.py:352: error: Argument "file_delivery_status" to "update_log_metadata" of "ExtractStagingData" has incompatible type "int"; expected "DialStepStatus | NonSSFStepStatus | SSFStepStatus"  [arg-type]
+src\staging\extract_base.py:361: error: Argument "file_delivery_status" to "update_log_metadata" of "ExtractStagingData" has incompatible type "int"; expected "DialStepStatus | NonSSFStepStatus | SSFStepStatus"  [arg-type]
+src\staging\extract_base.py:402: error: Argument "file_delivery_status" to "update_log_metadata" of "ExtractStagingData" has incompatible type "int"; expected "DialStepStatus | NonSSFStepStatus | SSFStepStatus"  [arg-type]
+src\staging\extract_base.py:411: error: Argument "file_delivery_status" to "update_log_metadata" of "ExtractStagingData" has incompatible type "int"; expected "DialStepStatus | NonSSFStepStatus | SSFStepStatus"  [arg-type]
+Found 4 errors in 1 file (checked 13 source files)
+src\staging\extract_base.py:352: error: Argument "file_delivery_status" to "update_log_metadata" of "ExtractStagingData" has incompatible type "int"; expected "DialStepStatus | NonSSFStepStatus | SSFStepStatus"  [arg-type]
+src\staging\extract_base.py:361: error: Argument "file_delivery_status" to "update_log_metadata" of "ExtractStagingData" has incompatible type "int"; expected "DialStepStatus | NonSSFStepStatus | SSFStepStatus"  [arg-type]
+src\staging\extract_base.py:402: error: Argument "file_delivery_status" to "update_log_metadata" of "ExtractStagingData" has incompatible type "int"; expected "DialStepStatus | NonSSFStepStatus | SSFStepStatus"  [arg-type]
+src\staging\extract_base.py:411: error: Argument "file_delivery_status" to "update_log_metadata" of "ExtractStagingData" has incompatible type "int"; expected "DialStepStatus | NonSSFStepStatus | SSFStepStatus"  [arg-type]
+Found 4 errors in 1 file (checked 13 source files)
