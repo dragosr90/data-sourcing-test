@@ -899,14 +899,14 @@ def test_place_static_data_with_redelivery_status(
 
     schema_log = StructType(
         [
-            StructField("SourceSystem", StringType(), True),
-            StructField("SourceFileName", StringType(), True),
-            StructField("DeliveryNumber", IntegerType(), True),
-            StructField("FileDeliveryStep", IntegerType(), True),
-            StructField("FileDeliveryStatus", StringType(), True),
-            StructField("Result", StringType(), True),
-            StructField("LastUpdatedDateTimestamp", TimestampType(), True),
-            StructField("Comment", StringType(), True),
+            StructField("SourceSystem", StringType(), True),  # noqa: FBT003
+            StructField("SourceFileName", StringType(), True),  # noqa: FBT003
+            StructField("DeliveryNumber", IntegerType(), True),  # noqa: FBT003
+            StructField("FileDeliveryStep", IntegerType(), True),  # noqa: FBT003
+            StructField("FileDeliveryStatus", StringType(), True),  # noqa: FBT003
+            StructField("Result", StringType(), True),  # noqa: FBT003
+            StructField("LastUpdatedDateTimestamp", TimestampType(), True),  # noqa: FBT003
+            StructField("Comment", StringType(), True),  # noqa: FBT003
         ]
     )
     mock_log = spark_session.createDataFrame([], schema=schema_log)
@@ -922,13 +922,13 @@ def test_place_static_data_with_redelivery_status(
 
     # Mock filesystem operations
     mock_dbutils_fs_ls = mocker.patch.object(extraction.dbutils.fs, "ls")
-    
+
     # Return the processed file when checking the processed folder
     mock_dbutils_fs_ls.side_effect = [
         [
             FileInfoMock(
                 {
-                    "path": f"{test_container}/LRD_STATIC/processed/TEST_FILE_20240101.txt",
+                    "path": f"{test_container}/LRD_STATIC/processed/TEST_FILE_20240101.txt",  # noqa: E501
                     "name": "TEST_FILE_20240101.txt",
                 }
             )
@@ -936,7 +936,7 @@ def test_place_static_data_with_redelivery_status(
         [
             FileInfoMock(
                 {
-                    "path": f"{test_container}/LRD_STATIC/processed/TEST_FILE_20240101.txt",
+                    "path": f"{test_container}/LRD_STATIC/processed/TEST_FILE_20240101.txt",  # noqa: E501
                     "name": "TEST_FILE_20240101.txt",
                 }
             )
@@ -953,7 +953,7 @@ def test_place_static_data_with_redelivery_status(
     # Verify that the file was copied
     mock_dbutils_fs_cp.assert_called_once_with(
         f"{test_container}/LRD_STATIC/processed/TEST_FILE_20240101.txt",
-        f"{test_container}/LRD_STATIC/TEST_FILE.txt"
+        f"{test_container}/LRD_STATIC/TEST_FILE.txt",
     )
     assert len(result) == 1
     assert result[0] == f"{test_container}/LRD_STATIC/TEST_FILE.txt"
