@@ -1,7 +1,7 @@
 import re
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
-from unittest.mock import call, MagicMock
+from unittest.mock import call
 
 import pytest
 from pyspark.sql.types import (
@@ -716,7 +716,7 @@ def test_place_static_data_copy_failure(
 ):
     """Test place_static_data raises exception when copy fails."""
     test_container = f"abfss://{source_container}@bsrcdadls.dfs.core.windows.net"
-    
+
     # Create mock metadata DataFrame
     schema_meta = [
         "SourceSystem",
@@ -777,7 +777,7 @@ def test_place_static_data_copy_failure(
             }
         )
     ]
-    
+
     # Mock cp to raise OSError
     mock_dbutils_fs_cp = mocker.patch.object(extraction.dbutils.fs, "cp")
     mock_dbutils_fs_cp.side_effect = OSError("Permission denied")
@@ -785,7 +785,7 @@ def test_place_static_data_copy_failure(
     # Call place_static_data - should raise NonSSFExtractionError
     with pytest.raises(NonSSFExtractionError) as exc_info:
         extraction.place_static_data([], deadline_passed=True)
-    
+
     assert "Failed to copy" in str(exc_info.value)
     assert "Permission denied" in str(exc_info.value)
 
@@ -871,7 +871,7 @@ def test_place_static_data_with_redelivery_status(
 ):
     """Test place_static_data processes files with REDELIVERY status."""
     test_container = f"abfss://{source_container}@bsrcdadls.dfs.core.windows.net"
-    
+
     # Create mock metadata DataFrame with REDELIVERY status
     schema_meta = [
         "SourceSystem",
@@ -926,7 +926,7 @@ def test_place_static_data_with_redelivery_status(
         [
             FileInfoMock(
                 {
-                    "path": f"{test_container}/LRD_STATIC/processed/TEST_FILE_20240101.txt",
+                    "path": f"{test_container}/LRD_STATIC/processed/TEST_FILE_20240101.txt",  # noqa: E501
                     "name": "TEST_FILE_20240101.txt",
                 }
             )
@@ -934,13 +934,13 @@ def test_place_static_data_with_redelivery_status(
         [
             FileInfoMock(
                 {
-                    "path": f"{test_container}/LRD_STATIC/processed/TEST_FILE_20240101.txt",
+                    "path": f"{test_container}/LRD_STATIC/processed/TEST_FILE_20240101.txt",  # noqa: E501
                     "name": "TEST_FILE_20240101.txt",
                 }
             )
         ],
     ]
-    
+
     mock_dbutils_fs_cp = mocker.patch.object(extraction.dbutils.fs, "cp")
     mock_save_table = mocker.patch("pyspark.sql.DataFrameWriter.saveAsTable")
 
@@ -1042,7 +1042,7 @@ def test_place_static_data_multiple_processed_files(
 ):
     """Test place_static_data selects latest from multiple processed files."""
     test_container = f"abfss://{source_container}@bsrcdadls.dfs.core.windows.net"
-    
+
     # Create mock metadata DataFrame
     schema_meta = [
         "SourceSystem",
@@ -1098,19 +1098,19 @@ def test_place_static_data_multiple_processed_files(
         [
             FileInfoMock(
                 {
-                    "path": f"{test_container}/LRD_STATIC/processed/TEST_FILE_20240101.txt",
+                    "path": f"{test_container}/LRD_STATIC/processed/TEST_FILE_20240101.txt",  # noqa: E501
                     "name": "TEST_FILE_20240101.txt",
                 }
             ),
             FileInfoMock(
                 {
-                    "path": f"{test_container}/LRD_STATIC/processed/TEST_FILE_20240201.txt",
+                    "path": f"{test_container}/LRD_STATIC/processed/TEST_FILE_20240201.txt",  # noqa: E501
                     "name": "TEST_FILE_20240201.txt",
                 }
             ),
             FileInfoMock(
                 {
-                    "path": f"{test_container}/LRD_STATIC/processed/TEST_FILE_20240301.txt",
+                    "path": f"{test_container}/LRD_STATIC/processed/TEST_FILE_20240301.txt",  # noqa: E501
                     "name": "TEST_FILE_20240301.txt",
                 }
             ),
@@ -1119,13 +1119,13 @@ def test_place_static_data_multiple_processed_files(
         [
             FileInfoMock(
                 {
-                    "path": f"{test_container}/LRD_STATIC/processed/TEST_FILE_20240301.txt",
+                    "path": f"{test_container}/LRD_STATIC/processed/TEST_FILE_20240301.txt",  # noqa: E501
                     "name": "TEST_FILE_20240301.txt",
                 }
             )
         ],
     ]
-    
+
     mock_dbutils_fs_cp = mocker.patch.object(extraction.dbutils.fs, "cp")
 
     # Call place_static_data with deadline passed
@@ -1310,17 +1310,20 @@ def test_get_deadline_from_metadata_variations(
 
     # Test with no deadline - use explicit schema
     from pyspark.sql.types import DateType
-    schema_with_deadline = StructType([
-        StructField("SourceSystem", StringType(), True),
-        StructField("SourceFileName", StringType(), True),
-        StructField("SourceFileFormat", StringType(), True),
-        StructField("SourceFileDelimiter", StringType(), True),
-        StructField("StgTableName", StringType(), True),
-        StructField("FileDeliveryStep", IntegerType(), True),
-        StructField("FileDeliveryStatus", StringType(), True),
-        StructField("Deadline", DateType(), True),
-    ])
-    
+
+    schema_with_deadline = StructType(
+        [
+            StructField("SourceSystem", StringType(), True),  # noqa: FBT003
+            StructField("SourceFileName", StringType(), True),  # noqa: FBT003
+            StructField("SourceFileFormat", StringType(), True),  # noqa: FBT003
+            StructField("SourceFileDelimiter", StringType(), True),  # noqa: FBT003
+            StructField("StgTableName", StringType(), True),  # noqa: FBT003
+            StructField("FileDeliveryStep", IntegerType(), True),  # noqa: FBT003
+            StructField("FileDeliveryStatus", StringType(), True),  # noqa: FBT003
+            StructField("Deadline", DateType(), True),  # noqa: FBT003
+        ]
+    )
+
     mock_meta3 = spark_session.createDataFrame(
         [
             (
@@ -1853,18 +1856,20 @@ def test_check_deadline_violations_mixed_scenarios(
     """Test check_deadline_violations with mixed scenarios."""
     # Import DateType for proper schema definition
     from pyspark.sql.types import DateType
-    
+
     # Create mock metadata DataFrame with various scenarios
-    schema_meta = StructType([
-        StructField("SourceSystem", StringType(), True),
-        StructField("SourceFileName", StringType(), True),
-        StructField("SourceFileFormat", StringType(), True),
-        StructField("SourceFileDelimiter", StringType(), True),
-        StructField("StgTableName", StringType(), True),
-        StructField("FileDeliveryStep", IntegerType(), True),
-        StructField("FileDeliveryStatus", StringType(), True),
-        StructField("Deadline", DateType(), True),  # Explicitly set DateType
-    ])
+    schema_meta = StructType(
+        [
+            StructField("SourceSystem", StringType(), True),  # noqa: FBT003
+            StructField("SourceFileName", StringType(), True),  # noqa: FBT003
+            StructField("SourceFileFormat", StringType(), True),  # noqa: FBT003
+            StructField("SourceFileDelimiter", StringType(), True),  # noqa: FBT003
+            StructField("StgTableName", StringType(), True),  # noqa: FBT003
+            StructField("FileDeliveryStep", IntegerType(), True),  # noqa: FBT003
+            StructField("FileDeliveryStatus", StringType(), True),  # noqa: FBT003
+            StructField("Deadline", DateType(), True),  # noqa: FBT003
+        ]
+    )
 
     yesterday = date.today() - timedelta(days=1)  # noqa: DTZ011
     tomorrow = date.today() + timedelta(days=1)  # noqa: DTZ011
@@ -1985,18 +1990,20 @@ def test_check_deadline_violations_no_metadata(
     """Test check_deadline_violations with empty metadata."""
     # Import DateType for proper schema definition
     from pyspark.sql.types import DateType
-    
+
     # Create empty metadata DataFrame with explicit schema
-    schema_meta = StructType([
-        StructField("SourceSystem", StringType(), True),
-        StructField("SourceFileName", StringType(), True),
-        StructField("SourceFileFormat", StringType(), True),
-        StructField("SourceFileDelimiter", StringType(), True),
-        StructField("StgTableName", StringType(), True),
-        StructField("FileDeliveryStep", IntegerType(), True),
-        StructField("FileDeliveryStatus", StringType(), True),
-        StructField("Deadline", DateType(), True),
-    ])
+    schema_meta = StructType(
+        [
+            StructField("SourceSystem", StringType(), True),  # noqa: FBT003
+            StructField("SourceFileName", StringType(), True),  # noqa: FBT003
+            StructField("SourceFileFormat", StringType(), True),  # noqa: FBT003
+            StructField("SourceFileDelimiter", StringType(), True),  # noqa: FBT003
+            StructField("StgTableName", StringType(), True),  # noqa: FBT003
+            StructField("FileDeliveryStep", IntegerType(), True),  # noqa: FBT003
+            StructField("FileDeliveryStatus", StringType(), True),  # noqa: FBT003
+            StructField("Deadline", DateType(), True),  # noqa: FBT003
+        ]
+    )
     mock_meta = spark_session.createDataFrame([], schema=schema_meta)
 
     schema_log = StructType(
@@ -2105,7 +2112,7 @@ def test_get_all_files_with_parquet_directory(
 ):
     """Test get_all_files correctly handles parquet directories."""
     test_container = f"abfss://{source_container}@bsrcdadls.dfs.core.windows.net"
-    
+
     # Create mock metadata DataFrame
     schema_meta = [
         "SourceSystem",
