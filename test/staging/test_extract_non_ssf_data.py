@@ -1,11 +1,10 @@
 import re
-from datetime import datetime, timedelta, timezone, date
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from unittest.mock import call
 
 import pytest
 from pyspark.sql.types import (
-    DateType,
     IntegerType,
     StringType,
     StructField,
@@ -14,9 +13,7 @@ from pyspark.sql.types import (
 )
 
 from src.config.exceptions import NonSSFExtractionError
-from src.config.process import ProcessLogConfig
 from src.staging.extract_nonssf_data import ExtractNonSSFData
-from src.staging.status import NonSSFStepStatus
 
 
 class FileInfoMock(dict):
@@ -590,8 +587,10 @@ def test_check_deadline_violations_with_dates(
 
     # Call place_static_data with deadline passed
     result = extraction.place_static_data([], deadline_passed=True)
-    
-    assert "File TEST_FILE not delivered and not found in LRD_STATIC/processed folder" in caplog.text
+    assert (
+        "File TEST_FILE not delivered and not found in LRD_STATIC/processed folder"
+        in caplog.text
+    )
     assert len(result) == 0
 
 
@@ -607,7 +606,6 @@ def test_place_static_data_copy_failure(
 ):
     """Test place_static_data raises exception when copy fails."""
     test_container = f"abfss://{source_container}@bsrcdadls.dfs.core.windows.net"
-    
     # Create mock metadata DataFrame
     schema_meta = [
         "SourceSystem",
@@ -661,12 +659,13 @@ def test_place_static_data_copy_failure(
     # Mock filesystem operations
     mock_dbutils_fs_ls = mocker.patch.object(extraction.dbutils.fs, "ls")
     mock_dbutils_fs_ls.return_value = [
-        FileInfoMock({
-            "path": f"{test_container}/LRD_STATIC/processed/TEST_FILE_20240101.txt",
-            "name": "TEST_FILE_20240101.txt",
-        })
+        FileInfoMock(
+            {
+                "path": f"{test_container}/LRD_STATIC/processed/TEST_FILE_20240101.txt",
+                "name": "TEST_FILE_20240101.txt",
+            }
+        )
     ]
-    
     # Mock cp to raise OSError
     mock_dbutils_fs_cp = mocker.patch.object(extraction.dbutils.fs, "cp")
     mock_dbutils_fs_cp.side_effect = OSError("Permission denied")
@@ -674,7 +673,6 @@ def test_place_static_data_copy_failure(
     # Call place_static_data - should raise NonSSFExtractionError
     with pytest.raises(NonSSFExtractionError) as exc_info:
         extraction.place_static_data([], deadline_passed=True)
-    
     assert "Failed to copy" in str(exc_info.value)
     assert "Permission denied" in str(exc_info.value)
 
@@ -751,7 +749,6 @@ def test_get_all_files_os_error(
 
     # Call get_all_files
     result = extraction.get_all_files()
-    
     assert "Could not access folder NME: Permission denied for NME" in caplog.text
     assert len(result) == 0  # No files found due to error
 
@@ -823,7 +820,6 @@ def test_convert_to_parquet_unsupported_format(
 
     # Test convert_to_parquet
     result = extraction.convert_to_parquet("NME", "TEST_FILE.json")
-    
     assert result is False
     assert "Unsupported file format: .json" in caplog.text
     # Verify that update_log_metadata was called with FAILURE
@@ -900,7 +896,6 @@ def test_move_source_file_failure(
 
     # Test move_source_file
     result = extraction.move_source_file("NME", "TEST_FILE.csv")
-    
     assert result is False
     # Verify that update_log_metadata was called with failure comment
     mock_save_table.assert_called()
@@ -988,14 +983,12 @@ def test_get_deadline_from_metadata_variations(
         ],
         schema=schema_meta,
     )
-    
     mock_read.table.side_effect = [mock_meta2, mock_log]
     extraction2 = ExtractNonSSFData(
         spark_session,
         run_month,
         source_container=source_container,
     )
-    
     deadline2 = extraction2.get_deadline_from_metadata("finob", "TEST_FILE2")
     assert deadline2 is not None
     assert deadline2.strftime("%Y-%m-%d") == "2025-07-02"
@@ -1016,14 +1009,12 @@ def test_get_deadline_from_metadata_variations(
         ],
         schema=schema_meta,
     )
-    
     mock_read.table.side_effect = [mock_meta3, mock_log]
     extraction3 = ExtractNonSSFData(
         spark_session,
         run_month,
         source_container=source_container,
     )
-    
     deadline3 = extraction3.get_deadline_from_metadata("lrd_static", "TEST_FILE3")
     assert deadline3 is None
 
@@ -1143,80 +1134,18 @@ def test_check_deadline_violations_mixed_scenarios(
         extraction.check_deadline_violations(files_per_delivery_entity)
 
     error_msg = str(exc_info.value)
-    
     # Should include only files with passed deadlines
     assert "finob/MISSING_FILE" in error_msg
     assert "nme/STRING_DEADLINE_FILE" in error_msg
-    
     # Should NOT include files with future or no deadlines
     assert "FUTURE_FILE" not in error_msg
     assert "NO_DEADLINE_FILE" not in error_msg
-    
     # Check that exactly 2 metadata updates were made (for the 2 violations)
     metadata_calls = [
         call
         for call in mock_save_table.call_args_list
         if "metadata_nonssf" in str(call)
     ]
-    assert len(metadata_calls) == 2", StringType(), True),  # noqa: FBT003
-            StructField("DeliveryNumber", IntegerType(), True),  # noqa: FBT003
-            StructField("FileDeliveryStep", IntegerType(), True),  # noqa: FBT003
-            StructField("FileDeliveryStatus", StringType(), True),  # noqa: FBT003
-            StructField("Result", StringType(), True),  # noqa: FBT003
-            StructField("LastUpdatedDateTimestamp", TimestampType(), True),  # noqa: FBT003
-            StructField("Comment", StringType(), True),  # noqa: FBT003
-        ]
-    )
-    mock_log = spark_session.createDataFrame([], schema=schema_log)
-
-    # Mock spark.read
-    mock_read = mocker.patch("pyspark.sql.SparkSession.read", autospec=True)
-    mock_read.table.side_effect = [mock_meta, mock_log]
-
-    # Create extraction instance
-    extraction = ExtractNonSSFData(
-        spark_session,
-        run_month,
-        source_container=source_container,
-    )
-
-    # Mock write operations
-    mock_save_table = mocker.patch("pyspark.sql.DataFrameWriter.saveAsTable")
-
-    # Empty list of files (no files delivered)
-    files_per_delivery_entity = []
-
-    # Call check_deadline_violations - should raise exception
-    with pytest.raises(NonSSFExtractionError) as exc_info:
-        extraction.check_deadline_violations(files_per_delivery_entity)
-
-    # Check that the error message includes deadline dates
-    error_msg = str(exc_info.value)
-    # The error message format includes "deadline: YYYY-MM-DD HH:MM:SS UTC"
-    assert f"deadline: {yesterday} 00:00:00 UTC" in error_msg
-    assert "Missing files after deadline" in error_msg
-    # Verify both files are mentioned
-    assert "finob/MISSING_FINOB_FILE" in error_msg
-    assert "nme/MISSING_NME_FILE" in error_msg
-
-    # Check log messages include deadline dates for both files
-    assert (
-        f"Deadline passed ({yesterday} 00:00:00 UTC): Missing expected file MISSING_FINOB_FILE from finob"  # noqa: E501
-        in caplog.text
-    )
-    assert (
-        f"Deadline passed ({yesterday} 00:00:00 UTC): Missing expected file MISSING_NME_FILE from nme"  # noqa: E501
-        in caplog.text
-    )
-
-    # Verify update_log_metadata was called with deadline in comment
-    # Check that saveAsTable was called for metadata updates
-    metadata_calls = [
-        call
-        for call in mock_save_table.call_args_list
-        if "metadata_nonssf" in str(call)
-    ]
-    # Should have 2 metadata updates - one for each missing file
     assert len(metadata_calls) == 2
 
 
@@ -1301,6 +1230,7 @@ def test_check_deadline_violations_future_deadline(
 
 # Additional test cases for better coverage
 
+
 @pytest.mark.parametrize(
     ("run_month", "source_container"),
     [("202503", "test-container")],
@@ -1314,7 +1244,6 @@ def test_place_static_data_with_non_expected_status(
 ):
     """Test place_static_data skips files not in expected status."""
     test_container = f"abfss://{source_container}@bsrcdadls.dfs.core.windows.net"
-    
     # Create mock metadata DataFrame with non-expected status
     schema_meta = [
         "SourceSystem",
@@ -1367,7 +1296,6 @@ def test_place_static_data_with_non_expected_status(
 
     # Call place_static_data with deadline passed
     result = extraction.place_static_data([], deadline_passed=True)
-    
     assert "File TEST_FILE is not in expected status" in caplog.text
     assert len(result) == 0
 
@@ -1385,7 +1313,6 @@ def test_place_static_data_no_processed_files(
 ):
     """Test place_static_data when no processed files are found."""
     test_container = f"abfss://{source_container}@bsrcdadls.dfs.core.windows.net"
-    
     # Create mock metadata DataFrame
     schema_meta = [
         "SourceSystem",
@@ -1442,6 +1369,8 @@ def test_place_static_data_no_processed_files(
 
     # Call place_static_data with deadline passed
     result = extraction.place_static_data([], deadline_passed=True)
-    
-    assert "File TEST_FILE not delivered and not found in LRD_STATIC/processed folder" in caplog.text
+    assert (
+        "File TEST_FILE not delivered and not found in LRD_STATIC/processed folder"
+        in caplog.text
+    )
     assert len(result) == 0
