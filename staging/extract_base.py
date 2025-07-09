@@ -320,13 +320,42 @@ class ExtractStagingData:
             }
         return log_entry
 
-    def save_to_stg_table(
+    def _get_enum_member_by_value(self, value: int) -> "StepStatusInstanceTypes":
+    """Get enum member by its value.
+    
+    Args:
+        value: The enum value to search for
+        
+    Returns:
+        The enum member with the given value
+        
+    Raises:
+        ValueError: If no enum member with the given value exists
+    """
+    for member in self.file_delivery_status:
+        if member.value == value:
+            return member
+    raise ValueError(f"No enum member with value {value} in {self.file_delivery_status}")
+
+def _get_save_status(self) -> "StepStatusInstanceTypes":
+    """Get the appropriate status for save operations."""
+    if hasattr(self.file_delivery_status, 'LOADED_STG'):
+        return self.file_delivery_status.LOADED_STG
+    return self._get_enum_member_by_value(SAVED_STG_VALUE)
+
+def _get_dq_status(self) -> "StepStatusInstanceTypes":
+    """Get the appropriate status for DQ validation."""
+    if hasattr(self.file_delivery_status, 'CHECKED_DQ'):
+        return self.file_delivery_status.CHECKED_DQ
+    return self._get_enum_member_by_value(CHECKED_DQ_VALUE)
+
+def save_to_stg_table(
     self,
     data: DataFrame,
     stg_table_name: str,
     source_system: str,
     file_name: str,
-    **kwargs: Any,  # Type annotation for kwargs
+    **kwargs: Dict[str, str],  # More specific type annotation
 ) -> bool:
     """Save DataFrame to staging table.
 
@@ -336,64 +365,41 @@ class ExtractStagingData:
         source_system: Source system name
         file_name: Source file name
         **kwargs: Additional keyword arguments for backward compatibility
+            - ssf_table: Alternative table name for SSF process
+            - delivery_entity: Alternative source system name for SSF process
 
     Returns:
         bool: True if successful, False otherwise
     """
-    full_path = f"bsrc_d.stg_{self.run_month}.{stg_table_name}"
-    
-    # For backward compatibility with SSF process
+    # Handle backward compatibility
     if 'ssf_table' in kwargs:
         stg_table_name = kwargs['ssf_table']
-        full_path = f"bsrc_d.stg_{self.run_month}.{stg_table_name}"
     if 'delivery_entity' in kwargs:
         source_system = kwargs['delivery_entity']
+    
+    full_path = f"bsrc_d.stg_{self.run_month}.{stg_table_name}"
     
     try:
         comment = self.write_table_with_exception(data, full_path)
     except Exception:
         logger.exception(f"Failed to save to staging table {full_path}")
-        # Use the appropriate enum member based on the class
-        # All status enums have LOADED_STG = 5
-        if hasattr(self.file_delivery_status, 'LOADED_STG'):
-            status = self.file_delivery_status.LOADED_STG
-        else:
-            # Fallback: get the enum member with value 5
-            for member in self.file_delivery_status:
-                if member.value == 5:
-                    status = member
-                    break
-            else:
-                # If still not found, this is an error in the enum definition
-                raise ValueError(f"No enum member with value 5 in {self.file_delivery_status}")
-                
         self.update_log_metadata(
             source_system=source_system,
             key=Path(file_name).stem,
-            file_delivery_status=status,
+            file_delivery_status=self._get_save_status(),
             result="FAILURE",
             comment="Failed to save to staging table",
         )
         return False
-    else:
-        if hasattr(self.file_delivery_status, 'LOADED_STG'):
-            status = self.file_delivery_status.LOADED_STG
-        else:
-            for member in self.file_delivery_status:
-                if member.value == 5:
-                    status = member
-                    break
-            else:
-                raise ValueError(f"No enum member with value 5 in {self.file_delivery_status}")
-                
-        self.update_log_metadata(
-            source_system=source_system,
-            key=Path(file_name).stem,
-            file_delivery_status=status,
-            result="SUCCESS",
-            comment=comment,
-        )
-        return True
+    
+    self.update_log_metadata(
+        source_system=source_system,
+        key=Path(file_name).stem,
+        file_delivery_status=self._get_save_status(),
+        result="SUCCESS",
+        comment=comment,
+    )
+    return True
 
 
 def validate_data_quality(
@@ -401,7 +407,7 @@ def validate_data_quality(
     source_system: str,
     file_name: str,
     stg_table_name: str,
-    **kwargs: Any,  # Type annotation for kwargs
+    **kwargs: Dict[str, str],  # More specific type annotation
 ) -> bool:
     """Validate data quality for the staging table.
 
@@ -410,11 +416,13 @@ def validate_data_quality(
         file_name: Source file name
         stg_table_name: Staging table name
         **kwargs: Additional keyword arguments for backward compatibility
+            - ssf_table: Alternative table name for SSF process
+            - delivery_entity: Alternative source system name for SSF process
 
     Returns:
         bool: True if validation passes, False otherwise
     """
-    # For backward compatibility with SSF process
+    # Handle backward compatibility
     if 'ssf_table' in kwargs:
         stg_table_name = kwargs['ssf_table']
     if 'delivery_entity' in kwargs:
@@ -432,47 +440,24 @@ def validate_data_quality(
         )
         result = True
     except Exception:
-        logger.exception(
-            f"Data quality validation failed for {stg_table_name}"
-        )
-        # All status enums have CHECKED_DQ = 6
-        if hasattr(self.file_delivery_status, 'CHECKED_DQ'):
-            status = self.file_delivery_status.CHECKED_DQ
-        else:
-            for member in self.file_delivery_status:
-                if member.value == 6:
-                    status = member
-                    break
-            else:
-                raise ValueError(f"No enum member with value 6 in {self.file_delivery_status}")
-                
+        logger.exception(f"Data quality validation failed for {stg_table_name}")
         self.update_log_metadata(
             source_system=source_system,
             key=Path(file_name).stem,
-            file_delivery_status=status,
+            file_delivery_status=self._get_dq_status(),
             result="FAILURE",
             comment="Data quality validation failed",
         )
         return False
-    else:
-        if hasattr(self.file_delivery_status, 'CHECKED_DQ'):
-            status = self.file_delivery_status.CHECKED_DQ
-        else:
-            for member in self.file_delivery_status:
-                if member.value == 6:
-                    status = member
-                    break
-            else:
-                raise ValueError(f"No enum member with value 6 in {self.file_delivery_status}")
-                
-        self.update_log_metadata(
-            source_system=source_system,
-            key=Path(file_name).stem,
-            file_delivery_status=status,
-            result=get_result(result),
-            comment="Data quality validation completed",
-        )
-        return result
+    
+    self.update_log_metadata(
+        source_system=source_system,
+        key=Path(file_name).stem,
+        file_delivery_status=self._get_dq_status(),
+        result=get_result(result),
+        comment="Data quality validation completed",
+    )
+    return result
 
     @staticmethod
     def update_kwargs(**kwargs: str) -> dict:
