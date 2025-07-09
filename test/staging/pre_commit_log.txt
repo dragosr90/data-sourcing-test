@@ -1,120 +1,39 @@
 (bsrc-etl-venv) PS C:\Users\B25712\bsrc-etl-venv\bsrc-etl> pre-commit run --all-files
-ruff lint................................................................Failed
-- hook id: ruff
+ruff lint................................................................Passed
+ruff format..............................................................Passed
+mypy.....................................................................Failed
+- hook id: mypy
 - exit code: 1
 
-src\staging\extract_base.py:328:9: C901 `save_to_stg_table` is too complex (11 > 10)
-    |
-326 |         return log_entry
-327 |
-328 |     def save_to_stg_table(
-    |         ^^^^^^^^^^^^^^^^^ C901
-329 |         self,
-330 |         data: DataFrame,
-    |
-
-src\staging\extract_base.py:328:9: PLR0912 Too many branches (14 > 12)
-    |
-326 |         return log_entry
-327 |
-328 |     def save_to_stg_table(
-    |         ^^^^^^^^^^^^^^^^^ PLR0912
-329 |         self,
-330 |         data: DataFrame,
-    |
-
-src\staging\extract_base.py:334:19: ANN401 Dynamically typed expressions (typing.Any) are disallowed in `**kwargs`
-    |
-332 |         source_system: str,
-333 |         file_name: str,
-334 |         **kwargs: Any,  # Type annotation for kwargs
-    |                   ^^^ ANN401
-335 |     ) -> bool:
-336 |         """Save DataFrame to staging table.
-    |
-
-src\staging\extract_base.py:368:40: PLR2004 Magic value used in comparison, consider replacing `5` with a constant variable
-    |
-366 |                 # Fallback: get the enum member with value 5
-367 |                 for member in self.file_delivery_status:
-368 |                     if member.value == 5:
-    |                                        ^ PLR2004
-369 |                         status = member
-370 |                         break
-    |
-
-src\staging\extract_base.py:391:40: PLR2004 Magic value used in comparison, consider replacing `5` with a constant variable
-    |
-389 |             else:
-390 |                 for member in self.file_delivery_status:
-391 |                     if member.value == 5:
-    |                                        ^ PLR2004
-392 |                         status = member
-393 |                         break
-    |
-
-src\staging\extract_base.py:409:9: C901 `validate_data_quality` is too complex (11 > 10)
-    |
-407 |             return True
-408 |
-409 |     def validate_data_quality(
-    |         ^^^^^^^^^^^^^^^^^^^^^ C901
-410 |         self,
-411 |         source_system: str,
-    |
-
-src\staging\extract_base.py:409:9: PLR0912 Too many branches (14 > 12)
-    |
-407 |             return True
-408 |
-409 |     def validate_data_quality(
-    |         ^^^^^^^^^^^^^^^^^^^^^ PLR0912
-410 |         self,
-411 |         source_system: str,
-    |
-
-src\staging\extract_base.py:414:19: ANN401 Dynamically typed expressions (typing.Any) are disallowed in `**kwargs`
-    |
-412 |         file_name: str,
-413 |         stg_table_name: str,
-414 |         **kwargs: Any,  # Type annotation for kwargs
-    |                   ^^^ ANN401
-415 |     ) -> bool:
-416 |         """Validate data quality for the staging table.
-    |
-
-src\staging\extract_base.py:451:40: PLR2004 Magic value used in comparison, consider replacing `6` with a constant variable
-    |
-449 |             else:
-450 |                 for member in self.file_delivery_status:
-451 |                     if member.value == 6:
-    |                                        ^ PLR2004
-452 |                         status = member
-453 |                         break
-    |
-
-src\staging\extract_base.py:471:40: PLR2004 Magic value used in comparison, consider replacing `6` with a constant variable
-    |
-469 |             else:
-470 |                 for member in self.file_delivery_status:
-471 |                     if member.value == 6:
-    |                                        ^ PLR2004
-472 |                         status = member
-473 |                         break
-    |
-
-Found 10 errors.
-All checks passed!
-All checks passed!
-All checks passed!
-
-ruff format..............................................................Failed
-- hook id: ruff
-- files were modified by this hook
-
-21 files left unchanged
-1 file reformatted, 20 files left unchanged
-21 files left unchanged
-21 files left unchanged
-
-mypy.....................................................................Passed
+Success: no issues found in 13 source files
+src\staging\extract_base.py:386: error: Incompatible types in assignment (expression has type "dict[str, str]", variable has type "str")  [assignment]
+src\staging\extract_base.py:388: error: Incompatible types in assignment (expression has type "dict[str, str]", variable has type "str")  [assignment]
+src\staging\extract_base.py:436: error: Incompatible types in assignment (expression has type "dict[str, str]", variable has type "str")  [assignment]
+src\staging\extract_base.py:438: error: Incompatible types in assignment (expression has type "dict[str, str]", variable has type "str")  [assignment]
+scripts\ssf_staging_process.py:131: error: Argument "ssf_table" to "save_to_stg_table" of "ExtractStagingData" has incompatible type "str"; expected "dict[str, str]"  [arg-type]
+scripts\ssf_staging_process.py:132: error: Argument "delivery_entity" to "save_to_stg_table" of "ExtractStagingData" has incompatible type "str"; expected "dict[str, str]"  [arg-type]
+scripts\ssf_staging_process.py:133: error: Argument 5 to "save_to_stg_table" of "ExtractStagingData" has incompatible type "**dict[str, str]"; expected "dict[str, str]"  [arg-type]
+scripts\ssf_staging_process.py:133: note: "Dict" is invariant -- see https://mypy.readthedocs.io/en/stable/common_issues.html#variance
+scripts\ssf_staging_process.py:133: note: Consider using "Mapping" instead, which is covariant in the value type
+scripts\ssf_staging_process.py:146: error: Argument "delivery_entity" to "validate_data_quality" of "ExtractStagingData" has incompatible type "str"; expected "dict[str, str]"  [arg-type]
+scripts\ssf_staging_process.py:148: error: Argument "ssf_table" to "validate_data_quality" of "ExtractStagingData" has incompatible type "str"; expected "dict[str, str]"  [arg-type]
+scripts\ssf_staging_process.py:149: error: Argument 4 to "validate_data_quality" of "ExtractStagingData" has incompatible type "**dict[str, str]"; expected "dict[str, str]"  [arg-type]
+scripts\ssf_staging_process.py:149: note: "Dict" is invariant -- see https://mypy.readthedocs.io/en/stable/common_issues.html#variance
+scripts\ssf_staging_process.py:149: note: Consider using "Mapping" instead, which is covariant in the value type
+Found 10 errors in 2 files (checked 13 source files)
+src\staging\extract_base.py:386: error: Incompatible types in assignment (expression has type "dict[str, str]", variable has type "str")  [assignment]
+src\staging\extract_base.py:388: error: Incompatible types in assignment (expression has type "dict[str, str]", variable has type "str")  [assignment]
+src\staging\extract_base.py:436: error: Incompatible types in assignment (expression has type "dict[str, str]", variable has type "str")  [assignment]
+src\staging\extract_base.py:438: error: Incompatible types in assignment (expression has type "dict[str, str]", variable has type "str")  [assignment]
+scripts\dial_staging_process.py:163: error: Argument 3 to "save_to_stg_table" of "ExtractStagingData" has incompatible type "**dict[str, str]"; expected "dict[str, str]"  [arg-type]
+scripts\dial_staging_process.py:163: note: "Dict" is invariant -- see https://mypy.readthedocs.io/en/stable/common_issues.html#variance
+scripts\dial_staging_process.py:163: note: Consider using "Mapping" instead, which is covariant in the value type
+scripts\dial_staging_process.py:176: error: Argument 2 to "validate_data_quality" of "ExtractStagingData" has incompatible type "**dict[str, str]"; expected "dict[str, str]"  [arg-type]
+scripts\dial_staging_process.py:176: note: "Dict" is invariant -- see https://mypy.readthedocs.io/en/stable/common_issues.html#variance
+scripts\dial_staging_process.py:176: note: Consider using "Mapping" instead, which is covariant in the value type
+Found 6 errors in 2 files (checked 13 source files)
+src\staging\extract_base.py:386: error: Incompatible types in assignment (expression has type "dict[str, str]", variable has type "str")  [assignment]
+src\staging\extract_base.py:388: error: Incompatible types in assignment (expression has type "dict[str, str]", variable has type "str")  [assignment]
+src\staging\extract_base.py:436: error: Incompatible types in assignment (expression has type "dict[str, str]", variable has type "str")  [assignment]
+src\staging\extract_base.py:438: error: Incompatible types in assignment (expression has type "dict[str, str]", variable has type "str")  [assignment]
+Found 4 errors in 1 file (checked 13 source files)
