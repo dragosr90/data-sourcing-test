@@ -396,55 +396,65 @@ class ExtractNonSSFData(ExtractStagingData):
         return None
 
     def convert_to_parquet(self, source_system: str, file_name: str) -> bool:
-        """Convert a source file to Parquet format and save it in the target container.
+    """Convert a source file to Parquet format and save it in the target container.
 
-        Reads the source file based on its format and delimiter, converts it to Parquet,
-        and saves it in the run month container.
-        Supports .csv, .txt, and .parquet formats.
+    Reads the source file based on its format and delimiter, converts it to Parquet,
+    and saves it in the run month container.
+    Supports .csv, .txt, and .parquet formats.
 
-        Args:
-            source_system (str): Name of the source system (e.g. LRD_STATIC, NME, FINOB)
-            file_name (str): Path to the source file.
+    Args:
+        source_system (str): Name of the source system (e.g. LRD_STATIC, NME, FINOB)
+        file_name (str): Path to the source file.
 
-        Returns:
-            bool: True if the conversion was successful, False otherwise.
-        """
-        file_info = (
-            self.meta_data.filter(col("SourceFileName") == Path(file_name).stem)
-            .select("SourceFileFormat", "SourceFileDelimiter")
-            .collect()[0]
+    Returns:
+        bool: True if the conversion was successful, False otherwise.
+    """
+    file_info = (
+        self.meta_data.filter(col("SourceFileName") == Path(file_name).stem)
+        .select("SourceFileFormat", "SourceFileDelimiter")
+        .collect()[0]
+    )
+    source_file_format = file_info["SourceFileFormat"]
+    source_file_delimiter = file_info["SourceFileDelimiter"]
+    
+    # Read the file with the given format and delimiter
+    if source_file_format in (".csv", ".txt"):
+        data = self.spark.read.csv(
+            file_name, sep=source_file_delimiter, header=True
         )
-        source_file_format = file_info["SourceFileFormat"]
-        source_file_delimiter = file_info["SourceFileDelimiter"]
-        # Read the file with the given format and delimiter
-        if source_file_format in (".csv", ".txt"):
-            data = self.spark.read.csv(
-                file_name, sep=source_file_delimiter, header=True
-            )
-        elif source_file_format == ".parquet":
-            data = self.spark.read.parquet(file_name)
-        else:
-            logger.error(
-                f"Unsupported file format: {source_file_format}. "
-                "Only .csv, .txt and .parquet are supported."
-            )
-            return False
-        result = export_to_parquet(
-            self.spark,
-            data,
-            run_month=self.run_month,
-            file_name=Path(file_name).stem,
-            folder=f"sourcing_landing_data/NON_SSF/{source_system}",
+    elif source_file_format == ".parquet":
+        data = self.spark.read.parquet(file_name)
+    else:
+        logger.error(
+            f"Unsupported file format: {source_file_format}. "
+            "Only .csv, .txt and .parquet are supported."
         )
-
+        # Update metadata before returning
         self.update_log_metadata(
             source_system=source_system,
             key=Path(file_name).stem,
             file_delivery_status=NonSSFStepStatus.CONVERTED_PARQUET,
-            result=get_result(result),
+            result="FAILURE",
+            comment=f"Unsupported file format: {source_file_format}"
         )
-        return result
+        return False
+        
+    result = export_to_parquet(
+        self.spark,
+        data,
+        run_month=self.run_month,
+        file_name=Path(file_name).stem,
+        folder=f"sourcing_landing_data/NON_SSF/{source_system}",
+    )
 
+    self.update_log_metadata(
+        source_system=source_system,
+        key=Path(file_name).stem,
+        file_delivery_status=NonSSFStepStatus.CONVERTED_PARQUET,
+        result=get_result(result),
+    )
+    return result
+    
     def extract_from_parquet(self, source_system: str, file_name: str) -> DataFrame:
         """Extract data from a Parquet file.
 
