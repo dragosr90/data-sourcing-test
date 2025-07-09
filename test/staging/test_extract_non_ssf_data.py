@@ -1,7 +1,7 @@
 import re
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
-from unittest.mock import call
+from unittest.mock import call, MagicMock
 
 import pytest
 from pyspark.sql.types import (
@@ -575,23 +575,133 @@ def test_check_deadline_violations_with_dates(
     mock_read = mocker.patch("pyspark.sql.SparkSession.read", autospec=True)
     mock_read.table.side_effect = [mock_meta, mock_log]
 
+    # Create extraction instance
     extraction = ExtractNonSSFData(
         spark_session,
         run_month,
         source_container=source_container,
     )
 
-    # Mock filesystem operations - empty processed folder
-    mock_dbutils_fs_ls = mocker.patch.object(extraction.dbutils.fs, "ls")
-    mock_dbutils_fs_ls.return_value = []  # No files in processed folder
+    # Mock write operations
+    mock_save_table = mocker.patch("pyspark.sql.DataFrameWriter.saveAsTable")
 
-    # Call place_static_data with deadline passed
-    result = extraction.place_static_data([], deadline_passed=True)
+    # Empty list of files (no files delivered)
+    files_per_delivery_entity = []
+
+    # Call check_deadline_violations - should raise exception
+    with pytest.raises(NonSSFExtractionError) as exc_info:
+        extraction.check_deadline_violations(files_per_delivery_entity)
+
+    # Check that the error message includes deadline dates
+    error_msg = str(exc_info.value)
+    # The error message format includes "deadline: YYYY-MM-DD HH:MM:SS UTC"
+    assert f"deadline: {yesterday} 00:00:00 UTC" in error_msg
+    assert "Missing files after deadline" in error_msg
+    # Verify both files are mentioned
+    assert "finob/MISSING_FINOB_FILE" in error_msg
+    assert "nme/MISSING_NME_FILE" in error_msg
+
+    # Check log messages include deadline dates for both files
     assert (
-        "File TEST_FILE not delivered and not found in LRD_STATIC/processed folder"
+        f"Deadline passed ({yesterday} 00:00:00 UTC): Missing expected file MISSING_FINOB_FILE from finob"  # noqa: E501
         in caplog.text
     )
-    assert len(result) == 0
+    assert (
+        f"Deadline passed ({yesterday} 00:00:00 UTC): Missing expected file MISSING_NME_FILE from nme"  # noqa: E501
+        in caplog.text
+    )
+
+    # Verify update_log_metadata was called with deadline in comment
+    # Check that saveAsTable was called for metadata updates
+    metadata_calls = [
+        call
+        for call in mock_save_table.call_args_list
+        if "metadata_nonssf" in str(call)
+    ]
+    # Should have 2 metadata updates - one for each missing file
+    assert len(metadata_calls) == 2
+
+
+@pytest.mark.parametrize(
+    ("run_month", "source_container"),
+    [("202503", "test-container")],
+)
+def test_check_deadline_violations_future_deadline(
+    spark_session,
+    mocker,
+    run_month,
+    source_container,
+):
+    """Test that files with future deadlines don't trigger violations."""
+    # Create mock metadata DataFrame with future deadline
+    schema_meta = [
+        "SourceSystem",
+        "SourceFileName",
+        "SourceFileFormat",
+        "SourceFileDelimiter",
+        "StgTableName",
+        "FileDeliveryStep",
+        "FileDeliveryStatus",
+        "Deadline",
+    ]
+
+    # Set deadline to tomorrow
+    tomorrow = date.today() + timedelta(days=1)  # noqa: DTZ011
+
+    mock_meta = spark_session.createDataFrame(
+        [
+            (
+                "finob",
+                "FUTURE_DEADLINE_FILE",
+                ".csv",
+                ",",
+                "test_finob",
+                0,
+                "Expected",
+                tomorrow,
+            ),
+        ],
+        schema=schema_meta,
+    )
+
+    # Create empty log DataFrame
+    schema_log = StructType(
+        [
+            StructField("SourceSystem", StringType(), True),  # noqa: FBT003
+            StructField("SourceFileName", StringType(), True),  # noqa: FBT003
+            StructField("DeliveryNumber", IntegerType(), True),  # noqa: FBT003
+            StructField("FileDeliveryStep", IntegerType(), True),  # noqa: FBT003
+            StructField("FileDeliveryStatus", StringType(), True),  # noqa: FBT003
+            StructField("Result", StringType(), True),  # noqa: FBT003
+            StructField("LastUpdatedDateTimestamp", TimestampType(), True),  # noqa: FBT003
+            StructField("Comment", StringType(), True),  # noqa: FBT003
+        ]
+    )
+    mock_log = spark_session.createDataFrame([], schema=schema_log)
+
+    # Mock spark.read
+    mock_read = mocker.patch("pyspark.sql.SparkSession.read", autospec=True)
+    mock_read.table.side_effect = [mock_meta, mock_log]
+
+    # Create extraction instance
+    extraction = ExtractNonSSFData(
+        spark_session,
+        run_month,
+        source_container=source_container,
+    )
+
+    # Empty list of files (no files delivered)
+    files_per_delivery_entity = []
+
+    # Call check_deadline_violations - should NOT raise exception
+    # because deadline is in the future
+    try:
+        extraction.check_deadline_violations(files_per_delivery_entity)
+    except NonSSFExtractionError:
+        pytest.fail("Should not raise exception for future deadline")
+
+
+# NEW TESTS FOR MISSING COVERAGE
 
 
 @pytest.mark.parametrize(
@@ -606,6 +716,7 @@ def test_place_static_data_copy_failure(
 ):
     """Test place_static_data raises exception when copy fails."""
     test_container = f"abfss://{source_container}@bsrcdadls.dfs.core.windows.net"
+    
     # Create mock metadata DataFrame
     schema_meta = [
         "SourceSystem",
@@ -666,6 +777,7 @@ def test_place_static_data_copy_failure(
             }
         )
     ]
+    
     # Mock cp to raise OSError
     mock_dbutils_fs_cp = mocker.patch.object(extraction.dbutils.fs, "cp")
     mock_dbutils_fs_cp.side_effect = OSError("Permission denied")
@@ -673,8 +785,358 @@ def test_place_static_data_copy_failure(
     # Call place_static_data - should raise NonSSFExtractionError
     with pytest.raises(NonSSFExtractionError) as exc_info:
         extraction.place_static_data([], deadline_passed=True)
+    
     assert "Failed to copy" in str(exc_info.value)
     assert "Permission denied" in str(exc_info.value)
+
+
+@pytest.mark.parametrize(
+    ("run_month", "source_container"),
+    [("202503", "test-container")],
+)
+def test_place_static_data_with_non_expected_status(
+    spark_session,
+    mocker,
+    run_month,
+    source_container,
+    caplog,
+):
+    """Test place_static_data skips files not in expected status."""
+    # Create mock metadata DataFrame with non-expected status
+    schema_meta = [
+        "SourceSystem",
+        "SourceFileName",
+        "SourceFileFormat",
+        "SourceFileDelimiter",
+        "StgTableName",
+        "FileDeliveryStep",
+        "FileDeliveryStatus",
+    ]
+    mock_meta = spark_session.createDataFrame(
+        [
+            (
+                "lrd_static",
+                "TEST_FILE",
+                ".txt",
+                "|",
+                "test_file",
+                5,  # Not EXPECTED (0) or REDELIVERY (10)
+                "Completed",
+            ),
+        ],
+        schema=schema_meta,
+    )
+
+    # Create empty log DataFrame
+    schema_log = StructType(
+        [
+            StructField("SourceSystem", StringType(), True),  # noqa: FBT003
+            StructField("SourceFileName", StringType(), True),  # noqa: FBT003
+            StructField("DeliveryNumber", IntegerType(), True),  # noqa: FBT003
+            StructField("FileDeliveryStep", IntegerType(), True),  # noqa: FBT003
+            StructField("FileDeliveryStatus", StringType(), True),  # noqa: FBT003
+            StructField("Result", StringType(), True),  # noqa: FBT003
+            StructField("LastUpdatedDateTimestamp", TimestampType(), True),  # noqa: FBT003
+            StructField("Comment", StringType(), True),  # noqa: FBT003
+        ]
+    )
+    mock_log = spark_session.createDataFrame([], schema=schema_log)
+
+    # Mock spark.read
+    mock_read = mocker.patch("pyspark.sql.SparkSession.read", autospec=True)
+    mock_read.table.side_effect = [mock_meta, mock_log]
+
+    extraction = ExtractNonSSFData(
+        spark_session,
+        run_month,
+        source_container=source_container,
+    )
+
+    # Call place_static_data with deadline passed
+    result = extraction.place_static_data([], deadline_passed=True)
+    assert "File TEST_FILE is not in expected status" in caplog.text
+    assert len(result) == 0
+
+
+@pytest.mark.parametrize(
+    ("run_month", "source_container"),
+    [("202503", "test-container")],
+)
+def test_place_static_data_with_redelivery_status(
+    spark_session,
+    mocker,
+    run_month,
+    source_container,
+    caplog,
+):
+    """Test place_static_data processes files with REDELIVERY status."""
+    test_container = f"abfss://{source_container}@bsrcdadls.dfs.core.windows.net"
+    
+    # Create mock metadata DataFrame with REDELIVERY status
+    schema_meta = [
+        "SourceSystem",
+        "SourceFileName",
+        "SourceFileFormat",
+        "SourceFileDelimiter",
+        "StgTableName",
+        "FileDeliveryStep",
+        "FileDeliveryStatus",
+    ]
+    mock_meta = spark_session.createDataFrame(
+        [
+            (
+                "lrd_static",
+                "TEST_FILE",
+                ".txt",
+                "|",
+                "test_file",
+                10,  # REDELIVERY status
+                "Expected",
+            ),
+        ],
+        schema=schema_meta,
+    )
+
+    schema_log = StructType(
+        [
+            StructField("SourceSystem", StringType(), True),  # noqa: FBT003
+            StructField("SourceFileName", StringType(), True),  # noqa: FBT003
+            StructField("DeliveryNumber", IntegerType(), True),  # noqa: FBT003
+            StructField("FileDeliveryStep", IntegerType(), True),  # noqa: FBT003
+            StructField("FileDeliveryStatus", StringType(), True),  # noqa: FBT003
+            StructField("Result", StringType(), True),  # noqa: FBT003
+            StructField("LastUpdatedDateTimestamp", TimestampType(), True),  # noqa: FBT003
+            StructField("Comment", StringType(), True),  # noqa: FBT003
+        ]
+    )
+    mock_log = spark_session.createDataFrame([], schema=schema_log)
+
+    mock_read = mocker.patch("pyspark.sql.SparkSession.read", autospec=True)
+    mock_read.table.side_effect = [mock_meta, mock_log]
+
+    extraction = ExtractNonSSFData(
+        spark_session,
+        run_month,
+        source_container=source_container,
+    )
+
+    # Mock filesystem operations
+    mock_dbutils_fs_ls = mocker.patch.object(extraction.dbutils.fs, "ls")
+    mock_dbutils_fs_ls.side_effect = [
+        [
+            FileInfoMock(
+                {
+                    "path": f"{test_container}/LRD_STATIC/processed/TEST_FILE_20240101.txt",
+                    "name": "TEST_FILE_20240101.txt",
+                }
+            )
+        ],
+        [
+            FileInfoMock(
+                {
+                    "path": f"{test_container}/LRD_STATIC/processed/TEST_FILE_20240101.txt",
+                    "name": "TEST_FILE_20240101.txt",
+                }
+            )
+        ],
+    ]
+    
+    mock_dbutils_fs_cp = mocker.patch.object(extraction.dbutils.fs, "cp")
+    mock_save_table = mocker.patch("pyspark.sql.DataFrameWriter.saveAsTable")
+
+    # Call place_static_data with deadline passed - should process REDELIVERY files
+    result = extraction.place_static_data([], deadline_passed=True)
+
+    # Verify that the file was copied
+    mock_dbutils_fs_cp.assert_called_once()
+    assert len(result) == 1
+
+
+@pytest.mark.parametrize(
+    ("run_month", "source_container"),
+    [("202503", "test-container")],
+)
+def test_place_static_data_no_processed_files(
+    spark_session,
+    mocker,
+    run_month,
+    source_container,
+    caplog,
+):
+    """Test place_static_data when no processed files are found."""
+    # Create mock metadata DataFrame
+    schema_meta = [
+        "SourceSystem",
+        "SourceFileName",
+        "SourceFileFormat",
+        "SourceFileDelimiter",
+        "StgTableName",
+        "FileDeliveryStep",
+        "FileDeliveryStatus",
+    ]
+    mock_meta = spark_session.createDataFrame(
+        [
+            (
+                "lrd_static",
+                "TEST_FILE",
+                ".txt",
+                "|",
+                "test_file",
+                0,
+                "Expected",
+            ),
+        ],
+        schema=schema_meta,
+    )
+
+    # Create empty log DataFrame
+    schema_log = StructType(
+        [
+            StructField("SourceSystem", StringType(), True),  # noqa: FBT003
+            StructField("SourceFileName", StringType(), True),  # noqa: FBT003
+            StructField("DeliveryNumber", IntegerType(), True),  # noqa: FBT003
+            StructField("FileDeliveryStep", IntegerType(), True),  # noqa: FBT003
+            StructField("FileDeliveryStatus", StringType(), True),  # noqa: FBT003
+            StructField("Result", StringType(), True),  # noqa: FBT003
+            StructField("LastUpdatedDateTimestamp", TimestampType(), True),  # noqa: FBT003
+            StructField("Comment", StringType(), True),  # noqa: FBT003
+        ]
+    )
+    mock_log = spark_session.createDataFrame([], schema=schema_log)
+
+    # Mock spark.read
+    mock_read = mocker.patch("pyspark.sql.SparkSession.read", autospec=True)
+    mock_read.table.side_effect = [mock_meta, mock_log]
+
+    extraction = ExtractNonSSFData(
+        spark_session,
+        run_month,
+        source_container=source_container,
+    )
+
+    # Mock filesystem operations - empty processed folder
+    mock_dbutils_fs_ls = mocker.patch.object(extraction.dbutils.fs, "ls")
+    mock_dbutils_fs_ls.return_value = []  # No files in processed folder
+
+    # Call place_static_data with deadline passed
+    result = extraction.place_static_data([], deadline_passed=True)
+    assert (
+        "File TEST_FILE not delivered and not found in LRD_STATIC/processed folder"
+        in caplog.text
+    )
+    assert len(result) == 0
+
+
+@pytest.mark.parametrize(
+    ("run_month", "source_container"),
+    [("202503", "test-container")],
+)
+def test_place_static_data_multiple_processed_files(
+    spark_session,
+    mocker,
+    run_month,
+    source_container,
+    caplog,
+):
+    """Test place_static_data selects latest from multiple processed files."""
+    test_container = f"abfss://{source_container}@bsrcdadls.dfs.core.windows.net"
+    
+    # Create mock metadata DataFrame
+    schema_meta = [
+        "SourceSystem",
+        "SourceFileName",
+        "SourceFileFormat",
+        "SourceFileDelimiter",
+        "StgTableName",
+        "FileDeliveryStep",
+        "FileDeliveryStatus",
+    ]
+    mock_meta = spark_session.createDataFrame(
+        [
+            (
+                "lrd_static",
+                "TEST_FILE",
+                ".txt",
+                "|",
+                "test_file",
+                0,
+                "Expected",
+            ),
+        ],
+        schema=schema_meta,
+    )
+
+    schema_log = StructType(
+        [
+            StructField("SourceSystem", StringType(), True),  # noqa: FBT003
+            StructField("SourceFileName", StringType(), True),  # noqa: FBT003
+            StructField("DeliveryNumber", IntegerType(), True),  # noqa: FBT003
+            StructField("FileDeliveryStep", IntegerType(), True),  # noqa: FBT003
+            StructField("FileDeliveryStatus", StringType(), True),  # noqa: FBT003
+            StructField("Result", StringType(), True),  # noqa: FBT003
+            StructField("LastUpdatedDateTimestamp", TimestampType(), True),  # noqa: FBT003
+            StructField("Comment", StringType(), True),  # noqa: FBT003
+        ]
+    )
+    mock_log = spark_session.createDataFrame([], schema=schema_log)
+
+    mock_read = mocker.patch("pyspark.sql.SparkSession.read", autospec=True)
+    mock_read.table.side_effect = [mock_meta, mock_log]
+
+    extraction = ExtractNonSSFData(
+        spark_session,
+        run_month,
+        source_container=source_container,
+    )
+
+    # Mock filesystem operations with multiple processed files
+    mock_dbutils_fs_ls = mocker.patch.object(extraction.dbutils.fs, "ls")
+    mock_dbutils_fs_ls.side_effect = [
+        # Multiple processed files with different timestamps
+        [
+            FileInfoMock(
+                {
+                    "path": f"{test_container}/LRD_STATIC/processed/TEST_FILE_20240101.txt",
+                    "name": "TEST_FILE_20240101.txt",
+                }
+            ),
+            FileInfoMock(
+                {
+                    "path": f"{test_container}/LRD_STATIC/processed/TEST_FILE_20240201.txt",
+                    "name": "TEST_FILE_20240201.txt",
+                }
+            ),
+            FileInfoMock(
+                {
+                    "path": f"{test_container}/LRD_STATIC/processed/TEST_FILE_20240301.txt",
+                    "name": "TEST_FILE_20240301.txt",
+                }
+            ),
+        ],
+        # Second ls call returns single file
+        [
+            FileInfoMock(
+                {
+                    "path": f"{test_container}/LRD_STATIC/processed/TEST_FILE_20240301.txt",
+                    "name": "TEST_FILE_20240301.txt",
+                }
+            )
+        ],
+    ]
+    
+    mock_dbutils_fs_cp = mocker.patch.object(extraction.dbutils.fs, "cp")
+    mock_save_table = mocker.patch("pyspark.sql.DataFrameWriter.saveAsTable")
+
+    # Call place_static_data with deadline passed
+    result = extraction.place_static_data([], deadline_passed=True)
+
+    # Verify that the latest file was selected (max() function)
+    mock_dbutils_fs_cp.assert_called_once_with(
+        f"{test_container}/LRD_STATIC/processed/TEST_FILE_20240301.txt",
+        f"{test_container}/LRD_STATIC/TEST_FILE.txt",
+    )
+    assert len(result) == 1
+    assert "Copied TEST_FILE to static folder after deadline passed" in caplog.text
 
 
 @pytest.mark.parametrize(
@@ -751,154 +1213,6 @@ def test_get_all_files_os_error(
     result = extraction.get_all_files()
     assert "Could not access folder NME: Permission denied for NME" in caplog.text
     assert len(result) == 0  # No files found due to error
-
-
-@pytest.mark.parametrize(
-    ("run_month", "source_container"),
-    [("202503", "test-container")],
-)
-def test_convert_to_parquet_unsupported_format(
-    spark_session,
-    mocker,
-    run_month,
-    source_container,
-    caplog,
-):
-    """Test convert_to_parquet with unsupported file format."""
-    # Create mock metadata DataFrame
-    schema_meta = [
-        "SourceSystem",
-        "SourceFileName",
-        "SourceFileFormat",
-        "SourceFileDelimiter",
-        "StgTableName",
-        "FileDeliveryStep",
-        "FileDeliveryStatus",
-    ]
-    mock_meta = spark_session.createDataFrame(
-        [
-            (
-                "nme",
-                "TEST_FILE",
-                ".json",  # Unsupported format
-                ",",
-                "test_file",
-                0,
-                "Expected",
-            ),
-        ],
-        schema=schema_meta,
-    )
-
-    # Create empty log DataFrame
-    schema_log = StructType(
-        [
-            StructField("SourceSystem", StringType(), True),  # noqa: FBT003
-            StructField("SourceFileName", StringType(), True),  # noqa: FBT003
-            StructField("DeliveryNumber", IntegerType(), True),  # noqa: FBT003
-            StructField("FileDeliveryStep", IntegerType(), True),  # noqa: FBT003
-            StructField("FileDeliveryStatus", StringType(), True),  # noqa: FBT003
-            StructField("Result", StringType(), True),  # noqa: FBT003
-            StructField("LastUpdatedDateTimestamp", TimestampType(), True),  # noqa: FBT003
-            StructField("Comment", StringType(), True),  # noqa: FBT003
-        ]
-    )
-    mock_log = spark_session.createDataFrame([], schema=schema_log)
-
-    # Mock spark.read
-    mock_read = mocker.patch("pyspark.sql.SparkSession.read", autospec=True)
-    mock_read.table.side_effect = [mock_meta, mock_log]
-
-    extraction = ExtractNonSSFData(
-        spark_session,
-        run_month,
-        source_container=source_container,
-    )
-
-    # Mock saveAsTable
-    mock_save_table = mocker.patch("pyspark.sql.DataFrameWriter.saveAsTable")
-
-    # Test convert_to_parquet
-    result = extraction.convert_to_parquet("NME", "TEST_FILE.json")
-    assert result is False
-    assert "Unsupported file format: .json" in caplog.text
-    # Verify that update_log_metadata was called with FAILURE
-    mock_save_table.assert_called()
-
-
-@pytest.mark.parametrize(
-    ("run_month", "source_container"),
-    [("202503", "test-container")],
-)
-def test_move_source_file_failure(
-    spark_session,
-    mocker,
-    run_month,
-    source_container,
-):
-    """Test move_source_file when move operation fails."""
-    # Create mock metadata DataFrame
-    schema_meta = [
-        "SourceSystem",
-        "SourceFileName",
-        "SourceFileFormat",
-        "SourceFileDelimiter",
-        "StgTableName",
-        "FileDeliveryStep",
-        "FileDeliveryStatus",
-    ]
-    mock_meta = spark_session.createDataFrame(
-        [
-            (
-                "nme",
-                "TEST_FILE",
-                ".csv",
-                ",",
-                "test_file",
-                0,
-                "Expected",
-            ),
-        ],
-        schema=schema_meta,
-    )
-
-    # Create empty log DataFrame
-    schema_log = StructType(
-        [
-            StructField("SourceSystem", StringType(), True),  # noqa: FBT003
-            StructField("SourceFileName", StringType(), True),  # noqa: FBT003
-            StructField("DeliveryNumber", IntegerType(), True),  # noqa: FBT003
-            StructField("FileDeliveryStep", IntegerType(), True),  # noqa: FBT003
-            StructField("FileDeliveryStatus", StringType(), True),  # noqa: FBT003
-            StructField("Result", StringType(), True),  # noqa: FBT003
-            StructField("LastUpdatedDateTimestamp", TimestampType(), True),  # noqa: FBT003
-            StructField("Comment", StringType(), True),  # noqa: FBT003
-        ]
-    )
-    mock_log = spark_session.createDataFrame([], schema=schema_log)
-
-    # Mock spark.read
-    mock_read = mocker.patch("pyspark.sql.SparkSession.read", autospec=True)
-    mock_read.table.side_effect = [mock_meta, mock_log]
-
-    extraction = ExtractNonSSFData(
-        spark_session,
-        run_month,
-        source_container=source_container,
-    )
-
-    # Mock mv to raise exception
-    mock_dbutils_fs_mv = mocker.patch.object(extraction.dbutils.fs, "mv")
-    mock_dbutils_fs_mv.side_effect = Exception("File locked")
-
-    # Mock saveAsTable
-    mock_save_table = mocker.patch("pyspark.sql.DataFrameWriter.saveAsTable")
-
-    # Test move_source_file
-    result = extraction.move_source_file("NME", "TEST_FILE.csv")
-    assert result is False
-    # Verify that update_log_metadata was called with failure comment
-    mock_save_table.assert_called()
 
 
 @pytest.mark.parametrize(
@@ -1017,6 +1331,498 @@ def test_get_deadline_from_metadata_variations(
     )
     deadline3 = extraction3.get_deadline_from_metadata("lrd_static", "TEST_FILE3")
     assert deadline3 is None
+
+
+@pytest.mark.parametrize(
+    ("run_month", "source_container"),
+    [("202503", "test-container")],
+)
+def test_get_deadline_from_metadata_no_rows(
+    spark_session,
+    mocker,
+    run_month,
+    source_container,
+):
+    """Test get_deadline_from_metadata when no rows match."""
+    # Create mock metadata DataFrame
+    schema_meta = [
+        "SourceSystem",
+        "SourceFileName",
+        "SourceFileFormat",
+        "SourceFileDelimiter",
+        "StgTableName",
+        "FileDeliveryStep",
+        "FileDeliveryStatus",
+        "Deadline",
+    ]
+    mock_meta = spark_session.createDataFrame(
+        [
+            (
+                "nme",
+                "DIFFERENT_FILE",
+                ".csv",
+                ",",
+                "test_file",
+                0,
+                "Expected",
+                "2025-07-01",
+            ),
+        ],
+        schema=schema_meta,
+    )
+
+    schema_log = StructType(
+        [
+            StructField("SourceSystem", StringType(), True),  # noqa: FBT003
+            StructField("SourceFileName", StringType(), True),  # noqa: FBT003
+            StructField("DeliveryNumber", IntegerType(), True),  # noqa: FBT003
+            StructField("FileDeliveryStep", IntegerType(), True),  # noqa: FBT003
+            StructField("FileDeliveryStatus", StringType(), True),  # noqa: FBT003
+            StructField("Result", StringType(), True),  # noqa: FBT003
+            StructField("LastUpdatedDateTimestamp", TimestampType(), True),  # noqa: FBT003
+            StructField("Comment", StringType(), True),  # noqa: FBT003
+        ]
+    )
+    mock_log = spark_session.createDataFrame([], schema=schema_log)
+
+    mock_read = mocker.patch("pyspark.sql.SparkSession.read", autospec=True)
+    mock_read.table.side_effect = [mock_meta, mock_log]
+
+    extraction = ExtractNonSSFData(
+        spark_session,
+        run_month,
+        source_container=source_container,
+    )
+
+    # Test with non-matching file
+    deadline = extraction.get_deadline_from_metadata("nme", "NON_EXISTENT_FILE")
+    assert deadline is None
+
+
+@pytest.mark.parametrize(
+    ("run_month", "source_container"),
+    [("202503", "test-container")],
+)
+def test_convert_to_parquet_unsupported_format(
+    spark_session,
+    mocker,
+    run_month,
+    source_container,
+    caplog,
+):
+    """Test convert_to_parquet with unsupported file format."""
+    # Create mock metadata DataFrame
+    schema_meta = [
+        "SourceSystem",
+        "SourceFileName",
+        "SourceFileFormat",
+        "SourceFileDelimiter",
+        "StgTableName",
+        "FileDeliveryStep",
+        "FileDeliveryStatus",
+    ]
+    mock_meta = spark_session.createDataFrame(
+        [
+            (
+                "nme",
+                "TEST_FILE",
+                ".json",  # Unsupported format
+                ",",
+                "test_file",
+                0,
+                "Expected",
+            ),
+        ],
+        schema=schema_meta,
+    )
+
+    # Create empty log DataFrame
+    schema_log = StructType(
+        [
+            StructField("SourceSystem", StringType(), True),  # noqa: FBT003
+            StructField("SourceFileName", StringType(), True),  # noqa: FBT003
+            StructField("DeliveryNumber", IntegerType(), True),  # noqa: FBT003
+            StructField("FileDeliveryStep", IntegerType(), True),  # noqa: FBT003
+            StructField("FileDeliveryStatus", StringType(), True),  # noqa: FBT003
+            StructField("Result", StringType(), True),  # noqa: FBT003
+            StructField("LastUpdatedDateTimestamp", TimestampType(), True),  # noqa: FBT003
+            StructField("Comment", StringType(), True),  # noqa: FBT003
+        ]
+    )
+    mock_log = spark_session.createDataFrame([], schema=schema_log)
+
+    # Mock spark.read
+    mock_read = mocker.patch("pyspark.sql.SparkSession.read", autospec=True)
+    mock_read.table.side_effect = [mock_meta, mock_log]
+
+    extraction = ExtractNonSSFData(
+        spark_session,
+        run_month,
+        source_container=source_container,
+    )
+
+    # Mock saveAsTable
+    mock_save_table = mocker.patch("pyspark.sql.DataFrameWriter.saveAsTable")
+
+    # Test convert_to_parquet
+    result = extraction.convert_to_parquet("NME", "TEST_FILE.json")
+    assert result is False
+    assert "Unsupported file format: .json" in caplog.text
+    # Verify that update_log_metadata was called with FAILURE
+    mock_save_table.assert_called()
+
+
+@pytest.mark.parametrize(
+    ("run_month", "source_container"),
+    [("202503", "test-container")],
+)
+def test_convert_to_parquet_with_export_failure(
+    spark_session,
+    mocker,
+    run_month,
+    source_container,
+):
+    """Test convert_to_parquet when export_to_parquet fails."""
+    # Create mock metadata DataFrame
+    schema_meta = [
+        "SourceSystem",
+        "SourceFileName",
+        "SourceFileFormat",
+        "SourceFileDelimiter",
+        "StgTableName",
+        "FileDeliveryStep",
+        "FileDeliveryStatus",
+    ]
+    mock_meta = spark_session.createDataFrame(
+        [
+            (
+                "finob",
+                "TEST_FILE",
+                ".csv",
+                ",",
+                "test_file",
+                0,
+                "Expected",
+            ),
+        ],
+        schema=schema_meta,
+    )
+
+    schema_log = StructType(
+        [
+            StructField("SourceSystem", StringType(), True),  # noqa: FBT003
+            StructField("SourceFileName", StringType(), True),  # noqa: FBT003
+            StructField("DeliveryNumber", IntegerType(), True),  # noqa: FBT003
+            StructField("FileDeliveryStep", IntegerType(), True),  # noqa: FBT003
+            StructField("FileDeliveryStatus", StringType(), True),  # noqa: FBT003
+            StructField("Result", StringType(), True),  # noqa: FBT003
+            StructField("LastUpdatedDateTimestamp", TimestampType(), True),  # noqa: FBT003
+            StructField("Comment", StringType(), True),  # noqa: FBT003
+        ]
+    )
+    mock_log = spark_session.createDataFrame([], schema=schema_log)
+
+    mock_read = mocker.patch("pyspark.sql.SparkSession.read", autospec=True)
+    mock_read.table.side_effect = [mock_meta, mock_log]
+
+    extraction = ExtractNonSSFData(
+        spark_session,
+        run_month,
+        source_container=source_container,
+    )
+
+    # Mock csv read to return a DataFrame
+    dummy_df = spark_session.createDataFrame([(1, "test")], ["id", "value"])
+    mock_read.csv.return_value = dummy_df
+
+    # Mock export_to_parquet to return False
+    mock_export = mocker.patch("src.staging.extract_nonssf_data.export_to_parquet")
+    mock_export.return_value = False
+
+    # Mock saveAsTable
+    mock_save_table = mocker.patch("pyspark.sql.DataFrameWriter.saveAsTable")
+
+    # Test convert_to_parquet
+    result = extraction.convert_to_parquet("FINOB", "TEST_FILE.csv")
+    assert result is False
+    # Verify that update_log_metadata was called with FAILURE
+    mock_save_table.assert_called()
+
+
+@pytest.mark.parametrize(
+    ("run_month", "source_container"),
+    [("202503", "test-container")],
+)
+def test_convert_to_parquet_read_failure(
+    spark_session,
+    mocker,
+    run_month,
+    source_container,
+    caplog,
+):
+    """Test convert_to_parquet when reading source file fails."""
+    # Create mock metadata DataFrame
+    schema_meta = [
+        "SourceSystem",
+        "SourceFileName",
+        "SourceFileFormat",
+        "SourceFileDelimiter",
+        "StgTableName",
+        "FileDeliveryStep",
+        "FileDeliveryStatus",
+    ]
+    mock_meta = spark_session.createDataFrame(
+        [
+            (
+                "finob",
+                "CORRUPT_FILE",
+                ".csv",
+                ",",
+                "test_file",
+                0,
+                "Expected",
+            ),
+        ],
+        schema=schema_meta,
+    )
+
+    schema_log = StructType(
+        [
+            StructField("SourceSystem", StringType(), True),  # noqa: FBT003
+            StructField("SourceFileName", StringType(), True),  # noqa: FBT003
+            StructField("DeliveryNumber", IntegerType(), True),  # noqa: FBT003
+            StructField("FileDeliveryStep", IntegerType(), True),  # noqa: FBT003
+            StructField("FileDeliveryStatus", StringType(), True),  # noqa: FBT003
+            StructField("Result", StringType(), True),  # noqa: FBT003
+            StructField("LastUpdatedDateTimestamp", TimestampType(), True),  # noqa: FBT003
+            StructField("Comment", StringType(), True),  # noqa: FBT003
+        ]
+    )
+    mock_log = spark_session.createDataFrame([], schema=schema_log)
+
+    mock_read = mocker.patch("pyspark.sql.SparkSession.read", autospec=True)
+    mock_read.table.side_effect = [mock_meta, mock_log]
+
+    extraction = ExtractNonSSFData(
+        spark_session,
+        run_month,
+        source_container=source_container,
+    )
+
+    # Mock csv read to fail
+    mock_read.csv.side_effect = Exception("Corrupt file")
+
+    # Test should raise the exception
+    with pytest.raises(Exception, match="Corrupt file"):
+        extraction.convert_to_parquet("FINOB", "CORRUPT_FILE.csv")
+
+
+@pytest.mark.parametrize(
+    ("run_month", "source_container"),
+    [("202503", "test-container")],
+)
+def test_extract_from_parquet_missing_file(
+    spark_session,
+    mocker,
+    run_month,
+    source_container,
+):
+    """Test extract_from_parquet when parquet file is missing."""
+    # Create mock metadata and log DataFrames
+    schema_meta = [
+        "SourceSystem",
+        "SourceFileName",
+        "SourceFileFormat",
+        "SourceFileDelimiter",
+        "StgTableName",
+        "FileDeliveryStep",
+        "FileDeliveryStatus",
+    ]
+    mock_meta = spark_session.createDataFrame(
+        [
+            (
+                "nme",
+                "MISSING_PARQUET",
+                ".parquet",
+                ",",
+                "test_missing",
+                0,
+                "Expected",
+            ),
+        ],
+        schema=schema_meta,
+    )
+
+    schema_log = StructType(
+        [
+            StructField("SourceSystem", StringType(), True),  # noqa: FBT003
+            StructField("SourceFileName", StringType(), True),  # noqa: FBT003
+            StructField("DeliveryNumber", IntegerType(), True),  # noqa: FBT003
+            StructField("FileDeliveryStep", IntegerType(), True),  # noqa: FBT003
+            StructField("FileDeliveryStatus", StringType(), True),  # noqa: FBT003
+            StructField("Result", StringType(), True),  # noqa: FBT003
+            StructField("LastUpdatedDateTimestamp", TimestampType(), True),  # noqa: FBT003
+            StructField("Comment", StringType(), True),  # noqa: FBT003
+        ]
+    )
+    mock_log = spark_session.createDataFrame([], schema=schema_log)
+
+    # Mock spark.read
+    mock_read = mocker.patch("pyspark.sql.SparkSession.read", autospec=True)
+    mock_read.table.side_effect = [mock_meta, mock_log]
+
+    extraction = ExtractNonSSFData(
+        spark_session,
+        run_month,
+        source_container=source_container,
+    )
+
+    # Mock spark.read.parquet to raise an exception
+    mock_read.parquet.side_effect = Exception("File not found")
+
+    # Test extract_from_parquet with missing file
+    with pytest.raises(Exception, match="File not found"):
+        extraction.extract_from_parquet("NME", "MISSING_PARQUET.parquet")
+
+
+@pytest.mark.parametrize(
+    ("run_month", "source_container"),
+    [("202503", "test-container")],
+)
+def test_get_staging_table_name_missing_in_metadata(
+    spark_session,
+    mocker,
+    run_month,
+    source_container,
+):
+    """Test get_staging_table_name when file not in metadata."""
+    # Create mock metadata DataFrame
+    schema_meta = [
+        "SourceSystem",
+        "SourceFileName",
+        "SourceFileFormat",
+        "SourceFileDelimiter",
+        "StgTableName",
+        "FileDeliveryStep",
+        "FileDeliveryStatus",
+    ]
+    mock_meta = spark_session.createDataFrame(
+        [
+            (
+                "nme",
+                "EXISTING_FILE",
+                ".csv",
+                ",",
+                "existing_table",
+                0,
+                "Expected",
+            ),
+        ],
+        schema=schema_meta,
+    )
+
+    schema_log = StructType(
+        [
+            StructField("SourceSystem", StringType(), True),  # noqa: FBT003
+            StructField("SourceFileName", StringType(), True),  # noqa: FBT003
+            StructField("DeliveryNumber", IntegerType(), True),  # noqa: FBT003
+            StructField("FileDeliveryStep", IntegerType(), True),  # noqa: FBT003
+            StructField("FileDeliveryStatus", StringType(), True),  # noqa: FBT003
+            StructField("Result", StringType(), True),  # noqa: FBT003
+            StructField("LastUpdatedDateTimestamp", TimestampType(), True),  # noqa: FBT003
+            StructField("Comment", StringType(), True),  # noqa: FBT003
+        ]
+    )
+    mock_log = spark_session.createDataFrame([], schema=schema_log)
+
+    # Mock spark.read
+    mock_read = mocker.patch("pyspark.sql.SparkSession.read", autospec=True)
+    mock_read.table.side_effect = [mock_meta, mock_log]
+
+    extraction = ExtractNonSSFData(
+        spark_session,
+        run_month,
+        source_container=source_container,
+    )
+
+    # Test with non-existent file
+    with pytest.raises(IndexError):
+        extraction.get_staging_table_name("NON_EXISTENT_FILE.csv")
+
+
+@pytest.mark.parametrize(
+    ("run_month", "source_container"),
+    [("202503", "test-container")],
+)
+def test_move_source_file_failure(
+    spark_session,
+    mocker,
+    run_month,
+    source_container,
+):
+    """Test move_source_file when move operation fails."""
+    # Create mock metadata DataFrame
+    schema_meta = [
+        "SourceSystem",
+        "SourceFileName",
+        "SourceFileFormat",
+        "SourceFileDelimiter",
+        "StgTableName",
+        "FileDeliveryStep",
+        "FileDeliveryStatus",
+    ]
+    mock_meta = spark_session.createDataFrame(
+        [
+            (
+                "nme",
+                "TEST_FILE",
+                ".csv",
+                ",",
+                "test_file",
+                0,
+                "Expected",
+            ),
+        ],
+        schema=schema_meta,
+    )
+
+    # Create empty log DataFrame
+    schema_log = StructType(
+        [
+            StructField("SourceSystem", StringType(), True),  # noqa: FBT003
+            StructField("SourceFileName", StringType(), True),  # noqa: FBT003
+            StructField("DeliveryNumber", IntegerType(), True),  # noqa: FBT003
+            StructField("FileDeliveryStep", IntegerType(), True),  # noqa: FBT003
+            StructField("FileDeliveryStatus", StringType(), True),  # noqa: FBT003
+            StructField("Result", StringType(), True),  # noqa: FBT003
+            StructField("LastUpdatedDateTimestamp", TimestampType(), True),  # noqa: FBT003
+            StructField("Comment", StringType(), True),  # noqa: FBT003
+        ]
+    )
+    mock_log = spark_session.createDataFrame([], schema=schema_log)
+
+    # Mock spark.read
+    mock_read = mocker.patch("pyspark.sql.SparkSession.read", autospec=True)
+    mock_read.table.side_effect = [mock_meta, mock_log]
+
+    extraction = ExtractNonSSFData(
+        spark_session,
+        run_month,
+        source_container=source_container,
+    )
+
+    # Mock mv to raise exception
+    mock_dbutils_fs_mv = mocker.patch.object(extraction.dbutils.fs, "mv")
+    mock_dbutils_fs_mv.side_effect = Exception("File locked")
+
+    # Mock saveAsTable
+    mock_save_table = mocker.patch("pyspark.sql.DataFrameWriter.saveAsTable")
+
+    # Test move_source_file
+    result = extraction.move_source_file("NME", "TEST_FILE.csv")
+    assert result is False
+    # Verify that update_log_metadata was called with failure comment
+    mock_save_table.assert_called()
 
 
 @pytest.mark.parametrize(
@@ -1153,14 +1959,14 @@ def test_check_deadline_violations_mixed_scenarios(
     ("run_month", "source_container"),
     [("202503", "test-container")],
 )
-def test_check_deadline_violations_future_deadline(
+def test_check_deadline_violations_no_metadata(
     spark_session,
     mocker,
     run_month,
     source_container,
 ):
-    """Test that files with future deadlines don't trigger violations."""
-    # Create mock metadata DataFrame with future deadline
+    """Test check_deadline_violations with empty metadata."""
+    # Create empty metadata DataFrame
     schema_meta = [
         "SourceSystem",
         "SourceFileName",
@@ -1171,27 +1977,8 @@ def test_check_deadline_violations_future_deadline(
         "FileDeliveryStatus",
         "Deadline",
     ]
+    mock_meta = spark_session.createDataFrame([], schema=schema_meta)
 
-    # Set deadline to tomorrow
-    tomorrow = date.today() + timedelta(days=1)  # noqa: DTZ011
-
-    mock_meta = spark_session.createDataFrame(
-        [
-            (
-                "finob",
-                "FUTURE_DEADLINE_FILE",
-                ".csv",
-                ",",
-                "test_finob",
-                0,
-                "Expected",
-                tomorrow,
-            ),
-        ],
-        schema=schema_meta,
-    )
-
-    # Create empty log DataFrame
     schema_log = StructType(
         [
             StructField("SourceSystem", StringType(), True),  # noqa: FBT003
@@ -1206,113 +1993,33 @@ def test_check_deadline_violations_future_deadline(
     )
     mock_log = spark_session.createDataFrame([], schema=schema_log)
 
-    # Mock spark.read
     mock_read = mocker.patch("pyspark.sql.SparkSession.read", autospec=True)
     mock_read.table.side_effect = [mock_meta, mock_log]
 
-    # Create extraction instance
     extraction = ExtractNonSSFData(
         spark_session,
         run_month,
         source_container=source_container,
     )
 
-    # Empty list of files (no files delivered)
-    files_per_delivery_entity = []
-
-    # Call check_deadline_violations - should NOT raise exception
-    # because deadline is in the future
+    # Call check_deadline_violations with empty metadata - should not raise
     try:
-        extraction.check_deadline_violations(files_per_delivery_entity)
+        extraction.check_deadline_violations([])
     except NonSSFExtractionError:
-        pytest.fail("Should not raise exception for future deadline")
-
-
-# Additional test cases for better coverage
+        pytest.fail("Should not raise exception with empty metadata")
 
 
 @pytest.mark.parametrize(
     ("run_month", "source_container"),
     [("202503", "test-container")],
 )
-def test_place_static_data_with_non_expected_status(
+def test_initial_checks_no_metadata_match(
     spark_session,
     mocker,
     run_month,
     source_container,
-    caplog,
 ):
-    """Test place_static_data skips files not in expected status."""
-    test_container = f"abfss://{source_container}@bsrcdadls.dfs.core.windows.net"
-    # Create mock metadata DataFrame with non-expected status
-    schema_meta = [
-        "SourceSystem",
-        "SourceFileName",
-        "SourceFileFormat",
-        "SourceFileDelimiter",
-        "StgTableName",
-        "FileDeliveryStep",
-        "FileDeliveryStatus",
-    ]
-    mock_meta = spark_session.createDataFrame(
-        [
-            (
-                "lrd_static",
-                "TEST_FILE",
-                ".txt",
-                "|",
-                "test_file",
-                5,  # Not EXPECTED or REDELIVERY
-                "Completed",
-            ),
-        ],
-        schema=schema_meta,
-    )
-
-    # Create empty log DataFrame
-    schema_log = StructType(
-        [
-            StructField("SourceSystem", StringType(), True),  # noqa: FBT003
-            StructField("SourceFileName", StringType(), True),  # noqa: FBT003
-            StructField("DeliveryNumber", IntegerType(), True),  # noqa: FBT003
-            StructField("FileDeliveryStep", IntegerType(), True),  # noqa: FBT003
-            StructField("FileDeliveryStatus", StringType(), True),  # noqa: FBT003
-            StructField("Result", StringType(), True),  # noqa: FBT003
-            StructField("LastUpdatedDateTimestamp", TimestampType(), True),  # noqa: FBT003
-            StructField("Comment", StringType(), True),  # noqa: FBT003
-        ]
-    )
-    mock_log = spark_session.createDataFrame([], schema=schema_log)
-
-    # Mock spark.read
-    mock_read = mocker.patch("pyspark.sql.SparkSession.read", autospec=True)
-    mock_read.table.side_effect = [mock_meta, mock_log]
-
-    extraction = ExtractNonSSFData(
-        spark_session,
-        run_month,
-        source_container=source_container,
-    )
-
-    # Call place_static_data with deadline passed
-    result = extraction.place_static_data([], deadline_passed=True)
-    assert "File TEST_FILE is not in expected status" in caplog.text
-    assert len(result) == 0
-
-
-@pytest.mark.parametrize(
-    ("run_month", "source_container"),
-    [("202503", "test-container")],
-)
-def test_place_static_data_no_processed_files(
-    spark_session,
-    mocker,
-    run_month,
-    source_container,
-    caplog,
-):
-    """Test place_static_data when no processed files are found."""
-    test_container = f"abfss://{source_container}@bsrcdadls.dfs.core.windows.net"
+    """Test initial_checks when file has no metadata match."""
     # Create mock metadata DataFrame
     schema_meta = [
         "SourceSystem",
@@ -1326,10 +2033,10 @@ def test_place_static_data_no_processed_files(
     mock_meta = spark_session.createDataFrame(
         [
             (
-                "lrd_static",
-                "TEST_FILE",
-                ".txt",
-                "|",
+                "nme",
+                "DIFFERENT_FILE",
+                ".csv",
+                ",",
                 "test_file",
                 0,
                 "Expected",
@@ -1338,7 +2045,6 @@ def test_place_static_data_no_processed_files(
         schema=schema_meta,
     )
 
-    # Create empty log DataFrame
     schema_log = StructType(
         [
             StructField("SourceSystem", StringType(), True),  # noqa: FBT003
@@ -1353,7 +2059,6 @@ def test_place_static_data_no_processed_files(
     )
     mock_log = spark_session.createDataFrame([], schema=schema_log)
 
-    # Mock spark.read
     mock_read = mocker.patch("pyspark.sql.SparkSession.read", autospec=True)
     mock_read.table.side_effect = [mock_meta, mock_log]
 
@@ -1363,14 +2068,249 @@ def test_place_static_data_no_processed_files(
         source_container=source_container,
     )
 
-    # Mock filesystem operations - empty processed folder
-    mock_dbutils_fs_ls = mocker.patch.object(extraction.dbutils.fs, "ls")
-    mock_dbutils_fs_ls.return_value = []  # No files in processed folder
+    # Test initial_checks with non-matching file - should raise IndexError
+    with pytest.raises(IndexError):
+        extraction.initial_checks("NON_EXISTENT_FILE.csv", "NME")
 
-    # Call place_static_data with deadline passed
-    result = extraction.place_static_data([], deadline_passed=True)
-    assert (
-        "File TEST_FILE not delivered and not found in LRD_STATIC/processed folder"
-        in caplog.text
+
+@pytest.mark.parametrize(
+    ("run_month", "source_container"),
+    [("202503", "test-container")],
+)
+def test_get_all_files_with_parquet_directory(
+    spark_session,
+    mocker,
+    run_month,
+    source_container,
+):
+    """Test get_all_files correctly handles parquet directories."""
+    test_container = f"abfss://{source_container}@bsrcdadls.dfs.core.windows.net"
+    
+    # Create mock metadata DataFrame
+    schema_meta = [
+        "SourceSystem",
+        "SourceFileName",
+        "SourceFileFormat",
+        "SourceFileDelimiter",
+        "StgTableName",
+        "FileDeliveryStep",
+        "FileDeliveryStatus",
+    ]
+    mock_meta = spark_session.createDataFrame(
+        [
+            (
+                "nme",
+                "PARQUET_DIR",
+                ".parquet",
+                ",",
+                "parquet_dir",
+                0,
+                "Expected",
+            ),
+        ],
+        schema=schema_meta,
     )
-    assert len(result) == 0
+
+    schema_log = StructType(
+        [
+            StructField("SourceSystem", StringType(), True),  # noqa: FBT003
+            StructField("SourceFileName", StringType(), True),  # noqa: FBT003
+            StructField("DeliveryNumber", IntegerType(), True),  # noqa: FBT003
+            StructField("FileDeliveryStep", IntegerType(), True),  # noqa: FBT003
+            StructField("FileDeliveryStatus", StringType(), True),  # noqa: FBT003
+            StructField("Result", StringType(), True),  # noqa: FBT003
+            StructField("LastUpdatedDateTimestamp", TimestampType(), True),  # noqa: FBT003
+            StructField("Comment", StringType(), True),  # noqa: FBT003
+        ]
+    )
+    mock_log = spark_session.createDataFrame([], schema=schema_log)
+
+    mock_read = mocker.patch("pyspark.sql.SparkSession.read", autospec=True)
+    mock_read.table.side_effect = [mock_meta, mock_log]
+
+    extraction = ExtractNonSSFData(
+        spark_session,
+        run_month,
+        source_container=source_container,
+    )
+
+    # Mock filesystem operations
+    mock_dbutils_fs_ls = mocker.patch.object(extraction.dbutils.fs, "ls")
+    mock_dbutils_fs_ls.side_effect = [
+        # NME folder with parquet directory
+        [
+            FileInfoMock(
+                {
+                    "path": f"{test_container}/NME/PARQUET_DIR.parquet",
+                    "name": "PARQUET_DIR.parquet",
+                    "isDir": lambda: True,  # This is a directory ending with .parquet
+                }
+            ),
+            FileInfoMock(
+                {
+                    "path": f"{test_container}/NME/regular_file.csv",
+                    "name": "regular_file.csv",
+                    "isDir": lambda: False,
+                }
+            ),
+        ],
+        [],  # FINOB folder
+        [],  # LRD_STATIC folder
+    ]
+
+    mock_save_table = mocker.patch("pyspark.sql.DataFrameWriter.saveAsTable")
+
+    # Call get_all_files
+    result = extraction.get_all_files()
+
+    # Should include the parquet directory
+    assert len(result) == 1
+    assert result[0]["file_name"] == f"{test_container}/NME/PARQUET_DIR.parquet"
+    assert result[0]["source_system"] == "NME"
+
+
+@pytest.mark.parametrize(
+    ("run_month", "source_container"),
+    [("202503", "test-container")],
+)
+def test_save_to_stg_table_failure(
+    spark_session,
+    mocker,
+    run_month,
+    source_container,
+):
+    """Test save_to_stg_table failure handling."""
+    # Create mock metadata DataFrame
+    schema_meta = [
+        "SourceSystem",
+        "SourceFileName",
+        "SourceFileFormat",
+        "SourceFileDelimiter",
+        "StgTableName",
+        "FileDeliveryStep",
+        "FileDeliveryStatus",
+    ]
+    mock_meta = spark_session.createDataFrame(
+        [
+            (
+                "nme",
+                "TEST_FILE",
+                ".csv",
+                ",",
+                "test_file",
+                0,
+                "Expected",
+            ),
+        ],
+        schema=schema_meta,
+    )
+
+    schema_log = StructType(
+        [
+            StructField("SourceSystem", StringType(), True),  # noqa: FBT003
+            StructField("SourceFileName", StringType(), True),  # noqa: FBT003
+            StructField("DeliveryNumber", IntegerType(), True),  # noqa: FBT003
+            StructField("FileDeliveryStep", IntegerType(), True),  # noqa: FBT003
+            StructField("FileDeliveryStatus", StringType(), True),  # noqa: FBT003
+            StructField("Result", StringType(), True),  # noqa: FBT003
+            StructField("LastUpdatedDateTimestamp", TimestampType(), True),  # noqa: FBT003
+            StructField("Comment", StringType(), True),  # noqa: FBT003
+        ]
+    )
+    mock_log = spark_session.createDataFrame([], schema=schema_log)
+
+    mock_read = mocker.patch("pyspark.sql.SparkSession.read", autospec=True)
+    mock_read.table.side_effect = [mock_meta, mock_log]
+
+    extraction = ExtractNonSSFData(
+        spark_session,
+        run_month,
+        source_container=source_container,
+    )
+
+    # Create a dummy DataFrame
+    dummy_df = spark_session.createDataFrame([(1, "test")], ["id", "value"])
+
+    # Mock the write operation to fail
+    mock_write = mocker.patch.object(dummy_df, "write", new_callable=MagicMock)
+    mock_write.mode.return_value.saveAsTable.side_effect = Exception("Write failed")
+
+    # Test save_to_stg_table with failure
+    result = extraction.save_to_stg_table(
+        data=dummy_df,
+        stg_table_name="test_table",
+        source_system="NME",
+        file_name="TEST_FILE.csv",
+    )
+    assert result is False
+
+
+@pytest.mark.parametrize(
+    ("run_month", "source_container"),
+    [("202503", "test-container")],
+)
+def test_validate_data_quality_failure(
+    spark_session,
+    mocker,
+    run_month,
+    source_container,
+):
+    """Test validate_data_quality failure handling."""
+    # Create mock metadata DataFrame
+    schema_meta = [
+        "SourceSystem",
+        "SourceFileName",
+        "SourceFileFormat",
+        "SourceFileDelimiter",
+        "StgTableName",
+        "FileDeliveryStep",
+        "FileDeliveryStatus",
+    ]
+    mock_meta = spark_session.createDataFrame(
+        [
+            (
+                "nme",
+                "TEST_FILE",
+                ".csv",
+                ",",
+                "test_file",
+                0,
+                "Expected",
+            ),
+        ],
+        schema=schema_meta,
+    )
+
+    schema_log = StructType(
+        [
+            StructField("SourceSystem", StringType(), True),  # noqa: FBT003
+            StructField("SourceFileName", StringType(), True),  # noqa: FBT003
+            StructField("DeliveryNumber", IntegerType(), True),  # noqa: FBT003
+            StructField("FileDeliveryStep", IntegerType(), True),  # noqa: FBT003
+            StructField("FileDeliveryStatus", StringType(), True),  # noqa: FBT003
+            StructField("Result", StringType(), True),  # noqa: FBT003
+            StructField("LastUpdatedDateTimestamp", TimestampType(), True),  # noqa: FBT003
+            StructField("Comment", StringType(), True),  # noqa: FBT003
+        ]
+    )
+    mock_log = spark_session.createDataFrame([], schema=schema_log)
+
+    mock_read = mocker.patch("pyspark.sql.SparkSession.read", autospec=True)
+    mock_read.table.side_effect = [mock_meta, mock_log]
+
+    extraction = ExtractNonSSFData(
+        spark_session,
+        run_month,
+        source_container=source_container,
+    )
+
+    # Mock spark.read.table to raise exception when reading staging table
+    mock_read.table.side_effect = Exception("Table not found")
+
+    # Test validate_data_quality with failure
+    result = extraction.validate_data_quality(
+        source_system="NME",
+        file_name="TEST_FILE.csv",
+        stg_table_name="test_file",
+    )
+    assert result is False
