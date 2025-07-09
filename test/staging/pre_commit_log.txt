@@ -3,19 +3,17 @@ ruff lint................................................................Failed
 - hook id: ruff
 - exit code: 1
 
-src\staging\extract_base.py:385:13: F841 Local variable `dq_validator` is assigned to but never used
+src\staging\extract_base.py:384:9: ANN003 Missing type annotation for `**kwargs`
     |
-383 |         try:
-384 |             # Create DQValidation instance
-385 |             dq_validator = DQValidation(
-    |             ^^^^^^^^^^^^ F841
-386 |                 self.spark,
-387 |                 run_month=self.run_month,
+382 |         file_name: str,
+383 |         stg_table_name: str,
+384 |         **kwargs,  # Accept additional keyword arguments for backward compatibility
+    |         ^^^^^^^^ ANN003
+385 |     ) -> bool:
+386 |         """Validate data quality for the staging table.
     |
-    = help: Remove assignment to unused variable `dq_validator`
 
 Found 1 error.
-No fixes available (1 hidden fix can be enabled with the `--unsafe-fixes` option).
 All checks passed!
 All checks passed!
 All checks passed!
@@ -26,26 +24,42 @@ mypy.....................................................................Failed
 - exit code: 1
 
 Success: no issues found in 13 source files
-src\staging\extract_base.py:352: error: Argument "file_delivery_status" to "update_log_metadata" of "ExtractStagingData" has incompatible type "int"; expected "DialStepStatus | NonSSFStepStatus | SSFStepStatus"  [arg-type]
-src\staging\extract_base.py:361: error: Argument "file_delivery_status" to "update_log_metadata" of "ExtractStagingData" has incompatible type "int"; expected "DialStepStatus | NonSSFStepStatus | SSFStepStatus"  [arg-type]
-src\staging\extract_base.py:402: error: Argument "file_delivery_status" to "update_log_metadata" of "ExtractStagingData" has incompatible type "int"; expected "DialStepStatus | NonSSFStepStatus | SSFStepStatus"  [arg-type]
-src\staging\extract_base.py:411: error: Argument "file_delivery_status" to "update_log_metadata" of "ExtractStagingData" has incompatible type "int"; expected "DialStepStatus | NonSSFStepStatus | SSFStepStatus"  [arg-type]
-scripts\ssf_staging_process.py:128: error: Unexpected keyword argument "ssf_table" for "save_to_stg_table" of "ExtractStagingData"  [call-arg]
-src\staging\extract_base.py:324: note: "save_to_stg_table" of "ExtractStagingData" defined here
-scripts\ssf_staging_process.py:128: error: Unexpected keyword argument "delivery_entity" for "save_to_stg_table" of "ExtractStagingData"  [call-arg]
-src\staging\extract_base.py:324: note: "save_to_stg_table" of "ExtractStagingData" defined here
-scripts\ssf_staging_process.py:145: error: Unexpected keyword argument "delivery_entity" for "validate_data_quality" of "ExtractStagingData"  [call-arg]
-src\staging\extract_base.py:367: note: "validate_data_quality" of "ExtractStagingData" defined here
-scripts\ssf_staging_process.py:145: error: Unexpected keyword argument "ssf_table" for "validate_data_quality" of "ExtractStagingData"  [call-arg]
-src\staging\extract_base.py:367: note: "validate_data_quality" of "ExtractStagingData" defined here
-Found 8 errors in 2 files (checked 13 source files)
-src\staging\extract_base.py:352: error: Argument "file_delivery_status" to "update_log_metadata" of "ExtractStagingData" has incompatible type "int"; expected "DialStepStatus | NonSSFStepStatus | SSFStepStatus"  [arg-type]
-src\staging\extract_base.py:361: error: Argument "file_delivery_status" to "update_log_metadata" of "ExtractStagingData" has incompatible type "int"; expected "DialStepStatus | NonSSFStepStatus | SSFStepStatus"  [arg-type]
-src\staging\extract_base.py:402: error: Argument "file_delivery_status" to "update_log_metadata" of "ExtractStagingData" has incompatible type "int"; expected "DialStepStatus | NonSSFStepStatus | SSFStepStatus"  [arg-type]
-src\staging\extract_base.py:411: error: Argument "file_delivery_status" to "update_log_metadata" of "ExtractStagingData" has incompatible type "int"; expected "DialStepStatus | NonSSFStepStatus | SSFStepStatus"  [arg-type]
-Found 4 errors in 1 file (checked 13 source files)
-src\staging\extract_base.py:352: error: Argument "file_delivery_status" to "update_log_metadata" of "ExtractStagingData" has incompatible type "int"; expected "DialStepStatus | NonSSFStepStatus | SSFStepStatus"  [arg-type]
-src\staging\extract_base.py:361: error: Argument "file_delivery_status" to "update_log_metadata" of "ExtractStagingData" has incompatible type "int"; expected "DialStepStatus | NonSSFStepStatus | SSFStepStatus"  [arg-type]
-src\staging\extract_base.py:402: error: Argument "file_delivery_status" to "update_log_metadata" of "ExtractStagingData" has incompatible type "int"; expected "DialStepStatus | NonSSFStepStatus | SSFStepStatus"  [arg-type]
-src\staging\extract_base.py:411: error: Argument "file_delivery_status" to "update_log_metadata" of "ExtractStagingData" has incompatible type "int"; expected "DialStepStatus | NonSSFStepStatus | SSFStepStatus"  [arg-type]
-Found 4 errors in 1 file (checked 13 source files)
+src\staging\extract_base.py:359: error: Cannot instantiate type "Type[type[DialStepStatus]]"  [misc]
+src\staging\extract_base.py:359: error: Cannot instantiate type "Type[type[NonSSFStepStatus]]"  [misc]
+src\staging\extract_base.py:359: error: Cannot instantiate type "Type[type[SSFStepStatus]]"  [misc]
+src\staging\extract_base.py:369: error: Cannot instantiate type "Type[type[DialStepStatus]]"  [misc]
+src\staging\extract_base.py:369: error: Cannot instantiate type "Type[type[NonSSFStepStatus]]"  [misc]
+src\staging\extract_base.py:369: error: Cannot instantiate type "Type[type[SSFStepStatus]]"  [misc]
+src\staging\extract_base.py:417: error: Cannot instantiate type "Type[type[DialStepStatus]]"  [misc]
+src\staging\extract_base.py:417: error: Cannot instantiate type "Type[type[NonSSFStepStatus]]"  [misc]
+src\staging\extract_base.py:417: error: Cannot instantiate type "Type[type[SSFStepStatus]]"  [misc]
+src\staging\extract_base.py:427: error: Cannot instantiate type "Type[type[DialStepStatus]]"  [misc]
+src\staging\extract_base.py:427: error: Cannot instantiate type "Type[type[NonSSFStepStatus]]"  [misc]
+src\staging\extract_base.py:427: error: Cannot instantiate type "Type[type[SSFStepStatus]]"  [misc]
+Found 12 errors in 1 file (checked 13 source files)
+src\staging\extract_base.py:359: error: Cannot instantiate type "Type[type[DialStepStatus]]"  [misc]
+src\staging\extract_base.py:359: error: Cannot instantiate type "Type[type[NonSSFStepStatus]]"  [misc]
+src\staging\extract_base.py:359: error: Cannot instantiate type "Type[type[SSFStepStatus]]"  [misc]
+src\staging\extract_base.py:369: error: Cannot instantiate type "Type[type[DialStepStatus]]"  [misc]
+src\staging\extract_base.py:369: error: Cannot instantiate type "Type[type[NonSSFStepStatus]]"  [misc]
+src\staging\extract_base.py:369: error: Cannot instantiate type "Type[type[SSFStepStatus]]"  [misc]
+src\staging\extract_base.py:417: error: Cannot instantiate type "Type[type[DialStepStatus]]"  [misc]
+src\staging\extract_base.py:417: error: Cannot instantiate type "Type[type[NonSSFStepStatus]]"  [misc]
+src\staging\extract_base.py:417: error: Cannot instantiate type "Type[type[SSFStepStatus]]"  [misc]
+src\staging\extract_base.py:427: error: Cannot instantiate type "Type[type[DialStepStatus]]"  [misc]
+src\staging\extract_base.py:427: error: Cannot instantiate type "Type[type[NonSSFStepStatus]]"  [misc]
+src\staging\extract_base.py:427: error: Cannot instantiate type "Type[type[SSFStepStatus]]"  [misc]
+Found 12 errors in 1 file (checked 13 source files)
+src\staging\extract_base.py:359: error: Cannot instantiate type "Type[type[DialStepStatus]]"  [misc]
+src\staging\extract_base.py:359: error: Cannot instantiate type "Type[type[NonSSFStepStatus]]"  [misc]
+src\staging\extract_base.py:359: error: Cannot instantiate type "Type[type[SSFStepStatus]]"  [misc]
+src\staging\extract_base.py:369: error: Cannot instantiate type "Type[type[DialStepStatus]]"  [misc]
+src\staging\extract_base.py:369: error: Cannot instantiate type "Type[type[NonSSFStepStatus]]"  [misc]
+src\staging\extract_base.py:369: error: Cannot instantiate type "Type[type[SSFStepStatus]]"  [misc]
+src\staging\extract_base.py:417: error: Cannot instantiate type "Type[type[DialStepStatus]]"  [misc]
+src\staging\extract_base.py:417: error: Cannot instantiate type "Type[type[NonSSFStepStatus]]"  [misc]
+src\staging\extract_base.py:417: error: Cannot instantiate type "Type[type[SSFStepStatus]]"  [misc]
+src\staging\extract_base.py:427: error: Cannot instantiate type "Type[type[DialStepStatus]]"  [misc]
+src\staging\extract_base.py:427: error: Cannot instantiate type "Type[type[NonSSFStepStatus]]"  [misc]
+src\staging\extract_base.py:427: error: Cannot instantiate type "Type[type[SSFStepStatus]]"  [misc]
+Found 12 errors in 1 file (checked 13 source files)
