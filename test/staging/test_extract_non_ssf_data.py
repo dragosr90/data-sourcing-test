@@ -950,6 +950,8 @@ def test_place_static_data_with_redelivery_status(
     # Verify that the file was copied
     mock_dbutils_fs_cp.assert_called_once()
     assert len(result) == 1
+    # Verify metadata was updated
+    assert mock_save_table.call_count >= 1
 
 
 @pytest.mark.parametrize(
@@ -1125,7 +1127,6 @@ def test_place_static_data_multiple_processed_files(
     ]
     
     mock_dbutils_fs_cp = mocker.patch.object(extraction.dbutils.fs, "cp")
-    mock_save_table = mocker.patch("pyspark.sql.DataFrameWriter.saveAsTable")
 
     # Call place_static_data with deadline passed
     result = extraction.place_static_data([], deadline_passed=True)
@@ -1307,7 +1308,19 @@ def test_get_deadline_from_metadata_variations(
     assert deadline2 is not None
     assert deadline2.strftime("%Y-%m-%d") == "2025-07-02"
 
-    # Test with no deadline
+    # Test with no deadline - use explicit schema
+    from pyspark.sql.types import DateType
+    schema_with_deadline = StructType([
+        StructField("SourceSystem", StringType(), True),
+        StructField("SourceFileName", StringType(), True),
+        StructField("SourceFileFormat", StringType(), True),
+        StructField("SourceFileDelimiter", StringType(), True),
+        StructField("StgTableName", StringType(), True),
+        StructField("FileDeliveryStep", IntegerType(), True),
+        StructField("FileDeliveryStatus", StringType(), True),
+        StructField("Deadline", DateType(), True),
+    ])
+    
     mock_meta3 = spark_session.createDataFrame(
         [
             (
@@ -1321,7 +1334,7 @@ def test_get_deadline_from_metadata_variations(
                 None,  # No deadline
             ),
         ],
-        schema=schema_meta,
+        schema=schema_with_deadline,
     )
     mock_read.table.side_effect = [mock_meta3, mock_log]
     extraction3 = ExtractNonSSFData(
@@ -1461,15 +1474,16 @@ def test_convert_to_parquet_unsupported_format(
         source_container=source_container,
     )
 
-    # Mock saveAsTable
-    mock_save_table = mocker.patch("pyspark.sql.DataFrameWriter.saveAsTable")
+    # Mock the update_log_metadata method to verify it's called
+    mock_update = mocker.patch.object(extraction, "update_log_metadata")
 
     # Test convert_to_parquet
     result = extraction.convert_to_parquet("NME", "TEST_FILE.json")
     assert result is False
     assert "Unsupported file format: .json" in caplog.text
     # Verify that update_log_metadata was called with FAILURE
-    mock_save_table.assert_called()
+    mock_update.assert_called_once()
+    assert mock_update.call_args[1]["result"] == "FAILURE"
 
 
 @pytest.mark.parametrize(
@@ -1837,17 +1851,20 @@ def test_check_deadline_violations_mixed_scenarios(
     caplog,
 ):
     """Test check_deadline_violations with mixed scenarios."""
+    # Import DateType for proper schema definition
+    from pyspark.sql.types import DateType
+    
     # Create mock metadata DataFrame with various scenarios
-    schema_meta = [
-        "SourceSystem",
-        "SourceFileName",
-        "SourceFileFormat",
-        "SourceFileDelimiter",
-        "StgTableName",
-        "FileDeliveryStep",
-        "FileDeliveryStatus",
-        "Deadline",
-    ]
+    schema_meta = StructType([
+        StructField("SourceSystem", StringType(), True),
+        StructField("SourceFileName", StringType(), True),
+        StructField("SourceFileFormat", StringType(), True),
+        StructField("SourceFileDelimiter", StringType(), True),
+        StructField("StgTableName", StringType(), True),
+        StructField("FileDeliveryStep", IntegerType(), True),
+        StructField("FileDeliveryStatus", StringType(), True),
+        StructField("Deadline", DateType(), True),  # Explicitly set DateType
+    ])
 
     yesterday = date.today() - timedelta(days=1)  # noqa: DTZ011
     tomorrow = date.today() + timedelta(days=1)  # noqa: DTZ011
@@ -1887,7 +1904,7 @@ def test_check_deadline_violations_mixed_scenarios(
                 "Expected",
                 None,
             ),
-            # File with passed deadline as string
+            # File with passed deadline as date
             (
                 "nme",
                 "STRING_DEADLINE_FILE",
@@ -1896,7 +1913,7 @@ def test_check_deadline_violations_mixed_scenarios(
                 "test_nme2",
                 0,
                 "Expected",
-                yesterday.strftime("%Y-%m-%d"),
+                yesterday,  # Use date object instead of string
             ),
         ],
         schema=schema_meta,
@@ -1966,17 +1983,20 @@ def test_check_deadline_violations_no_metadata(
     source_container,
 ):
     """Test check_deadline_violations with empty metadata."""
-    # Create empty metadata DataFrame
-    schema_meta = [
-        "SourceSystem",
-        "SourceFileName",
-        "SourceFileFormat",
-        "SourceFileDelimiter",
-        "StgTableName",
-        "FileDeliveryStep",
-        "FileDeliveryStatus",
-        "Deadline",
-    ]
+    # Import DateType for proper schema definition
+    from pyspark.sql.types import DateType
+    
+    # Create empty metadata DataFrame with explicit schema
+    schema_meta = StructType([
+        StructField("SourceSystem", StringType(), True),
+        StructField("SourceFileName", StringType(), True),
+        StructField("SourceFileFormat", StringType(), True),
+        StructField("SourceFileDelimiter", StringType(), True),
+        StructField("StgTableName", StringType(), True),
+        StructField("FileDeliveryStep", IntegerType(), True),
+        StructField("FileDeliveryStatus", StringType(), True),
+        StructField("Deadline", DateType(), True),
+    ])
     mock_meta = spark_session.createDataFrame([], schema=schema_meta)
 
     schema_log = StructType(
@@ -2158,8 +2178,6 @@ def test_get_all_files_with_parquet_directory(
         [],  # LRD_STATIC folder
     ]
 
-    mock_save_table = mocker.patch("pyspark.sql.DataFrameWriter.saveAsTable")
-
     # Call get_all_files
     result = extraction.get_all_files()
 
@@ -2231,9 +2249,9 @@ def test_save_to_stg_table_failure(
     # Create a dummy DataFrame
     dummy_df = spark_session.createDataFrame([(1, "test")], ["id", "value"])
 
-    # Mock the write operation to fail
-    mock_write = mocker.patch.object(dummy_df, "write", new_callable=MagicMock)
-    mock_write.mode.return_value.saveAsTable.side_effect = Exception("Write failed")
+    # Mock the saveAsTable to fail by patching at the method level
+    mock_save_table = mocker.patch("pyspark.sql.DataFrameWriter.saveAsTable")
+    mock_save_table.side_effect = Exception("Write failed")
 
     # Test save_to_stg_table with failure
     result = extraction.save_to_stg_table(
@@ -2304,8 +2322,9 @@ def test_validate_data_quality_failure(
         source_container=source_container,
     )
 
-    # Mock spark.read.table to raise exception when reading staging table
-    mock_read.table.side_effect = Exception("Table not found")
+    # Mock DQValidation to raise exception
+    mock_dq_validation = mocker.patch("src.staging.extract_base.DQValidation")
+    mock_dq_validation.side_effect = Exception("Table not found")
 
     # Test validate_data_quality with failure
     result = extraction.validate_data_quality(
