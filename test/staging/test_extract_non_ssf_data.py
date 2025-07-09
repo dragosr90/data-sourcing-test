@@ -1158,8 +1158,7 @@ def test_check_deadline_violations_mixed_scenarios(
         for call in mock_save_table.call_args_list
         if "metadata_nonssf" in str(call)
     ]
-    assert len(metadata_calls) == 2
-            StructField("SourceFileName", StringType(), True),  # noqa: FBT003
+    assert len(metadata_calls) == 2", StringType(), True),  # noqa: FBT003
             StructField("DeliveryNumber", IntegerType(), True),  # noqa: FBT003
             StructField("FileDeliveryStep", IntegerType(), True),  # noqa: FBT003
             StructField("FileDeliveryStatus", StringType(), True),  # noqa: FBT003
@@ -1416,3 +1415,33 @@ def test_place_static_data_no_processed_files(
     schema_log = StructType(
         [
             StructField("SourceSystem", StringType(), True),  # noqa: FBT003
+            StructField("SourceFileName", StringType(), True),  # noqa: FBT003
+            StructField("DeliveryNumber", IntegerType(), True),  # noqa: FBT003
+            StructField("FileDeliveryStep", IntegerType(), True),  # noqa: FBT003
+            StructField("FileDeliveryStatus", StringType(), True),  # noqa: FBT003
+            StructField("Result", StringType(), True),  # noqa: FBT003
+            StructField("LastUpdatedDateTimestamp", TimestampType(), True),  # noqa: FBT003
+            StructField("Comment", StringType(), True),  # noqa: FBT003
+        ]
+    )
+    mock_log = spark_session.createDataFrame([], schema=schema_log)
+
+    # Mock spark.read
+    mock_read = mocker.patch("pyspark.sql.SparkSession.read", autospec=True)
+    mock_read.table.side_effect = [mock_meta, mock_log]
+
+    extraction = ExtractNonSSFData(
+        spark_session,
+        run_month,
+        source_container=source_container,
+    )
+
+    # Mock filesystem operations - empty processed folder
+    mock_dbutils_fs_ls = mocker.patch.object(extraction.dbutils.fs, "ls")
+    mock_dbutils_fs_ls.return_value = []  # No files in processed folder
+
+    # Call place_static_data with deadline passed
+    result = extraction.place_static_data([], deadline_passed=True)
+    
+    assert "File TEST_FILE not delivered and not found in LRD_STATIC/processed folder" in caplog.text
+    assert len(result) == 0
