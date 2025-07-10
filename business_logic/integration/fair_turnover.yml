@@ -80,12 +80,6 @@ transformations:
         TotalRevenues: max
         TotalOperatingIncome: max
   
-  # Step 4: Add variables for Total Assets and Turnover
-  - add_variables:
-      column_mapping:
-        TotalAssets: COALESCE(PIVOTED_ESSENTIALS.CorrectedTotalAssets, PIVOTED_ESSENTIALS.TotalBalanceSheet, PIVOTED_ESSENTIALS.Assets, PIVOTED_ESSENTIALS.TotalAssets)
-        Turnover: COALESCE(PIVOTED_ESSENTIALS.TotalTurnoverTurnover, PIVOTED_ESSENTIALS.Turnover, PIVOTED_ESSENTIALS.Budget, PIVOTED_ESSENTIALS.Revenues, PIVOTED_ESSENTIALS.TotalRevenues, PIVOTED_ESSENTIALS.TotalOperatingIncome)
-  
   # Step 4a: Create DIRECT alias using aggregation (to save dataset with a new alias)
   - aggregation:
       alias: DIRECT
@@ -94,21 +88,20 @@ transformations:
         - PIVOTED_ESSENTIALS.COMPANY_ID
         - PIVOTED_ESSENTIALS.PARENT_COMPANY_ID
         - PIVOTED_ESSENTIALS.LB_RATING_ID
-        - TotalAssets
-        - Turnover
       column_mapping:
-        dummy: first(1)  # Dummy aggregation to create the alias
+        Direct_TotalAssets: first(COALESCE(PIVOTED_ESSENTIALS.CorrectedTotalAssets, PIVOTED_ESSENTIALS.TotalBalanceSheet, PIVOTED_ESSENTIALS.Assets, PIVOTED_ESSENTIALS.TotalAssets))
+        Direct_Turnover: first(COALESCE(PIVOTED_ESSENTIALS.TotalTurnoverTurnover, PIVOTED_ESSENTIALS.Turnover, PIVOTED_ESSENTIALS.Budget, PIVOTED_ESSENTIALS.Revenues, PIVOTED_ESSENTIALS.TotalRevenues, PIVOTED_ESSENTIALS.TotalOperatingIncome))
   
   # Step 4b: Create PARENT alias using aggregation
   - aggregation:
       alias: PARENT
-      source: DIRECT
+      source: PIVOTED_ESSENTIALS
       group:
-        - DIRECT.COMPANY_ID
-        - DIRECT.TotalAssets
-        - DIRECT.Turnover
+        - PIVOTED_ESSENTIALS.COMPANY_ID
       column_mapping:
-        Parent_RATING_ID: max(DIRECT.RATING_ID)
+        Parent_RATING_ID: max(PIVOTED_ESSENTIALS.RATING_ID)
+        Parent_TotalAssets: max(COALESCE(PIVOTED_ESSENTIALS.CorrectedTotalAssets, PIVOTED_ESSENTIALS.TotalBalanceSheet, PIVOTED_ESSENTIALS.Assets, PIVOTED_ESSENTIALS.TotalAssets))
+        Parent_Turnover: max(COALESCE(PIVOTED_ESSENTIALS.TotalTurnoverTurnover, PIVOTED_ESSENTIALS.Turnover, PIVOTED_ESSENTIALS.Budget, PIVOTED_ESSENTIALS.Revenues, PIVOTED_ESSENTIALS.TotalRevenues, PIVOTED_ESSENTIALS.TotalOperatingIncome))
   
   # Step 5: Self join on Direct.COMPANY_ID = Parent.COMPANY_ID
   - join:
@@ -135,13 +128,13 @@ expressions:
   RatingID: DIRECT.RATING_ID
   ParentRatingID: PARENT.Parent_RATING_ID
   LBRatingID: LBR_QUANTITATIVE.LB_RATING_ID
-  AnnualTurnover: COALESCE(TurnoverLBR, PARENT.Turnover, DIRECT.Turnover)
-  AnnualTurnoverDirect: DIRECT.Turnover
-  AnnualTurnoverParent: PARENT.Turnover
+  AnnualTurnover: COALESCE(TurnoverLBR, PARENT.Parent_Turnover, DIRECT.Direct_Turnover)
+  AnnualTurnoverDirect: DIRECT.Direct_Turnover
+  AnnualTurnoverParent: PARENT.Parent_Turnover
   AnnualTurnoverLBR: TurnoverLBR
-  TotalAssets: COALESCE(TotalAssetsLBR, PARENT.TotalAssets, DIRECT.TotalAssets)
-  TotalAssetsDirect: DIRECT.TotalAssets
-  TotalAssetsParent: PARENT.TotalAssets
+  TotalAssets: COALESCE(TotalAssetsLBR, PARENT.Parent_TotalAssets, DIRECT.Direct_TotalAssets)
+  TotalAssetsDirect: DIRECT.Direct_TotalAssets
+  TotalAssetsParent: PARENT.Parent_TotalAssets
   TotalAssetsLBR: TotalAssetsLBR
 
 drop_duplicates: true
