@@ -1,3 +1,15 @@
-TypeError: Transformations.validate_add_variables() missing 1 required positional argument: 'column_mapping'
-File <command-7305437970037945>, line 1
-----> 1 validate_business_logic_mapping(spark, business_logic_dict)
+2025-07-10 11:39:36 [INFO] validate:  YAML format validated successfully
+2025-07-10 11:39:42 [INFO] validate:  Sources validated successfully
+2025-07-10 11:39:43 [INFO] validate_join:  Joins validated successfully
+2025-07-10 11:39:43 [INFO] validate_join:  Joins validated successfully
+2025-07-10 11:39:43 [INFO] validate_pivot:  Pivot validated successfully
+2025-07-10 11:39:44 [INFO] validate_aggregation:  Aggregations validated successfully
+2025-07-10 11:39:44 [INFO] validate_aggregation:  Aggregations validated successfully
+2025-07-10 11:39:44 [INFO] validate_join:  Joins validated successfully
+2025-07-10 11:39:45 [ERROR] validate_sql_expressions:  Problem with expression(s):
+2025-07-10 11:39:45 [ERROR] validate_sql_expressions:  first(LBR_QUANTITATIVE.LB_RATING_ID): [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `LBR_QUANTITATIVE`.`LB_RATING_ID` cannot be resolved. Did you mean one of the following? [`PARENT_DATA`.`company_id`, `PARENT_DATA`.`rating_id`, `DIRECT_DATA`.`company_id`, `DIRECT_DATA`.`lb_rating_id`, `DIRECT_DATA`.`rating_id`]. SQLSTATE: 42703
+first(CAST(LBR_QUANTITATIVE.TOTAL_ASSETS * 1000000000 AS STRING)): [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `LBR_QUANTITATIVE`.`LB_RATING_ID` cannot be resolved. Did you mean one of the following? [`PARENT_DATA`.`company_id`, `PARENT_DATA`.`rating_id`, `DIRECT_DATA`.`company_id`, `DIRECT_DATA`.`lb_rating_id`, `DIRECT_DATA`.`rating_id`]. SQLSTATE: 42703
+first(CAST((LBR_QUANTITATIVE.NET_INTEREST_YIELD + LBR_QUANTITATIVE.OTHER_OPERATING_INCOME) * 1000000000 AS STRING)): [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `LBR_QUANTITATIVE`.`LB_RATING_ID` cannot be resolved. Did you mean one of the following? [`PARENT_DATA`.`company_id`, `PARENT_DATA`.`rating_id`, `DIRECT_DATA`.`company_id`, `DIRECT_DATA`.`lb_rating_id`, `DIRECT_DATA`.`rating_id`]. SQLSTATE: 42703
+2025-07-10 11:39:45 [ERROR] validate_aggregation:  Issue with aggregated data LBR_CALCULATED
+2025-07-10 11:39:45 [INFO] validate_join:  Joins validated successfully
+False
