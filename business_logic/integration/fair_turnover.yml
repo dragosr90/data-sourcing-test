@@ -80,22 +80,19 @@ transformations:
         TotalRevenues: max
         TotalOperatingIncome: max
   
-  # Step 4b: Create PARENT data for self-join
-  - aggregation:
-      alias: PARENT_DATA
-      source: PIVOTED_ESSENTIALS
-      group:
-        - PIVOTED_ESSENTIALS.COMPANY_ID
-        - PIVOTED_ESSENTIALS.RATING_ID
+  # Step 4: Add variables for calculated values
+  - add_variables:
       column_mapping:
-        Parent_TotalAssets: first(COALESCE(PIVOTED_ESSENTIALS.CorrectedTotalAssets, PIVOTED_ESSENTIALS.TotalBalanceSheet, PIVOTED_ESSENTIALS.Assets, PIVOTED_ESSENTIALS.TotalAssets))
-        Parent_Turnover: first(COALESCE(PIVOTED_ESSENTIALS.TotalTurnoverTurnover, PIVOTED_ESSENTIALS.Turnover, PIVOTED_ESSENTIALS.Budget, PIVOTED_ESSENTIALS.Revenues, PIVOTED_ESSENTIALS.TotalRevenues, PIVOTED_ESSENTIALS.TotalOperatingIncome))
+        Direct_TotalAssets: COALESCE(PIVOTED_ESSENTIALS.CorrectedTotalAssets, PIVOTED_ESSENTIALS.TotalBalanceSheet, PIVOTED_ESSENTIALS.Assets, PIVOTED_ESSENTIALS.TotalAssets)
+        Direct_Turnover: COALESCE(PIVOTED_ESSENTIALS.TotalTurnoverTurnover, PIVOTED_ESSENTIALS.Turnover, PIVOTED_ESSENTIALS.Budget, PIVOTED_ESSENTIALS.Revenues, PIVOTED_ESSENTIALS.TotalRevenues, PIVOTED_ESSENTIALS.TotalOperatingIncome)
   
-  # Step 5: Self join on Direct.PARENT_COMPANY_ID = Parent.COMPANY_ID
+  # Step 5: Self join with PIVOTED_ESSENTIALS for parent data
+  # Note: Creating an alias by joining PIVOTED_ESSENTIALS with itself
   - join:
-      right_source: PARENT_DATA
+      left_source: PIVOTED_ESSENTIALS
+      right_source: PIVOTED_ESSENTIALS
       condition:
-        - PIVOTED_ESSENTIALS.PARENT_COMPANY_ID = PARENT_DATA.COMPANY_ID
+        - PIVOTED_ESSENTIALS.PARENT_COMPANY_ID = PIVOTED_ESSENTIALS.COMPANY_ID
       how: left
   
   # Step 6-7: Join with LBR data
@@ -107,15 +104,15 @@ transformations:
 
 expressions:
   RatingID: PIVOTED_ESSENTIALS.RATING_ID
-  ParentRatingID: PARENT_DATA.RATING_ID
+  ParentRatingID: PIVOTED_ESSENTIALS.RATING_ID_right
   LBRatingID: LBR_QUANTITATIVE.LB_RATING_ID
-  AnnualTurnover: COALESCE(CAST((LBR_QUANTITATIVE.NET_INTEREST_YIELD + LBR_QUANTITATIVE.OTHER_OPERATING_INCOME) * 1000000000 AS STRING), PARENT_DATA.Parent_Turnover, COALESCE(PIVOTED_ESSENTIALS.TotalTurnoverTurnover, PIVOTED_ESSENTIALS.Turnover, PIVOTED_ESSENTIALS.Budget, PIVOTED_ESSENTIALS.Revenues, PIVOTED_ESSENTIALS.TotalRevenues, PIVOTED_ESSENTIALS.TotalOperatingIncome))
-  AnnualTurnoverDirect: COALESCE(PIVOTED_ESSENTIALS.TotalTurnoverTurnover, PIVOTED_ESSENTIALS.Turnover, PIVOTED_ESSENTIALS.Budget, PIVOTED_ESSENTIALS.Revenues, PIVOTED_ESSENTIALS.TotalRevenues, PIVOTED_ESSENTIALS.TotalOperatingIncome)
-  AnnualTurnoverParent: PARENT_DATA.Parent_Turnover
+  AnnualTurnover: COALESCE(CAST((LBR_QUANTITATIVE.NET_INTEREST_YIELD + LBR_QUANTITATIVE.OTHER_OPERATING_INCOME) * 1000000000 AS STRING), COALESCE(PIVOTED_ESSENTIALS.TotalTurnoverTurnover_right, PIVOTED_ESSENTIALS.Turnover_right, PIVOTED_ESSENTIALS.Budget_right, PIVOTED_ESSENTIALS.Revenues_right, PIVOTED_ESSENTIALS.TotalRevenues_right, PIVOTED_ESSENTIALS.TotalOperatingIncome_right), Direct_Turnover)
+  AnnualTurnoverDirect: Direct_Turnover
+  AnnualTurnoverParent: COALESCE(PIVOTED_ESSENTIALS.TotalTurnoverTurnover_right, PIVOTED_ESSENTIALS.Turnover_right, PIVOTED_ESSENTIALS.Budget_right, PIVOTED_ESSENTIALS.Revenues_right, PIVOTED_ESSENTIALS.TotalRevenues_right, PIVOTED_ESSENTIALS.TotalOperatingIncome_right)
   AnnualTurnoverLBR: CAST((LBR_QUANTITATIVE.NET_INTEREST_YIELD + LBR_QUANTITATIVE.OTHER_OPERATING_INCOME) * 1000000000 AS STRING)
-  TotalAssets: COALESCE(CAST(LBR_QUANTITATIVE.TOTAL_ASSETS * 1000000000 AS STRING), PARENT_DATA.Parent_TotalAssets, COALESCE(PIVOTED_ESSENTIALS.CorrectedTotalAssets, PIVOTED_ESSENTIALS.TotalBalanceSheet, PIVOTED_ESSENTIALS.Assets, PIVOTED_ESSENTIALS.TotalAssets))
-  TotalAssetsDirect: COALESCE(PIVOTED_ESSENTIALS.CorrectedTotalAssets, PIVOTED_ESSENTIALS.TotalBalanceSheet, PIVOTED_ESSENTIALS.Assets, PIVOTED_ESSENTIALS.TotalAssets)
-  TotalAssetsParent: PARENT_DATA.Parent_TotalAssets
+  TotalAssets: COALESCE(CAST(LBR_QUANTITATIVE.TOTAL_ASSETS * 1000000000 AS STRING), COALESCE(PIVOTED_ESSENTIALS.CorrectedTotalAssets_right, PIVOTED_ESSENTIALS.TotalBalanceSheet_right, PIVOTED_ESSENTIALS.Assets_right, PIVOTED_ESSENTIALS.TotalAssets_right), Direct_TotalAssets)
+  TotalAssetsDirect: Direct_TotalAssets
+  TotalAssetsParent: COALESCE(PIVOTED_ESSENTIALS.CorrectedTotalAssets_right, PIVOTED_ESSENTIALS.TotalBalanceSheet_right, PIVOTED_ESSENTIALS.Assets_right, PIVOTED_ESSENTIALS.TotalAssets_right)
   TotalAssetsLBR: CAST(LBR_QUANTITATIVE.TOTAL_ASSETS * 1000000000 AS STRING)
 
 drop_duplicates: true
