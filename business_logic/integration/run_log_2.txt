@@ -1,4 +1,14 @@
-2025-07-10 14:04:01 [INFO] validate:  YAML format validated successfully
-2025-07-10 14:04:09 [INFO] validate:  Sources validated successfully
-2025-07-10 14:04:09 [ERROR] validate_ambiguous_join:  Risk on ambiguous columns, using multiple times the right_source(s) ['PIVOTED_ESSENTIALS']
+2025-07-10 15:02:41 [INFO] validate:  YAML format validated successfully
+2025-07-10 15:02:47 [INFO] validate:  Sources validated successfully
+2025-07-10 15:02:47 [INFO] validate_join:  Joins validated successfully
+2025-07-10 15:02:47 [INFO] validate_join:  Joins validated successfully
+2025-07-10 15:02:47 [INFO] validate_pivot:  Pivot validated successfully
+2025-07-10 15:02:47 [INFO] validate_add_variables:  Variables validated successfully
+2025-07-10 15:02:48 [INFO] validate_aggregation:  Aggregations validated successfully
+2025-07-10 15:02:48 [INFO] validate_aggregation:  Aggregations validated successfully
+2025-07-10 15:02:48 [INFO] validate_join:  Joins validated successfully
+2025-07-10 15:02:48 [INFO] validate_join:  Joins validated successfully
+2025-07-10 15:02:48 [ERROR] validate_sql_expressions:  Problem with expression(s):
+2025-07-10 15:02:48 [ERROR] validate_sql_expressions:  CASE WHEN LBR_QUANTITATIVE.TOTAL_ASSETS IS NOT NULL THEN TO_CHAR(LBR_QUANTITATIVE.TOTAL_ASSETS * 1000000000) END: [WRONG_NUM_ARGS.WITHOUT_SUGGESTION] The `to_char` requires 2 parameters but the actual number is 1. Please, refer to 'https://spark.apache.org/docs/latest/sql-ref-functions.html' for a fix. SQLSTATE: 42605
+CASE WHEN LBR_QUANTITATIVE.NET_INTEREST_YIELD IS NOT NULL AND LBR_QUANTITATIVE.OTHER_OPERATING_INCOME IS NOT NULL THEN TO_CHAR((LBR_QUANTITATIVE.NET_INTEREST_YIELD + LBR_QUANTITATIVE.OTHER_OPERATING_INCOME) * 1000000000) END: [WRONG_NUM_ARGS.WITHOUT_SUGGESTION] The `to_char` requires 2 parameters but the actual number is 1. Please, refer to 'https://spark.apache.org/docs/latest/sql-ref-functions.html' for a fix. SQLSTATE: 42605
 False
