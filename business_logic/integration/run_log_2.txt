@@ -3,4 +3,4 @@ File "/Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/src/transfor
   File "/Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/src/transform/table_write_and_comment.py", line 42, in write_to_table
     data.write.saveAsTable(table_name)
 
-pyspark.errors.exceptions.connect.AnalysisException: [AMBIGUOUS_REFERENCE] Reference `PARENT_DATA`.`Parent_COMPANY_ID` is ambiguous, could be: [`PARENT_DATA`.`Parent_COMPANY_ID`, `PARENT_DATA`.`Parent_COMPANY_ID`]. SQLSTATE: 42704; line 1 pos 39
+Reference `PARENT_DATA`.`COMPANY_ID` is ambiguous, could be: [`PARENT_DATA`.`COMPANY_ID`, `PARENT_DATA`.`COMPANY_ID`]. SQLSTATE: 42704
