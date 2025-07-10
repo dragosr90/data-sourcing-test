@@ -118,31 +118,34 @@ transformations:
         - DIRECT.COMPANY_ID = PARENT.COMPANY_ID
       how: left
   
-  # Step 6: Prepare LBR data with variables
-  - add_variables:
+  # Step 6: Prepare LBR data with calculated variables using aggregation
+  - aggregation:
       source: LBR_QUANTITATIVE
+      alias: LBR_CALCULATED
+      group:
+        - LBR_QUANTITATIVE.LB_RATING_ID
       column_mapping:
-        TotalAssetsLBR: CAST(LBR_QUANTITATIVE.TOTAL_ASSETS * 1000000000 AS STRING)
-        TurnoverLBR: CAST((LBR_QUANTITATIVE.NET_INTEREST_YIELD + LBR_QUANTITATIVE.OTHER_OPERATING_INCOME) * 1000000000 AS STRING)
+        TotalAssetsLBR: first(CAST(LBR_QUANTITATIVE.TOTAL_ASSETS * 1000000000 AS STRING))
+        TurnoverLBR: first(CAST((LBR_QUANTITATIVE.NET_INTEREST_YIELD + LBR_QUANTITATIVE.OTHER_OPERATING_INCOME) * 1000000000 AS STRING))
   
   # Step 7: Join result from Step 5 with LBR data from Step 6
   - join:
-      right_source: LBR_QUANTITATIVE
+      right_source: LBR_CALCULATED
       condition:
-        - DIRECT.LB_RATING_ID = LBR_QUANTITATIVE.LB_RATING_ID
+        - DIRECT.LB_RATING_ID = LBR_CALCULATED.LB_RATING_ID
       how: left
 
 expressions:
   RatingID: DIRECT.RATING_ID
   ParentRatingID: PARENT.Parent_RATING_ID
-  LBRatingID: LBR_QUANTITATIVE.LB_RATING_ID
-  AnnualTurnover: COALESCE(TurnoverLBR, PARENT.Parent_Turnover, DIRECT.Turnover)
+  LBRatingID: LBR_CALCULATED.LB_RATING_ID
+  AnnualTurnover: COALESCE(LBR_CALCULATED.TurnoverLBR, PARENT.Parent_Turnover, DIRECT.Turnover)
   AnnualTurnoverDirect: DIRECT.Turnover
   AnnualTurnoverParent: PARENT.Parent_Turnover
-  AnnualTurnoverLBR: TurnoverLBR
-  TotalAssets: COALESCE(TotalAssetsLBR, PARENT.Parent_TotalAssets, DIRECT.TotalAssets)
+  AnnualTurnoverLBR: LBR_CALCULATED.TurnoverLBR
+  TotalAssets: COALESCE(LBR_CALCULATED.TotalAssetsLBR, PARENT.Parent_TotalAssets, DIRECT.TotalAssets)
   TotalAssetsDirect: DIRECT.TotalAssets
   TotalAssetsParent: PARENT.Parent_TotalAssets
-  TotalAssetsLBR: TotalAssetsLBR
+  TotalAssetsLBR: LBR_CALCULATED.TotalAssetsLBR
 
 drop_duplicates: true
