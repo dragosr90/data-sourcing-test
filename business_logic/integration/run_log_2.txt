@@ -1,6 +1,4 @@
-File "/Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/src/transform/table_write_and_comment.py", line 222, in write_and_comment
-    write_to_table(spark=spark, table_name=business_logic["target"], data=data)
-  File "/Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/src/transform/table_write_and_comment.py", line 42, in write_to_table
-    data.write.saveAsTable(table_name)
-
-Reference `PARENT_DATA`.`COMPANY_ID` is ambiguous, could be: [`PARENT_DATA`.`COMPANY_ID`, `PARENT_DATA`.`COMPANY_ID`]. SQLSTATE: 42704
+2025-07-10 14:04:01 [INFO] validate:  YAML format validated successfully
+2025-07-10 14:04:09 [INFO] validate:  Sources validated successfully
+2025-07-10 14:04:09 [ERROR] validate_ambiguous_join:  Risk on ambiguous columns, using multiple times the right_source(s) ['PIVOTED_ESSENTIALS']
+False
