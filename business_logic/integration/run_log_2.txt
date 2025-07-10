@@ -1,16 +1,6 @@
-2025-07-10 11:53:27 [INFO] validate:  YAML format validated successfully
-2025-07-10 11:53:33 [INFO] validate:  Sources validated successfully
-2025-07-10 11:53:33 [INFO] validate_join:  Joins validated successfully
-2025-07-10 11:53:33 [INFO] validate_join:  Joins validated successfully
-2025-07-10 11:53:33 [INFO] validate_pivot:  Pivot validated successfully
-2025-07-10 11:53:34 [INFO] validate_add_variables:  Variables validated successfully
-2025-07-10 11:53:34 [INFO] validate_aggregation:  Aggregations validated successfully
-2025-07-10 11:53:34 [INFO] validate_join:  Joins validated successfully
-2025-07-10 11:53:35 [INFO] validate_join:  Joins validated successfully
-2025-07-10 11:53:35 [INFO] validate_add_variables:  Variables validated successfully
-2025-07-10 11:53:35 [INFO] validate:  Transformations validated successfully
-2025-07-10 11:53:37 [ERROR] validate_sql_expressions:  Problem with expression(s):
-2025-07-10 11:53:37 [ERROR] validate_sql_expressions:  COALESCE(LBR_Turnover, PARENT_DATA.Parent_Turnover, Direct_Turnover): [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `Direct_Turnover` cannot be resolved. Did you mean one of the following? [`LBR_Turnover`, `ParentRatingID`, `LBRatingID`, `RatingID`, `LBR_TotalAssets`]. SQLSTATE: 42703
-Direct_Turnover: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `Direct_Turnover` cannot be resolved. Did you mean one of the following? [`LBR_Turnover`, `ParentRatingID`, `LBRatingID`, `RatingID`, `LBR_TotalAssets`]. SQLSTATE: 42703
-COALESCE(LBR_TotalAssets, PARENT_DATA.Parent_TotalAssets, Direct_TotalAssets): [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `Direct_TotalAssets` cannot be resolved. Did you mean one of the following? [`LBR_TotalAssets`, `LBR_Turnover`, `ParentRatingID`, `LBRatingID`, `RatingID`]. SQLSTATE: 42703
-Direct_TotalAssets: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `Direct_TotalAssets` cannot be resolved. Did you mean one of the following? [`LBR_TotalAssets`, `LBR_Turnover`, `ParentRatingID`, `LBRatingID`, `RatingID`]. SQLSTATE: 42703
+File "/Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/src/transform/table_write_and_comment.py", line 222, in write_and_comment
+    write_to_table(spark=spark, table_name=business_logic["target"], data=data)
+  File "/Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/src/transform/table_write_and_comment.py", line 42, in write_to_table
+    data.write.saveAsTable(table_name)
+
+pyspark.errors.exceptions.connect.AnalysisException: [AMBIGUOUS_REFERENCE] Reference `PARENT_DATA`.`Parent_COMPANY_ID` is ambiguous, could be: [`PARENT_DATA`.`Parent_COMPANY_ID`, `PARENT_DATA`.`Parent_COMPANY_ID`]. SQLSTATE: 42704; line 1 pos 39
