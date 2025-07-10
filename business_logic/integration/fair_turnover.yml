@@ -123,11 +123,11 @@ transformations:
       alias: LBR_CALCULATED
       source: LBR_QUANTITATIVE
       group:
-        - LBR_QUANTITATIVE.LB_RATING_ID
+        - LB_RATING_ID
       column_mapping:
-        LBR_LB_RATING_ID: first(LBR_QUANTITATIVE.LB_RATING_ID)
-        LBR_TotalAssets: first(CAST(LBR_QUANTITATIVE.TOTAL_ASSETS * 1000000000 AS STRING))
-        LBR_Turnover: first(CAST((LBR_QUANTITATIVE.NET_INTEREST_YIELD + LBR_QUANTITATIVE.OTHER_OPERATING_INCOME) * 1000000000 AS STRING))
+        LBR_LB_RATING_ID: first(LB_RATING_ID)
+        LBR_TotalAssets: first(CAST(TOTAL_ASSETS * 1000000000 AS STRING))
+        LBR_Turnover: first(CAST((NET_INTEREST_YIELD + OTHER_OPERATING_INCOME) * 1000000000 AS STRING))
   
   # Step 7: Join with LBR data (taking all records from step 5 and any matching from LBR)
   - join:
