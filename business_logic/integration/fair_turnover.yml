@@ -47,7 +47,7 @@ transformations:
       left_source: MODEL_ESSENTIALS
       right_source: PD_ITERATIONS
       condition:
-        - MODEL_ESSENTIALS.RATING_ID = PD_ITERATIONS.RATING_ID
+        - CAST(MODEL_ESSENTIALS.RATING_ID AS DOUBLE) = PD_ITERATIONS.RATING_ID
         - MODEL_ESSENTIALS.ITERATION_NUMBER = PD_ITERATIONS.ITERATION_NUMBER
       how: inner
   
@@ -55,7 +55,7 @@ transformations:
   - join:
       right_source: UCR_ACTUAL
       condition:
-        - MODEL_ESSENTIALS.RATING_ID = UCR_ACTUAL.RATING_ID
+        - CAST(MODEL_ESSENTIALS.RATING_ID AS DOUBLE) = UCR_ACTUAL.RATING_ID
       how: inner
   
   # Step 3: Pivot the MODEL_COMPONENT_ESSENTIAL_TYPE_CODE values to columns
