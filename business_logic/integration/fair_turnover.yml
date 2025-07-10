@@ -97,7 +97,7 @@ transformations:
         Direct_TotalAssets: first(COALESCE(PIVOTED_ESSENTIALS.CorrectedTotalAssets, PIVOTED_ESSENTIALS.TotalBalanceSheet, PIVOTED_ESSENTIALS.Assets, PIVOTED_ESSENTIALS.TotalAssets))
         Direct_Turnover: first(COALESCE(PIVOTED_ESSENTIALS.TotalTurnoverTurnover, PIVOTED_ESSENTIALS.Turnover, PIVOTED_ESSENTIALS.Budget, PIVOTED_ESSENTIALS.Revenues, PIVOTED_ESSENTIALS.TotalRevenues, PIVOTED_ESSENTIALS.TotalOperatingIncome))
   
-  # Step 4b: Create PARENT data for self-join (same as DIRECT but will be used as parent)
+  # Step 4b: Create PARENT data for self-join
   - aggregation:
       alias: PARENT_DATA
       source: PIVOTED_ESSENTIALS
@@ -110,12 +110,12 @@ transformations:
         Parent_TotalAssets: first(COALESCE(PIVOTED_ESSENTIALS.CorrectedTotalAssets, PIVOTED_ESSENTIALS.TotalBalanceSheet, PIVOTED_ESSENTIALS.Assets, PIVOTED_ESSENTIALS.TotalAssets))
         Parent_Turnover: first(COALESCE(PIVOTED_ESSENTIALS.TotalTurnoverTurnover, PIVOTED_ESSENTIALS.Turnover, PIVOTED_ESSENTIALS.Budget, PIVOTED_ESSENTIALS.Revenues, PIVOTED_ESSENTIALS.TotalRevenues, PIVOTED_ESSENTIALS.TotalOperatingIncome))
   
-  # Step 5: Self join on Direct.COMPANY_ID = Parent.COMPANY_ID (corrected from PARENT_COMPANY_ID)
+  # Step 5: Self join on Direct.PARENT_COMPANY_ID = Parent.COMPANY_ID
   - join:
       left_source: DIRECT_DATA
       right_source: PARENT_DATA
       condition:
-        - DIRECT_DATA.Direct_COMPANY_ID = PARENT_DATA.Parent_COMPANY_ID
+        - DIRECT_DATA.Direct_PARENT_COMPANY_ID = PARENT_DATA.Parent_COMPANY_ID
       how: left
   
   # Step 6: Prepare LBR data with calculations
