@@ -1,13 +1,14 @@
-File "/Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/src/extract/master_data_sql.py", line 38, in get_integrated_data
-    return self.transform_data(data_dict=data_dict)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/src/extract/master_data_sql.py", line 79, in transform_data
-    transformed_data = self._apply_transformation(
-                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/src/extract/master_data_sql.py", line 119, in _apply_transformation
-    result = self.aggregation(transformed_data, **tf_params)
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/src/extract/master_data_sql.py", line 189, in aggregation
-    data.groupBy(group)
-
-[AMBIGUOUS_REFERENCE] Reference `TotalAssets` is ambiguous, could be: [`PIVOTED_ESSENTIALS`.`TotalAssets`, `TotalAssets`]. SQLSTATE: 42704
+2025-07-10 16:55:39 [INFO] validate:  YAML format validated successfully
+2025-07-10 16:55:44 [INFO] validate:  Sources validated successfully
+2025-07-10 16:55:45 [INFO] validate_join:  Joins validated successfully
+2025-07-10 16:55:45 [INFO] validate_join:  Joins validated successfully
+2025-07-10 16:55:45 [INFO] validate_pivot:  Pivot validated successfully
+2025-07-10 16:55:45 [INFO] validate_add_variables:  Variables validated successfully
+2025-07-10 16:55:45 [INFO] validate_aggregation:  Aggregations validated successfully
+2025-07-10 16:55:46 [INFO] validate_aggregation:  Aggregations validated successfully
+2025-07-10 16:55:46 [INFO] validate_join:  Joins validated successfully
+2025-07-10 16:55:46 [ERROR] validate_sql_expressions:  Problem with expression(s):
+2025-07-10 16:55:46 [ERROR] validate_sql_expressions:  CAST(LBR_QUANTITATIVE.TOTAL_ASSETS * 1000000000 AS STRING): [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `LBR_QUANTITATIVE`.`TOTAL_ASSETS` cannot be resolved. Did you mean one of the following? [`PARENT`.`company_id`, `DIRECT`.`dummy`, `DIRECT`.`company_id`, `DIRECT`.`lb_rating_id`, `PARENT`.`parent_rating_id`]. SQLSTATE: 42703
+CAST((LBR_QUANTITATIVE.NET_INTEREST_YIELD + LBR_QUANTITATIVE.OTHER_OPERATING_INCOME) * 1000000000 AS STRING): [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `LBR_QUANTITATIVE`.`NET_INTEREST_YIELD` cannot be resolved. Did you mean one of the following? [`PARENT`.`company_id`, `DIRECT`.`lb_rating_id`, `PARENT`.`parent_rating_id`, `DIRECT`.`rating_id`, `DIRECT`.`company_id`]. SQLSTATE: 42703
+2025-07-10 16:55:46 [INFO] validate_join:  Joins validated successfully
+False
