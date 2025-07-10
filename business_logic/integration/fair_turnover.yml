@@ -86,9 +86,8 @@ transformations:
       source: PIVOTED_ESSENTIALS
       group:
         - PIVOTED_ESSENTIALS.COMPANY_ID
+        - PIVOTED_ESSENTIALS.RATING_ID
       column_mapping:
-        Parent_COMPANY_ID: first(PIVOTED_ESSENTIALS.COMPANY_ID)
-        Parent_RATING_ID: first(PIVOTED_ESSENTIALS.RATING_ID)
         Parent_TotalAssets: first(COALESCE(PIVOTED_ESSENTIALS.CorrectedTotalAssets, PIVOTED_ESSENTIALS.TotalBalanceSheet, PIVOTED_ESSENTIALS.Assets, PIVOTED_ESSENTIALS.TotalAssets))
         Parent_Turnover: first(COALESCE(PIVOTED_ESSENTIALS.TotalTurnoverTurnover, PIVOTED_ESSENTIALS.Turnover, PIVOTED_ESSENTIALS.Budget, PIVOTED_ESSENTIALS.Revenues, PIVOTED_ESSENTIALS.TotalRevenues, PIVOTED_ESSENTIALS.TotalOperatingIncome))
   
@@ -96,7 +95,7 @@ transformations:
   - join:
       right_source: PARENT_DATA
       condition:
-        - PIVOTED_ESSENTIALS.PARENT_COMPANY_ID = PARENT_DATA.Parent_COMPANY_ID
+        - PIVOTED_ESSENTIALS.PARENT_COMPANY_ID = PARENT_DATA.COMPANY_ID
       how: left
   
   # Step 6-7: Join with LBR data
@@ -108,7 +107,7 @@ transformations:
 
 expressions:
   RatingID: PIVOTED_ESSENTIALS.RATING_ID
-  ParentRatingID: PARENT_DATA.Parent_RATING_ID
+  ParentRatingID: PARENT_DATA.RATING_ID
   LBRatingID: LBR_QUANTITATIVE.LB_RATING_ID
   AnnualTurnover: COALESCE(CAST((LBR_QUANTITATIVE.NET_INTEREST_YIELD + LBR_QUANTITATIVE.OTHER_OPERATING_INCOME) * 1000000000 AS STRING), PARENT_DATA.Parent_Turnover, COALESCE(PIVOTED_ESSENTIALS.TotalTurnoverTurnover, PIVOTED_ESSENTIALS.Turnover, PIVOTED_ESSENTIALS.Budget, PIVOTED_ESSENTIALS.Revenues, PIVOTED_ESSENTIALS.TotalRevenues, PIVOTED_ESSENTIALS.TotalOperatingIncome))
   AnnualTurnoverDirect: COALESCE(PIVOTED_ESSENTIALS.TotalTurnoverTurnover, PIVOTED_ESSENTIALS.Turnover, PIVOTED_ESSENTIALS.Budget, PIVOTED_ESSENTIALS.Revenues, PIVOTED_ESSENTIALS.TotalRevenues, PIVOTED_ESSENTIALS.TotalOperatingIncome)
