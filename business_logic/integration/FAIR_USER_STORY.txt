@@ -1,0 +1,76 @@
+Background
+For the turnover logic, we need to preprocess FAIR data to get turnover and total asset values per rating ID.
+We can use the logic from MDL.
+There are 2 sources for the turnover information here: FAIR and LBR. 
+
+FAIR logic
+Sources
+bsrc_d.int_202505.pd_ucr_actual
+- COMPANY_ID
+- RATING_ID
+- RATING_STATUS
+- PARENT_COMPANY_ID
+- LB_RATING_ID
+bsrc_d.stg_202505.dial_fair_pd_iterations
+--> Filter on RECOMMENDED = 'y' 
+- RATING_ID
+- RECOMMENDED
+- ITERATION_NUMBER
+bsrc_d.stg_202505.dial_fair_pd_model_component_essentials
+---> Filter on: MODEL_COMPONENT_ESSENTIAL_TYPE_CODE in (CorrectedTotalAssets, TotalBalanceSheet, Assets, TotalAssets, TotalTurnoverTurnover, Turnover, Budget, Revenues, TotalRevenues, TotalOperatingIncome) AND MODEL_COMP_ESS_CAT_VARIANT_ID = 'cons'
+- RATING_ID
+- CALCULATION_PERIOD_ID
+- MODEL_COMPONENT_ESSENTIAL_TYPE_CODE
+- MODEL_COMPONENT_ESSENTIAL_VALUE
+- MODEL_COMPONENT_ESSENTIAL_CAT_VARIANT_ID
+- ITERATION_NUMBER
+bsrc_d.stg_202505.dial_fair_lbr_quantitative_input
+--> Filter on Data_type = 2
+- LB_RATING_ID
+- DATA_TYPE
+- TOTAL_ASSETS
+- NET_INTEREST_YIELD
+- OTHER_OPERATING_INCOME
+
+Transformation logic
+Step 1. Inner join bsrc_d.stg_202505.dial_fair_pd_iterations x bsrc_d.stg_202505.dial_fair_pd_iterations on ITERATION_NUMBER to select only recommended iterations
+Step 2. Join this with bsrc_d.int_202505.pd_ucr_actual on RATING_ID
+Step 3. Pivot the Types in MODEL_COMP_ESS_TYPE_CODE to columns containing the values in MODEL_COMPONENT_ESSENTIAL_VALUE (aggregation function so that the first not null value is selected, if that is not possible, max should work as well, since there should only be one value left per type code per RATING_ID because of the filter on recommended iteration)
+--> To get from:
+RATING_ID| MODEL_COMP_ESS_TYPE_CODE | MODEL_COMPONENT_ESSENTIAL_VALUE | etc
+1        | Assets                   | 1000000                         | ...
+1        | TotalAssets              | 1000010                         | ...
+2        | Turnover                 | 200000                          | ...
+To
+RATING_ID| Assets | TotalAssets | Turnover | etc
+1        | 1000000| 1000010     | null     | ...
+2        | null   | null        | 200000   | ...
+To create columns for all types of values and have one record per RATING_ID.
+Also keep the COMPANY_ID and PARENT_COMPANY_ID columns in this step (should already be unique per RATING_ID), because those will be needed in step 5. 
+
+Step 4. Add variables to derive the Total Assets and Turnover values.
+Pick the first value that is not null in this priority order:
+    Total Assets: CorrectedTotalAssets, TotalBalanceSheet, Assets, TotalAssets
+    Turnover: TotalTurnoverTurnover, Turnover, Budget, Revenues, TotalRevenues, TotalOperatingIncome
+--> check how to save this dataset under 2 aliases (e.g. Direct and Parent) to avoid duplicate column names
+--> e.g. by adding a second dummy add_variables step to write a different name
+Step 5. Join this on itself on Direct.COMPANY_ID = Parent.COMPANY_ID
+Step 6. Add dial_fair_lbr_quantitative_input (LBR)
+    - Add variables for Total Assets and Turnover:
+      Total Assets LBR  = TO_CHAR(TOTAL_ASSETS*1000000000)
+      Turnover LBR = TO_CHAR((NET_INTEREST_YIELD+OTHER_OPERATING_INCOME)*1000000000)
+Step 7. Join on rest of the data on LB_RATING_ID (taking all records from the dataset from step 5 and any matching records from LBR)
+
+Target structure
+bsrc_d.int_{{ RUN_MONTH }}.fair_turnover
+RatingID: Direct.RATING_ID
+ParentRatingID: Parent.RATING_ID
+LBRatingID: LBR.LB_RATING_ID
+AnnualTurnover: COALESCE(LBR.Turnover, Parent.Turnover, Direct.Turnover)
+AnnualTurnoverDirect: Direct.Turnover
+AnnualTurnoverParent: Parent.Turnover
+AnnualTurnoverLBR: LBR.Turnover
+TotalAssets:  COALESCE(LBR.Assets, Parent.Assets, Direct.Assets)
+TotalAssetsDirect: Direct.Assets
+TotalAssetsParent: Parent.Assets
+TotalAssetsLBR: LBR.Assets
