@@ -1,0 +1,112 @@
+description: This YAML is designed to derive Default and Non Performing information at Counterparty level. If Counterparty has an Obligor, the default is determined via facilities, considering that if a Counterparty has at least one facilities in Default, then also the counterparty is in default. If Counterparty doesn't have an obligor, the default information is picked-up from SSF.
+ 
+
+target: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_default_determination_cp
+ 
+sources:
+  - alias: CF_default
+    source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_default_determination
+ 
+  - alias: SSF_CP
+    columns:
+    - DeliveryEntity
+    - LocalId
+    - SourceSystemIdentifier
+    - GlobalCounterpartyIdentifier
+    - Default
+    - DefaultDate
+    - DefaultEndDate
+    - PerformingIndicator
+    - NonperformingStartDate
+    - NonperformingEndDate
+    source: stg_{{ RUN_MONTH }}.ssf_{{ DELIVERY_ENTITY }}_cp
+  
+  - alias: CPXCF
+    source: stg_{{ RUN_MONTH }}.ssf_{{ DELIVERY_ENTITY }}_cpxcf
+
+  - alias: CP_SCOPING
+    source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_counterparty_scoping_local
+    filter: |
+      NOT (
+        InterCompanyFlag = 'N' AND
+        IssuerFlag = 'N' AND
+        ObligorNPLFlag = 'N' AND
+        CollateralProviderFlag = 'N' AND
+        GuarantorFlag = 'N'
+      )
+ 
+transformations:
+  - join:
+      left_source: CP_SCOPING
+      right_source: CPXCF
+      condition:
+        - CP_SCOPING.CounterpartyID = CPXCF.ParticipatingCounterparty
+      how: left
+  - join:
+      right_source: CF_default
+      condition:
+        - CPXCF.CreditFacility = CF_default.CreditFacility
+        - CPXCF.SourceSystemIdentifier = CF_default.SourceSystemIdentifier
+      how: inner
+  - join:
+      right_source: SSF_CP
+      condition:
+        - CF_default.CounterpartyID = SSF_CP.LocalId
+        - CF_default.CounterpartySourceSystemIdentifier = SSF_CP.SourceSystemIdentifier
+      how: left
+ 
+expressions:
+  DeliveryEntity: CP_SCOPING.DeliveryEntity
+  ReportingDate: CP_SCOPING.ReportingDate
+  CounterpartyID: CP_SCOPING.CounterpartyID
+  Default: >
+    CASE
+      WHEN CP_SCOPING.ObligorNPLFlag = 'Y' AND EXISTS (
+        SELECT 1
+        FROM int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_default_determination
+        WHERE CounterpartyID = CP_SCOPING.CounterpartyID
+          AND Default = 'Y'
+      ) THEN 'Y'
+      ELSE SSF_CP.Default
+    END
+  DefaultDate: >
+    CASE
+      WHEN CP_SCOPING.ObligorNPLFlag = 'Y' AND EXISTS (
+        SELECT 1
+        FROM int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_default_determination
+        WHERE CounterpartyID = CP_SCOPING.CounterpartyID
+          AND Default = 'Y'
+      ) THEN (
+        SELECT MAX(DefaultDate)
+        FROM int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_default_determination
+        WHERE CounterpartyID = CP_SCOPING.CounterpartyID
+          AND Default = 'Y'
+      )
+      ELSE SSF_CP.DefaultDate
+    END
+  DefaultEndDate: >
+    CASE
+      WHEN CP_SCOPING.ObligorNPLFlag = 'Y' AND EXISTS (
+        SELECT 1
+        FROM int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_default_determination
+        WHERE CounterpartyID = CP_SCOPING.CounterpartyID
+          AND Default = 'Y'
+      ) THEN (
+        SELECT MAX(DefaultEndDate)
+        FROM int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_default_determination
+        WHERE CounterpartyID = CP_SCOPING.CounterpartyID
+          AND Default = 'Y'
+      )
+      ELSE SSF_CP.DefaultEndDate
+    END
+  CollateralProviderFlag: CP_SCOPING.CollateralProviderFlag
+  GuarantorFlag: CP_SCOPING.GuarantorFlag
+  GlobalCounterpartyID: CP_SCOPING.GlobalCounterpartyID
+  InterCompanyFlag: CP_SCOPING.InterCompanyFlag
+  IssuerFlag: CP_SCOPING.IssuerFlag
+  ObligorFlag: CP_SCOPING.ObligorFlag
+  TypeOfParty: CP_SCOPING.TypeOfParty
+  UltimateParentOrganisation: CP_SCOPING.UltimateParentOrganisation
+
+ 
+drop_duplicates: true
