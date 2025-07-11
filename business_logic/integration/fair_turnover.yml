@@ -90,24 +90,18 @@ transformations:
         TotalRevenues: max
         TotalOperatingIncome: max
   
-  # Step 4: Add variables for Total Assets and Turnover
-  - add_variables:
-      column_mapping:
-        TotalAssets: COALESCE(PIVOTED_ESSENTIALS.CorrectedTotalAssets, PIVOTED_ESSENTIALS.TotalBalanceSheet, PIVOTED_ESSENTIALS.Assets, PIVOTED_ESSENTIALS.TotalAssets)
-        Turnover: COALESCE(PIVOTED_ESSENTIALS.TotalTurnoverTurnover, PIVOTED_ESSENTIALS.Turnover, PIVOTED_ESSENTIALS.Budget, PIVOTED_ESSENTIALS.Revenues, PIVOTED_ESSENTIALS.TotalRevenues, PIVOTED_ESSENTIALS.TotalOperatingIncome)
-  
-  # Step 4a: Create DIRECT alias (save dataset under first alias)
+  # Step 4a: Create DIRECT alias with calculated Total Assets and Turnover
   - aggregation:
       alias: DIRECT
+      source: PIVOTED_ESSENTIALS
       group:
         - PIVOTED_ESSENTIALS.RATING_ID
         - PIVOTED_ESSENTIALS.COMPANY_ID  
         - PIVOTED_ESSENTIALS.PARENT_COMPANY_ID
         - PIVOTED_ESSENTIALS.LB_RATING_ID
-        - TotalAssets
-        - Turnover
       column_mapping:
-        dummy: count(1)
+        TotalAssets: first(COALESCE(PIVOTED_ESSENTIALS.CorrectedTotalAssets, PIVOTED_ESSENTIALS.TotalBalanceSheet, PIVOTED_ESSENTIALS.Assets, PIVOTED_ESSENTIALS.TotalAssets))
+        Turnover: first(COALESCE(PIVOTED_ESSENTIALS.TotalTurnoverTurnover, PIVOTED_ESSENTIALS.Turnover, PIVOTED_ESSENTIALS.Budget, PIVOTED_ESSENTIALS.Revenues, PIVOTED_ESSENTIALS.TotalRevenues, PIVOTED_ESSENTIALS.TotalOperatingIncome))
   
   # Step 4b: Create PARENT alias (save dataset under second alias)
   - aggregation:
