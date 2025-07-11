@@ -415,6 +415,8 @@ def test_dq_checks(spark_session):
         delivery_entity="ALFAM",
         ssf_table="col",
         stg_table_name="col",
+        source_system="INSTAGRAM",
+        file_name="ALFAM_COL_20240331000000",
     )
 
 
@@ -424,8 +426,10 @@ def test_staging_load(spark_session, mock_spark_write):
         stg_table_name="ssf_alfam_col",
         delivery_entity="ALFAM",
         ssf_table="col",
+        source_system="INSTAGRAM",
+        file_name="ALFAM_COL_20240331000000",
     )
-    mock_spark_write.assert_any_call("bsrc_d.stg_999912.ssf_alfam_col")
+    mock_spark_write.assert_any_call("bsrc_d.stg_999912.col")
 
 
 def test_update_log_metadata(spark_session, mock_spark_write):
