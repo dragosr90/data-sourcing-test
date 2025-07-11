@@ -1,0 +1,78 @@
+description: This YAML implements Step-3 of PD-UCR logic by adding UniformCounterpartyRating and UCRProxyFlag based on default status
+
+target: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_pd_ucr_step3
+
+sources:
+  - alias: PD_UCR_STEP2
+    source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_pd_ucr_step2
+  - alias: DEFAULT_CP
+    columns:
+      - DeliveryEntity
+      - ReportingDate
+      - CounterpartyID
+      - Default
+      - DefaultDate
+      - DefaultEndDate
+    source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_default_counterparty
+
+transformations:
+  - join:
+      left_source: PD_UCR_STEP2
+      right_source: DEFAULT_CP
+      condition:
+        - PD_UCR_STEP2.CounterpartyID = DEFAULT_CP.CounterpartyID
+        - PD_UCR_STEP2.CounterpartySourceSystemIdentifier = DEFAULT_CP.CounterpartySourceSystemIdentifier
+      how: left
+
+expressions:
+  DeliveryEntity: PD_UCR_STEP2.DeliveryEntity
+  ReportingDate: PD_UCR_STEP2.ReportingDate
+  CounterpartyID: PD_UCR_STEP2.CounterpartyID
+  CounterpartySourceSystemIdentifier: PD_UCR_STEP2.CounterpartySourceSystemIdentifier
+  BcdbId: PD_UCR_STEP2.BcdbId
+  AacAlphaCode: PD_UCR_STEP2.AacAlphaCode
+  GlobalCounterpartyIdentifier: PD_UCR_STEP2.GlobalCounterpartyIdentifier
+  InterCompanyIndicator: PD_UCR_STEP2.InterCompanyIndicator
+  PDModelCode: PD_UCR_STEP2.PDModelCode
+  LastPerformingPDModelCode: PD_UCR_STEP2.LastPerformingPDModelCode
+  ApprovedUniformCounterpartyRating: PD_UCR_STEP2.ApprovedUniformCounterpartyRating
+  UCRStep1: PD_UCR_STEP2.UCRStep1
+  UCRStep2: PD_UCR_STEP2.UCRStep2
+  ProbabilityOfDefaultBeforeConservatism: PD_UCR_STEP2.ProbabilityOfDefaultBeforeConservatism
+  ProbabilityOfDefault: PD_UCR_STEP2.ProbabilityOfDefault
+  UniformCounterpartyRatingDate: PD_UCR_STEP2.UniformCounterpartyRatingDate
+  UniformCounterpartyRatingExpiryDate: PD_UCR_STEP2.UniformCounterpartyRatingExpiryDate
+  PDMarginOfConservatism: PD_UCR_STEP2.PDMarginOfConservatism
+  UCRCase: PD_UCR_STEP2.UCRCase
+  RatingSourceCounterpartyID: PD_UCR_STEP2.RatingSourceCounterpartyID
+  RatingSourceCounterpartySSI: PD_UCR_STEP2.RatingSourceCounterpartySSI
+  fairid: PD_UCR_STEP2.fairid
+  UniquePDRatingId: PD_UCR_STEP2.UniquePDRatingId
+  Default: DEFAULT_CP.Default
+  
+  UniformCounterpartyRating: >
+    CASE 
+      WHEN DEFAULT_CP.Default = 'Y' AND PD_UCR_STEP2.UCRStep2 IN ('6','7','8') THEN PD_UCR_STEP2.UCRStep2
+      WHEN DEFAULT_CP.Default = 'Y' AND PD_UCR_STEP2.UCRStep2 NOT IN ('6','7','8') THEN '6'
+      WHEN DEFAULT_CP.Default = 'Y' THEN '6'
+      WHEN DEFAULT_CP.Default = 'N' AND PD_UCR_STEP2.UCRStep2 IN ('6','7','8') THEN '6+'
+      WHEN PD_UCR_STEP2.UCRStep2 IS NOT NULL THEN PD_UCR_STEP2.UCRStep2
+      ELSE '6+'
+    END
+  
+  UCRProxyFlag: >
+    CASE 
+      WHEN (
+        CASE 
+          WHEN DEFAULT_CP.Default = 'Y' AND PD_UCR_STEP2.UCRStep2 IN ('6','7','8') THEN PD_UCR_STEP2.UCRStep2
+          WHEN DEFAULT_CP.Default = 'Y' AND PD_UCR_STEP2.UCRStep2 NOT IN ('6','7','8') THEN '6'
+          WHEN DEFAULT_CP.Default = 'Y' THEN '6'
+          WHEN DEFAULT_CP.Default = 'N' AND PD_UCR_STEP2.UCRStep2 IN ('6','7','8') THEN '6+'
+          WHEN PD_UCR_STEP2.UCRStep2 IS NOT NULL THEN PD_UCR_STEP2.UCRStep2
+          ELSE '6+'
+        END
+      ) != COALESCE(PD_UCR_STEP2.UCRStep2, '6+') THEN 'Y'
+      ELSE 'N'
+    END
+
+drop_duplicates: true
