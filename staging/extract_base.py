@@ -365,7 +365,7 @@ class ExtractStagingData:
         stg_table_name: str,
         source_system: str,
         file_name: str,
-        **kwargs: dict[str, str],  # More specific type annotation
+        **kwargs: str,  # More specific type annotation
     ) -> bool:
         """Save DataFrame to staging table.
 
@@ -397,7 +397,7 @@ class ExtractStagingData:
                 source_system=source_system,
                 key=Path(file_name).stem,
                 file_delivery_status=self._get_save_status(),
-                result="FAILURE",
+                result="FAILED",
                 comment="Failed to save to staging table",
             )
             return False
@@ -416,7 +416,7 @@ class ExtractStagingData:
         source_system: str,
         file_name: str,
         stg_table_name: str,
-        **kwargs: dict[str, str],  # More specific type annotation
+        **kwargs: str,  # More specific type annotation
     ) -> bool:
         """Validate data quality for the staging table.
 
@@ -454,7 +454,7 @@ class ExtractStagingData:
                 source_system=source_system,
                 key=Path(file_name).stem,
                 file_delivery_status=self._get_dq_status(),
-                result="FAILURE",
+                result="FAILED",
                 comment="Data quality validation failed",
             )
             return False
@@ -467,26 +467,3 @@ class ExtractStagingData:
             comment="Data quality validation completed",
         )
         return result
-
-    @staticmethod
-    def update_kwargs(**kwargs: str) -> dict:
-        """Update keyword arguments by removing keys and setting the delivery entity.
-
-        Removes "file_name" and "delivery_entity" keys from the input kwargs and sets
-        the "key" key to the value of "delivery_entity" or "file_name" if
-        not already present.
-
-        Args:
-            **kwargs (str): Arbitrary keyword arguments.
-
-        Returns:
-            dict: Updated dictionary with modified "delivery_entity" and filtered keys.
-        """
-        return {
-            **{
-                k: v
-                for k, v in kwargs.items()
-                if k not in ["file_name", "delivery_entity"]
-            },
-            "key": kwargs.get("delivery_entity", kwargs.get("file_name", "")),
-        }
