@@ -1,15 +1,13 @@
-2025-07-10 16:57:54 [INFO] validate:  YAML format validated successfully
-2025-07-10 16:58:00 [INFO] validate:  Sources validated successfully
-2025-07-10 16:58:00 [INFO] validate_join:  Joins validated successfully
-2025-07-10 16:58:00 [INFO] validate_join:  Joins validated successfully
-2025-07-10 16:58:00 [INFO] validate_pivot:  Pivot validated successfully
-2025-07-10 16:58:01 [INFO] validate_add_variables:  Variables validated successfully
-2025-07-10 16:58:01 [INFO] validate_aggregation:  Aggregations validated successfully
-2025-07-10 16:58:01 [INFO] validate_aggregation:  Aggregations validated successfully
-2025-07-10 16:58:01 [INFO] validate_join:  Joins validated successfully
-2025-07-10 16:58:01 [ERROR] validate_sql_expressions:  Problem with expression(s):
-2025-07-10 16:58:01 [ERROR] validate_sql_expressions:  first(CAST(LBR_QUANTITATIVE.TOTAL_ASSETS * 1000000000 AS STRING)): [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `LBR_QUANTITATIVE`.`LB_RATING_ID` cannot be resolved. Did you mean one of the following? [`PARENT`.`company_id`, `PARENT`.`parent_rating_id`, `PARENT`.`parent_turnover`, `DIRECT`.`company_id`, `DIRECT`.`dummy`]. SQLSTATE: 42703
-first(CAST((LBR_QUANTITATIVE.NET_INTEREST_YIELD + LBR_QUANTITATIVE.OTHER_OPERATING_INCOME) * 1000000000 AS STRING)): [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `LBR_QUANTITATIVE`.`LB_RATING_ID` cannot be resolved. Did you mean one of the following? [`PARENT`.`company_id`, `PARENT`.`parent_rating_id`, `PARENT`.`parent_turnover`, `DIRECT`.`company_id`, `DIRECT`.`dummy`]. SQLSTATE: 42703
-2025-07-10 16:58:01 [ERROR] validate_aggregation:  Issue with aggregated data LBR_CALCULATED
-2025-07-10 16:58:01 [INFO] validate_join:  Joins validated successfully
-False
+2025-07-10 16:59:42 [INFO] validate:  Sources validated successfully
+2025-07-10 16:59:43 [INFO] validate_join:  Joins validated successfully
+2025-07-10 16:59:43 [INFO] validate_join:  Joins validated successfully
+2025-07-10 16:59:43 [INFO] validate_pivot:  Pivot validated successfully
+2025-07-10 16:59:43 [INFO] validate_add_variables:  Variables validated successfully
+2025-07-10 16:59:43 [INFO] validate_aggregation:  Aggregations validated successfully
+2025-07-10 16:59:43 [INFO] validate_aggregation:  Aggregations validated successfully
+2025-07-10 16:59:44 [INFO] validate_join:  Joins validated successfully
+2025-07-10 16:59:44 [ERROR] validate_sql_expressions:  Problem with expression(s):
+2025-07-10 16:59:44 [ERROR] validate_sql_expressions:  first(CAST(TOTAL_ASSETS * 1000000000 AS STRING)): [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `TOTAL_ASSETS` cannot be resolved. Did you mean one of the following? [`DIRECT`.`dummy`, `DIRECT`.`turnover`, `DIRECT`.`rating_id`, `DIRECT`.`company_id`, `PARENT`.`company_id`]. SQLSTATE: 42703
+first(CAST((NET_INTEREST_YIELD + OTHER_OPERATING_INCOME) * 1000000000 AS STRING)): [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `NET_INTEREST_YIELD` cannot be resolved. Did you mean one of the following? [`DIRECT`.`dummy`, `DIRECT`.`turnover`, `PARENT`.`company_id`, `DIRECT`.`rating_id`, `DIRECT`.`company_id`]. SQLSTATE: 42703
+2025-07-10 16:59:44 [ERROR] validate_aggregation:  Issue with aggregated data LBR_CALCULATED
+2025-07-10 16:59:44 [INFO] validate_join:  Joins validated successfully
