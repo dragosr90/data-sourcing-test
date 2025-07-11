@@ -32,45 +32,51 @@ class FileInfoMock(dict):
 @pytest.fixture
 def metadata_schema():
     """Common schema for metadata DataFrame."""
-    return StructType([
-        StructField("SourceSystem", StringType(), True),
-        StructField("SourceFileName", StringType(), True),
-        StructField("SourceFileFormat", StringType(), True),
-        StructField("SourceFileDelimiter", StringType(), True),
-        StructField("StgTableName", StringType(), True),
-        StructField("FileDeliveryStep", IntegerType(), True),
-        StructField("FileDeliveryStatus", StringType(), True),
-    ])
+    return StructType(
+        [
+            StructField("SourceSystem", StringType(), True),
+            StructField("SourceFileName", StringType(), True),
+            StructField("SourceFileFormat", StringType(), True),
+            StructField("SourceFileDelimiter", StringType(), True),
+            StructField("StgTableName", StringType(), True),
+            StructField("FileDeliveryStep", IntegerType(), True),
+            StructField("FileDeliveryStatus", StringType(), True),
+        ]
+    )
 
 
 @pytest.fixture
 def metadata_schema_with_deadline():
     """Schema for metadata DataFrame with Deadline column."""
-    return StructType([
-        StructField("SourceSystem", StringType(), True),
-        StructField("SourceFileName", StringType(), True),
-        StructField("SourceFileFormat", StringType(), True),
-        StructField("SourceFileDelimiter", StringType(), True),
-        StructField("StgTableName", StringType(), True),
-        StructField("FileDeliveryStep", IntegerType(), True),
-        StructField("FileDeliveryStatus", StringType(), True),
-        StructField("Deadline", DateType(), True),
-    ])
+    return StructType(
+        [
+            StructField("SourceSystem", StringType(), True),
+            StructField("SourceFileName", StringType(), True),
+            StructField("SourceFileFormat", StringType(), True),
+            StructField("SourceFileDelimiter", StringType(), True),
+            StructField("StgTableName", StringType(), True),
+            StructField("FileDeliveryStep", IntegerType(), True),
+            StructField("FileDeliveryStatus", StringType(), True),
+            StructField("Deadline", DateType(), True),
+        ]
+    )
 
 
 @pytest.fixture
 def log_schema():
     """Common schema for log DataFrame."""
-    return StructType([
-        StructField("SourceSystem", StringType(), True),
-        StructField("SourceFileName", StringType(), True),
-        StructField("DeliveryNumber", IntegerType(), True),
-        StructField("FileDeliveryStep", IntegerType(), True),
-        StructField("FileDeliveryStatus", StringType(), True),
-        StructField("Result", StringType(), True),
-        StructField("LastUpdatedDateTimestamp", TimestampType(), True),
-        StructField("Comment", StringType(), True),
-    ])
+    return StructType(
+        [
+            StructField("SourceSystem", StringType(), True),
+            StructField("SourceFileName", StringType(), True),
+            StructField("DeliveryNumber", IntegerType(), True),
+            StructField("FileDeliveryStep", IntegerType(), True),
+            StructField("FileDeliveryStatus", StringType(), True),
+            StructField("Result", StringType(), True),
+            StructField("LastUpdatedDateTimestamp", TimestampType(), True),
+            StructField("Comment", StringType(), True),
+        ]
+    )
 
 
 @pytest.fixture
@@ -388,7 +394,7 @@ def test_extract_non_ssf_data_with_deadline(
     mock_dbutils_fs_ls = mocker.patch.object(extraction.dbutils.fs, "ls")
     mock_dbutils_fs_cp = mocker.patch.object(extraction.dbutils.fs, "cp")
 
-    # Set up the mock file system - file is missing from LRD_STATIC but exists in processed
+    # Set up the mock file system - file is missing from LRD_STATIC but exists in processed # noqa: E501
     effect = [
         [],  # Empty NME folder
         [],  # Empty FINOB folder
@@ -396,7 +402,7 @@ def test_extract_non_ssf_data_with_deadline(
         [  # Processed folder contains the file
             FileInfoMock(
                 {
-                    "path": f"{test_container}/LRD_STATIC/processed/TEST_STATIC_FILE_20240101.txt",
+                    "path": f"{test_container}/LRD_STATIC/processed/TEST_STATIC_FILE_20240101.txt",  # noqa: E501
                     "name": "TEST_STATIC_FILE_20240101.txt",
                 }
             )
@@ -404,7 +410,7 @@ def test_extract_non_ssf_data_with_deadline(
         [  # Second call to processed folder for ls check
             FileInfoMock(
                 {
-                    "path": f"{test_container}/LRD_STATIC/processed/TEST_STATIC_FILE_20240101.txt",
+                    "path": f"{test_container}/LRD_STATIC/processed/TEST_STATIC_FILE_20240101.txt",  # noqa: E501
                     "name": "TEST_STATIC_FILE_20240101.txt",
                 }
             )
@@ -453,6 +459,7 @@ def test_extract_non_ssf_data_with_deadline(
         assert "Deadline not yet reached" in caplog.text
         assert "LRD_STATIC files will not be copied" in caplog.text
 
+
 @pytest.mark.parametrize(
     ("run_month", "source_container"),
     [("202503", "test-container")],
@@ -468,12 +475,12 @@ def test_place_static_data_individual_deadlines(
 ):
     """Test place_static_data processes files based on individual deadlines."""
     test_container = f"abfss://{source_container}@bsrcdadls.dfs.core.windows.net"
-    
+
     # Current time for comparison
     current_time = datetime.now(timezone.utc)
     yesterday = (current_time - timedelta(days=1)).date()
     tomorrow = (current_time + timedelta(days=1)).date()
-    
+
     # Create mock metadata with different deadline scenarios
     mock_meta = spark_session.createDataFrame(
         [
@@ -517,59 +524,82 @@ def test_place_static_data_individual_deadlines(
     # Mock spark.read
     mock_read = mocker.patch("pyspark.sql.SparkSession.read", autospec=True)
     mock_read.table.side_effect = [mock_meta, empty_log_df]
-    
+
     extraction = ExtractNonSSFData(
         spark_session,
         run_month,
         source_container=source_container,
     )
-    
+
     # Mock filesystem operations
     mock_dbutils_fs_ls = mocker.patch.object(extraction.dbutils.fs, "ls")
     mock_dbutils_fs_cp = mocker.patch.object(extraction.dbutils.fs, "cp")
-    
+
     # Set up ls responses for each file check
     mock_dbutils_fs_ls.side_effect = [
         # FILE_PAST_DEADLINE check
-        [FileInfoMock({
-            "path": f"{test_container}/LRD_STATIC/processed/FILE_PAST_DEADLINE_20240101.txt",
-            "name": "FILE_PAST_DEADLINE_20240101.txt",
-        })],
-        [FileInfoMock({
-            "path": f"{test_container}/LRD_STATIC/processed/FILE_PAST_DEADLINE_20240101.txt",
-            "name": "FILE_PAST_DEADLINE_20240101.txt",
-        })],
+        [
+            FileInfoMock(
+                {
+                    "path": f"{test_container}/LRD_STATIC/processed/FILE_PAST_DEADLINE_20240101.txt",  # noqa: E501
+                    "name": "FILE_PAST_DEADLINE_20240101.txt",
+                }
+            )
+        ],
+        [
+            FileInfoMock(
+                {
+                    "path": f"{test_container}/LRD_STATIC/processed/FILE_PAST_DEADLINE_20240101.txt",  # noqa: E501
+                    "name": "FILE_PAST_DEADLINE_20240101.txt",
+                }
+            )
+        ],
         # FILE_FUTURE_DEADLINE check - won't be called due to deadline check
         # FILE_NO_DEADLINE check
-        [FileInfoMock({
-            "path": f"{test_container}/LRD_STATIC/processed/FILE_NO_DEADLINE_20240101.txt",
-            "name": "FILE_NO_DEADLINE_20240101.txt",
-        })],
-        [FileInfoMock({
-            "path": f"{test_container}/LRD_STATIC/processed/FILE_NO_DEADLINE_20240101.txt",
-            "name": "FILE_NO_DEADLINE_20240101.txt",
-        })],
+        [
+            FileInfoMock(
+                {
+                    "path": f"{test_container}/LRD_STATIC/processed/FILE_NO_DEADLINE_20240101.txt",  # noqa: E501
+                    "name": "FILE_NO_DEADLINE_20240101.txt",
+                }
+            )
+        ],
+        [
+            FileInfoMock(
+                {
+                    "path": f"{test_container}/LRD_STATIC/processed/FILE_NO_DEADLINE_20240101.txt",  # noqa: E501
+                    "name": "FILE_NO_DEADLINE_20240101.txt",
+                }
+            )
+        ],
     ]
-    
+
     # Mock saveAsTable to prevent actual writes
     mocker.patch("pyspark.sql.DataFrameWriter.saveAsTable")
-    
+
     # Call place_static_data with overall deadline passed
     result = extraction.place_static_data([], deadline_passed=True)
-    
+
     # Verify that only files with passed deadlines were copied
-    assert mock_dbutils_fs_cp.call_count == 2  # Only FILE_PAST_DEADLINE and FILE_NO_DEADLINE
-    
+    assert (
+        mock_dbutils_fs_cp.call_count == 2
+    )  # Only FILE_PAST_DEADLINE and FILE_NO_DEADLINE
+
     # Check specific calls
     calls = mock_dbutils_fs_cp.call_args_list
-    copied_files = [call[0][1].split("/")[-1] for call in calls]  # Get target file names
-    
+    copied_files = [
+        call[0][1].split("/")[-1] for call in calls
+    ]  # Get target file names
+
     assert "FILE_PAST_DEADLINE.txt" in copied_files
     assert "FILE_NO_DEADLINE.txt" in copied_files
     assert "FILE_FUTURE_DEADLINE.txt" not in copied_files
-    
+
     # Check log messages
-    assert "File FILE_FUTURE_DEADLINE not delivered but deadline not reached yet" in caplog.text
+    assert (
+        "File FILE_FUTURE_DEADLINE not delivered but deadline not reached yet"
+        in caplog.text
+    )
     assert "Copied FILE_PAST_DEADLINE to static folder" in caplog.text
     assert "Copied FILE_NO_DEADLINE to static folder" in caplog.text
 
@@ -621,7 +651,7 @@ def test_place_static_data_keyword_only(
     with pytest.raises(
         TypeError, match="takes 2 positional arguments but 3 were given"
     ):
-        extraction.place_static_data([], True)  # noqa: FBT003 - Testing that positional bool fails
+        extraction.place_static_data([], True)
 
     # Test that calling with keyword argument works
     result = extraction.place_static_data([], deadline_passed=True)  # This should work
@@ -703,11 +733,11 @@ def test_check_deadline_violations_with_dates(
 
     # Check log messages include deadline dates for both files
     assert (
-        f"Deadline passed ({yesterday} 00:00:00 UTC): Missing expected file MISSING_FINOB_FILE from finob"
+        f"Deadline passed ({yesterday} 00:00:00 UTC): Missing expected file MISSING_FINOB_FILE from finob"  # noqa: E501
         in caplog.text
     )
     assert (
-        f"Deadline passed ({yesterday} 00:00:00 UTC): Missing expected file MISSING_NME_FILE from nme"
+        f"Deadline passed ({yesterday} 00:00:00 UTC): Missing expected file MISSING_NME_FILE from nme"  # noqa: E501
         in caplog.text
     )
 
@@ -938,7 +968,7 @@ def test_place_static_data_with_redelivery_status(
         [
             FileInfoMock(
                 {
-                    "path": f"{test_container}/LRD_STATIC/processed/TEST_FILE_20240101.txt",
+                    "path": f"{test_container}/LRD_STATIC/processed/TEST_FILE_20240101.txt",  # noqa: E501
                     "name": "TEST_FILE_20240101.txt",
                 }
             )
@@ -946,7 +976,7 @@ def test_place_static_data_with_redelivery_status(
         [
             FileInfoMock(
                 {
-                    "path": f"{test_container}/LRD_STATIC/processed/TEST_FILE_20240101.txt",
+                    "path": f"{test_container}/LRD_STATIC/processed/TEST_FILE_20240101.txt",  # noqa: E501
                     "name": "TEST_FILE_20240101.txt",
                 }
             )
@@ -1070,19 +1100,19 @@ def test_place_static_data_multiple_processed_files(
         [
             FileInfoMock(
                 {
-                    "path": f"{test_container}/LRD_STATIC/processed/TEST_FILE_20240101.txt",
+                    "path": f"{test_container}/LRD_STATIC/processed/TEST_FILE_20240101.txt",  # noqa: E501
                     "name": "TEST_FILE_20240101.txt",
                 }
             ),
             FileInfoMock(
                 {
-                    "path": f"{test_container}/LRD_STATIC/processed/TEST_FILE_20240201.txt",
+                    "path": f"{test_container}/LRD_STATIC/processed/TEST_FILE_20240201.txt",  # noqa: E501
                     "name": "TEST_FILE_20240201.txt",
                 }
             ),
             FileInfoMock(
                 {
-                    "path": f"{test_container}/LRD_STATIC/processed/TEST_FILE_20240301.txt",
+                    "path": f"{test_container}/LRD_STATIC/processed/TEST_FILE_20240301.txt",  # noqa: E501
                     "name": "TEST_FILE_20240301.txt",
                 }
             ),
@@ -1091,7 +1121,7 @@ def test_place_static_data_multiple_processed_files(
         [
             FileInfoMock(
                 {
-                    "path": f"{test_container}/LRD_STATIC/processed/TEST_FILE_20240301.txt",
+                    "path": f"{test_container}/LRD_STATIC/processed/TEST_FILE_20240301.txt",  # noqa: E501
                     "name": "TEST_FILE_20240301.txt",
                 }
             )
@@ -1181,7 +1211,7 @@ def test_get_all_files_filters_files_without_metadata(
 ):
     """Test get_all_files excludes files without metadata match."""
     test_container = f"abfss://{source_container}@bsrcdadls.dfs.core.windows.net"
-    
+
     # Create mock metadata DataFrame with only some files
     mock_meta = spark_session.createDataFrame(
         [
@@ -1206,66 +1236,76 @@ def test_get_all_files_filters_files_without_metadata(
         ],
         schema=metadata_schema,
     )
-    
+
     # Mock spark.read
     mock_read = mocker.patch("pyspark.sql.SparkSession.read", autospec=True)
     mock_read.table.side_effect = [mock_meta, empty_log_df]
-    
+
     extraction = ExtractNonSSFData(
         spark_session,
         run_month,
         source_container=source_container,
     )
-    
+
     # Mock filesystem operations - return files including ones not in metadata
     mock_dbutils_fs_ls = mocker.patch.object(extraction.dbutils.fs, "ls")
     mock_dbutils_fs_ls.side_effect = [
         # NME folder - has both expected and unexpected files
         [
-            FileInfoMock({
-                "path": f"{test_container}/NME/EXPECTED_FILE.csv",
-                "name": "EXPECTED_FILE.csv",
-            }),
-            FileInfoMock({
-                "path": f"{test_container}/NME/UNEXPECTED_FILE.csv",
-                "name": "UNEXPECTED_FILE.csv",
-            }),
-            FileInfoMock({
-                "path": f"{test_container}/NME/ANOTHER_UNEXPECTED.parquet",
-                "name": "ANOTHER_UNEXPECTED.parquet",
-            }),
+            FileInfoMock(
+                {
+                    "path": f"{test_container}/NME/EXPECTED_FILE.csv",
+                    "name": "EXPECTED_FILE.csv",
+                }
+            ),
+            FileInfoMock(
+                {
+                    "path": f"{test_container}/NME/UNEXPECTED_FILE.csv",
+                    "name": "UNEXPECTED_FILE.csv",
+                }
+            ),
+            FileInfoMock(
+                {
+                    "path": f"{test_container}/NME/ANOTHER_UNEXPECTED.parquet",
+                    "name": "ANOTHER_UNEXPECTED.parquet",
+                }
+            ),
         ],
         # FINOB folder
         [
-            FileInfoMock({
-                "path": f"{test_container}/FINOB/ANOTHER_EXPECTED.csv",
-                "name": "ANOTHER_EXPECTED.csv",
-            }),
-            FileInfoMock({
-                "path": f"{test_container}/FINOB/NOT_IN_METADATA.csv",
-                "name": "NOT_IN_METADATA.csv",
-            }),
+            FileInfoMock(
+                {
+                    "path": f"{test_container}/FINOB/ANOTHER_EXPECTED.csv",
+                    "name": "ANOTHER_EXPECTED.csv",
+                }
+            ),
+            FileInfoMock(
+                {
+                    "path": f"{test_container}/FINOB/NOT_IN_METADATA.csv",
+                    "name": "NOT_IN_METADATA.csv",
+                }
+            ),
         ],
         # LRD_STATIC folder
         [],
     ]
-    
+
     # Mock saveAsTable for metadata updates
     mocker.patch("pyspark.sql.DataFrameWriter.saveAsTable")
-    
+
     # Call get_all_files
     result = extraction.get_all_files()
-    
+
     # Verify that only files with metadata matches are included
     assert len(result) == 2
-    
+
     file_names = [Path(f["file_name"]).stem for f in result]
     assert "EXPECTED_FILE" in file_names
     assert "ANOTHER_EXPECTED" in file_names
     assert "UNEXPECTED_FILE" not in file_names
     assert "ANOTHER_UNEXPECTED" not in file_names
     assert "NOT_IN_METADATA" not in file_names
-    
+
     # Check warning messages for files not in metadata
     assert "File UNEXPECTED_FILE not found in metadata" in caplog.text
     assert "File ANOTHER_UNEXPECTED not found in metadata" in caplog.text
