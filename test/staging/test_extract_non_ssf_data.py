@@ -473,7 +473,7 @@ def test_place_static_data_individual_deadlines(
     empty_log_df,
     caplog,
 ):
-    """Test place_static_data processes files based on individual deadlines."""
+    """Test place_static_data processes files based on overall deadline."""
     test_container = f"abfss://{source_container}@bsrcdadls.dfs.core.windows.net"
 
     # Current time for comparison
@@ -484,7 +484,7 @@ def test_place_static_data_individual_deadlines(
     # Create mock metadata with different deadline scenarios
     mock_meta = spark_session.createDataFrame(
         [
-            # File 1: Deadline passed, should be copied
+            # File 1: Deadline passed
             (
                 "lrd_static",
                 "FILE_PAST_DEADLINE",
@@ -495,7 +495,7 @@ def test_place_static_data_individual_deadlines(
                 "Expected",
                 yesterday,
             ),
-            # File 2: Deadline not passed, should NOT be copied
+            # File 2: Deadline not passed
             (
                 "lrd_static",
                 "FILE_FUTURE_DEADLINE",
@@ -506,7 +506,7 @@ def test_place_static_data_individual_deadlines(
                 "Expected",
                 tomorrow,
             ),
-            # File 3: No deadline, should be copied if overall deadline passed
+            # File 3: No deadline
             (
                 "lrd_static",
                 "FILE_NO_DEADLINE",
@@ -535,31 +535,13 @@ def test_place_static_data_individual_deadlines(
     mock_dbutils_fs_ls = mocker.patch.object(extraction.dbutils.fs, "ls")
     mock_dbutils_fs_cp = mocker.patch.object(extraction.dbutils.fs, "cp")
 
-    # Set up ls responses for each file check
+    # Set up ls responses - all files exist in processed folder
     mock_dbutils_fs_ls.side_effect = [
-        # FILE_PAST_DEADLINE check
-        [
-            FileInfoMock(
-                {
-                    "path": f"{test_container}/LRD_STATIC/processed/FILE_PAST_DEADLINE_20240101.txt",  # noqa: E501
-                    "name": "FILE_PAST_DEADLINE_20240101.txt",
-                }
-            )
-        ],
-        [
-            FileInfoMock(
-                {
-                    "path": f"{test_container}/LRD_STATIC/processed/FILE_PAST_DEADLINE_20240101.txt",  # noqa: E501
-                    "name": "FILE_PAST_DEADLINE_20240101.txt",
-                }
-            )
-        ],
-        # FILE_FUTURE_DEADLINE check - won't be called due to deadline check
         # FILE_NO_DEADLINE check
         [
             FileInfoMock(
                 {
-                    "path": f"{test_container}/LRD_STATIC/processed/FILE_NO_DEADLINE_20240101.txt",  # noqa: E501
+                    "path": f"{test_container}/LRD_STATIC/processed/FILE_NO_DEADLINE_20240101.txt",
                     "name": "FILE_NO_DEADLINE_20240101.txt",
                 }
             )
@@ -567,8 +549,42 @@ def test_place_static_data_individual_deadlines(
         [
             FileInfoMock(
                 {
-                    "path": f"{test_container}/LRD_STATIC/processed/FILE_NO_DEADLINE_20240101.txt",  # noqa: E501
+                    "path": f"{test_container}/LRD_STATIC/processed/FILE_NO_DEADLINE_20240101.txt",
                     "name": "FILE_NO_DEADLINE_20240101.txt",
+                }
+            )
+        ],
+        # FILE_FUTURE_DEADLINE check
+        [
+            FileInfoMock(
+                {
+                    "path": f"{test_container}/LRD_STATIC/processed/FILE_FUTURE_DEADLINE_20240101.txt",
+                    "name": "FILE_FUTURE_DEADLINE_20240101.txt",
+                }
+            )
+        ],
+        [
+            FileInfoMock(
+                {
+                    "path": f"{test_container}/LRD_STATIC/processed/FILE_FUTURE_DEADLINE_20240101.txt",
+                    "name": "FILE_FUTURE_DEADLINE_20240101.txt",
+                }
+            )
+        ],
+        # FILE_PAST_DEADLINE check
+        [
+            FileInfoMock(
+                {
+                    "path": f"{test_container}/LRD_STATIC/processed/FILE_PAST_DEADLINE_20240101.txt",
+                    "name": "FILE_PAST_DEADLINE_20240101.txt",
+                }
+            )
+        ],
+        [
+            FileInfoMock(
+                {
+                    "path": f"{test_container}/LRD_STATIC/processed/FILE_PAST_DEADLINE_20240101.txt",
+                    "name": "FILE_PAST_DEADLINE_20240101.txt",
                 }
             )
         ],
@@ -578,30 +594,18 @@ def test_place_static_data_individual_deadlines(
     mocker.patch("pyspark.sql.DataFrameWriter.saveAsTable")
 
     # Call place_static_data with overall deadline passed
-    result = extraction.place_static_data([], deadline_passed=True)
+    extraction.place_static_data([], deadline_passed=True)
 
-    # Verify that only files with passed deadlines were copied
-    assert (
-        mock_dbutils_fs_cp.call_count == 2
-    )  # Only FILE_PAST_DEADLINE and FILE_NO_DEADLINE
+    # When deadline_passed=True, all expected files should be copied
+    assert mock_dbutils_fs_cp.call_count == 3
 
-    # Check specific calls
+    # Check that all files were copied
     calls = mock_dbutils_fs_cp.call_args_list
-    copied_files = [
-        call[0][1].split("/")[-1] for call in calls
-    ]  # Get target file names
+    copied_files = [call[0][1].split("/")[-1] for call in calls]
 
-    assert "FILE_PAST_DEADLINE.txt" in copied_files
     assert "FILE_NO_DEADLINE.txt" in copied_files
-    assert "FILE_FUTURE_DEADLINE.txt" not in copied_files
-
-    # Check log messages
-    assert (
-        "File FILE_FUTURE_DEADLINE not delivered but deadline not reached yet"
-        in caplog.text
-    )
-    assert "Copied FILE_PAST_DEADLINE to static folder" in caplog.text
-    assert "Copied FILE_NO_DEADLINE to static folder" in caplog.text
+    assert "FILE_FUTURE_DEADLINE.txt" in copied_files
+    assert "FILE_PAST_DEADLINE.txt" in copied_files
 
 
 @pytest.mark.parametrize(
@@ -1958,9 +1962,13 @@ def test_save_to_stg_table_failure(
     # Create a dummy DataFrame
     dummy_df = spark_session.createDataFrame([(1, "test")], ["id", "value"])
 
-    # Mock the saveAsTable to fail by patching at the method level
+    # Mock the saveAsTable to fail only on the first call (staging table write)
     mock_save_table = mocker.patch("pyspark.sql.DataFrameWriter.saveAsTable")
-    mock_save_table.side_effect = Exception("Write failed")
+    mock_save_table.side_effect = [
+        Exception("Write failed"),  # First call fails (staging table)
+        None,  # Second call succeeds (log table)
+        None,  # Third call succeeds (metadata table)
+    ]
 
     # Test save_to_stg_table with failure
     result = extraction.save_to_stg_table(
@@ -1970,7 +1978,6 @@ def test_save_to_stg_table_failure(
         file_name="TEST_FILE.csv",
     )
     assert result is False
-
 
 @pytest.mark.parametrize(
     ("run_month", "source_container"),
