@@ -1,4 +1,1 @@
-2025-07-11 06:51:04 [INFO] validate:  YAML format validated successfully
-2025-07-11 06:51:14 [INFO] validate:  Sources validated successfully
-2025-07-11 06:51:15 [ERROR] validate_sql_expressions:  Problem with expression(s):
-2025-07-11 06:51:15 [ERROR] validate_sql_expressions:  first(CAST(TOTAL_ASSETS * 1000000000 AS STRING)): [AMBIGUOUS_REFERENCE] Reference `LB_RATING_ID` is ambiguous, could be: [`LBR_QUANTITATIVE`.`LB_RATING_ID`, `UCR_ACTUAL`.`LB_RATING_ID`]. SQLSTATE: 42704
+[AMBIGUOUS_REFERENCE] Reference `TotalAssets` is ambiguous, could be: [`PIVOTED_ESSENTIALS`.`TotalAssets`, `TotalAssets`]. SQLSTATE: 42704
