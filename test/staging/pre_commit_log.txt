@@ -1,39 +1,31 @@
 (bsrc-etl-venv) PS C:\Users\B25712\bsrc-etl-venv\bsrc-etl> pre-commit run --all-files
-ruff lint................................................................Passed
-ruff format..............................................................Passed
-mypy.....................................................................Failed
-- hook id: mypy
+ruff lint................................................................Failed
+- hook id: ruff
 - exit code: 1
 
-Success: no issues found in 13 source files
-src\staging\extract_base.py:386: error: Incompatible types in assignment (expression has type "dict[str, str]", variable has type "str")  [assignment]
-src\staging\extract_base.py:388: error: Incompatible types in assignment (expression has type "dict[str, str]", variable has type "str")  [assignment]
-src\staging\extract_base.py:436: error: Incompatible types in assignment (expression has type "dict[str, str]", variable has type "str")  [assignment]
-src\staging\extract_base.py:438: error: Incompatible types in assignment (expression has type "dict[str, str]", variable has type "str")  [assignment]
-scripts\ssf_staging_process.py:131: error: Argument "ssf_table" to "save_to_stg_table" of "ExtractStagingData" has incompatible type "str"; expected "dict[str, str]"  [arg-type]
-scripts\ssf_staging_process.py:132: error: Argument "delivery_entity" to "save_to_stg_table" of "ExtractStagingData" has incompatible type "str"; expected "dict[str, str]"  [arg-type]
-scripts\ssf_staging_process.py:133: error: Argument 5 to "save_to_stg_table" of "ExtractStagingData" has incompatible type "**dict[str, str]"; expected "dict[str, str]"  [arg-type]
-scripts\ssf_staging_process.py:133: note: "Dict" is invariant -- see https://mypy.readthedocs.io/en/stable/common_issues.html#variance
-scripts\ssf_staging_process.py:133: note: Consider using "Mapping" instead, which is covariant in the value type
-scripts\ssf_staging_process.py:146: error: Argument "delivery_entity" to "validate_data_quality" of "ExtractStagingData" has incompatible type "str"; expected "dict[str, str]"  [arg-type]
-scripts\ssf_staging_process.py:148: error: Argument "ssf_table" to "validate_data_quality" of "ExtractStagingData" has incompatible type "str"; expected "dict[str, str]"  [arg-type]
-scripts\ssf_staging_process.py:149: error: Argument 4 to "validate_data_quality" of "ExtractStagingData" has incompatible type "**dict[str, str]"; expected "dict[str, str]"  [arg-type]
-scripts\ssf_staging_process.py:149: note: "Dict" is invariant -- see https://mypy.readthedocs.io/en/stable/common_issues.html#variance
-scripts\ssf_staging_process.py:149: note: Consider using "Mapping" instead, which is covariant in the value type
-Found 10 errors in 2 files (checked 13 source files)
-src\staging\extract_base.py:386: error: Incompatible types in assignment (expression has type "dict[str, str]", variable has type "str")  [assignment]
-src\staging\extract_base.py:388: error: Incompatible types in assignment (expression has type "dict[str, str]", variable has type "str")  [assignment]
-src\staging\extract_base.py:436: error: Incompatible types in assignment (expression has type "dict[str, str]", variable has type "str")  [assignment]
-src\staging\extract_base.py:438: error: Incompatible types in assignment (expression has type "dict[str, str]", variable has type "str")  [assignment]
-scripts\dial_staging_process.py:163: error: Argument 3 to "save_to_stg_table" of "ExtractStagingData" has incompatible type "**dict[str, str]"; expected "dict[str, str]"  [arg-type]
-scripts\dial_staging_process.py:163: note: "Dict" is invariant -- see https://mypy.readthedocs.io/en/stable/common_issues.html#variance
-scripts\dial_staging_process.py:163: note: Consider using "Mapping" instead, which is covariant in the value type
-scripts\dial_staging_process.py:176: error: Argument 2 to "validate_data_quality" of "ExtractStagingData" has incompatible type "**dict[str, str]"; expected "dict[str, str]"  [arg-type]
-scripts\dial_staging_process.py:176: note: "Dict" is invariant -- see https://mypy.readthedocs.io/en/stable/common_issues.html#variance
-scripts\dial_staging_process.py:176: note: Consider using "Mapping" instead, which is covariant in the value type
-Found 6 errors in 2 files (checked 13 source files)
-src\staging\extract_base.py:386: error: Incompatible types in assignment (expression has type "dict[str, str]", variable has type "str")  [assignment]
-src\staging\extract_base.py:388: error: Incompatible types in assignment (expression has type "dict[str, str]", variable has type "str")  [assignment]
-src\staging\extract_base.py:436: error: Incompatible types in assignment (expression has type "dict[str, str]", variable has type "str")  [assignment]
-src\staging\extract_base.py:438: error: Incompatible types in assignment (expression has type "dict[str, str]", variable has type "str")  [assignment]
-Found 4 errors in 1 file (checked 13 source files)
+All checks passed!
+test\staging\test_extract_non_ssf_data.py:581:5: F841 Local variable `result` is assigned to but never used
+    |
+580 |     # Call place_static_data with overall deadline passed
+581 |     result = extraction.place_static_data([], deadline_passed=True)
+    |     ^^^^^^ F841
+582 |
+583 |     # Verify that only files with passed deadlines were copied
+    |
+    = help: Remove assignment to unused variable `result`
+
+Found 1 error.
+No fixes available (1 hidden fix can be enabled with the `--unsafe-fixes` option).
+All checks passed!
+All checks passed!
+
+ruff format..............................................................Failed
+- hook id: ruff
+- files were modified by this hook
+
+21 files left unchanged
+21 files left unchanged
+21 files left unchanged
+1 file reformatted, 20 files left unchanged
+
+mypy.....................................................................Passed
