@@ -1,5 +1,5 @@
-2025-07-11 14:26:31 [INFO] validate:  YAML format validated successfully
-2025-07-11 14:26:36 [ERROR] validate:  Problem with table/columns for source {'alias': 'MDM_1094', 'columns': ['abn_amro_country_code', 'sovereign_local_currency_ucr', 'pd_model_code', 'Model_Approval_Date'], 'source': 'stg_202505.bsl_andes_1094_sovrgn_cty_cur_rtg'}
+2025-07-11 14:32:54 [INFO] validate:  YAML format validated successfully
+2025-07-11 14:33:03 [ERROR] validate:  Problem with table/columns for source {'alias': 'MDM_1010', 'columns': ['abbreviated_name', 'approved_pd', 'rating_scale'], 'filter': "rating_scale = '''GS'''", 'source': 'stg_202505.bsl_andes_1010_rating_grade'}
 Traceback (most recent call last):
   File "/Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/src/validate/sources.py", line 40, in validate
     .take(1)
@@ -24,13 +24,14 @@ Traceback (most recent call last):
     self._handle_rpc_error(error)
   File "/databricks/spark/python/pyspark/sql/connect/client/core.py", line 2162, in _handle_rpc_error
     raise convert_exception(
-pyspark.errors.exceptions.connect.AnalysisException: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `Model_Approval_Date` cannot be resolved. Did you mean one of the following? [`APPROVAL_DATE`, `PD_MODEL_CODE`, `ABN_AMRO_COUNTRY_CODE`, `ABN_AMRO_COUNTRY_NAME`, `RELATED_MAINLAND_CODE`]. SQLSTATE: 42703; line 1 pos 0;
+pyspark.errors.exceptions.connect.AnalysisException: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `rating_scale` cannot be resolved. Did you mean one of the following? [`Rating_Scale_Code`, `Rating_Grade_Code`, `Rating_Grade_Name`, `Approved_PD`, `Lower_Bound_PD`]. SQLSTATE: 42703; line 1 pos 0;
 'GlobalLimit 1
 +- 'LocalLimit 1
-   +- 'SubqueryAlias MDM_1094
-      +- 'Project [abn_amro_country_code#7109830, sovereign_local_currency_ucr#7109833, pd_model_code#7109834, 'Model_Approval_Date]
-         +- SubqueryAlias bsrc_d.stg_202505.bsl_andes_1094_sovrgn_cty_cur_rtg
-            +- Relation bsrc_d.stg_202505.bsl_andes_1094_sovrgn_cty_cur_rtg[ABN_AMRO_COUNTRY_NAME#7109829,ABN_AMRO_COUNTRY_CODE#7109830,RELATED_MAINLAND_CODE#7109831,SOVEREIGN_FOREIGN_CURRENCY_UCR#7109832,SOVEREIGN_LOCAL_CURRENCY_UCR#7109833,PD_MODEL_CODE#7109834,APPROVAL_DATE#7109835] parquet
+   +- 'SubqueryAlias MDM_1010
+      +- 'Project ['abbreviated_name, 'approved_pd, 'rating_scale]
+         +- 'Filter ('rating_scale = GS)
+            +- SubqueryAlias bsrc_d.stg_202505.bsl_andes_1010_rating_grade
+               +- Relation bsrc_d.stg_202505.bsl_andes_1010_rating_grade[Rating_Scale_Code#7180506,Rating_Grade_Type_Name#7180507,Rating_Grade_Code#7180508,Rating_Grade_Name#7180509,Rating_Grade_Description#7180510,Long_Term_Ratings_Indicator#7180511,Approved_PD#7180512,Lower_Bound_PD#7180513,Upper_Bound_PD#7180514] parquet
 
 
 JVM stacktrace:
@@ -40,12 +41,30 @@ org.apache.spark.sql.catalyst.ExtendedAnalysisException
 	at org.apache.spark.sql.catalyst.analysis.CheckAnalysis.$anonfun$checkAnalysis0$8(CheckAnalysis.scala:356)
 	at org.apache.spark.sql.catalyst.analysis.CheckAnalysis.$anonfun$checkAnalysis0$8$adapted(CheckAnalysis.scala:341)
 	at org.apache.spark.sql.catalyst.trees.TreeNode.foreachUp(TreeNode.scala:293)
+	at org.apache.spark.sql.catalyst.trees.TreeNode.$anonfun$foreachUp$1(TreeNode.scala:292)
+	at org.apache.spark.sql.catalyst.trees.TreeNode.$anonfun$foreachUp$1$adapted(TreeNode.scala:292)
+	at scala.collection.Iterator.foreach(Iterator.scala:943)
+	at scala.collection.Iterator.foreach$(Iterator.scala:943)
+	at scala.collection.AbstractIterator.foreach(Iterator.scala:1431)
+	at scala.collection.IterableLike.foreach(IterableLike.scala:74)
+	at scala.collection.IterableLike.foreach$(IterableLike.scala:73)
+	at scala.collection.AbstractIterable.foreach(Iterable.scala:56)
+	at org.apache.spark.sql.catalyst.trees.TreeNode.foreachUp(TreeNode.scala:292)
 	at org.apache.spark.sql.catalyst.analysis.CheckAnalysis.$anonfun$checkAnalysis0$7(CheckAnalysis.scala:341)
 	at org.apache.spark.sql.catalyst.analysis.CheckAnalysis.$anonfun$checkAnalysis0$7$adapted(CheckAnalysis.scala:341)
 	at scala.collection.immutable.Stream.foreach(Stream.scala:533)
 	at org.apache.spark.sql.catalyst.analysis.CheckAnalysis.$anonfun$checkAnalysis0$2(CheckAnalysis.scala:341)
 	at org.apache.spark.sql.catalyst.analysis.CheckAnalysis.$anonfun$checkAnalysis0$2$adapted(CheckAnalysis.scala:216)
 	at org.apache.spark.sql.catalyst.trees.TreeNode.foreachUp(TreeNode.scala:293)
+	at org.apache.spark.sql.catalyst.trees.TreeNode.$anonfun$foreachUp$1(TreeNode.scala:292)
+	at org.apache.spark.sql.catalyst.trees.TreeNode.$anonfun$foreachUp$1$adapted(TreeNode.scala:292)
+	at scala.collection.Iterator.foreach(Iterator.scala:943)
+	at scala.collection.Iterator.foreach$(Iterator.scala:943)
+	at scala.collection.AbstractIterator.foreach(Iterator.scala:1431)
+	at scala.collection.IterableLike.foreach(IterableLike.scala:74)
+	at scala.collection.IterableLike.foreach$(IterableLike.scala:73)
+	at scala.collection.AbstractIterable.foreach(Iterable.scala:56)
+	at org.apache.spark.sql.catalyst.trees.TreeNode.foreachUp(TreeNode.scala:292)
 	at org.apache.spark.sql.catalyst.trees.TreeNode.$anonfun$foreachUp$1(TreeNode.scala:292)
 	at org.apache.spark.sql.catalyst.trees.TreeNode.$anonfun$foreachUp$1$adapted(TreeNode.scala:292)
 	at scala.collection.Iterator.foreach(Iterator.scala:943)
@@ -131,7 +150,7 @@ org.apache.spark.sql.catalyst.ExtendedAnalysisException
 	at scala.util.Using$.resource(Using.scala:269)
 	at com.databricks.unity.HandleImpl.runWithAndClose(UCSHandle.scala:108)
 	at org.apache.spark.sql.connect.execution.ExecuteThreadRunner$ExecutionThread.run(ExecuteThreadRunner.scala:592)
-2025-07-11 14:26:36 [ERROR] validate:  [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `Model_Approval_Date` cannot be resolved. Did you mean one of the following? [`APPROVAL_DATE`, `PD_MODEL_CODE`, `ABN_AMRO_COUNTRY_CODE`, `ABN_AMRO_COUNTRY_NAME`, `RELATED_MAINLAND_CODE`]. SQLSTATE: 42703
+2025-07-11 14:33:03 [ERROR] validate:  [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `rating_scale` cannot be resolved. Did you mean one of the following? [`Rating_Scale_Code`, `Rating_Grade_Code`, `Rating_Grade_Name`, `Approved_PD`, `Lower_Bound_PD`]. SQLSTATE: 42703
 Traceback (most recent call last):
   File "/Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/src/validate/sources.py", line 40, in validate
     .take(1)
@@ -156,13 +175,14 @@ Traceback (most recent call last):
     self._handle_rpc_error(error)
   File "/databricks/spark/python/pyspark/sql/connect/client/core.py", line 2162, in _handle_rpc_error
     raise convert_exception(
-pyspark.errors.exceptions.connect.AnalysisException: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `Model_Approval_Date` cannot be resolved. Did you mean one of the following? [`APPROVAL_DATE`, `PD_MODEL_CODE`, `ABN_AMRO_COUNTRY_CODE`, `ABN_AMRO_COUNTRY_NAME`, `RELATED_MAINLAND_CODE`]. SQLSTATE: 42703; line 1 pos 0;
+pyspark.errors.exceptions.connect.AnalysisException: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `rating_scale` cannot be resolved. Did you mean one of the following? [`Rating_Scale_Code`, `Rating_Grade_Code`, `Rating_Grade_Name`, `Approved_PD`, `Lower_Bound_PD`]. SQLSTATE: 42703; line 1 pos 0;
 'GlobalLimit 1
 +- 'LocalLimit 1
-   +- 'SubqueryAlias MDM_1094
-      +- 'Project [abn_amro_country_code#7109830, sovereign_local_currency_ucr#7109833, pd_model_code#7109834, 'Model_Approval_Date]
-         +- SubqueryAlias bsrc_d.stg_202505.bsl_andes_1094_sovrgn_cty_cur_rtg
-            +- Relation bsrc_d.stg_202505.bsl_andes_1094_sovrgn_cty_cur_rtg[ABN_AMRO_COUNTRY_NAME#7109829,ABN_AMRO_COUNTRY_CODE#7109830,RELATED_MAINLAND_CODE#7109831,SOVEREIGN_FOREIGN_CURRENCY_UCR#7109832,SOVEREIGN_LOCAL_CURRENCY_UCR#7109833,PD_MODEL_CODE#7109834,APPROVAL_DATE#7109835] parquet
+   +- 'SubqueryAlias MDM_1010
+      +- 'Project ['abbreviated_name, 'approved_pd, 'rating_scale]
+         +- 'Filter ('rating_scale = GS)
+            +- SubqueryAlias bsrc_d.stg_202505.bsl_andes_1010_rating_grade
+               +- Relation bsrc_d.stg_202505.bsl_andes_1010_rating_grade[Rating_Scale_Code#7180506,Rating_Grade_Type_Name#7180507,Rating_Grade_Code#7180508,Rating_Grade_Name#7180509,Rating_Grade_Description#7180510,Long_Term_Ratings_Indicator#7180511,Approved_PD#7180512,Lower_Bound_PD#7180513,Upper_Bound_PD#7180514] parquet
 
 
 JVM stacktrace:
@@ -172,12 +192,30 @@ org.apache.spark.sql.catalyst.ExtendedAnalysisException
 	at org.apache.spark.sql.catalyst.analysis.CheckAnalysis.$anonfun$checkAnalysis0$8(CheckAnalysis.scala:356)
 	at org.apache.spark.sql.catalyst.analysis.CheckAnalysis.$anonfun$checkAnalysis0$8$adapted(CheckAnalysis.scala:341)
 	at org.apache.spark.sql.catalyst.trees.TreeNode.foreachUp(TreeNode.scala:293)
+	at org.apache.spark.sql.catalyst.trees.TreeNode.$anonfun$foreachUp$1(TreeNode.scala:292)
+	at org.apache.spark.sql.catalyst.trees.TreeNode.$anonfun$foreachUp$1$adapted(TreeNode.scala:292)
+	at scala.collection.Iterator.foreach(Iterator.scala:943)
+	at scala.collection.Iterator.foreach$(Iterator.scala:943)
+	at scala.collection.AbstractIterator.foreach(Iterator.scala:1431)
+	at scala.collection.IterableLike.foreach(IterableLike.scala:74)
+	at scala.collection.IterableLike.foreach$(IterableLike.scala:73)
+	at scala.collection.AbstractIterable.foreach(Iterable.scala:56)
+	at org.apache.spark.sql.catalyst.trees.TreeNode.foreachUp(TreeNode.scala:292)
 	at org.apache.spark.sql.catalyst.analysis.CheckAnalysis.$anonfun$checkAnalysis0$7(CheckAnalysis.scala:341)
 	at org.apache.spark.sql.catalyst.analysis.CheckAnalysis.$anonfun$checkAnalysis0$7$adapted(CheckAnalysis.scala:341)
 	at scala.collection.immutable.Stream.foreach(Stream.scala:533)
 	at org.apache.spark.sql.catalyst.analysis.CheckAnalysis.$anonfun$checkAnalysis0$2(CheckAnalysis.scala:341)
 	at org.apache.spark.sql.catalyst.analysis.CheckAnalysis.$anonfun$checkAnalysis0$2$adapted(CheckAnalysis.scala:216)
 	at org.apache.spark.sql.catalyst.trees.TreeNode.foreachUp(TreeNode.scala:293)
+	at org.apache.spark.sql.catalyst.trees.TreeNode.$anonfun$foreachUp$1(TreeNode.scala:292)
+	at org.apache.spark.sql.catalyst.trees.TreeNode.$anonfun$foreachUp$1$adapted(TreeNode.scala:292)
+	at scala.collection.Iterator.foreach(Iterator.scala:943)
+	at scala.collection.Iterator.foreach$(Iterator.scala:943)
+	at scala.collection.AbstractIterator.foreach(Iterator.scala:1431)
+	at scala.collection.IterableLike.foreach(IterableLike.scala:74)
+	at scala.collection.IterableLike.foreach$(IterableLike.scala:73)
+	at scala.collection.AbstractIterable.foreach(Iterable.scala:56)
+	at org.apache.spark.sql.catalyst.trees.TreeNode.foreachUp(TreeNode.scala:292)
 	at org.apache.spark.sql.catalyst.trees.TreeNode.$anonfun$foreachUp$1(TreeNode.scala:292)
 	at org.apache.spark.sql.catalyst.trees.TreeNode.$anonfun$foreachUp$1$adapted(TreeNode.scala:292)
 	at scala.collection.Iterator.foreach(Iterator.scala:943)
