@@ -1,410 +1,68 @@
-test\staging\test_extract_non_ssf_data.py F......................FF                                                                                                                                 [100%]
+(bsrc-etl-venv) PS C:\Users\B25712\bsrc-etl-venv\bsrc-etl> pytest test/staging/test_extract_ssf_data.py
+========================================================================================== test session starts ===========================================================================================
+platform win32 -- Python 3.10.11, pytest-8.3.3, pluggy-1.5.0
+rootdir: C:\Users\B25712\bsrc-etl-venv\bsrc-etl
+configfile: pyproject.toml
+plugins: cov-6.0.0, mock-3.14.0
+collected 10 items
+
+test\staging\test_extract_ssf_data.py .......F..                                                                                                                                                    [100%]
 
 ================================================================================================ FAILURES ================================================================================================ 
-____________________________________________________________________________ test_extract_non_ssf_data[202503-test-container] ____________________________________________________________________________ 
+___________________________________________________________________________________________ test_staging_load ____________________________________________________________________________________________ 
 
-spark_session = <pyspark.sql.session.SparkSession object at 0x000001C3F0F2DBD0>, mocker = <pytest_mock.plugin.MockerFixture object at 0x000001C3F0F2EB90>, run_month = '202503'
-source_container = 'test-container', caplog = <_pytest.logging.LogCaptureFixture object at 0x000001C3F102C9A0>
+self = <MagicMock name='saveAsTable' id='1966120181168'>, args = ('bsrc_d.stg_999912.ssf_col_alfam',), kwargs = {}, expected = call('bsrc_d.stg_999912.ssf_col_alfam'), cause = None
+actual = [call('bsrc_d.stg_999912.col'), call('bsrc_d.log_999912.log_ssf_entities'), call('bsrc_d.metadata_999912.metadata_ssf_entities')]
+expected_string = "saveAsTable('bsrc_d.stg_999912.ssf_col_alfam')"
 
-    @pytest.mark.parametrize(
-        ("run_month", "source_container"),
-        [("202503", "test-container")],
-    )
-    def test_extract_non_ssf_data(
-        spark_session,
-        mocker,
-        run_month,
-        source_container,
-        caplog,
-    ):
-        test_container = f"abfss://{source_container}@bsrcdadls.dfs.core.windows.net"
-        month_container = f"abfss://{run_month}@bsrcdadls.dfs.core.windows.net"
-        metadata_path = f"bsrc_d.metadata_{run_month}.metadata_nonssf"
-        log_path = f"bsrc_d.log_{run_month}.log_nonssf"
+    def assert_any_call(self, /, *args, **kwargs):
+        """assert the mock has been called with the specified arguments.
 
-        # Create a mock DataFrame
-        schema_meta = [
-            "SourceSystem",
-            "SourceFileName",
-            "SourceFileFormat",
-            "SourceFileDelimiter",
-            "StgTableName",
-            "FileDeliveryStep",
-            "FileDeliveryStatus",
-        ]
-        mock_meta = spark_session.createDataFrame(
-            [
-                (
-                    "lrd_static",
-                    "TEST_NON_SSF_V1",
-                    ".txt",
-                    "|",
-                    "test_non_ssf_v1",
-                    NonSSFStepStatus.EXPECTED.value,
-                    "Expected",
-                ),
-                (
-                    "lrd_static",
-                    "TEST_NON_SSF_V2",
-                    ".txt",
-                    "|",
-                    "test_non_ssf_v2",
-                    NonSSFStepStatus.EXPECTED.value,
-                    "Expected",
-                ),
-                (
-                    "nme",
-                    "TEST_NON_SSF_V3",
-                    ".parquet",
-                    ",",
-                    "test_non_ssf_v3",
-                    NonSSFStepStatus.EXPECTED.value,
-                    "Expected",
-                ),
-                (
-                    "finob",
-                    "TEST_NON_SSF_V4",
-                    ".csv",
-                    ",",
-                    "test_non_ssf_v4",
-                    NonSSFStepStatus.EXPECTED.value,
-                    "Expected",
-                ),
-            ],
-            schema=schema_meta,
+        The assert passes if the mock has *ever* been called, unlike
+        `assert_called_with` and `assert_called_once_with` that only pass if
+        the call is the most recent one."""
+        expected = self._call_matcher(_Call((args, kwargs), two=True))
+        cause = expected if isinstance(expected, Exception) else None
+        actual = [self._call_matcher(c) for c in self.call_args_list]
+        if cause or expected not in _AnyComparer(actual):
+            expected_string = self._format_mock_call_signature(args, kwargs)
+>           raise AssertionError(
+                '%s call not found' % expected_string
+            ) from cause
+E           AssertionError: saveAsTable('bsrc_d.stg_999912.ssf_col_alfam') call not found
+
+C:\Program Files\Python310\lib\unittest\mock.py:1000: AssertionError
+
+During handling of the above exception, another exception occurred:
+
+spark_session = <pyspark.sql.session.SparkSession object at 0x000001C9C5B8EC80>, mock_spark_write = <MagicMock name='saveAsTable' id='1966120181168'>
+
+    def test_staging_load(spark_session, mock_spark_write):
+        assert ExtractSSFData(spark_session, run_month="999912").save_to_stg_table(
+            data=SparkLocal(spark_session).spark_read_local("col"),
+            stg_table_name="col",
+            delivery_entity="ALFAM",
+            file_name="ALFAM_COL_20240331000000",
         )
+>       mock_spark_write.assert_any_call("bsrc_d.stg_999912.ssf_col_alfam")
+E       AssertionError: saveAsTable('bsrc_d.stg_999912.ssf_col_alfam') call not found
+E       
+E       pytest introspection follows:
+E       
+E       Args:
+E       assert ('bsrc_d.meta...sf_entities',) == ('bsrc_d.stg_...f_col_alfam',)
+E
+E         At index 0 diff: 'bsrc_d.metadata_999912.metadata_ssf_entities' != 'bsrc_d.stg_999912.ssf_col_alfam'
+E         Use -v to get more diff
 
-        schema_log = [
-            "SourceSystem",
-            "SourceFileName",
-            "DeliveryNumber",
-            "FileDeliveryStep",
-            "FileDeliveryStatus",
-            "Result",
-            "LastUpdatedDateTimestamp",
-            "Comment",
-        ]
-        mock_log = spark_session.createDataFrame(
-            [
-                (
-                    "LRD_STATIC",
-                    "TEST_NON_SSF_V1",
-                    1,
-                    NonSSFStepStatus.EXPECTED.value,
-                    "Expected",
-                    "Success",
-                    datetime.now(timezone.utc),
-                    "Test comment",
-                )
-            ],
-            schema=schema_log,
-        )
-
-        dummy_df = spark_session.createDataFrame(
-            [(1, "2", 3)],
-            schema=StructType(
-                [
-                    StructField("col1", IntegerType()),
-                    StructField("col2", StringType()),
-                    StructField("col3", IntegerType()),
-                ]
-            ),
-        )
-
-        # Mock spark.read.json and spark.read.table to return the mock DataFrames
-        mock_read = mocker.patch("pyspark.sql.SparkSession.read", autospec=True)
-        mock_read.table.side_effect = [
-            mock_meta,
-            mock_log,
-            dummy_df,
-            dummy_df,
-            dummy_df,
-            dummy_df,
-        ]
-
-        mock_write = mocker.patch("pyspark.sql.DataFrameWriter.parquet")
-        mock_save_table = mocker.patch("pyspark.sql.DataFrameWriter.saveAsTable")
-
-        # Check ExtractNonSSFData class initialisation
-        extraction = ExtractNonSSFData(
-            spark_session,
-            run_month,
-            source_container=source_container,
-        )
-
-        # Verify that spark.read.table was called with the correct arguments
-        mock_read.table.assert_any_call(f"bsrc_d.metadata_{run_month}.metadata_nonssf")
-        mock_read.table.assert_any_call(f"bsrc_d.log_{run_month}.log_nonssf")
-
-        mock_dbutils_fs_ls = mocker.patch.object(extraction.dbutils.fs, "ls")
-        # Add more side effects to handle all the ls calls
-        effect = [
-            # First round of ls calls for get_all_files
-            [
-                FileInfoMock(
-                    {
-                        "path": f"{test_container}/{folder}/{file}",
-                        "name": f"{file}",
-                    }
-                )
-                for file, folder in li
-            ]
-            for li in [
-                [
-                    ("TEST_NON_SSF_V3.parquet", "NME"),
-                    ("TEST_NON_SSF_V3.csv", "NME"),  # Wrong extension file
-                    ("processed/", "NME"),
-                ],
-                [("TEST_NON_SSF_V4.csv", "FINOB"), ("processed/", "FINOB")],
-                [
-                    ("TEST_NON_SSF_V1.txt", "LRD_STATIC"),
-                    ("TEST_NON_SSF_V5.txt", "LRD_STATIC"),  # Not in metadata
-                    ("processed/", "LRD_STATIC"),
-                ],
-                # For place_static_data - V2 is missing, check processed folder
-                [("TEST_NON_SSF_V2_999999.txt", "LRD_STATIC/processed")],
-                # Additional ls call to check if the file exists
-                [("TEST_NON_SSF_V2_999999.txt", "LRD_STATIC/processed")],
-            ]
-        ]
-        mock_dbutils_fs_ls.side_effect = effect
-        mock_dbutils_fs_cp = mocker.patch.object(extraction.dbutils.fs, "cp")
-        mock_dbutils_fs_mv = mocker.patch.object(extraction.dbutils.fs, "mv")
-    
-        # Test with deadline passed (default behavior in the test)
-        found_files = extraction.get_all_files(deadline_passed=True)
-        mock_dbutils_fs_cp.assert_any_call(
-            f"{test_container}/LRD_STATIC/processed/TEST_NON_SSF_V2_999999.txt",
-            f"{test_container}/LRD_STATIC/TEST_NON_SSF_V2.txt",
-        )
-
-        assert (
-            "File TEST_NON_SSF_V5 not found in metadata. "
-            "Please check if it should be delivered." in caplog.messages
-        )
-
-        mock_read.csv.return_value = dummy_df
-        mock_read.parquet.return_value = dummy_df
-
-        for file in found_files:
-            file_name = file["file_name"]
-            file_name_base = Path(file_name).name
-            file_name_no_ext = Path(file_name).stem
-            file_name_ext = Path(file_name).suffix
-            source_system = file["source_system"]
-
-            result = file_name_base != "TEST_NON_SSF_V3.csv"
-            assert extraction.initial_checks(**file) is result
-
-            if file_name_base == "TEST_NON_SSF_V3.csv":
-                continue
-
-            assert extraction.convert_to_parquet(**file)
-
-            if source_system == "LRD_STATIC" or source_system == "FINOB":
-                sep = {"LRD_STATIC": "|", "FINOB": ","}.get(source_system, ",")
-                mock_read.csv.assert_any_call(
-                    f"{test_container}/{source_system}/{file_name_base}",
-                    sep=sep,
-                    header=True,
-                )
-            else:
-                mock_read.parquet.assert_any_call(
-                    f"{test_container}/{source_system}/{file_name_base}",
-                )
-            mock_write.assert_any_call(
-                f"{month_container}/sourcing_landing_data/NON_SSF/{source_system}/{file_name_no_ext}.parquet",
-                mode="overwrite",
-            )
-
-            assert extraction.move_source_file(**file)
-
-            calls = mock_dbutils_fs_mv.call_args_list
-            assert any(
-                args[0] == f"{test_container}/{source_system}/{file_name_base}"
-                and re.match(
-                    rf"{test_container}/{source_system}/processed/{file_name_no_ext}__\d{{8}}\d{{6}}{file_name_ext}",
-                    args[1],
-                )
-                for args, _ in calls
-            )
-
-            data = extraction.extract_from_parquet(file["source_system"], file["file_name"])
-            stg_table_name = extraction.get_staging_table_name(file["file_name"])
->           assert extraction.save_to_stg_table(
-                data=data,
-                stg_table_name=stg_table_name,
-                **file,
-            )
-E           TypeError: ExtractStagingData.save_to_stg_table() got an unexpected keyword argument 'source_system'
-
-test\staging\test_extract_non_ssf_data.py:313: TypeError
------------------------------------------------------------------------------------------ Captured stderr setup ------------------------------------------------------------------------------------------ 
-Setting default log level to "WARN".
-To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
+test\staging\test_extract_ssf_data.py:428: AssertionError
 ------------------------------------------------------------------------------------------ Captured stdout call ------------------------------------------------------------------------------------------ 
-2025-07-14 15:22:12 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V3
-2025-07-14 15:22:12 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V3
-2025-07-14 15:22:14 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V3
-2025-07-14 15:22:14 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V3
-2025-07-14 15:22:17 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V4
-2025-07-14 15:22:17 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V4
-2025-07-14 15:22:21 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V1
-2025-07-14 15:22:21 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V1
-2025-07-14 15:22:22 [WARNING] get_all_files:  File TEST_NON_SSF_V5 not found in metadata. Please check if it should be delivered.
-2025-07-14 15:22:22 [WARNING] get_all_files:  File TEST_NON_SSF_V5 not found in metadata. Please check if it should be delivered.
-2025-07-14 15:22:27 [INFO] place_static_data:  Copied TEST_NON_SSF_V2 to static folder after deadline passed. Source: abfss://test-container@bsrcdadls.dfs.core.windows.net/LRD_STATIC/processed/TEST_NON_SSF_V2_999999.txt, Target: abfss://test-container@bsrcdadls.dfs.core.windows.net/LRD_STATIC/TEST_NON_SSF_V2.txt
-2025-07-14 15:22:27 [INFO] place_static_data:  Copied TEST_NON_SSF_V2 to static folder after deadline passed. Source: abfss://test-container@bsrcdadls.dfs.core.windows.net/LRD_STATIC/processed/TEST_NON_SSF_V2_999999.txt, Target: abfss://test-container@bsrcdadls.dfs.core.windows.net/LRD_STATIC/TEST_NON_SSF_V2.txt
-2025-07-14 15:22:27 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V2
-2025-07-14 15:22:27 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V2
-2025-07-14 15:22:29 [INFO] update_log_metadata:  FileDeliveryStatus: Initial checks done for TEST_NON_SSF_V3
-2025-07-14 15:22:29 [INFO] update_log_metadata:  FileDeliveryStatus: Initial checks done for TEST_NON_SSF_V3
-2025-07-14 15:22:33 [INFO] export_to_parquet:  Exported to sourcing_landing_data/NON_SSF/NME/TEST_NON_SSF_V3.parquet
-2025-07-14 15:22:33 [INFO] export_to_parquet:  Exported to sourcing_landing_data/NON_SSF/NME/TEST_NON_SSF_V3.parquet
-2025-07-14 15:22:33 [INFO] update_log_metadata:  FileDeliveryStatus: Converted to Parquet for TEST_NON_SSF_V3
-2025-07-14 15:22:33 [INFO] update_log_metadata:  FileDeliveryStatus: Converted to Parquet for TEST_NON_SSF_V3
-2025-07-14 15:22:34 [INFO] update_log_metadata:  FileDeliveryStatus: Moved source file for TEST_NON_SSF_V3
-2025-07-14 15:22:34 [INFO] update_log_metadata:  FileDeliveryStatus: Moved source file for TEST_NON_SSF_V3
+2025-07-14 15:39:39 [INFO] update_log_metadata:  FileDeliveryStatus: Loaded Staging table for ALFAM_COL_20240331000000
+2025-07-14 15:39:39 [INFO] update_log_metadata:  FileDeliveryStatus: Loaded Staging table for ALFAM_COL_20240331000000
 ------------------------------------------------------------------------------------------ Captured stderr call ------------------------------------------------------------------------------------------ 
 
 ------------------------------------------------------------------------------------------- Captured log call -------------------------------------------------------------------------------------------- 
-INFO     betl_src_poc_logger:extract_base.py:214 FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V3
-INFO     betl_src_poc_logger:extract_base.py:214 FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V3
-INFO     betl_src_poc_logger:extract_base.py:214 FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V4
-INFO     betl_src_poc_logger:extract_base.py:214 FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V1
-WARNING  betl_src_poc_logger:extract_nonssf_data.py:231 File TEST_NON_SSF_V5 not found in metadata. Please check if it should be delivered.
-INFO     betl_src_poc_logger:extract_nonssf_data.py:161 Copied TEST_NON_SSF_V2 to static folder after deadline passed. Source: abfss://test-container@bsrcdadls.dfs.core.windows.net/LRD_STATIC/processed/TEST_NON_SSF_V2_999999.txt, Target: abfss://test-container@bsrcdadls.dfs.core.windows.net/LRD_STATIC/TEST_NON_SSF_V2.txt
-INFO     betl_src_poc_logger:extract_base.py:214 FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V2
-INFO     betl_src_poc_logger:extract_base.py:214 FileDeliveryStatus: Initial checks done for TEST_NON_SSF_V3
-INFO     betl_src_poc_logger:export_parquet.py:56 Exported to sourcing_landing_data/NON_SSF/NME/TEST_NON_SSF_V3.parquet
-INFO     betl_src_poc_logger:extract_base.py:214 FileDeliveryStatus: Converted to Parquet for TEST_NON_SSF_V3
-INFO     betl_src_poc_logger:extract_base.py:214 FileDeliveryStatus: Moved source file for TEST_NON_SSF_V3
-_________________________________________________________________________ test_save_to_stg_table_failure[202503-test-container] __________________________________________________________________________ 
-
-spark_session = <pyspark.sql.session.SparkSession object at 0x000001C3F0F2DBD0>, mocker = <pytest_mock.plugin.MockerFixture object at 0x000001C3F12B71F0>, run_month = '202503'
-source_container = 'test-container'
-metadata_schema = StructType([StructField('SourceSystem', StringType(), True), StructField('SourceFileName', StringType(), True), Struct...), True), StructField('FileDeliveryStep', IntegerType(), True), StructField('FileDeliveryStatus', StringType(), True)])
-empty_log_df = DataFrame[SourceSystem: string, SourceFileName: string, DeliveryNumber: int, FileDeliveryStep: int, FileDeliveryStatus: string, Result: string, LastUpdatedDateTimestamp: timestamp, Comment: string]
-
-    @pytest.mark.parametrize(
-        ("run_month", "source_container"),
-        [("202503", "test-container")],
-    )
-    def test_save_to_stg_table_failure(
-        spark_session,
-        mocker,
-        run_month,
-        source_container,
-        metadata_schema,
-        empty_log_df,
-    ):
-        """Test save_to_stg_table failure handling."""
-        # Create mock metadata DataFrame
-        mock_meta = spark_session.createDataFrame(
-            [
-                (
-                    "nme",
-                    "TEST_FILE",
-                    ".csv",
-                    ",",
-                    "test_file",
-                    NonSSFStepStatus.EXPECTED.value,
-                    "Expected",
-                ),
-            ],
-            schema=metadata_schema,
-        )
-
-        # Mock spark.read
-        mock_read = mocker.patch("pyspark.sql.SparkSession.read", autospec=True)
-        mock_read.table.side_effect = [mock_meta, empty_log_df]
-
-        extraction = ExtractNonSSFData(
-            spark_session,
-            run_month,
-            source_container=source_container,
-        )
-
-        # Create a dummy DataFrame
-        dummy_df = spark_session.createDataFrame([(1, "test")], ["id", "value"])
-
-        # Mock the saveAsTable to fail only on the first call (staging table write)
-        mock_save_table = mocker.patch("pyspark.sql.DataFrameWriter.saveAsTable")
-        mock_save_table.side_effect = [
-            Exception("Write failed"),  # First call fails (staging table)
-            None,  # Second call succeeds (log table)
-            None,  # Third call succeeds (metadata table)
-        ]
-
-        # Test save_to_stg_table with failure
->       result = extraction.save_to_stg_table(
-            data=dummy_df,
-            stg_table_name="test_table",
-            source_system="NME",
-            file_name="TEST_FILE.csv",
-        )
-E       TypeError: ExtractStagingData.save_to_stg_table() got an unexpected keyword argument 'source_system'
-
-test\staging\test_extract_non_ssf_data.py:1974: TypeError
-_______________________________________________________________________ test_validate_data_quality_failure[202503-test-container] ________________________________________________________________________ 
-
-spark_session = <pyspark.sql.session.SparkSession object at 0x000001C3F0F2DBD0>, mocker = <pytest_mock.plugin.MockerFixture object at 0x000001C3F12C3F70>, run_month = '202503'
-source_container = 'test-container'
-metadata_schema = StructType([StructField('SourceSystem', StringType(), True), StructField('SourceFileName', StringType(), True), Struct...), True), StructField('FileDeliveryStep', IntegerType(), True), StructField('FileDeliveryStatus', StringType(), True)])
-empty_log_df = DataFrame[SourceSystem: string, SourceFileName: string, DeliveryNumber: int, FileDeliveryStep: int, FileDeliveryStatus: string, Result: string, LastUpdatedDateTimestamp: timestamp, Comment: string]
-
-    @pytest.mark.parametrize(
-        ("run_month", "source_container"),
-        [("202503", "test-container")],
-    )
-    def test_validate_data_quality_failure(
-        spark_session,
-        mocker,
-        run_month,
-        source_container,
-        metadata_schema,
-        empty_log_df,
-    ):
-        """Test validate_data_quality failure handling."""
-        # Create mock metadata DataFrame
-        mock_meta = spark_session.createDataFrame(
-            [
-                (
-                    "nme",
-                    "TEST_FILE",
-                    ".csv",
-                    ",",
-                    "test_file",
-                    NonSSFStepStatus.EXPECTED.value,
-                    "Expected",
-                ),
-            ],
-            schema=metadata_schema,
-        )
-
-        # Mock spark.read
-        mock_read = mocker.patch("pyspark.sql.SparkSession.read", autospec=True)
-        mock_read.table.side_effect = [mock_meta, empty_log_df]
-
-        extraction = ExtractNonSSFData(
-            spark_session,
-            run_month,
-            source_container=source_container,
-        )
-
-        # Mock DQValidation to raise exception
-        mock_dq_validation = mocker.patch("src.staging.extract_base.DQValidation")
-        mock_dq_validation.side_effect = Exception("Table not found")
-
-        # Test validate_data_quality with failure
->       result = extraction.validate_data_quality(
-            source_system="NME",
-            file_name="TEST_FILE.csv",
-            stg_table_name="test_file",
-        )
-E       TypeError: ExtractStagingData.validate_data_quality() got an unexpected keyword argument 'source_system'
-
-test\staging\test_extract_non_ssf_data.py:2027: TypeError
+INFO     betl_src_poc_logger:extract_base.py:214 FileDeliveryStatus: Loaded Staging table for ALFAM_COL_20240331000000
 ============================================================================================ warnings summary ============================================================================================ 
 ..\bsrc-etl-venv\lib\site-packages\holidays\deprecations\v1_incompatibility.py:40
   C:\Users\B25712\bsrc-etl-venv\bsrc-etl-venv\lib\site-packages\holidays\deprecations\v1_incompatibility.py:40: FutureIncompatibilityWarning:
@@ -435,11 +93,11 @@ src\__init__.py                                     0      0   100%
 src\config\__init__.py                              0      0   100%
 src\config\business_logic.py                       52      0   100%
 src\config\constants.py                             1      0   100%
-src\config\exceptions.py                           21      0   100%
+src\config\exceptions.py                           21     21     0%   6-48
 src\config\process.py                               4      4     0%   7-10
 src\config\schema.py                                4      4     0%   3-52
 src\dq\__init__.py                                  0      0   100%
-src\dq\dq_validation.py                           141    132     6%   47-112, 166-181, 197-249, 265-286, 318-350, 372-392, 414-486
+src\dq\dq_validation.py                           141    108    23%   54-55, 69, 77-78, 88, 166-181, 197-249, 265-286, 318-350, 372-392, 414-486
 src\extract\__init__.py                             0      0   100%
 src\extract\master_data_sql.py                     90     71    21%   31-33, 37-38, 42, 59-88, 109-137, 149-156, 162-164, 188, 222-231, 285-300, 329-356
 src\month_setup\__init__.py                         0      0   100%
@@ -447,11 +105,11 @@ src\month_setup\dial_derive_snapshotdate.py        32     27    16%   12-18, 28-
 src\month_setup\metadata_log_tables.py             32     25    22%   23-84, 159, 166-203
 src\month_setup\setup_new_month.py                 13     13     0%   17-84
 src\staging\__init__.py                             0      0   100%
-src\staging\extract_base.py                        85     35    59%   165, 171-173, 313-321, 344-348, 368-404, 422-465
+src\staging\extract_base.py                        85     27    68%   168-173, 293, 296-318, 344-348, 372-388, 433-449
 src\staging\extract_dial_data.py                   65     65     0%   16-360
-src\staging\extract_nonssf_data.py                136      4    97%   55-60, 310
-src\staging\extract_ssf_data.py                   164    164     0%   26-620
-src\staging\status.py                              57      5    91%   18, 53-54, 107, 151
+src\staging\extract_nonssf_data.py                136    136     0%   16-532
+src\staging\extract_ssf_data.py                   164     17    90%   269-273, 299-305, 320-321, 352, 459-460, 512-513, 516-519, 614-617
+src\staging\status.py                              57      5    91%   18, 53-54, 107, 129
 src\transform\__init__.py                           0      0   100%
 src\transform\table_write_and_comment.py           72     72     0%   14-237
 src\transform\transform_business_logic_sql.py       6      6     0%   6-25
@@ -461,10 +119,10 @@ src\utils\export_parquet.py                        15      6    60%   49-54, 67-
 src\utils\get_dbutils.py                            2      0   100%
 src\utils\get_env.py                               10      0   100%
 src\utils\logging_util.py                           6      0   100%
-src\utils\parameter_utils.py                       23     19    17%   33-53, 79-84, 105-116
+src\utils\parameter_utils.py                       23     13    43%   34, 38-42, 79-84, 105-116
 src\utils\parse_yaml.py                            22     22     0%   11-127
 src\utils\sources_util.py                          52     52     0%   7-218
-src\utils\table_logging.py                         14      1    93%   55
+src\utils\table_logging.py                         14      3    79%   36-37, 55
 src\utils\table_schema.py                           3      3     0%   8-16
 src\utils\transformations_util.py                  17     12    29%   20-25, 39, 51, 65-68
 src\validate\__init__.py                            0      0   100%
@@ -476,14 +134,12 @@ src\validate\transformations.py                   192    192     0%   21-593
 src\validate\validate_sql.py                       54     54     0%   13-130
 src\validate\yaml.py                               18     18     0%   3-34
 -----------------------------------------------------------------------------
-TOTAL                                            1483   1086    27%
+TOTAL                                            1483   1056    29%
 Coverage HTML written to dir htmlcov
 
-======================================================================================== short test summary info =========================================================================================
-FAILED test/staging/test_extract_non_ssf_data.py::test_extract_non_ssf_data[202503-test-container] - TypeError: ExtractStagingData.save_to_stg_table() got an unexpected keyword argument 'source_system'  
-FAILED test/staging/test_extract_non_ssf_data.py::test_save_to_stg_table_failure[202503-test-container] - TypeError: ExtractStagingData.save_to_stg_table() got an unexpected keyword argument 'source_system'
-FAILED test/staging/test_extract_non_ssf_data.py::test_validate_data_quality_failure[202503-test-container] - TypeError: ExtractStagingData.validate_data_quality() got an unexpected keyword argument 'source_system'
-========================================================================== 3 failed, 22 passed, 1 warning in 148.13s (0:02:28) =========================================================================== 
-SUCCESS: The process with PID 8600 (child process of PID 3284) has been terminated.
-SUCCESS: The process with PID 3284 (child process of PID 25792) has been terminated.
-SUCCESS: The process with PID 25792 (child process of PID 4368) has been terminated.
+======================================================================================== short test summary info ========================================================================================= 
+FAILED test/staging/test_extract_ssf_data.py::test_staging_load - AssertionError: saveAsTable('bsrc_d.stg_999912.ssf_col_alfam') call not found
+=========================================================================== 1 failed, 9 passed, 1 warning in 122.29s (0:02:02) =========================================================================== 
+SUCCESS: The process with PID 23524 (child process of PID 20496) has been terminated.
+SUCCESS: The process with PID 20496 (child process of PID 5672) has been terminated.
+SUCCESS: The process with PID 5672 (child process of PID 21396) has been terminated.
