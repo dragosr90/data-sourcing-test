@@ -292,7 +292,7 @@ def non_ssf_load(
 
     # If any FINOB/NME file has passed its deadline, check for violations
     if finob_nme_deadlines:
-        extraction.check_deadline_violations(files_per_delivery_entity, log_config)
+        extraction.check_deadline_violations(files_per_delivery_entity)
 
     # Process each file
     for file in files_per_delivery_entity:
