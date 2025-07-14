@@ -11,7 +11,7 @@ test\staging\test_extract_dial_data.py F                                        
 ================================================================================================ FAILURES ================================================================================================ 
 _____________________________________________________________________________ test_extract_dial_data[202503-test-container] ______________________________________________________________________________ 
 
-spark_session = <pyspark.sql.session.SparkSession object at 0x0000019446B10430>, mocker = <pytest_mock.plugin.MockerFixture object at 0x0000019446B133D0>, run_month = '202503'
+spark_session = <pyspark.sql.session.SparkSession object at 0x0000028D082B2590>, mocker = <pytest_mock.plugin.MockerFixture object at 0x0000028D082B25C0>, run_month = '202503'
 source_container = 'test-container'
 
     @pytest.mark.parametrize(
@@ -238,32 +238,31 @@ source_container = 'test-container'
             # 6. Checked Data Quality
 >           result_data_quality = extraction.validate_data_quality(
                 stg_table_name=stg_table_name,
-                **trigger_config,
                 dq_check_folder="test/data",
             )
-E           TypeError: ExtractStagingData.validate_data_quality() got an unexpected keyword argument 'source_system'
+E           TypeError: ExtractStagingData.validate_data_quality() got an unexpected keyword argument 'dq_check_folder'
 
 test\staging\test_extract_dial_data.py:233: TypeError
 ----------------------------------------------------------------------------------------- Captured stderr setup ------------------------------------------------------------------------------------------ 
 Setting default log level to "WARN".
 To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
 ------------------------------------------------------------------------------------------ Captured stdout call ------------------------------------------------------------------------------------------ 
-2025-07-14 16:27:30 [INFO] update_log_metadata:  FileDeliveryStatus: Extracted raw parquet data for TEST_DIAL_V2
-2025-07-14 16:27:30 [INFO] update_log_metadata:  FileDeliveryStatus: Extracted raw parquet data for TEST_DIAL_V2
-2025-07-14 16:27:35 [INFO] update_log_metadata:  FileDeliveryStatus: Validated expected count for TEST_DIAL_V2
-2025-07-14 16:27:35 [INFO] update_log_metadata:  FileDeliveryStatus: Validated expected count for TEST_DIAL_V2
-2025-07-14 16:27:41 [ERROR] validate_expected_row_count:  Expected 1, received 102
-2025-07-14 16:27:41 [ERROR] validate_expected_row_count:  Expected 1, received 102
-2025-07-14 16:27:41 [INFO] update_log_metadata:  FileDeliveryStatus: Validated expected count for TEST_DIAL_V2
-2025-07-14 16:27:41 [INFO] update_log_metadata:  FileDeliveryStatus: Validated expected count for TEST_DIAL_V2
-2025-07-14 16:27:44 [INFO] export_to_parquet:  Exported to sourcing_landing_data/DIAL/epr/TEST_DIAL_V2.parquet
-2025-07-14 16:27:44 [INFO] export_to_parquet:  Exported to sourcing_landing_data/DIAL/epr/TEST_DIAL_V2.parquet
-2025-07-14 16:27:44 [INFO] update_log_metadata:  FileDeliveryStatus: Copied parquet to storage account for TEST_DIAL_V2
-2025-07-14 16:27:44 [INFO] update_log_metadata:  FileDeliveryStatus: Copied parquet to storage account for TEST_DIAL_V2
-2025-07-14 16:27:48 [INFO] update_log_metadata:  FileDeliveryStatus: Moved JSON trigger file for TEST_DIAL_V2
-2025-07-14 16:27:48 [INFO] update_log_metadata:  FileDeliveryStatus: Moved JSON trigger file for TEST_DIAL_V2
-2025-07-14 16:27:50 [INFO] update_log_metadata:  FileDeliveryStatus: Loaded Staging table for TEST_DIAL_V2
-2025-07-14 16:27:50 [INFO] update_log_metadata:  FileDeliveryStatus: Loaded Staging table for TEST_DIAL_V2
+2025-07-14 16:31:56 [INFO] update_log_metadata:  FileDeliveryStatus: Extracted raw parquet data for TEST_DIAL_V2
+2025-07-14 16:31:56 [INFO] update_log_metadata:  FileDeliveryStatus: Extracted raw parquet data for TEST_DIAL_V2
+2025-07-14 16:32:01 [INFO] update_log_metadata:  FileDeliveryStatus: Validated expected count for TEST_DIAL_V2
+2025-07-14 16:32:01 [INFO] update_log_metadata:  FileDeliveryStatus: Validated expected count for TEST_DIAL_V2
+2025-07-14 16:32:06 [ERROR] validate_expected_row_count:  Expected 1, received 102
+2025-07-14 16:32:06 [ERROR] validate_expected_row_count:  Expected 1, received 102
+2025-07-14 16:32:06 [INFO] update_log_metadata:  FileDeliveryStatus: Validated expected count for TEST_DIAL_V2
+2025-07-14 16:32:06 [INFO] update_log_metadata:  FileDeliveryStatus: Validated expected count for TEST_DIAL_V2
+2025-07-14 16:32:09 [INFO] export_to_parquet:  Exported to sourcing_landing_data/DIAL/epr/TEST_DIAL_V2.parquet
+2025-07-14 16:32:09 [INFO] export_to_parquet:  Exported to sourcing_landing_data/DIAL/epr/TEST_DIAL_V2.parquet
+2025-07-14 16:32:09 [INFO] update_log_metadata:  FileDeliveryStatus: Copied parquet to storage account for TEST_DIAL_V2
+2025-07-14 16:32:09 [INFO] update_log_metadata:  FileDeliveryStatus: Copied parquet to storage account for TEST_DIAL_V2
+2025-07-14 16:32:12 [INFO] update_log_metadata:  FileDeliveryStatus: Moved JSON trigger file for TEST_DIAL_V2
+2025-07-14 16:32:12 [INFO] update_log_metadata:  FileDeliveryStatus: Moved JSON trigger file for TEST_DIAL_V2
+2025-07-14 16:32:15 [INFO] update_log_metadata:  FileDeliveryStatus: Loaded Staging table for TEST_DIAL_V2
+2025-07-14 16:32:15 [INFO] update_log_metadata:  FileDeliveryStatus: Loaded Staging table for TEST_DIAL_V2
 ------------------------------------------------------------------------------------------ Captured stderr call ------------------------------------------------------------------------------------------ 
 
 ------------------------------------------------------------------------------------------- Captured log call -------------------------------------------------------------------------------------------- 
@@ -349,9 +348,9 @@ src\validate\yaml.py                               18     18     0%   3-34
 TOTAL                                            1483   1173    21%
 Coverage HTML written to dir htmlcov
 
-======================================================================================== short test summary info ========================================================================================= 
-FAILED test/staging/test_extract_dial_data.py::test_extract_dial_data[202503-test-container] - TypeError: ExtractStagingData.validate_data_quality() got an unexpected keyword argument 'source_system'    
-================================================================================ 1 failed, 1 warning in 61.14s (0:01:01) ================================================================================= 
-SUCCESS: The process with PID 16648 (child process of PID 27480) has been terminated.
-SUCCESS: The process with PID 27480 (child process of PID 7444) has been terminated.
-SUCCESS: The process with PID 7444 (child process of PID 2516) has been terminated.
+======================================================================================== short test summary info =========================================================================================
+FAILED test/staging/test_extract_dial_data.py::test_extract_dial_data[202503-test-container] - TypeError: ExtractStagingData.validate_data_quality() got an unexpected keyword argument 'dq_check_folder'  
+================================================================================ 1 failed, 1 warning in 65.02s (0:01:05) ================================================================================= 
+SUCCESS: The process with PID 20868 (child process of PID 5880) has been terminated.
+SUCCESS: The process with PID 5880 (child process of PID 11480) has been terminated.
+SUCCESS: The process with PID 11480 (child process of PID 11872) has been terminated.
