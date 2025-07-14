@@ -11,7 +11,7 @@ test\staging\test_extract_dial_data.py F                                        
 ================================================================================================ FAILURES ================================================================================================ 
 _____________________________________________________________________________ test_extract_dial_data[202503-test-container] ______________________________________________________________________________ 
 
-spark_session = <pyspark.sql.session.SparkSession object at 0x000002CF7CB2A920>, mocker = <pytest_mock.plugin.MockerFixture object at 0x000002CF7CAE1960>, run_month = '202503'
+spark_session = <pyspark.sql.session.SparkSession object at 0x0000019446B10430>, mocker = <pytest_mock.plugin.MockerFixture object at 0x0000019446B133D0>, run_month = '202503'
 source_container = 'test-container'
 
     @pytest.mark.parametrize(
@@ -228,31 +228,42 @@ source_container = 'test-container'
             )
 
             # 5. Loaded Staging table
->           result_staging = extraction.save_to_stg_table(
+            result_staging = extraction.save_to_stg_table(
                 data=data,
                 stg_table_name=stg_table_name,
+                delivery_entity=trigger_config["source_system"],
+                file_name=trigger_config["file_name"],
             )
-E           TypeError: ExtractStagingData.save_to_stg_table() missing 2 required positional arguments: 'delivery_entity' and 'file_name'
 
-test\staging\test_extract_dial_data.py:225: TypeError
+            # 6. Checked Data Quality
+>           result_data_quality = extraction.validate_data_quality(
+                stg_table_name=stg_table_name,
+                **trigger_config,
+                dq_check_folder="test/data",
+            )
+E           TypeError: ExtractStagingData.validate_data_quality() got an unexpected keyword argument 'source_system'
+
+test\staging\test_extract_dial_data.py:233: TypeError
 ----------------------------------------------------------------------------------------- Captured stderr setup ------------------------------------------------------------------------------------------ 
 Setting default log level to "WARN".
 To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
 ------------------------------------------------------------------------------------------ Captured stdout call ------------------------------------------------------------------------------------------ 
-2025-07-14 16:23:07 [INFO] update_log_metadata:  FileDeliveryStatus: Extracted raw parquet data for TEST_DIAL_V2
-2025-07-14 16:23:07 [INFO] update_log_metadata:  FileDeliveryStatus: Extracted raw parquet data for TEST_DIAL_V2
-2025-07-14 16:23:12 [INFO] update_log_metadata:  FileDeliveryStatus: Validated expected count for TEST_DIAL_V2
-2025-07-14 16:23:12 [INFO] update_log_metadata:  FileDeliveryStatus: Validated expected count for TEST_DIAL_V2
-2025-07-14 16:23:16 [ERROR] validate_expected_row_count:  Expected 1, received 102
-2025-07-14 16:23:16 [ERROR] validate_expected_row_count:  Expected 1, received 102
-2025-07-14 16:23:16 [INFO] update_log_metadata:  FileDeliveryStatus: Validated expected count for TEST_DIAL_V2
-2025-07-14 16:23:16 [INFO] update_log_metadata:  FileDeliveryStatus: Validated expected count for TEST_DIAL_V2
-2025-07-14 16:23:19 [INFO] export_to_parquet:  Exported to sourcing_landing_data/DIAL/epr/TEST_DIAL_V2.parquet
-2025-07-14 16:23:19 [INFO] export_to_parquet:  Exported to sourcing_landing_data/DIAL/epr/TEST_DIAL_V2.parquet
-2025-07-14 16:23:19 [INFO] update_log_metadata:  FileDeliveryStatus: Copied parquet to storage account for TEST_DIAL_V2
-2025-07-14 16:23:19 [INFO] update_log_metadata:  FileDeliveryStatus: Copied parquet to storage account for TEST_DIAL_V2
-2025-07-14 16:23:22 [INFO] update_log_metadata:  FileDeliveryStatus: Moved JSON trigger file for TEST_DIAL_V2
-2025-07-14 16:23:22 [INFO] update_log_metadata:  FileDeliveryStatus: Moved JSON trigger file for TEST_DIAL_V2
+2025-07-14 16:27:30 [INFO] update_log_metadata:  FileDeliveryStatus: Extracted raw parquet data for TEST_DIAL_V2
+2025-07-14 16:27:30 [INFO] update_log_metadata:  FileDeliveryStatus: Extracted raw parquet data for TEST_DIAL_V2
+2025-07-14 16:27:35 [INFO] update_log_metadata:  FileDeliveryStatus: Validated expected count for TEST_DIAL_V2
+2025-07-14 16:27:35 [INFO] update_log_metadata:  FileDeliveryStatus: Validated expected count for TEST_DIAL_V2
+2025-07-14 16:27:41 [ERROR] validate_expected_row_count:  Expected 1, received 102
+2025-07-14 16:27:41 [ERROR] validate_expected_row_count:  Expected 1, received 102
+2025-07-14 16:27:41 [INFO] update_log_metadata:  FileDeliveryStatus: Validated expected count for TEST_DIAL_V2
+2025-07-14 16:27:41 [INFO] update_log_metadata:  FileDeliveryStatus: Validated expected count for TEST_DIAL_V2
+2025-07-14 16:27:44 [INFO] export_to_parquet:  Exported to sourcing_landing_data/DIAL/epr/TEST_DIAL_V2.parquet
+2025-07-14 16:27:44 [INFO] export_to_parquet:  Exported to sourcing_landing_data/DIAL/epr/TEST_DIAL_V2.parquet
+2025-07-14 16:27:44 [INFO] update_log_metadata:  FileDeliveryStatus: Copied parquet to storage account for TEST_DIAL_V2
+2025-07-14 16:27:44 [INFO] update_log_metadata:  FileDeliveryStatus: Copied parquet to storage account for TEST_DIAL_V2
+2025-07-14 16:27:48 [INFO] update_log_metadata:  FileDeliveryStatus: Moved JSON trigger file for TEST_DIAL_V2
+2025-07-14 16:27:48 [INFO] update_log_metadata:  FileDeliveryStatus: Moved JSON trigger file for TEST_DIAL_V2
+2025-07-14 16:27:50 [INFO] update_log_metadata:  FileDeliveryStatus: Loaded Staging table for TEST_DIAL_V2
+2025-07-14 16:27:50 [INFO] update_log_metadata:  FileDeliveryStatus: Loaded Staging table for TEST_DIAL_V2
 ------------------------------------------------------------------------------------------ Captured stderr call ------------------------------------------------------------------------------------------ 
 
 ------------------------------------------------------------------------------------------- Captured log call -------------------------------------------------------------------------------------------- 
@@ -263,6 +274,7 @@ INFO     betl_src_poc_logger:extract_base.py:214 FileDeliveryStatus: Validated e
 INFO     betl_src_poc_logger:export_parquet.py:56 Exported to sourcing_landing_data/DIAL/epr/TEST_DIAL_V2.parquet
 INFO     betl_src_poc_logger:extract_base.py:214 FileDeliveryStatus: Copied parquet to storage account for TEST_DIAL_V2
 INFO     betl_src_poc_logger:extract_base.py:214 FileDeliveryStatus: Moved JSON trigger file for TEST_DIAL_V2
+INFO     betl_src_poc_logger:extract_base.py:214 FileDeliveryStatus: Loaded Staging table for TEST_DIAL_V2
 ============================================================================================ warnings summary ============================================================================================ 
 ..\bsrc-etl-venv\lib\site-packages\holidays\deprecations\v1_incompatibility.py:40
   C:\Users\B25712\bsrc-etl-venv\bsrc-etl-venv\lib\site-packages\holidays\deprecations\v1_incompatibility.py:40: FutureIncompatibilityWarning:
@@ -305,7 +317,7 @@ src\month_setup\dial_derive_snapshotdate.py        32     27    16%   12-18, 28-
 src\month_setup\metadata_log_tables.py             32     25    22%   23-84, 159, 166-203
 src\month_setup\setup_new_month.py                 13     13     0%   17-84
 src\staging\__init__.py                             0      0   100%
-src\staging\extract_base.py                        85     33    61%   165, 171-173, 320-321, 344-348, 368-404, 422-465
+src\staging\extract_base.py                        85     27    68%   165, 171-173, 320-321, 344-348, 372-388, 422-465
 src\staging\extract_dial_data.py                   65      5    92%   330-347
 src\staging\extract_nonssf_data.py                136    136     0%   16-532
 src\staging\extract_ssf_data.py                   164    164     0%   26-620
@@ -334,12 +346,12 @@ src\validate\transformations.py                   192    192     0%   21-593
 src\validate\validate_sql.py                       54     54     0%   13-130
 src\validate\yaml.py                               18     18     0%   3-34
 -----------------------------------------------------------------------------
-TOTAL                                            1483   1179    20%
+TOTAL                                            1483   1173    21%
 Coverage HTML written to dir htmlcov
 
 ======================================================================================== short test summary info ========================================================================================= 
-FAILED test/staging/test_extract_dial_data.py::test_extract_dial_data[202503-test-container] - TypeError: ExtractStagingData.save_to_stg_table() missing 2 required positional arguments: 'delivery_entity' and 'file_name'
-===================================================================================== 1 failed, 1 warning in 52.42s ====================================================================================== 
-SUCCESS: The process with PID 15852 (child process of PID 2424) has been terminated.
-SUCCESS: The process with PID 2424 (child process of PID 19044) has been terminated.
-SUCCESS: The process with PID 19044 (child process of PID 27396) has been terminated.
+FAILED test/staging/test_extract_dial_data.py::test_extract_dial_data[202503-test-container] - TypeError: ExtractStagingData.validate_data_quality() got an unexpected keyword argument 'source_system'    
+================================================================================ 1 failed, 1 warning in 61.14s (0:01:01) ================================================================================= 
+SUCCESS: The process with PID 16648 (child process of PID 27480) has been terminated.
+SUCCESS: The process with PID 27480 (child process of PID 7444) has been terminated.
+SUCCESS: The process with PID 7444 (child process of PID 2516) has been terminated.
