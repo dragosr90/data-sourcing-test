@@ -1,7 +1,17 @@
-================================================================================================ FAILURES ================================================================================================
+(bsrc-etl-venv) PS C:\Users\B25712\bsrc-etl-venv\bsrc-etl> pytest test/staging/test_extract_dial_data.py
+========================================================================================== test session starts ===========================================================================================
+platform win32 -- Python 3.10.11, pytest-8.3.3, pluggy-1.5.0
+rootdir: C:\Users\B25712\bsrc-etl-venv\bsrc-etl
+configfile: pyproject.toml
+plugins: cov-6.0.0, mock-3.14.0
+collected 1 item
+
+test\staging\test_extract_dial_data.py F                                                                                                                                                            [100%]
+
+================================================================================================ FAILURES ================================================================================================ 
 _____________________________________________________________________________ test_extract_dial_data[202503-test-container] ______________________________________________________________________________ 
 
-spark_session = <pyspark.sql.session.SparkSession object at 0x000001ED8EBE5F00>, mocker = <pytest_mock.plugin.MockerFixture object at 0x000001ED8EBE67D0>, run_month = '202503'
+spark_session = <pyspark.sql.session.SparkSession object at 0x000001A0BBD687C0>, mocker = <pytest_mock.plugin.MockerFixture object at 0x000001A0BBD6B2B0>, run_month = '202503'
 source_container = 'test-container'
 
     @pytest.mark.parametrize(
@@ -218,29 +228,35 @@ source_container = 'test-container'
             )
 
             # 5. Loaded Staging table
+            # Filter trigger_config to remove 'source_system' key
+            # that save_to_stg_table doesn't accept
+            stg_table_params = {k: v for k, v in trigger_config.items() if k != "source_system"} # noqa: E501
 >           result_staging = extraction.save_to_stg_table(
                 data=data,
                 stg_table_name=stg_table_name,
-                **trigger_config,
+                **stg_table_params,
             )
-E           TypeError: ExtractStagingData.save_to_stg_table() got an unexpected keyword argument 'source_system'
+E           TypeError: ExtractStagingData.save_to_stg_table() got an unexpected keyword argument 'snapshot_date'
 
-test\staging\test_extract_dial_data.py:225: TypeError
+test\staging\test_extract_dial_data.py:228: TypeError
+----------------------------------------------------------------------------------------- Captured stderr setup ------------------------------------------------------------------------------------------ 
+Setting default log level to "WARN".
+To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
 ------------------------------------------------------------------------------------------ Captured stdout call ------------------------------------------------------------------------------------------ 
-2025-07-14 15:46:11 [INFO] update_log_metadata:  FileDeliveryStatus: Extracted raw parquet data for TEST_DIAL_V2
-2025-07-14 15:46:11 [INFO] update_log_metadata:  FileDeliveryStatus: Extracted raw parquet data for TEST_DIAL_V2
-2025-07-14 15:46:16 [INFO] update_log_metadata:  FileDeliveryStatus: Validated expected count for TEST_DIAL_V2
-2025-07-14 15:46:16 [INFO] update_log_metadata:  FileDeliveryStatus: Validated expected count for TEST_DIAL_V2
-2025-07-14 15:46:21 [ERROR] validate_expected_row_count:  Expected 1, received 102
-2025-07-14 15:46:21 [ERROR] validate_expected_row_count:  Expected 1, received 102
-2025-07-14 15:46:21 [INFO] update_log_metadata:  FileDeliveryStatus: Validated expected count for TEST_DIAL_V2
-2025-07-14 15:46:21 [INFO] update_log_metadata:  FileDeliveryStatus: Validated expected count for TEST_DIAL_V2
-2025-07-14 15:46:24 [INFO] export_to_parquet:  Exported to sourcing_landing_data/DIAL/epr/TEST_DIAL_V2.parquet
-2025-07-14 15:46:24 [INFO] export_to_parquet:  Exported to sourcing_landing_data/DIAL/epr/TEST_DIAL_V2.parquet
-2025-07-14 15:46:24 [INFO] update_log_metadata:  FileDeliveryStatus: Copied parquet to storage account for TEST_DIAL_V2
-2025-07-14 15:46:24 [INFO] update_log_metadata:  FileDeliveryStatus: Copied parquet to storage account for TEST_DIAL_V2
-2025-07-14 15:46:27 [INFO] update_log_metadata:  FileDeliveryStatus: Moved JSON trigger file for TEST_DIAL_V2
-2025-07-14 15:46:27 [INFO] update_log_metadata:  FileDeliveryStatus: Moved JSON trigger file for TEST_DIAL_V2
+2025-07-14 16:17:16 [INFO] update_log_metadata:  FileDeliveryStatus: Extracted raw parquet data for TEST_DIAL_V2
+2025-07-14 16:17:16 [INFO] update_log_metadata:  FileDeliveryStatus: Extracted raw parquet data for TEST_DIAL_V2
+2025-07-14 16:17:21 [INFO] update_log_metadata:  FileDeliveryStatus: Validated expected count for TEST_DIAL_V2
+2025-07-14 16:17:21 [INFO] update_log_metadata:  FileDeliveryStatus: Validated expected count for TEST_DIAL_V2
+2025-07-14 16:17:26 [ERROR] validate_expected_row_count:  Expected 1, received 102
+2025-07-14 16:17:26 [ERROR] validate_expected_row_count:  Expected 1, received 102
+2025-07-14 16:17:26 [INFO] update_log_metadata:  FileDeliveryStatus: Validated expected count for TEST_DIAL_V2
+2025-07-14 16:17:26 [INFO] update_log_metadata:  FileDeliveryStatus: Validated expected count for TEST_DIAL_V2
+2025-07-14 16:17:29 [INFO] export_to_parquet:  Exported to sourcing_landing_data/DIAL/epr/TEST_DIAL_V2.parquet
+2025-07-14 16:17:29 [INFO] export_to_parquet:  Exported to sourcing_landing_data/DIAL/epr/TEST_DIAL_V2.parquet
+2025-07-14 16:17:29 [INFO] update_log_metadata:  FileDeliveryStatus: Copied parquet to storage account for TEST_DIAL_V2
+2025-07-14 16:17:29 [INFO] update_log_metadata:  FileDeliveryStatus: Copied parquet to storage account for TEST_DIAL_V2
+2025-07-14 16:17:32 [INFO] update_log_metadata:  FileDeliveryStatus: Moved JSON trigger file for TEST_DIAL_V2
+2025-07-14 16:17:32 [INFO] update_log_metadata:  FileDeliveryStatus: Moved JSON trigger file for TEST_DIAL_V2
 ------------------------------------------------------------------------------------------ Captured stderr call ------------------------------------------------------------------------------------------ 
 
 ------------------------------------------------------------------------------------------- Captured log call -------------------------------------------------------------------------------------------- 
@@ -281,53 +297,53 @@ src\__init__.py                                     0      0   100%
 src\config\__init__.py                              0      0   100%
 src\config\business_logic.py                       52      0   100%
 src\config\constants.py                             1      0   100%
-src\config\exceptions.py                           21      0   100%
-src\config\process.py                               4      0   100%
-src\config\schema.py                                4      0   100%
+src\config\exceptions.py                           21     21     0%   6-48
+src\config\process.py                               4      4     0%   7-10
+src\config\schema.py                                4      4     0%   3-52
 src\dq\__init__.py                                  0      0   100%
-src\dq\dq_validation.py                           141      0   100%
+src\dq\dq_validation.py                           141    132     6%   47-112, 166-181, 197-249, 265-286, 318-350, 372-392, 414-486
 src\extract\__init__.py                             0      0   100%
-src\extract\master_data_sql.py                     90      6    93%   122-136
+src\extract\master_data_sql.py                     90     71    21%   31-33, 37-38, 42, 59-88, 109-137, 149-156, 162-164, 188, 222-231, 285-300, 329-356
 src\month_setup\__init__.py                         0      0   100%
-src\month_setup\dial_derive_snapshotdate.py        32      0   100%
-src\month_setup\metadata_log_tables.py             32      9    72%   175-180, 187-191, 197-201
+src\month_setup\dial_derive_snapshotdate.py        32     27    16%   12-18, 28-37, 47-50, 69-85
+src\month_setup\metadata_log_tables.py             32     25    22%   23-84, 159, 166-203
 src\month_setup\setup_new_month.py                 13     13     0%   17-84
 src\staging\__init__.py                             0      0   100%
-src\staging\extract_base.py                        85      8    91%   171-173, 344-348
+src\staging\extract_base.py                        85     33    61%   165, 171-173, 320-321, 344-348, 368-404, 422-465
 src\staging\extract_dial_data.py                   65      5    92%   330-347
-src\staging\extract_nonssf_data.py                136      1    99%   310
-src\staging\extract_ssf_data.py                   164     17    90%   269-273, 299-305, 320-321, 352, 459-460, 512-513, 516-519, 614-617
-src\staging\status.py                              57      3    95%   18, 53-54
+src\staging\extract_nonssf_data.py                136    136     0%   16-532
+src\staging\extract_ssf_data.py                   164    164     0%   26-620
+src\staging\status.py                              57      5    91%   18, 53-54, 129, 151
 src\transform\__init__.py                           0      0   100%
-src\transform\table_write_and_comment.py           72      0   100%
-src\transform\transform_business_logic_sql.py       6      0   100%
+src\transform\table_write_and_comment.py           72     72     0%   14-237
+src\transform\transform_business_logic_sql.py       6      6     0%   6-25
 src\utils\__init__.py                               0      0   100%
-src\utils\alias_util.py                            13      0   100%
-src\utils\export_parquet.py                        15      2    87%   67-68
+src\utils\alias_util.py                            13     13     0%   10-109
+src\utils\export_parquet.py                        15      6    60%   49-54, 67-68
 src\utils\get_dbutils.py                            2      0   100%
 src\utils\get_env.py                               10      0   100%
 src\utils\logging_util.py                           6      0   100%
-src\utils\parameter_utils.py                       23      0   100%
-src\utils\parse_yaml.py                            22      0   100%
-src\utils\sources_util.py                          52      6    88%   106-110, 149, 202
-src\utils\table_logging.py                         14      0   100%
-src\utils\table_schema.py                           3      0   100%
-src\utils\transformations_util.py                  17      0   100%
+src\utils\parameter_utils.py                       23     19    17%   33-53, 79-84, 105-116
+src\utils\parse_yaml.py                            22     22     0%   11-127
+src\utils\sources_util.py                          52     52     0%   7-218
+src\utils\table_logging.py                         14      3    79%   36-37, 55
+src\utils\table_schema.py                           3      3     0%   8-16
+src\utils\transformations_util.py                  17     12    29%   20-25, 39, 51, 65-68
 src\validate\__init__.py                            0      0   100%
-src\validate\base.py                                4      0   100%
-src\validate\expressions.py                        27      0   100%
-src\validate\run_all.py                             7      0   100%
-src\validate\sources.py                            29      0   100%
-src\validate\transformations.py                   192     18    91%   71-72, 120, 135-136, 314-315, 338-344, 349-352, 477-478
-src\validate\validate_sql.py                       54      0   100%
-src\validate\yaml.py                               18      0   100%
+src\validate\base.py                                4      4     0%   4-7
+src\validate\expressions.py                        27     27     0%   15-75
+src\validate\run_all.py                             7      7     0%   12-48
+src\validate\sources.py                            29     29     0%   7-67
+src\validate\transformations.py                   192    192     0%   21-593
+src\validate\validate_sql.py                       54     54     0%   13-130
+src\validate\yaml.py                               18     18     0%   3-34
 -----------------------------------------------------------------------------
-TOTAL                                            1483     88    94%
+TOTAL                                            1483   1179    20%
 Coverage HTML written to dir htmlcov
 
 ======================================================================================== short test summary info ========================================================================================= 
-FAILED test/staging/test_extract_dial_data.py::test_extract_dial_data[202503-test-container] - TypeError: ExtractStagingData.save_to_stg_table() got an unexpected keyword argument 'source_system'        
-========================================================================= 1 failed, 274 passed, 1 warning in 1059.22s (0:17:39) ========================================================================== 
-SUCCESS: The process with PID 21560 (child process of PID 18164) has been terminated.
-SUCCESS: The process with PID 18164 (child process of PID 3284) has been terminated.
-SUCCESS: The process with PID 3284 (child process of PID 16480) has been terminated.
+FAILED test/staging/test_extract_dial_data.py::test_extract_dial_data[202503-test-container] - TypeError: ExtractStagingData.save_to_stg_table() got an unexpected keyword argument 'snapshot_date'        
+================================================================================ 1 failed, 1 warning in 68.86s (0:01:08) ================================================================================= 
+SUCCESS: The process with PID 26012 (child process of PID 26824) has been terminated.
+SUCCESS: The process with PID 26824 (child process of PID 4172) has been terminated.
+SUCCESS: The process with PID 4172 (child process of PID 10344) has been terminated.
