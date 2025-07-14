@@ -541,7 +541,7 @@ def test_place_static_data_individual_deadlines(
         [
             FileInfoMock(
                 {
-                    "path": f"{test_container}/LRD_STATIC/processed/FILE_NO_DEADLINE_20240101.txt",
+                    "path": f"{test_container}/LRD_STATIC/processed/FILE_NO_DEADLINE_20240101.txt",  # noqa: E501
                     "name": "FILE_NO_DEADLINE_20240101.txt",
                 }
             )
@@ -549,7 +549,7 @@ def test_place_static_data_individual_deadlines(
         [
             FileInfoMock(
                 {
-                    "path": f"{test_container}/LRD_STATIC/processed/FILE_NO_DEADLINE_20240101.txt",
+                    "path": f"{test_container}/LRD_STATIC/processed/FILE_NO_DEADLINE_20240101.txt",  # noqa: E501
                     "name": "FILE_NO_DEADLINE_20240101.txt",
                 }
             )
@@ -558,7 +558,7 @@ def test_place_static_data_individual_deadlines(
         [
             FileInfoMock(
                 {
-                    "path": f"{test_container}/LRD_STATIC/processed/FILE_FUTURE_DEADLINE_20240101.txt",
+                    "path": f"{test_container}/LRD_STATIC/processed/FILE_FUTURE_DEADLINE_20240101.txt",  # noqa: E501
                     "name": "FILE_FUTURE_DEADLINE_20240101.txt",
                 }
             )
@@ -566,7 +566,7 @@ def test_place_static_data_individual_deadlines(
         [
             FileInfoMock(
                 {
-                    "path": f"{test_container}/LRD_STATIC/processed/FILE_FUTURE_DEADLINE_20240101.txt",
+                    "path": f"{test_container}/LRD_STATIC/processed/FILE_FUTURE_DEADLINE_20240101.txt",  # noqa: E501
                     "name": "FILE_FUTURE_DEADLINE_20240101.txt",
                 }
             )
@@ -575,7 +575,7 @@ def test_place_static_data_individual_deadlines(
         [
             FileInfoMock(
                 {
-                    "path": f"{test_container}/LRD_STATIC/processed/FILE_PAST_DEADLINE_20240101.txt",
+                    "path": f"{test_container}/LRD_STATIC/processed/FILE_PAST_DEADLINE_20240101.txt",  # noqa: E501
                     "name": "FILE_PAST_DEADLINE_20240101.txt",
                 }
             )
@@ -583,7 +583,7 @@ def test_place_static_data_individual_deadlines(
         [
             FileInfoMock(
                 {
-                    "path": f"{test_container}/LRD_STATIC/processed/FILE_PAST_DEADLINE_20240101.txt",
+                    "path": f"{test_container}/LRD_STATIC/processed/FILE_PAST_DEADLINE_20240101.txt",  # noqa: E501
                     "name": "FILE_PAST_DEADLINE_20240101.txt",
                 }
             )
@@ -1978,6 +1978,7 @@ def test_save_to_stg_table_failure(
         file_name="TEST_FILE.csv",
     )
     assert result is False
+
 
 @pytest.mark.parametrize(
     ("run_month", "source_container"),
