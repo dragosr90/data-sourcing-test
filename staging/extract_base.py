@@ -347,65 +347,57 @@ class ExtractStagingData:
         msg = f"No enum member with value {value} in {self.file_delivery_status}"
         raise ValueError(msg)
 
-    def _get_save_status(self) -> "StepStatusInstanceTypes":
-        """Get the appropriate status for save operations."""
-        if hasattr(self.file_delivery_status, "LOADED_STG"):
-            return self.file_delivery_status.LOADED_STG
-        return self._get_enum_member_by_value(SAVED_STG_VALUE)
-
-    def _get_dq_status(self) -> "StepStatusInstanceTypes":
-        """Get the appropriate status for DQ validation."""
-        if hasattr(self.file_delivery_status, "CHECKED_DQ"):
-            return self.file_delivery_status.CHECKED_DQ
-        return self._get_enum_member_by_value(CHECKED_DQ_VALUE)
-
     def save_to_stg_table(
         self,
         data: DataFrame,
         stg_table_name: str,
-        source_system: str,
+        delivery_entity: str,
         file_name: str,
-        **kwargs: str,  # More specific type annotation
     ) -> bool:
         """Save DataFrame to staging table.
 
         Args:
             data: DataFrame to save
             stg_table_name: Staging table name
-            source_system: Source system name
+            sdelivery_entity: Source system name
             file_name: Source file name
-            **kwargs: Additional keyword arguments for backward compatibility
-                - ssf_table: Alternative table name for SSF process
-                - delivery_entity: Alternative source system name for SSF process
 
         Returns:
             bool: True if successful, False otherwise
         """
-        # Handle backward compatibility
-        if "ssf_table" in kwargs:
-            stg_table_name = kwargs["ssf_table"]
-        if "delivery_entity" in kwargs:
-            source_system = kwargs["delivery_entity"]
-
         full_path = f"bsrc_d.stg_{self.run_month}.{stg_table_name}"
 
         try:
             comment = self.write_table_with_exception(data, full_path)
         except Exception:
             logger.exception(f"Failed to save to staging table {full_path}")
+            # Determine the appropriate status directly
+            save_status = (
+                self.file_delivery_status.LOADED_STG
+                if hasattr(self.file_delivery_status, "LOADED_STG")
+                else self._get_enum_member_by_value(value=SAVED_STG_VALUE)
+            )
+
             self.update_log_metadata(
-                source_system=source_system,
+                source_system=delivery_entity,
                 key=Path(file_name).stem,
-                file_delivery_status=self._get_save_status(),
+                file_delivery_status=save_status,
                 result="FAILED",
                 comment="Failed to save to staging table",
             )
             return False
 
+        # Determine the appropriate status directly
+        save_status = (
+            self.file_delivery_status.LOADED_STG
+            if hasattr(self.file_delivery_status, "LOADED_STG")
+            else self._get_enum_member_by_value(value=SAVED_STG_VALUE)
+        )
+
         self.update_log_metadata(
-            source_system=source_system,
+            source_system=delivery_entity,
             key=Path(file_name).stem,
-            file_delivery_status=self._get_save_status(),
+            file_delivery_status=save_status,
             result="SUCCESS",
             comment=comment,
         )
@@ -413,10 +405,9 @@ class ExtractStagingData:
 
     def validate_data_quality(
         self,
-        source_system: str,
+        delivery_entity: str,
         file_name: str,
         stg_table_name: str,
-        **kwargs: str,  # More specific type annotation
     ) -> bool:
         """Validate data quality for the staging table.
 
@@ -424,25 +415,16 @@ class ExtractStagingData:
             source_system: Source system name
             file_name: Source file name
             stg_table_name: Staging table name
-            **kwargs: Additional keyword arguments for backward compatibility
-                - ssf_table: Alternative table name for SSF process
-                - delivery_entity: Alternative source system name for SSF process
 
         Returns:
             bool: True if validation passes, False otherwise
         """
-        # Handle backward compatibility
-        if "ssf_table" in kwargs:
-            stg_table_name = kwargs["ssf_table"]
-        if "delivery_entity" in kwargs:
-            source_system = kwargs["delivery_entity"]
-
         try:
             # Create DQValidation instance
             DQValidation(
                 self.spark,
                 run_month=self.run_month,
-                source_system=standardize_delivery_entity(source_system),
+                source_system=standardize_delivery_entity(delivery_entity),
                 schema_name="stg",
                 table_name=stg_table_name,
                 dq_check_folder="dq_checks",
@@ -450,19 +432,33 @@ class ExtractStagingData:
             result = True
         except Exception:
             logger.exception(f"Data quality validation failed for {stg_table_name}")
+            # Determine the appropriate status directly
+            dq_status = (
+                self.file_delivery_status.CHECKED_DQ
+                if hasattr(self.file_delivery_status, "CHECKED_DQ")
+                else self._get_enum_member_by_value(value=CHECKED_DQ_VALUE)
+            )
+
             self.update_log_metadata(
-                source_system=source_system,
+                source_system=delivery_entity,
                 key=Path(file_name).stem,
-                file_delivery_status=self._get_dq_status(),
+                file_delivery_status=dq_status,
                 result="FAILED",
-                comment="Data quality validation failed",
+                comment="Data quality validation completed",
             )
             return False
 
+        # Determine the appropriate status directly
+        dq_status = (
+            self.file_delivery_status.CHECKED_DQ
+            if hasattr(self.file_delivery_status, "CHECKED_DQ")
+            else self._get_enum_member_by_value(value=CHECKED_DQ_VALUE)
+        )
+
         self.update_log_metadata(
-            source_system=source_system,
+            source_system=delivery_entity,
             key=Path(file_name).stem,
-            file_delivery_status=self._get_dq_status(),
+            file_delivery_status=dq_status,
             result=get_result(result),
             comment="Data quality validation completed",
         )
