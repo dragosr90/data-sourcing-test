@@ -1,0 +1,13 @@
+Background
+We have created the Non-SSF staging script, but it still needs to be scheduled. We also need to add erroring when files are missing/late.
+
+Tasks
+
+Update script
+  Only run LRD_STATIC copying of previous file after certain date, only for files that are still expected
+    Set deadline as agreed
+    Check in script if deadline is reached, else skip
+  Add delay warning / error for FINOB and NME
+    When deadline is reached
+    To make script end in error (and in turn also the pipeline end in error)
+
