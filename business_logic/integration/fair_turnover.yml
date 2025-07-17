@@ -128,13 +128,13 @@ expressions:
   RatingID: DIRECT.RATING_ID
   ParentRatingID: PARENT.RATING_ID
   LBRatingID: LBR_QUANTITATIVE.LB_RATING_ID
-  AnnualTurnover: COALESCE(var_turnover_lbr, PARENT.turnover, DIRECT.Turnover)
-  AnnualTurnoverDirect: DIRECT.Turnover
-  AnnualTurnoverParent: PARENT.turnover
+  AnnualTurnover: COALESCE(var_turnover_lbr, PARENT.parent_turnover, DIRECT.turnover)
+  AnnualTurnoverDirect: DIRECT.turnover
+  AnnualTurnoverParent: PARENT.parent_turnover
   AnnualTurnoverLBR: var_turnover_lbr
-  TotalAssets: COALESCE(var_total_assets_lbr, PARENT.total_assets, DIRECT.TotalAssets)
-  TotalAssetsDirect: DIRECT.TotalAssets
-  TotalAssetsParent: PARENT.total_assets
+  TotalAssets: COALESCE(var_total_assets_lbr, PARENT.parent_totalassets, DIRECT.totalassets)
+  TotalAssetsDirect: DIRECT.totalassets
+  TotalAssetsParent: PARENT.parent_totalassets
   TotalAssetsLBR: var_total_assets_lbr
 
 drop_duplicates: true
