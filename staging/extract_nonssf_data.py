@@ -48,7 +48,6 @@ class ExtractNonSSFData(ExtractStagingData):
         source_system: str,
         comments: str,
         status: Literal["Completed", "Started", "Failed"] = "Completed",
-        file_delivery_status: NonSSFStepStatus = NonSSFStepStatus.COMPLETED,
     ) -> None:
         """Append log entry to process log table.
 
@@ -57,10 +56,7 @@ class ExtractNonSSFData(ExtractStagingData):
             comments (str): Comment of step
             status (Literal["Completed", "Started", "Failed"]): Status of the step.
                 Defaults to "Completed".
-            file_delivery_status (NonSSFStepStatus): File delivery status.
-                Defaults to NonSSFStepStatus.COMPLETED.
         """
-        # Note: file_delivery_status is kept for API compatibility but not used in process log
         record = self.base_process_record.copy()
         record["Status"] = status
         record["Comments"] = comments
@@ -72,6 +68,34 @@ class ExtractNonSSFData(ExtractStagingData):
             record=dict(record),
             log_table="process_log",
         )
+
+    def check_file_expected_status(self, file_name: str) -> bool:
+        """Check if file is in expected or redelivery status.
+        
+        Args:
+            file_name (str): Name of the source file (without extension).
+            
+        Returns:
+            bool: True if file is in expected or redelivery status
+        """
+        file_status_info = (
+            self.meta_data.filter(col("SourceFileName") == file_name)
+            .select("FileDeliveryStep")
+            .collect()
+        )
+        
+        if not file_status_info:
+            return False
+            
+        file_delivery_step = file_status_info[0]["FileDeliveryStep"]
+        
+        # Check against enum values instead of string descriptions
+        expected_steps = [
+            NonSSFStepStatus.EXPECTED.value,
+            NonSSFStepStatus.REDELIVERY.value
+        ]
+        
+        return file_delivery_step in expected_steps
 
     def check_deadline_reached(self, file_name: str) -> tuple[bool, str]:
         """Check if the deadline has been reached for a given file.
