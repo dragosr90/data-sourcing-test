@@ -399,7 +399,7 @@ def test_deadline_functionality(
     
     # Test place_static_data
     new_files = []
-    result = extraction.place_static_data(new_files)
+    extraction.place_static_data(new_files)
     
     # Only STATIC_PAST should be copied (deadline reached)
     mock_dbutils_fs_cp.assert_called_once()
