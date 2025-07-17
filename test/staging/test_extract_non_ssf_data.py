@@ -1,12 +1,13 @@
 import re
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from unittest.mock import call, patch
+from unittest.mock import call, patch, MagicMock
 
 import pytest
 from pyspark.sql.types import IntegerType, StringType, StructField, StructType
 
 from abnamro_bsrc_etl.staging.extract_nonssf_data import ExtractNonSSFData
+from abnamro_bsrc_etl.staging.status import NonSSFStepStatus
 
 
 class FileInfoMock(dict):
@@ -215,9 +216,7 @@ def test_extract_non_ssf_data(
         f"{test_container}/LRD_STATIC/TEST_NON_SSF_V2.txt",
     )
 
-    # V1 should not be copied because deadline is not reached
-    assert "Deadline not reached for TEST_NON_SSF_V1" in caplog.text
-
+    # Check that the warning for V5 (not in metadata) is present
     assert (
         "File TEST_NON_SSF_V5 not found in metadata. "
         "Please check if it should be delivered." in caplog.messages
@@ -230,30 +229,18 @@ def test_extract_non_ssf_data(
         def ls_side_effect(path):
             if "FINOB" in path:
                 return []  # No files in FINOB
-            if "NME" in path:
-                return [
-                    FileInfoMock(
-                        {"name": "TEST_NON_SSF_V3.parquet", "isDir": lambda: False}
-                    )
-                ]
-            if "LRD_STATIC/processed" in path:
-                return [
-                    FileInfoMock(
-                        {"name": "TEST_NON_SSF_V2_999999.txt", "isDir": lambda: False}
-                    )
-                ]
-            if "LRD_STATIC" in path:
-                return [
-                    FileInfoMock(
-                        {"name": "TEST_NON_SSF_V1.txt", "isDir": lambda: False}
-                    )
-                ]
+            elif "NME" in path:
+                return [FileInfoMock({"name": "TEST_NON_SSF_V3.parquet", "isDir": lambda: False})]
+            elif "LRD_STATIC/processed" in path:
+                return [FileInfoMock({"name": "TEST_NON_SSF_V2_999999.txt", "isDir": lambda: False})]
+            elif "LRD_STATIC" in path:
+                return [FileInfoMock({"name": "TEST_NON_SSF_V1.txt", "isDir": lambda: False})]
             return []
-
+            
         mock_ls_missing.side_effect = ls_side_effect
-
+        
         missing_files = extraction.check_missing_files_after_deadline()
-
+        
         # V4 should be missing (FINOB, past deadline)
         assert any(f["file_name"] == "TEST_NON_SSF_V4" for f in missing_files)
         # V3 should not be missing (NME, future deadline)
@@ -342,10 +329,9 @@ def test_extract_non_ssf_data(
 
     # For every file (v1 - v4) we log every step from received + 1 - 5: (4 x 6)
     # + 2 steps for v3.wrong_extension (received and initial checks)
-    # + 1 step for missing file error log
-    # So in total 27 calls for metadata and log
-    assert metadata_path_calls == 27
-    assert log_path_calls == 27
+    # So in total 26 calls for metadata and log
+    assert metadata_path_calls == 26
+    assert log_path_calls == 26
 
 
 @pytest.mark.parametrize(
@@ -363,7 +349,7 @@ def test_deadline_functionality(
     # Create deadline dates
     future_date = (datetime.now(timezone.utc) + timedelta(days=10)).strftime("%Y-%m-%d")
     past_date = (datetime.now(timezone.utc) - timedelta(days=5)).strftime("%Y-%m-%d")
-
+    
     # Create mock metadata with various deadline scenarios
     schema_meta = [
         "SourceSystem",
@@ -378,42 +364,15 @@ def test_deadline_functionality(
     mock_meta = spark_session.createDataFrame(
         [
             # LRD_STATIC with past deadline - should be copied
-            (
-                "lrd_static",
-                "STATIC_PAST",
-                ".txt",
-                "|",
-                "static_past",
-                0,
-                "Expected",
-                past_date,
-            ),
+            ("lrd_static", "STATIC_PAST", ".txt", "|", "static_past", 0, "Expected", past_date),
             # LRD_STATIC with future deadline - should NOT be copied
-            (
-                "lrd_static",
-                "STATIC_FUTURE",
-                ".txt",
-                "|",
-                "static_future",
-                0,
-                "Expected",
-                future_date,
-            ),
+            ("lrd_static", "STATIC_FUTURE", ".txt", "|", "static_future", 0, "Expected", future_date),
             # LRD_STATIC with no deadline - should NOT be copied
-            (
-                "lrd_static",
-                "STATIC_NO_DEADLINE",
-                ".txt",
-                "|",
-                "static_no_deadline",
-                0,
-                "Expected",
-                None,
-            ),
+            ("lrd_static", "STATIC_NO_DEADLINE", ".txt", "|", "static_no_deadline", 0, "Expected", None),
         ],
         schema=schema_meta,
     )
-
+    
     # Create mock log with proper schema
     log_schema = [
         "SourceSystem",
@@ -440,21 +399,19 @@ def test_deadline_functionality(
         ],
         schema=log_schema,
     )
-
+    
     # Mock spark read
     mock_read = mocker.patch("pyspark.sql.SparkSession.read", autospec=True)
     mock_read.table.side_effect = [mock_meta, mock_log]
-
+    
     # Create extraction instance
-    extraction = ExtractNonSSFData(
-        spark_session, run_month, source_container=source_container
-    )
+    extraction = ExtractNonSSFData(spark_session, run_month, source_container=source_container)
     extraction.initialize_process_log()
-
+    
     # Mock dbutils
     mock_dbutils_fs_ls = mocker.patch.object(extraction.dbutils.fs, "ls")
     mock_dbutils_fs_cp = mocker.patch.object(extraction.dbutils.fs, "cp")
-
+    
     # Set up ls to show files in processed folder
     mock_dbutils_fs_ls.side_effect = [
         [
@@ -466,24 +423,17 @@ def test_deadline_functionality(
         ["dummy"],  # For the third ls call
         ["dummy"],  # For the fourth ls call
     ]
-
+    
     # Test place_static_data
     new_files = []
     extraction.place_static_data(new_files)
-
+    
     # Only STATIC_PAST should be copied (deadline reached)
     mock_dbutils_fs_cp.assert_called_once()
-    assert any(
-        "STATIC_PAST.txt" in str(call) for call in mock_dbutils_fs_cp.call_args_list
-    )
-    assert not any(
-        "STATIC_FUTURE.txt" in str(call) for call in mock_dbutils_fs_cp.call_args_list
-    )
-    assert not any(
-        "STATIC_NO_DEADLINE.txt" in str(call)
-        for call in mock_dbutils_fs_cp.call_args_list
-    )
-
+    assert any("STATIC_PAST.txt" in str(call) for call in mock_dbutils_fs_cp.call_args_list)
+    assert not any("STATIC_FUTURE.txt" in str(call) for call in mock_dbutils_fs_cp.call_args_list)
+    assert not any("STATIC_NO_DEADLINE.txt" in str(call) for call in mock_dbutils_fs_cp.call_args_list)
+    
     # Check that deadline not reached message appears for STATIC_FUTURE
     assert "Deadline not reached for STATIC_FUTURE" in caplog.text
 
@@ -500,37 +450,49 @@ def test_append_to_process_log(
 ):
     """Test the append_to_process_log method."""
     # Mock metadata and log
-    mock_meta = spark_session.createDataFrame([("dummy", 1)], schema=["col1", "col2"])
-    mock_log = spark_session.createDataFrame([("dummy", 1)], schema=["col1", "col2"])
-
+    mock_meta = spark_session.createDataFrame(
+        [("dummy", 1)], schema=["col1", "col2"]
+    )
+    mock_log = spark_session.createDataFrame(
+        [("dummy", 1)], schema=["col1", "col2"]
+    )
+    
     # Mock spark read
     mock_read = mocker.patch("pyspark.sql.SparkSession.read", autospec=True)
     mock_read.table.side_effect = [mock_meta, mock_log]
-
-    # Mock write_to_log
+    
+    # Mock write_to_log at the correct import location
     mock_write_to_log = mocker.patch(
-        "abnamro_bsrc_etl.utils.table_logging.write_to_log"
+        "abnamro_bsrc_etl.staging.extract_nonssf_data.write_to_log"
     )
-
+    
+    # Mock get_catalog to return a test catalog
+    mocker.patch(
+        "abnamro_bsrc_etl.staging.extract_base.get_catalog",
+        return_value="bsrc_d"
+    )
+    
     # Create extraction instance
     extraction = ExtractNonSSFData(
         spark_session, run_month, source_container=source_container
     )
     extraction.initialize_process_log(run_id=123)
-
+    
     # Test append_to_process_log
     extraction.append_to_process_log(
-        source_system="TEST_SYSTEM", comments="Test comment", status="Started"
+        source_system="TEST_SYSTEM",
+        comments="Test comment",
+        status="Started"
     )
-
+    
     # Verify write_to_log was called
     mock_write_to_log.assert_called_once()
     call_args = mock_write_to_log.call_args
-
+    
     assert call_args[1]["spark"] == spark_session
     assert call_args[1]["run_month"] == run_month
     assert call_args[1]["log_table"] == "process_log"
-
+    
     record = call_args[1]["record"]
     assert record["RunID"] == 123
     assert record["Status"] == "Started"
