@@ -137,16 +137,6 @@ src\abnamro_bsrc_etl\staging\extract_nonssf_data.py:98:25: DTZ007 Naive datetime
    |
    = help: Call `.replace(tzinfo=<timezone>)` or `.astimezone()` to convert to an aware datetime
 
-src\abnamro_bsrc_etl\staging\extract_nonssf_data.py:182:89: E501 Line too long (93 > 88)
-    |
-180 |                 if not deadline_reached:
-181 |                     logger.info(
-182 |                         f"Deadline not reached for {file_name} (deadline: {deadline_date}). "
-    |                                                                                         ^^^^^ E501
-183 |                         f"Skipping copy from processed folder."
-184 |                     )
-    |
-
 src\abnamro_bsrc_etl\staging\extract_nonssf_data.py:290:24: BLE001 Do not catch blind exception: `Exception`
     |
 288 |                                 }
@@ -167,17 +157,7 @@ src\abnamro_bsrc_etl\staging\extract_nonssf_data.py:291:21: TRY400 Use `logging.
     |
     = help: Replace with `exception`
 
-src\abnamro_bsrc_etl\staging\extract_nonssf_data.py:308:89: E501 Line too long (89 > 88)
-    |
-306 |         for missing_file in missing_files:
-307 |             error_msg = (
-308 |                 f"File {missing_file['file_name']} from {missing_file['source_system']} "
-    |                                                                                         ^ E501
-309 |                 f"is missing after deadline ({missing_file['deadline']})"
-310 |             )
-    |
-
-Found 6 errors.
+Found 4 errors.
 No fixes available (1 hidden fix can be enabled with the `--unsafe-fixes` option).
 
 ruff format..............................................................Passed
