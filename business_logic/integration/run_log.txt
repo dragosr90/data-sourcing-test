@@ -1,17 +1,15 @@
-2025-07-17 14:07:49 [INFO] validate:  YAML format validated successfully
-2025-07-17 14:07:55 [INFO] validate:  Sources validated successfully
-2025-07-17 14:07:55 [INFO] validate_join:  Joins validated successfully
-2025-07-17 14:07:55 [INFO] validate_join:  Joins validated successfully
-2025-07-17 14:07:55 [INFO] validate_pivot:  Pivot validated successfully
-2025-07-17 14:07:55 [INFO] validate_aggregation:  Aggregations validated successfully
-2025-07-17 14:07:56 [INFO] validate_aggregation:  Aggregations validated successfully
-2025-07-17 14:07:56 [INFO] validate_join:  Joins validated successfully
-2025-07-17 14:07:56 [INFO] validate_join:  Joins validated successfully
-2025-07-17 14:07:56 [INFO] validate_add_variables:  Variables validated successfully
-2025-07-17 14:07:56 [INFO] validate:  Transformations validated successfully
-2025-07-17 14:07:57 [ERROR] validate_sql_expressions:  Problem with expression(s):
-2025-07-17 14:07:57 [ERROR] validate_sql_expressions:  PARENT.RATING_ID: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `PARENT`.`RATING_ID` cannot be resolved. Did you mean one of the following? [`PARENT`.`company_id`, `RatingID`, `DIRECT`.`rating_id`, `DIRECT`.`turnover`, `DIRECT`.`company_id`]. SQLSTATE: 42703
-COALESCE(var_turnover_lbr, PARENT.Turnover, DIRECT.Turnover): [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `PARENT`.`Turnover` cannot be resolved. Did you mean one of the following? [`DIRECT`.`turnover`, `PARENT`.`parent_turnover`, `RatingID`, `PARENT`.`company_id`, `var_turnover_lbr`]. SQLSTATE: 42703
-PARENT.Turnover: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `PARENT`.`Turnover` cannot be resolved. Did you mean one of the following? [`DIRECT`.`turnover`, `PARENT`.`parent_turnover`, `AnnualTurnoverDirect`, `RatingID`, `PARENT`.`company_id`]. SQLSTATE: 42703
-COALESCE(var_total_assets_lbr, PARENT.TotalAssets, DIRECT.TotalAssets): [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `PARENT`.`TotalAssets` cannot be resolved. Did you mean one of the following? [`DIRECT`.`totalassets`, `PARENT`.`company_id`, `PARENT`.`parent_totalassets`, `DIRECT`.`turnover`, `var_total_assets_lbr`]. SQLSTATE: 42703
-PARENT.TotalAssets: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `PARENT`.`TotalAssets` cannot be resolved. Did you mean one of the following? [`DIRECT`.`totalassets`, `PARENT`.`company_id`, `PARENT`.`parent_totalassets`, `TotalAssetsDirect`, `DIRECT`.`turnover`]. SQLSTATE: 42703
+2025-07-17 14:12:43 [INFO] validate_join:  Joins validated successfully
+2025-07-17 14:12:43 [INFO] validate_join:  Joins validated successfully
+2025-07-17 14:12:43 [INFO] validate_pivot:  Pivot validated successfully
+2025-07-17 14:12:43 [INFO] validate_aggregation:  Aggregations validated successfully
+2025-07-17 14:12:43 [INFO] validate_aggregation:  Aggregations validated successfully
+2025-07-17 14:12:43 [INFO] validate_join:  Joins validated successfully
+2025-07-17 14:12:43 [INFO] validate_join:  Joins validated successfully
+2025-07-17 14:12:43 [INFO] validate_add_variables:  Variables validated successfully
+2025-07-17 14:12:43 [INFO] validate:  Transformations validated successfully
+2025-07-17 14:12:44 [ERROR] validate_sql_expressions:  Problem with expression(s):
+2025-07-17 14:12:44 [ERROR] validate_sql_expressions:  PARENT.RATING_ID: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `PARENT`.`RATING_ID` cannot be resolved. Did you mean one of the following? [`PARENT`.`company_id`, `RatingID`, `DIRECT`.`rating_id`, `DIRECT`.`turnover`, `DIRECT`.`company_id`]. SQLSTATE: 42703
+COALESCE(var_turnover_lbr, PARENT.turnover, DIRECT.Turnover): [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `PARENT`.`turnover` cannot be resolved. Did you mean one of the following? [`DIRECT`.`turnover`, `PARENT`.`parent_turnover`, `RatingID`, `var_turnover_lbr`, `LBRatingID`]. SQLSTATE: 42703
+PARENT.turnover: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `PARENT`.`turnover` cannot be resolved. Did you mean one of the following? [`DIRECT`.`turnover`, `PARENT`.`parent_turnover`, `RatingID`, `var_turnover_lbr`, `LBRatingID`]. SQLSTATE: 42703
+COALESCE(var_total_assets_lbr, PARENT.total_assets, DIRECT.TotalAssets): [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `PARENT`.`total_assets` cannot be resolved. Did you mean one of the following? [`DIRECT`.`totalassets`, `PARENT`.`parent_totalassets`, `var_total_assets_lbr`, `PARENT`.`company_id`, `DIRECT`.`turnover`]. SQLSTATE: 42703
+PARENT.total_assets: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `PARENT`.`total_assets` cannot be resolved. Did you mean one of the following? [`DIRECT`.`totalassets`, `PARENT`.`parent_totalassets`, `var_total_assets_lbr`, `PARENT`.`company_id`, `DIRECT`.`turnover`]. SQLSTATE: 42703
