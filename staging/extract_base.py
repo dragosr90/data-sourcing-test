@@ -1,7 +1,5 @@
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from pathlib import Path
-from typing import TYPE_CHECKING
 
 from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql.functions import (
@@ -12,28 +10,21 @@ from pyspark.sql.functions import (
 )
 from pyspark.sql.utils import AnalysisException
 
-from src.dq.dq_validation import DQValidation
-from src.staging.status import (
+from abnamro_bsrc_etl.dq.dq_validation import DQValidation
+from abnamro_bsrc_etl.staging.status import (
     DialStepStatus,
     NonSSFStepStatus,
     SSFStepStatus,
     StepStatusClassTypes,
     StepStatusInstanceTypes,
 )
-from src.utils.get_dbutils import get_dbutils
-from src.utils.get_env import get_catalog, get_container_path
-from src.utils.logging_util import get_logger
-from src.utils.parameter_utils import standardize_delivery_entity
-from src.utils.table_logging import get_result, write_to_log
-
-if TYPE_CHECKING:
-    from pyspark.sql import DataFrame
+from abnamro_bsrc_etl.utils.get_dbutils import get_dbutils
+from abnamro_bsrc_etl.utils.get_env import get_catalog, get_container_path
+from abnamro_bsrc_etl.utils.logging_util import get_logger
+from abnamro_bsrc_etl.utils.parameter_utils import standardize_delivery_entity
+from abnamro_bsrc_etl.utils.table_logging import get_result, write_to_log
 
 logger = get_logger()
-
-# Constants for enum values
-SAVED_STG_VALUE = 5
-CHECKED_DQ_VALUE = 6
 
 
 @dataclass
@@ -329,137 +320,108 @@ class ExtractStagingData:
             }
         return log_entry
 
-    def _get_enum_member_by_value(self, value: int) -> "StepStatusInstanceTypes":
-        """Get enum member by its value.
-
-        Args:
-            value: The enum value to search for
-
-        Returns:
-            The enum member with the given value
-
-        Raises:
-            ValueError: If no enum member with the given value exists
-        """
-        for member in self.file_delivery_status:
-            if member.value == value:
-                return member
-        msg = f"No enum member with value {value} in {self.file_delivery_status}"
-        raise ValueError(msg)
-
     def save_to_stg_table(
         self,
         data: DataFrame,
         stg_table_name: str,
-        delivery_entity: str,
-        file_name: str,
+        **kwargs: str,
     ) -> bool:
-        """Save DataFrame to staging table.
+        """Save the input PySpark DataFrame to the staging schema in Unity Catalog.
+
+        This method writes the provided DataFrame to the specified staging table in UC.
+        It updates the log metadata with the result of the operation and returns
+        whether the operation was successful.
 
         Args:
-            data: DataFrame to save
-            stg_table_name: Staging table name
-            sdelivery_entity: Source system name
-            file_name: Source file name
+            data (DataFrame): The PySpark DataFrame to be saved.
+            stg_table_name (str): The name of the staging table in Unity Catalog.
+            **kwargs (str): Additional keyword arguments for log metadata updates.
 
         Returns:
-            bool: True if successful, False otherwise
+            bool: True if the DataFrame was successfully saved, False otherwise.
         """
-        full_path = f"bsrc_d.stg_{self.run_month}.{stg_table_name}"
-
-        try:
-            comment = self.write_table_with_exception(data, full_path)
-        except Exception:
-            logger.exception(f"Failed to save to staging table {full_path}")
-            # Determine the appropriate status directly
-            save_status = (
-                self.file_delivery_status.LOADED_STG
-                if hasattr(self.file_delivery_status, "LOADED_STG")
-                else self._get_enum_member_by_value(value=SAVED_STG_VALUE)
-            )
-
-            self.update_log_metadata(
-                source_system=delivery_entity,
-                key=Path(file_name).stem,
-                file_delivery_status=save_status,
-                result="FAILED",
-                comment="Failed to save to staging table",
-            )
-            return False
-
-        # Determine the appropriate status directly
-        save_status = (
-            self.file_delivery_status.LOADED_STG
-            if hasattr(self.file_delivery_status, "LOADED_STG")
-            else self._get_enum_member_by_value(value=SAVED_STG_VALUE)
-        )
-
+        full_path = f"{self.catalog}.stg_{self.run_month}.{stg_table_name}"
+        comment = self.write_table_with_exception(data, full_path)
+        result = not comment.startswith("ERROR")
         self.update_log_metadata(
-            source_system=delivery_entity,
-            key=Path(file_name).stem,
-            file_delivery_status=save_status,
-            result="SUCCESS",
+            file_delivery_status=self.file_delivery_status.LOADED_STG,
+            result=get_result(result),
             comment=comment,
+            **self.update_kwargs(**kwargs),
         )
-        return True
+        return result
 
     def validate_data_quality(
         self,
-        delivery_entity: str,
-        file_name: str,
         stg_table_name: str,
+        schema_name: str = "stg",
+        dq_check_folder: str = "dq_checks",
+        **kwargs: str,
     ) -> bool:
-        """Validate data quality for the staging table.
+        """Perform Data Quality (DQ) validation for the loaded staging table.
+
+        This method calls `DQValidation().checks()` from
+        `abnamro_bsrc_etl.dq.dq_validation` to run
+        any available DQ checks if a checks file is provided. It updates the log
+        metadata with the results of the validation.
 
         Args:
-            source_system: Source system name
-            file_name: Source file name
-            stg_table_name: Staging table name
+            file_delivery_status (StepStatusClassTypes): The current delivery status of
+                the file.
+            stg_table_name (str): The name of the loaded table in the staging schema.
+                Only the table name should be provided, without the schema prefix.
+            schema_name (str, optional): The schema name prefix.
+                Defaults to "stg".
+            dq_check_folder (str, optional): The folder containing DQ check files.
+                Defaults to "dq_checks".
+            **kwargs (str): Additional keyword arguments, such as:
+                - source_system (str): The source system of the data.
+                - delivery_entity (str): The delivery entity, formatted as
+                    in "Instagram Views".
+                - file_name (str): SourceFileName as in DIAL or Non SSF.
 
         Returns:
-            bool: True if validation passes, False otherwise
+            bool: True if DQ checks were successful or if no checks were defined,
+                False otherwise.
         """
-        try:
-            # Create DQValidation instance
-            DQValidation(
-                self.spark,
-                run_month=self.run_month,
-                source_system=standardize_delivery_entity(delivery_entity),
-                schema_name="stg",
-                table_name=stg_table_name,
-                dq_check_folder="dq_checks",
-            )
-            result = True
-        except Exception:
-            logger.exception(f"Data quality validation failed for {stg_table_name}")
-            # Determine the appropriate status directly
-            dq_status = (
-                self.file_delivery_status.CHECKED_DQ
-                if hasattr(self.file_delivery_status, "CHECKED_DQ")
-                else self._get_enum_member_by_value(value=CHECKED_DQ_VALUE)
-            )
-
-            self.update_log_metadata(
-                source_system=delivery_entity,
-                key=Path(file_name).stem,
-                file_delivery_status=dq_status,
-                result="FAILED",
-                comment="Data quality validation completed",
-            )
-            return False
-
-        # Determine the appropriate status directly
-        dq_status = (
-            self.file_delivery_status.CHECKED_DQ
-            if hasattr(self.file_delivery_status, "CHECKED_DQ")
-            else self._get_enum_member_by_value(value=CHECKED_DQ_VALUE)
-        )
+        result = DQValidation(
+            self.spark,
+            table_name=stg_table_name,
+            schema_name=schema_name,
+            run_month=self.run_month,
+            source_system=standardize_delivery_entity(
+                kwargs.get("source_system", kwargs.get("delivery_entity", ""))
+            ),
+            dq_check_folder=dq_check_folder,
+        ).checks()
 
         self.update_log_metadata(
-            source_system=delivery_entity,
-            key=Path(file_name).stem,
-            file_delivery_status=dq_status,
+            file_delivery_status=self.file_delivery_status.CHECKED_DQ,
             result=get_result(result),
-            comment="Data quality validation completed",
+            comment=f"{get_result(result)}, see log_dq_validation",
+            **self.update_kwargs(**kwargs),
         )
-        return result
+        return result in (True, None)
+
+    @staticmethod
+    def update_kwargs(**kwargs: str) -> dict:
+        """Update keyword arguments by removing keys and setting the delivery entity.
+
+        Removes "file_name" and "delivery_entity" keys from the input kwargs and sets
+        the "key" key to the value of "delivery_entity" or "file_name" if
+        not already present.
+
+        Args:
+            **kwargs (str): Arbitrary keyword arguments.
+
+        Returns:
+            dict: Updated dictionary with modified "delivery_entity" and filtered keys.
+        """
+        return {
+            **{
+                k: v
+                for k, v in kwargs.items()
+                if k not in ["file_name", "delivery_entity"]
+            },
+            "key": kwargs.get("delivery_entity", kwargs.get("file_name", "")),
+        }
