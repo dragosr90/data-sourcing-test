@@ -1,16 +1,17 @@
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Literal
 
 from pyspark.sql import DataFrame
-from pyspark.sql.functions import col
+from pyspark.sql.functions import col, to_date
 
 from abnamro_bsrc_etl.staging.extract_base import ExtractStagingData
 from abnamro_bsrc_etl.staging.status import NonSSFStepStatus
 from abnamro_bsrc_etl.utils.export_parquet import export_to_parquet
 from abnamro_bsrc_etl.utils.get_env import get_container_path
 from abnamro_bsrc_etl.utils.logging_util import get_logger
-from abnamro_bsrc_etl.utils.table_logging import get_result
+from abnamro_bsrc_etl.utils.table_logging import get_result, write_to_log
 
 logger = get_logger()
 
@@ -25,6 +26,79 @@ class ExtractNonSSFData(ExtractStagingData):
 
     def __post_init__(self) -> None:
         super().__post_init__()
+        # Initialize process log record
+        self.base_process_record: dict[str, int | datetime | str] = {}
+
+    def initialize_process_log(self, run_id: int = 1) -> None:
+        """Initialize the base process log record.
+
+        Args:
+            run_id (int, optional): Run ID. Defaults to 1.
+        """
+        self.base_process_record = {
+            "RunID": run_id,
+            "Timestamp": datetime.now(tz=timezone.utc),
+            "Workflow": "Staging",
+            "Component": "Non-SSF",
+            "Layer": "Staging",
+        }
+
+    def append_to_process_log(
+        self,
+        source_system: str,
+        comments: str,
+        status: Literal["Completed", "Started", "Failed"] = "Completed",
+        file_delivery_status: NonSSFStepStatus = NonSSFStepStatus.COMPLETED,
+    ) -> None:
+        """Append log entry to process log table.
+
+        Args:
+            source_system (str): Source System
+            comments (str): Comment of step
+            status (Literal["Completed", "Started", "Failed"]): Status of the step.
+                Defaults to "Completed".
+            file_delivery_status (NonSSFStepStatus): File delivery status.
+                Defaults to NonSSFStepStatus.COMPLETED.
+        """
+        record = self.base_process_record.copy()
+        record["Status"] = status
+        record["Comments"] = comments
+        record["SourceSystem"] = source_system
+        
+        write_to_log(
+            spark=self.spark,
+            run_month=self.run_month,
+            record=dict(record),
+            log_table="process_log",
+        )
+
+    def check_deadline_reached(self, file_name: str) -> tuple[bool, str]:
+        """Check if the deadline has been reached for a given file.
+
+        Args:
+            file_name (str): Name of the source file (without extension).
+
+        Returns:
+            tuple[bool, str]: (deadline_reached, deadline_date_str)
+                - deadline_reached: True if current date >= deadline
+                - deadline_date_str: The deadline date as string
+        """
+        deadline_info = (
+            self.meta_data.filter(col("SourceFileName") == file_name)
+            .select("Deadline")
+            .collect()
+        )
+        
+        if not deadline_info or deadline_info[0]["Deadline"] is None:
+            logger.warning(f"No deadline found for file {file_name}")
+            return False, ""
+        
+        deadline_str = deadline_info[0]["Deadline"]
+        # Parse deadline - assuming format YYYY-MM-DD
+        deadline_date = datetime.strptime(deadline_str, "%Y-%m-%d").date()
+        current_date = datetime.now(timezone.utc).date()
+        
+        return current_date >= deadline_date, deadline_str
 
     def initial_checks(
         self,
@@ -74,7 +148,7 @@ class ExtractNonSSFData(ExtractStagingData):
 
         Loops over metadata entries for LRD_STATIC files and checks if they are
         delivered this month. If not, copies the files from the processed folder to the
-        static folder.
+        static folder ONLY if the deadline has been reached.
 
         Args:
             new_files (list[str]): List of files found in the source container. This
@@ -94,10 +168,23 @@ class ExtractNonSSFData(ExtractStagingData):
         processed_folder = (
             f"{self.source_container_url}/{source_system.upper()}/processed"
         )
+        
         for file in expected_files:
             file_name = file["SourceFileName"]
             extension = file["SourceFileFormat"]
+            
             if file_name not in [Path(f).stem for f in new_files]:
+                # Check if deadline has been reached
+                deadline_reached, deadline_date = self.check_deadline_reached(file_name)
+                
+                if not deadline_reached:
+                    logger.info(
+                        f"Deadline not reached for {file_name} (deadline: {deadline_date}). "
+                        f"Skipping copy from processed folder."
+                    )
+                    continue
+                
+                # Deadline reached, try to copy from processed folder
                 # Check if the file is already in the processed folder
                 processed_files = [
                     file.path
@@ -107,9 +194,11 @@ class ExtractNonSSFData(ExtractStagingData):
                 if not processed_files:
                     logger.error(
                         f"File {file_name} not delivered and not found in "
-                        f"{source_system.upper()}/processed folder."
+                        f"{source_system.upper()}/processed folder. "
+                        f"Deadline was {deadline_date}."
                     )
                     continue
+                    
                 latest_processed_file = max(processed_files)
                 if self.dbutils.fs.ls(latest_processed_file):
                     # Copy the file to the static folder
@@ -118,15 +207,120 @@ class ExtractNonSSFData(ExtractStagingData):
                         latest_processed_file,
                         f"{static_folder}/{file_name}{extension}",
                     )
-                    logger.info(f"Copied {file_name} to static folder.")
+                    logger.info(
+                        f"Copied {file_name} to static folder after deadline reached."
+                    )
                     new_files.append(f"{static_folder}/{file_name}{extension}")
+                    
                 self.update_log_metadata(
                     source_system=source_system.upper(),
                     key=Path(file_name).stem,
                     file_delivery_status=NonSSFStepStatus.RECEIVED,
-                    comment=f"Static file {processed_file} copied from process folder.",
+                    comment=(
+                        f"Static file {processed_file} copied from process folder "
+                        f"after deadline ({deadline_date})."
+                    ),
                 )
         return new_files
+
+    def check_missing_files_after_deadline(self) -> list[dict[str, str]]:
+        """Check for files that are missing after their deadline.
+
+        Returns:
+            list[dict[str, str]]: List of dictionaries with missing file information
+                containing 'source_system', 'file_name', and 'deadline'.
+        """
+        missing_files = []
+        
+        # Get all expected files from metadata
+        expected_files = (
+            self.meta_data
+            .select("SourceSystem", "SourceFileName", "Deadline")
+            .distinct()
+            .collect()
+        )
+        
+        # Check each expected file
+        for file_info in expected_files:
+            source_system = file_info["SourceSystem"]
+            file_name = file_info["SourceFileName"]
+            
+            # Skip if no deadline is set
+            if not file_info["Deadline"]:
+                continue
+                
+            deadline_reached, deadline_date = self.check_deadline_reached(file_name)
+            
+            if deadline_reached:
+                # Check if file exists in the source folder
+                source_folder = f"{self.source_container_url}/{source_system.upper()}"
+                try:
+                    existing_files = [
+                        f.name for f in self.dbutils.fs.ls(source_folder)
+                        if not f.isDir()
+                    ]
+                    file_found = any(
+                        f.startswith(file_name) for f in existing_files
+                    )
+                    
+                    if not file_found:
+                        # For LRD_STATIC, also check if it was copied from processed
+                        if source_system.upper() == "LRD_STATIC":
+                            # Check if we already handled this in place_static_data
+                            processed_folder = f"{source_folder}/processed"
+                            processed_files = [
+                                f.name for f in self.dbutils.fs.ls(processed_folder)
+                                if f.name.startswith(file_name)
+                            ]
+                            if not processed_files:
+                                missing_files.append({
+                                    "source_system": source_system,
+                                    "file_name": file_name,
+                                    "deadline": deadline_date
+                                })
+                        else:
+                            missing_files.append({
+                                "source_system": source_system,
+                                "file_name": file_name,
+                                "deadline": deadline_date
+                            })
+                except Exception as e:
+                    logger.error(f"Error checking files in {source_folder}: {e}")
+                    
+        return missing_files
+
+    def log_missing_files_errors(self, missing_files: list[dict[str, str]]) -> bool:
+        """Log errors for missing files after deadline.
+
+        Args:
+            missing_files (list[dict[str, str]]): List of missing files info.
+
+        Returns:
+            bool: True if there are critical missing files (NME/FINOB), False otherwise.
+        """
+        has_critical_missing = False
+        
+        for missing_file in missing_files:
+            error_msg = (
+                f"File {missing_file['file_name']} from {missing_file['source_system']} "
+                f"is missing after deadline ({missing_file['deadline']})"
+            )
+            logger.error(error_msg)
+            
+            # Log the missing file error
+            self.update_log_metadata(
+                source_system=missing_file['source_system'],
+                key=missing_file['file_name'],
+                file_delivery_status=NonSSFStepStatus.INIT_CHECKS,
+                result="FAILED",
+                comment=error_msg,
+            )
+            
+            # Check if it's a critical source system
+            if missing_file['source_system'].upper() in ['NME', 'FINOB']:
+                has_critical_missing = True
+                
+        return has_critical_missing
 
     def get_all_files(self) -> list[dict[str, str]]:
         """Retrieve all files from the source container along with their source systems.
