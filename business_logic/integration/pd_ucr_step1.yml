@@ -24,6 +24,16 @@ sources:
       - UniformCounterpartyRatingDate
       - ApprovedUniformCounterpartyRatingExpirationDate
     source: stg_{{ RUN_MONTH }}.ssf_{{ DELIVERY_ENTITY }}_cp
+  - alias: DEFAULT_CP
+    columns:
+      - CounterpartyID
+      - CounterpartySourceSystemIdentifier
+      - CollateralProviderFlag
+      - GuarantorFlag
+      - InterCompanyFlag
+      - IssuerFlag
+      - ObligorFlag
+    source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_default_counterparty
   - alias: FAIR
     columns:
       - fair_id
@@ -127,6 +137,15 @@ transformations:
         - rank_num = 1
   - join:
       left_source: SSF_CP
+      right_source: DEFAULT_CP
+      condition:
+        - SSF_CP.LocalId = DEFAULT_CP.CounterpartyID
+        - SSF_CP.SourceSystemIdentifier = DEFAULT_CP.CounterpartySourceSystemIdentifier
+      how: inner
+  - filter:
+      conditions:
+        - DEFAULT_CP.CollateralProviderFlag = 'Y' OR DEFAULT_CP.GuarantorFlag = 'Y' OR DEFAULT_CP.InterCompanyFlag = 'Y' OR DEFAULT_CP.IssuerFlag = 'Y' OR DEFAULT_CP.ObligorFlag = 'Y'
+  - join:
       right_source: FAIR_BCDB
       condition:
         - SSF_CP.BcdbId = FAIR_BCDB.lbcdb_id
@@ -145,15 +164,18 @@ transformations:
       right_source: FAIR_GBC
       condition:
         - SSF_CP.GlobalCounterpartyIdentifier = FAIR_GBC.global_id
+      how: left
   - join:
       right_source: MDM_1094
       condition:
         - SSF_CP.CountryOfIncorporation = MDM_1094.abn_amro_country_code
         - SSF_CP.BaselIICounterpartyType in ('CB','ECA_SOV','GOV','PSE','RG/LA_SOV')
+      how: left
   - join:
       right_source: MDM_1010
       condition:
         - MDM_1094.sovereign_local_currency_ucr = MDM_1010.abbreviated_name
+      how: left
   - add_variables:
       column_mapping:
         var_UCRStep: >
