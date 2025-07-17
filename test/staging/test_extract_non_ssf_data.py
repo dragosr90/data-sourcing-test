@@ -372,8 +372,31 @@ def test_deadline_functionality(
         schema=schema_meta,
     )
     
+    # Create mock log with proper schema
+    log_schema = [
+        "SourceSystem",
+        "SourceFileName",
+        "DeliveryNumber",
+        "FileDeliveryStep",
+        "FileDeliveryStatus",
+        "Result",
+        "LastUpdatedDateTimestamp",
+        "Comment",
+    ]
     mock_log = spark_session.createDataFrame(
-        [("dummy", 1)], schema=["col1", "col2"]
+        [
+            (
+                "lrd_static",
+                "DUMMY",
+                1,
+                0,
+                "Expected",
+                "Success",
+                datetime.now(timezone.utc),
+                "Test comment",
+            )
+        ],
+        schema=log_schema,
     )
     
     # Mock spark read
