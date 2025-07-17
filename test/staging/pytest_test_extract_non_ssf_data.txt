@@ -6,13 +6,13 @@ configfile: pyproject.toml
 plugins: cov-6.0.0, mock-3.14.0
 collected 3 items
 
-test\staging\test_extract_non_ssf_data.py F.F                                                                                                                                                       [100%]
+test\staging\test_extract_non_ssf_data.py F..                                                                                                                                                       [100%]
 
 ================================================================================================ FAILURES ================================================================================================ 
 ____________________________________________________________________________ test_extract_non_ssf_data[202505-test-container] ____________________________________________________________________________ 
 
-spark_session = <pyspark.sql.session.SparkSession object at 0x00000170E8A2D810>, mocker = <pytest_mock.plugin.MockerFixture object at 0x00000170E8A2D990>, run_month = '202505'
-source_container = 'test-container', caplog = <_pytest.logging.LogCaptureFixture object at 0x00000170E8A2C0A0>
+spark_session = <pyspark.sql.session.SparkSession object at 0x000001E37D4D2830>, mocker = <pytest_mock.plugin.MockerFixture object at 0x000001E37D4D0700>, run_month = '202505'
+source_container = 'test-container', caplog = <_pytest.logging.LogCaptureFixture object at 0x000001E37D4D0670>
 
     @pytest.mark.parametrize(
         ("run_month", "source_container"),
@@ -210,30 +210,274 @@ source_container = 'test-container', caplog = <_pytest.logging.LogCaptureFixture
             f"{test_container}/LRD_STATIC/TEST_NON_SSF_V2.txt",
         )
 
-        # V1 should not be copied because deadline is not reached
->       assert "Deadline not reached for TEST_NON_SSF_V1" in caplog.text
-E       AssertionError: assert 'Deadline not reached for TEST_NON_SSF_V1' in 'INFO     betl_src_poc_logger:extract_base.py:205 FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V3\nINFO     ...reached.\nINFO     betl_src_poc_logger:extract_base.py:205 FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V2\n'
-E        +  where 'INFO     betl_src_poc_logger:extract_base.py:205 FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V3\nINFO     ...reached.\nINFO     betl_src_poc_logger:extract_base.py:205 FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V2\n' = <_pytest.logging.LogCaptureFixture object at 0x00000170E8A2C0A0>.text
+        # Check that the warning for V5 (not in metadata) is present
+        assert (
+            "File TEST_NON_SSF_V5 not found in metadata. "
+            "Please check if it should be delivered." in caplog.messages
+        )
 
-test\staging\test_extract_non_ssf_data.py:219: AssertionError
+        # Test check_missing_files_after_deadline
+        # Mock the ls calls for this test
+        with patch.object(extraction.dbutils.fs, "ls") as mock_ls_missing:
+            # Set up the mock to simulate missing FINOB file after deadline
+            def ls_side_effect(path):
+                if "FINOB" in path:
+                    return []  # No files in FINOB
+                if "NME" in path:
+                    return [
+                        FileInfoMock(
+                            {"name": "TEST_NON_SSF_V3.parquet", "isDir": lambda: False}
+                        )
+                    ]
+                if "LRD_STATIC/processed" in path:
+                    return [
+                        FileInfoMock(
+                            {"name": "TEST_NON_SSF_V2_999999.txt", "isDir": lambda: False}
+                        )
+                    ]
+                if "LRD_STATIC" in path:
+                    return [
+                        FileInfoMock(
+                            {"name": "TEST_NON_SSF_V1.txt", "isDir": lambda: False}
+                        )
+                    ]
+                return []
+
+            mock_ls_missing.side_effect = ls_side_effect
+
+            missing_files = extraction.check_missing_files_after_deadline()
+
+            # V4 should be missing (FINOB, past deadline)
+            assert any(f["file_name"] == "TEST_NON_SSF_V4" for f in missing_files)
+            # V3 should not be missing (NME, future deadline)
+            assert not any(f["file_name"] == "TEST_NON_SSF_V3" for f in missing_files)
+
+        # Test log_missing_files_errors
+        missing_test_files = [
+            {"source_system": "FINOB", "file_name": "TEST_FILE", "deadline": "2024-01-01"}
+        ]
+        has_critical = extraction.log_missing_files_errors(missing_test_files)
+        assert has_critical  # FINOB is critical
+
+        mock_read.csv.return_value = dummy_df
+        mock_read.parquet.return_value = dummy_df
+
+        for file in found_files:
+            file_name = file["file_name"]
+            file_name_base = Path(file_name).name
+            file_name_no_ext = Path(file_name).stem
+            file_name_ext = Path(file_name).suffix
+            source_system = file["source_system"]
+
+            result = file_name_base != "TEST_NON_SSF_V3.csv"
+            assert extraction.initial_checks(**file) is result
+
+            if file_name_base == "TEST_NON_SSF_V3.csv":
+                continue
+
+            assert extraction.convert_to_parquet(**file)
+
+            if source_system == "LRD_STATIC" or source_system == "FINOB":
+                sep = {"LRD_STATIC": "|", "FINOB": ","}.get(source_system, ",")
+                mock_read.csv.assert_any_call(
+                    f"{test_container}/{source_system}/{file_name_base}",
+                    sep=sep,
+                    header=True,
+                )
+            else:
+                mock_read.parquet.assert_any_call(
+                    f"{test_container}/{source_system}/{file_name_base}",
+                )
+            mock_write.assert_any_call(
+                f"{month_container}/sourcing_landing_data/NON_SSF/{source_system}/{file_name_no_ext}.parquet",
+                mode="overwrite",
+            )
+
+            assert extraction.move_source_file(**file)
+
+            calls = mock_dbutils_fs_mv.call_args_list
+            assert any(
+                args[0] == f"{test_container}/{source_system}/{file_name_base}"
+                and re.match(
+                    rf"{test_container}/{source_system}/processed/{file_name_no_ext}__\d{{8}}\d{{6}}{file_name_ext}",
+                    args[1],
+                )
+                for args, _ in calls
+            )
+
+            data = extraction.extract_from_parquet(file["source_system"], file["file_name"])
+            stg_table_name = extraction.get_staging_table_name(file["file_name"])
+            assert extraction.save_to_stg_table(
+                data=data,
+                stg_table_name=stg_table_name,
+                **file,
+            )
+            mock_save_table.assert_any_call(
+                f"bsrc_d.stg_{run_month}.{file_name_no_ext.lower()}"
+            )
+
+            assert extraction.validate_data_quality(
+                **file,
+                stg_table_name=file_name_no_ext.lower(),
+            )
+
+        # Count update metadata and log calls
+        metadata_path_calls, log_path_calls = (
+            len(
+                [
+                    call_args
+                    for call_args in mock_save_table.call_args_list
+                    if call_args == call(path)
+                ]
+            )
+            for path in [metadata_path, log_path]
+        )
+
+        # For every file (v1 - v4) we log every step from received + 1 - 5: (4 x 6)
+        # + 2 steps for v3.wrong_extension (received and initial checks)
+        # So in total 26 calls for metadata and log
+>       assert metadata_path_calls == 26
+E       assert 27 == 26
+
+test\staging\test_extract_non_ssf_data.py:344: AssertionError
 ----------------------------------------------------------------------------------------- Captured stderr setup ------------------------------------------------------------------------------------------ 
 Setting default log level to "WARN".
 To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
 ------------------------------------------------------------------------------------------ Captured stdout call ------------------------------------------------------------------------------------------ 
-2025-07-17 15:17:08 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V3
-2025-07-17 15:17:08 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V3
-2025-07-17 15:17:11 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V3
-2025-07-17 15:17:11 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V3
-2025-07-17 15:17:14 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V4
-2025-07-17 15:17:14 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V4
-2025-07-17 15:17:17 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V1
-2025-07-17 15:17:17 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V1
-2025-07-17 15:17:18 [WARNING] get_all_files:  File TEST_NON_SSF_V5 not found in metadata. Please check if it should be delivered.
-2025-07-17 15:17:18 [WARNING] get_all_files:  File TEST_NON_SSF_V5 not found in metadata. Please check if it should be delivered.
-2025-07-17 15:17:22 [INFO] place_static_data:  Copied TEST_NON_SSF_V2 to static folder after deadline reached.
-2025-07-17 15:17:22 [INFO] place_static_data:  Copied TEST_NON_SSF_V2 to static folder after deadline reached.
-2025-07-17 15:17:22 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V2
-2025-07-17 15:17:22 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V2
+2025-07-17 15:29:05 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V3
+2025-07-17 15:29:05 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V3
+2025-07-17 15:29:07 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V3
+2025-07-17 15:29:07 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V3
+2025-07-17 15:29:10 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V4
+2025-07-17 15:29:10 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V4
+2025-07-17 15:29:13 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V1
+2025-07-17 15:29:13 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V1
+2025-07-17 15:29:15 [WARNING] get_all_files:  File TEST_NON_SSF_V5 not found in metadata. Please check if it should be delivered.
+2025-07-17 15:29:15 [WARNING] get_all_files:  File TEST_NON_SSF_V5 not found in metadata. Please check if it should be delivered.
+2025-07-17 15:29:19 [INFO] place_static_data:  Copied TEST_NON_SSF_V2 to static folder after deadline reached.
+2025-07-17 15:29:19 [INFO] place_static_data:  Copied TEST_NON_SSF_V2 to static folder after deadline reached.
+2025-07-17 15:29:19 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V2
+2025-07-17 15:29:19 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V2
+2025-07-17 15:29:27 [ERROR] log_missing_files_errors:  File TEST_FILE from FINOBis missing after deadline (2024-01-01)
+2025-07-17 15:29:27 [ERROR] log_missing_files_errors:  File TEST_FILE from FINOBis missing after deadline (2024-01-01)
+2025-07-17 15:29:27 [INFO] update_log_metadata:  FileDeliveryStatus: Initial checks done for TEST_FILE
+2025-07-17 15:29:27 [INFO] update_log_metadata:  FileDeliveryStatus: Initial checks done for TEST_FILE
+2025-07-17 15:29:30 [INFO] update_log_metadata:  FileDeliveryStatus: Initial checks done for TEST_NON_SSF_V3
+2025-07-17 15:29:30 [INFO] update_log_metadata:  FileDeliveryStatus: Initial checks done for TEST_NON_SSF_V3
+2025-07-17 15:29:33 [INFO] export_to_parquet:  Exported to sourcing_landing_data/NON_SSF/NME/TEST_NON_SSF_V3.parquet
+2025-07-17 15:29:33 [INFO] export_to_parquet:  Exported to sourcing_landing_data/NON_SSF/NME/TEST_NON_SSF_V3.parquet
+2025-07-17 15:29:33 [INFO] update_log_metadata:  FileDeliveryStatus: Converted to Parquet for TEST_NON_SSF_V3
+2025-07-17 15:29:33 [INFO] update_log_metadata:  FileDeliveryStatus: Converted to Parquet for TEST_NON_SSF_V3
+2025-07-17 15:29:35 [INFO] update_log_metadata:  FileDeliveryStatus: Moved source file for TEST_NON_SSF_V3
+2025-07-17 15:29:35 [INFO] update_log_metadata:  FileDeliveryStatus: Moved source file for TEST_NON_SSF_V3
+2025-07-17 15:29:38 [INFO] update_log_metadata:  FileDeliveryStatus: Loaded Staging table for abfss://test-container@bsrcdadls.dfs.core.windows.net/NME/TEST_NON_SSF_V3.parquet
+2025-07-17 15:29:38 [INFO] update_log_metadata:  FileDeliveryStatus: Loaded Staging table for abfss://test-container@bsrcdadls.dfs.core.windows.net/NME/TEST_NON_SSF_V3.parquet
+2025-07-17 15:29:40 [INFO] standardize_delivery_entity:  Standardized delivery entity 'NME' to 'nme'
+2025-07-17 15:29:40 [INFO] standardize_delivery_entity:  Standardized delivery entity 'NME' to 'nme'
+2025-07-17 15:29:40 [INFO] __init__:  No generic checks file available for stg.test_non_ssf_v3 at C:\Users\B25712\bsrc-etl-venv\bsrc-etl\dq_checks\stg\test_non_ssf_v3.yml
+2025-07-17 15:29:40 [INFO] __init__:  No generic checks file available for stg.test_non_ssf_v3 at C:\Users\B25712\bsrc-etl-venv\bsrc-etl\dq_checks\stg\test_non_ssf_v3.yml
+2025-07-17 15:29:40 [INFO] __init__:  No specific checks file available for stg.test_non_ssf_v3 at C:\Users\B25712\bsrc-etl-venv\bsrc-etl\dq_checks\stg\test_non_ssf_v3.yml
+2025-07-17 15:29:40 [INFO] __init__:  No specific checks file available for stg.test_non_ssf_v3 at C:\Users\B25712\bsrc-etl-venv\bsrc-etl\dq_checks\stg\test_non_ssf_v3.yml
+2025-07-17 15:29:40 [INFO] columns_datatypes:  No columns to check
+2025-07-17 15:29:40 [INFO] columns_datatypes:  No columns to check
+2025-07-17 15:29:40 [INFO] primary_key:  No Primary Key to check
+2025-07-17 15:29:40 [INFO] primary_key:  No Primary Key to check
+2025-07-17 15:29:40 [INFO] not_null:  No not nullable columns to check
+2025-07-17 15:29:40 [INFO] not_null:  No not nullable columns to check
+2025-07-17 15:29:40 [INFO] unique:  No unique columns to check
+2025-07-17 15:29:40 [INFO] unique:  No unique columns to check
+2025-07-17 15:29:40 [INFO] checks:  No checks done
+2025-07-17 15:29:40 [INFO] checks:  No checks done
+2025-07-17 15:29:40 [INFO] update_log_metadata:  FileDeliveryStatus: Checked Data Quality for abfss://test-container@bsrcdadls.dfs.core.windows.net/NME/TEST_NON_SSF_V3.parquet
+2025-07-17 15:29:40 [INFO] update_log_metadata:  FileDeliveryStatus: Checked Data Quality for abfss://test-container@bsrcdadls.dfs.core.windows.net/NME/TEST_NON_SSF_V3.parquet
+2025-07-17 15:29:43 [ERROR] initial_checks:  File abfss://test-container@bsrcdadls.dfs.core.windows.net/NME/TEST_NON_SSF_V3.csv does not match expected format .parquet.
+2025-07-17 15:29:43 [ERROR] initial_checks:  File abfss://test-container@bsrcdadls.dfs.core.windows.net/NME/TEST_NON_SSF_V3.csv does not match expected format .parquet.
+2025-07-17 15:29:43 [INFO] update_log_metadata:  FileDeliveryStatus: Initial checks done for TEST_NON_SSF_V3
+2025-07-17 15:29:43 [INFO] update_log_metadata:  FileDeliveryStatus: Initial checks done for TEST_NON_SSF_V3
+2025-07-17 15:29:45 [INFO] update_log_metadata:  FileDeliveryStatus: Initial checks done for TEST_NON_SSF_V4
+2025-07-17 15:29:45 [INFO] update_log_metadata:  FileDeliveryStatus: Initial checks done for TEST_NON_SSF_V4
+2025-07-17 15:29:48 [INFO] export_to_parquet:  Exported to sourcing_landing_data/NON_SSF/FINOB/TEST_NON_SSF_V4.parquet
+2025-07-17 15:29:48 [INFO] export_to_parquet:  Exported to sourcing_landing_data/NON_SSF/FINOB/TEST_NON_SSF_V4.parquet
+2025-07-17 15:29:48 [INFO] update_log_metadata:  FileDeliveryStatus: Converted to Parquet for TEST_NON_SSF_V4
+2025-07-17 15:29:48 [INFO] update_log_metadata:  FileDeliveryStatus: Converted to Parquet for TEST_NON_SSF_V4
+2025-07-17 15:29:50 [INFO] update_log_metadata:  FileDeliveryStatus: Moved source file for TEST_NON_SSF_V4
+2025-07-17 15:29:50 [INFO] update_log_metadata:  FileDeliveryStatus: Moved source file for TEST_NON_SSF_V4
+2025-07-17 15:29:52 [INFO] update_log_metadata:  FileDeliveryStatus: Loaded Staging table for abfss://test-container@bsrcdadls.dfs.core.windows.net/FINOB/TEST_NON_SSF_V4.csv
+2025-07-17 15:29:52 [INFO] update_log_metadata:  FileDeliveryStatus: Loaded Staging table for abfss://test-container@bsrcdadls.dfs.core.windows.net/FINOB/TEST_NON_SSF_V4.csv
+2025-07-17 15:29:54 [INFO] standardize_delivery_entity:  Standardized delivery entity 'FINOB' to 'finob'
+2025-07-17 15:29:54 [INFO] standardize_delivery_entity:  Standardized delivery entity 'FINOB' to 'finob'
+2025-07-17 15:29:54 [INFO] __init__:  No generic checks file available for stg.test_non_ssf_v4 at C:\Users\B25712\bsrc-etl-venv\bsrc-etl\dq_checks\stg\test_non_ssf_v4.yml
+2025-07-17 15:29:54 [INFO] __init__:  No generic checks file available for stg.test_non_ssf_v4 at C:\Users\B25712\bsrc-etl-venv\bsrc-etl\dq_checks\stg\test_non_ssf_v4.yml
+2025-07-17 15:29:54 [INFO] __init__:  No specific checks file available for stg.test_non_ssf_v4 at C:\Users\B25712\bsrc-etl-venv\bsrc-etl\dq_checks\stg\test_non_ssf_v4.yml
+2025-07-17 15:29:54 [INFO] __init__:  No specific checks file available for stg.test_non_ssf_v4 at C:\Users\B25712\bsrc-etl-venv\bsrc-etl\dq_checks\stg\test_non_ssf_v4.yml
+2025-07-17 15:29:54 [INFO] columns_datatypes:  No columns to check
+2025-07-17 15:29:54 [INFO] columns_datatypes:  No columns to check
+2025-07-17 15:29:54 [INFO] primary_key:  No Primary Key to check
+2025-07-17 15:29:54 [INFO] primary_key:  No Primary Key to check
+2025-07-17 15:29:54 [INFO] not_null:  No not nullable columns to check
+2025-07-17 15:29:54 [INFO] not_null:  No not nullable columns to check
+2025-07-17 15:29:54 [INFO] unique:  No unique columns to check
+2025-07-17 15:29:54 [INFO] unique:  No unique columns to check
+2025-07-17 15:29:54 [INFO] checks:  No checks done
+2025-07-17 15:29:54 [INFO] checks:  No checks done
+2025-07-17 15:29:54 [INFO] update_log_metadata:  FileDeliveryStatus: Checked Data Quality for abfss://test-container@bsrcdadls.dfs.core.windows.net/FINOB/TEST_NON_SSF_V4.csv
+2025-07-17 15:29:54 [INFO] update_log_metadata:  FileDeliveryStatus: Checked Data Quality for abfss://test-container@bsrcdadls.dfs.core.windows.net/FINOB/TEST_NON_SSF_V4.csv
+2025-07-17 15:29:57 [INFO] update_log_metadata:  FileDeliveryStatus: Initial checks done for TEST_NON_SSF_V1
+2025-07-17 15:29:57 [INFO] update_log_metadata:  FileDeliveryStatus: Initial checks done for TEST_NON_SSF_V1
+2025-07-17 15:29:59 [INFO] export_to_parquet:  Exported to sourcing_landing_data/NON_SSF/LRD_STATIC/TEST_NON_SSF_V1.parquet
+2025-07-17 15:29:59 [INFO] export_to_parquet:  Exported to sourcing_landing_data/NON_SSF/LRD_STATIC/TEST_NON_SSF_V1.parquet
+2025-07-17 15:29:59 [INFO] update_log_metadata:  FileDeliveryStatus: Converted to Parquet for TEST_NON_SSF_V1
+2025-07-17 15:29:59 [INFO] update_log_metadata:  FileDeliveryStatus: Converted to Parquet for TEST_NON_SSF_V1
+2025-07-17 15:30:01 [INFO] update_log_metadata:  FileDeliveryStatus: Moved source file for TEST_NON_SSF_V1
+2025-07-17 15:30:01 [INFO] update_log_metadata:  FileDeliveryStatus: Moved source file for TEST_NON_SSF_V1
+2025-07-17 15:30:04 [INFO] update_log_metadata:  FileDeliveryStatus: Loaded Staging table for abfss://test-container@bsrcdadls.dfs.core.windows.net/LRD_STATIC/TEST_NON_SSF_V1.txt
+2025-07-17 15:30:04 [INFO] update_log_metadata:  FileDeliveryStatus: Loaded Staging table for abfss://test-container@bsrcdadls.dfs.core.windows.net/LRD_STATIC/TEST_NON_SSF_V1.txt
+2025-07-17 15:30:05 [INFO] standardize_delivery_entity:  Standardized delivery entity 'LRD_STATIC' to 'lrdstatic'
+2025-07-17 15:30:05 [INFO] standardize_delivery_entity:  Standardized delivery entity 'LRD_STATIC' to 'lrdstatic'
+2025-07-17 15:30:05 [INFO] __init__:  No generic checks file available for stg.test_non_ssf_v1 at C:\Users\B25712\bsrc-etl-venv\bsrc-etl\dq_checks\stg\test_non_ssf_v1.yml
+2025-07-17 15:30:05 [INFO] __init__:  No generic checks file available for stg.test_non_ssf_v1 at C:\Users\B25712\bsrc-etl-venv\bsrc-etl\dq_checks\stg\test_non_ssf_v1.yml
+2025-07-17 15:30:05 [INFO] __init__:  No specific checks file available for stg.test_non_ssf_v1 at C:\Users\B25712\bsrc-etl-venv\bsrc-etl\dq_checks\stg\test_non_ssf_v1.yml
+2025-07-17 15:30:05 [INFO] __init__:  No specific checks file available for stg.test_non_ssf_v1 at C:\Users\B25712\bsrc-etl-venv\bsrc-etl\dq_checks\stg\test_non_ssf_v1.yml
+2025-07-17 15:30:05 [INFO] columns_datatypes:  No columns to check
+2025-07-17 15:30:05 [INFO] columns_datatypes:  No columns to check
+2025-07-17 15:30:05 [INFO] primary_key:  No Primary Key to check
+2025-07-17 15:30:05 [INFO] primary_key:  No Primary Key to check
+2025-07-17 15:30:05 [INFO] not_null:  No not nullable columns to check
+2025-07-17 15:30:05 [INFO] not_null:  No not nullable columns to check
+2025-07-17 15:30:05 [INFO] unique:  No unique columns to check
+2025-07-17 15:30:05 [INFO] unique:  No unique columns to check
+2025-07-17 15:30:05 [INFO] checks:  No checks done
+2025-07-17 15:30:05 [INFO] checks:  No checks done
+2025-07-17 15:30:05 [INFO] update_log_metadata:  FileDeliveryStatus: Checked Data Quality for abfss://test-container@bsrcdadls.dfs.core.windows.net/LRD_STATIC/TEST_NON_SSF_V1.txt
+2025-07-17 15:30:05 [INFO] update_log_metadata:  FileDeliveryStatus: Checked Data Quality for abfss://test-container@bsrcdadls.dfs.core.windows.net/LRD_STATIC/TEST_NON_SSF_V1.txt
+2025-07-17 15:30:09 [INFO] update_log_metadata:  FileDeliveryStatus: Initial checks done for TEST_NON_SSF_V2
+2025-07-17 15:30:09 [INFO] update_log_metadata:  FileDeliveryStatus: Initial checks done for TEST_NON_SSF_V2
+2025-07-17 15:30:12 [INFO] export_to_parquet:  Exported to sourcing_landing_data/NON_SSF/LRD_STATIC/TEST_NON_SSF_V2.parquet
+2025-07-17 15:30:12 [INFO] export_to_parquet:  Exported to sourcing_landing_data/NON_SSF/LRD_STATIC/TEST_NON_SSF_V2.parquet
+2025-07-17 15:30:12 [INFO] update_log_metadata:  FileDeliveryStatus: Converted to Parquet for TEST_NON_SSF_V2
+2025-07-17 15:30:12 [INFO] update_log_metadata:  FileDeliveryStatus: Converted to Parquet for TEST_NON_SSF_V2
+2025-07-17 15:30:14 [INFO] update_log_metadata:  FileDeliveryStatus: Moved source file for TEST_NON_SSF_V2
+2025-07-17 15:30:14 [INFO] update_log_metadata:  FileDeliveryStatus: Moved source file for TEST_NON_SSF_V2
+2025-07-17 15:30:16 [INFO] update_log_metadata:  FileDeliveryStatus: Loaded Staging table for abfss://test-container@bsrcdadls.dfs.core.windows.net/LRD_STATIC/TEST_NON_SSF_V2.txt
+2025-07-17 15:30:16 [INFO] update_log_metadata:  FileDeliveryStatus: Loaded Staging table for abfss://test-container@bsrcdadls.dfs.core.windows.net/LRD_STATIC/TEST_NON_SSF_V2.txt
+2025-07-17 15:30:18 [INFO] standardize_delivery_entity:  Standardized delivery entity 'LRD_STATIC' to 'lrdstatic'
+2025-07-17 15:30:18 [INFO] standardize_delivery_entity:  Standardized delivery entity 'LRD_STATIC' to 'lrdstatic'
+2025-07-17 15:30:18 [INFO] __init__:  No generic checks file available for stg.test_non_ssf_v2 at C:\Users\B25712\bsrc-etl-venv\bsrc-etl\dq_checks\stg\test_non_ssf_v2.yml
+2025-07-17 15:30:18 [INFO] __init__:  No generic checks file available for stg.test_non_ssf_v2 at C:\Users\B25712\bsrc-etl-venv\bsrc-etl\dq_checks\stg\test_non_ssf_v2.yml
+2025-07-17 15:30:18 [INFO] __init__:  No specific checks file available for stg.test_non_ssf_v2 at C:\Users\B25712\bsrc-etl-venv\bsrc-etl\dq_checks\stg\test_non_ssf_v2.yml
+2025-07-17 15:30:18 [INFO] __init__:  No specific checks file available for stg.test_non_ssf_v2 at C:\Users\B25712\bsrc-etl-venv\bsrc-etl\dq_checks\stg\test_non_ssf_v2.yml
+2025-07-17 15:30:18 [INFO] columns_datatypes:  No columns to check
+2025-07-17 15:30:18 [INFO] columns_datatypes:  No columns to check
+2025-07-17 15:30:18 [INFO] primary_key:  No Primary Key to check
+2025-07-17 15:30:18 [INFO] primary_key:  No Primary Key to check
+2025-07-17 15:30:18 [INFO] not_null:  No not nullable columns to check
+2025-07-17 15:30:18 [INFO] not_null:  No not nullable columns to check
+2025-07-17 15:30:18 [INFO] unique:  No unique columns to check
+2025-07-17 15:30:18 [INFO] unique:  No unique columns to check
+2025-07-17 15:30:18 [INFO] checks:  No checks done
+2025-07-17 15:30:18 [INFO] checks:  No checks done
+2025-07-17 15:30:18 [INFO] update_log_metadata:  FileDeliveryStatus: Checked Data Quality for abfss://test-container@bsrcdadls.dfs.core.windows.net/LRD_STATIC/TEST_NON_SSF_V2.txt
+2025-07-17 15:30:18 [INFO] update_log_metadata:  FileDeliveryStatus: Checked Data Quality for abfss://test-container@bsrcdadls.dfs.core.windows.net/LRD_STATIC/TEST_NON_SSF_V2.txt
 ------------------------------------------------------------------------------------------ Captured stderr call ------------------------------------------------------------------------------------------ 
 
 ------------------------------------------------------------------------------------------- Captured log call -------------------------------------------------------------------------------------------- 
@@ -244,103 +488,66 @@ INFO     betl_src_poc_logger:extract_base.py:205 FileDeliveryStatus: Received / 
 WARNING  betl_src_poc_logger:extract_nonssf_data.py:382 File TEST_NON_SSF_V5 not found in metadata. Please check if it should be delivered.
 INFO     betl_src_poc_logger:extract_nonssf_data.py:239 Copied TEST_NON_SSF_V2 to static folder after deadline reached.
 INFO     betl_src_poc_logger:extract_base.py:205 FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V2
-___________________________________________________________________________ test_append_to_process_log[202505-test-container] ____________________________________________________________________________ 
-
-self = <MagicMock name='write_to_log' id='1584454344592'>
-
-    def assert_called_once(self):
-        """assert that the mock was called only once.
-        """
-        if not self.call_count == 1:
-            msg = ("Expected '%s' to have been called once. Called %s times.%s"
-                   % (self._mock_name or 'mock',
-                      self.call_count,
-                      self._calls_repr()))
->           raise AssertionError(msg)
-E           AssertionError: Expected 'write_to_log' to have been called once. Called 0 times.
-
-C:\Program Files\Python310\lib\unittest\mock.py:908: AssertionError
-
-During handling of the above exception, another exception occurred:
-
-spark_session = <pyspark.sql.session.SparkSession object at 0x00000170E8A2D810>, mocker = <pytest_mock.plugin.MockerFixture object at 0x00000170E8C6F640>, run_month = '202505'
-source_container = 'test-container'
-
-    @pytest.mark.parametrize(
-        ("run_month", "source_container"),
-        [("202505", "test-container")],
-    )
-    def test_append_to_process_log(
-        spark_session,
-        mocker,
-        run_month,
-        source_container,
-    ):
-        """Test the append_to_process_log method."""
-        # Mock metadata and log
-        mock_meta = spark_session.createDataFrame([("dummy", 1)], schema=["col1", "col2"])
-        mock_log = spark_session.createDataFrame([("dummy", 1)], schema=["col1", "col2"])
-
-        # Mock spark read
-        mock_read = mocker.patch("pyspark.sql.SparkSession.read", autospec=True)
-        mock_read.table.side_effect = [mock_meta, mock_log]
-
-        # Mock write_to_log
-        mock_write_to_log = mocker.patch(
-            "abnamro_bsrc_etl.utils.table_logging.write_to_log"
-        )
-
-        # Create extraction instance
-        extraction = ExtractNonSSFData(
-            spark_session, run_month, source_container=source_container
-        )
-        extraction.initialize_process_log(run_id=123)
-
-        # Test append_to_process_log
-        extraction.append_to_process_log(
-            source_system="TEST_SYSTEM", comments="Test comment", status="Started"
-        )
-
-        # Verify write_to_log was called
->       mock_write_to_log.assert_called_once()
-E       AssertionError: Expected 'write_to_log' to have been called once. Called 0 times.
-
-test\staging\test_extract_non_ssf_data.py:527: AssertionError
------------------------------------------------------------------------------------------- Captured stdout call ------------------------------------------------------------------------------------------ 
-2025-07-17 15:17:32 [ERROR] write_to_log:  Error writing to process log table log_202505.process_log
-Traceback (most recent call last):
-  File "C:\Users\B25712\bsrc-etl-venv\bsrc-etl\src\abnamro_bsrc_etl\utils\table_logging.py", line 33, in write_to_log
-    log_entry_df.write.mode("append").saveAsTable(
-  File "C:\Users\B25712\bsrc-etl-venv\bsrc-etl-venv\lib\site-packages\pyspark\sql\readwriter.py", line 1586, in saveAsTable
-    self._jwrite.saveAsTable(name)
-  File "C:\Users\B25712\bsrc-etl-venv\bsrc-etl-venv\lib\site-packages\py4j\java_gateway.py", line 1322, in __call__
-    return_value = get_return_value(
-  File "C:\Users\B25712\bsrc-etl-venv\bsrc-etl-venv\lib\site-packages\pyspark\errors\exceptions\captured.py", line 185, in deco
-    raise converted from None
-pyspark.errors.exceptions.captured.AnalysisException: Couldn't find a catalog to handle the identifier bsrc_d.log_202505.process_log.
-2025-07-17 15:17:32 [ERROR] write_to_log:  Error writing to process log table log_202505.process_log
-Traceback (most recent call last):
-  File "C:\Users\B25712\bsrc-etl-venv\bsrc-etl\src\abnamro_bsrc_etl\utils\table_logging.py", line 33, in write_to_log
-    log_entry_df.write.mode("append").saveAsTable(
-  File "C:\Users\B25712\bsrc-etl-venv\bsrc-etl-venv\lib\site-packages\pyspark\sql\readwriter.py", line 1586, in saveAsTable
-    self._jwrite.saveAsTable(name)
-  File "C:\Users\B25712\bsrc-etl-venv\bsrc-etl-venv\lib\site-packages\py4j\java_gateway.py", line 1322, in __call__
-    return_value = get_return_value(
-  File "C:\Users\B25712\bsrc-etl-venv\bsrc-etl-venv\lib\site-packages\pyspark\errors\exceptions\captured.py", line 185, in deco
-    raise converted from None
-pyspark.errors.exceptions.captured.AnalysisException: Couldn't find a catalog to handle the identifier bsrc_d.log_202505.process_log.
-------------------------------------------------------------------------------------------- Captured log call -------------------------------------------------------------------------------------------- 
-ERROR    betl_src_poc_logger:table_logging.py:37 Error writing to process log table log_202505.process_log
-Traceback (most recent call last):
-  File "C:\Users\B25712\bsrc-etl-venv\bsrc-etl\src\abnamro_bsrc_etl\utils\table_logging.py", line 33, in write_to_log
-    log_entry_df.write.mode("append").saveAsTable(
-  File "C:\Users\B25712\bsrc-etl-venv\bsrc-etl-venv\lib\site-packages\pyspark\sql\readwriter.py", line 1586, in saveAsTable
-    self._jwrite.saveAsTable(name)
-  File "C:\Users\B25712\bsrc-etl-venv\bsrc-etl-venv\lib\site-packages\py4j\java_gateway.py", line 1322, in __call__
-    return_value = get_return_value(
-  File "C:\Users\B25712\bsrc-etl-venv\bsrc-etl-venv\lib\site-packages\pyspark\errors\exceptions\captured.py", line 185, in deco
-    raise converted from None
-pyspark.errors.exceptions.captured.AnalysisException: Couldn't find a catalog to handle the identifier bsrc_d.log_202505.process_log.
+ERROR    betl_src_poc_logger:extract_nonssf_data.py:340 File TEST_FILE from FINOBis missing after deadline (2024-01-01)
+INFO     betl_src_poc_logger:extract_base.py:205 FileDeliveryStatus: Initial checks done for TEST_FILE
+INFO     betl_src_poc_logger:extract_base.py:205 FileDeliveryStatus: Initial checks done for TEST_NON_SSF_V3
+INFO     betl_src_poc_logger:export_parquet.py:56 Exported to sourcing_landing_data/NON_SSF/NME/TEST_NON_SSF_V3.parquet
+INFO     betl_src_poc_logger:extract_base.py:205 FileDeliveryStatus: Converted to Parquet for TEST_NON_SSF_V3
+INFO     betl_src_poc_logger:extract_base.py:205 FileDeliveryStatus: Moved source file for TEST_NON_SSF_V3
+INFO     betl_src_poc_logger:extract_base.py:205 FileDeliveryStatus: Loaded Staging table for abfss://test-container@bsrcdadls.dfs.core.windows.net/NME/TEST_NON_SSF_V3.parquet
+INFO     betl_src_poc_logger:parameter_utils.py:49 Standardized delivery entity 'NME' to 'nme'
+INFO     betl_src_poc_logger:dq_validation.py:71 No generic checks file available for stg.test_non_ssf_v3 at C:\Users\B25712\bsrc-etl-venv\bsrc-etl\dq_checks\stg\test_non_ssf_v3.yml
+INFO     betl_src_poc_logger:dq_validation.py:90 No specific checks file available for stg.test_non_ssf_v3 at C:\Users\B25712\bsrc-etl-venv\bsrc-etl\dq_checks\stg\test_non_ssf_v3.yml
+INFO     betl_src_poc_logger:dq_validation.py:198 No columns to check
+INFO     betl_src_poc_logger:dq_validation.py:266 No Primary Key to check
+INFO     betl_src_poc_logger:dq_validation.py:375 No not nullable columns to check
+INFO     betl_src_poc_logger:dq_validation.py:321 No unique columns to check
+INFO     betl_src_poc_logger:dq_validation.py:174 No checks done
+INFO     betl_src_poc_logger:extract_base.py:205 FileDeliveryStatus: Checked Data Quality for abfss://test-container@bsrcdadls.dfs.core.windows.net/NME/TEST_NON_SSF_V3.parquet
+ERROR    betl_src_poc_logger:extract_nonssf_data.py:161 File abfss://test-container@bsrcdadls.dfs.core.windows.net/NME/TEST_NON_SSF_V3.csv does not match expected format .parquet.
+INFO     betl_src_poc_logger:extract_base.py:205 FileDeliveryStatus: Initial checks done for TEST_NON_SSF_V3
+INFO     betl_src_poc_logger:extract_base.py:205 FileDeliveryStatus: Initial checks done for TEST_NON_SSF_V4
+INFO     betl_src_poc_logger:export_parquet.py:56 Exported to sourcing_landing_data/NON_SSF/FINOB/TEST_NON_SSF_V4.parquet
+INFO     betl_src_poc_logger:extract_base.py:205 FileDeliveryStatus: Converted to Parquet for TEST_NON_SSF_V4
+INFO     betl_src_poc_logger:extract_base.py:205 FileDeliveryStatus: Moved source file for TEST_NON_SSF_V4
+INFO     betl_src_poc_logger:extract_base.py:205 FileDeliveryStatus: Loaded Staging table for abfss://test-container@bsrcdadls.dfs.core.windows.net/FINOB/TEST_NON_SSF_V4.csv
+INFO     betl_src_poc_logger:parameter_utils.py:49 Standardized delivery entity 'FINOB' to 'finob'
+INFO     betl_src_poc_logger:dq_validation.py:71 No generic checks file available for stg.test_non_ssf_v4 at C:\Users\B25712\bsrc-etl-venv\bsrc-etl\dq_checks\stg\test_non_ssf_v4.yml
+INFO     betl_src_poc_logger:dq_validation.py:90 No specific checks file available for stg.test_non_ssf_v4 at C:\Users\B25712\bsrc-etl-venv\bsrc-etl\dq_checks\stg\test_non_ssf_v4.yml
+INFO     betl_src_poc_logger:dq_validation.py:198 No columns to check
+INFO     betl_src_poc_logger:dq_validation.py:266 No Primary Key to check
+INFO     betl_src_poc_logger:dq_validation.py:375 No not nullable columns to check
+INFO     betl_src_poc_logger:dq_validation.py:321 No unique columns to check
+INFO     betl_src_poc_logger:dq_validation.py:174 No checks done
+INFO     betl_src_poc_logger:extract_base.py:205 FileDeliveryStatus: Checked Data Quality for abfss://test-container@bsrcdadls.dfs.core.windows.net/FINOB/TEST_NON_SSF_V4.csv
+INFO     betl_src_poc_logger:extract_base.py:205 FileDeliveryStatus: Initial checks done for TEST_NON_SSF_V1
+INFO     betl_src_poc_logger:export_parquet.py:56 Exported to sourcing_landing_data/NON_SSF/LRD_STATIC/TEST_NON_SSF_V1.parquet
+INFO     betl_src_poc_logger:extract_base.py:205 FileDeliveryStatus: Converted to Parquet for TEST_NON_SSF_V1
+INFO     betl_src_poc_logger:extract_base.py:205 FileDeliveryStatus: Moved source file for TEST_NON_SSF_V1
+INFO     betl_src_poc_logger:extract_base.py:205 FileDeliveryStatus: Loaded Staging table for abfss://test-container@bsrcdadls.dfs.core.windows.net/LRD_STATIC/TEST_NON_SSF_V1.txt
+INFO     betl_src_poc_logger:parameter_utils.py:49 Standardized delivery entity 'LRD_STATIC' to 'lrdstatic'
+INFO     betl_src_poc_logger:dq_validation.py:71 No generic checks file available for stg.test_non_ssf_v1 at C:\Users\B25712\bsrc-etl-venv\bsrc-etl\dq_checks\stg\test_non_ssf_v1.yml
+INFO     betl_src_poc_logger:dq_validation.py:90 No specific checks file available for stg.test_non_ssf_v1 at C:\Users\B25712\bsrc-etl-venv\bsrc-etl\dq_checks\stg\test_non_ssf_v1.yml
+INFO     betl_src_poc_logger:dq_validation.py:198 No columns to check
+INFO     betl_src_poc_logger:dq_validation.py:266 No Primary Key to check
+INFO     betl_src_poc_logger:dq_validation.py:375 No not nullable columns to check
+INFO     betl_src_poc_logger:dq_validation.py:321 No unique columns to check
+INFO     betl_src_poc_logger:dq_validation.py:174 No checks done
+INFO     betl_src_poc_logger:extract_base.py:205 FileDeliveryStatus: Checked Data Quality for abfss://test-container@bsrcdadls.dfs.core.windows.net/LRD_STATIC/TEST_NON_SSF_V1.txt
+INFO     betl_src_poc_logger:extract_base.py:205 FileDeliveryStatus: Initial checks done for TEST_NON_SSF_V2
+INFO     betl_src_poc_logger:export_parquet.py:56 Exported to sourcing_landing_data/NON_SSF/LRD_STATIC/TEST_NON_SSF_V2.parquet
+INFO     betl_src_poc_logger:extract_base.py:205 FileDeliveryStatus: Converted to Parquet for TEST_NON_SSF_V2
+INFO     betl_src_poc_logger:extract_base.py:205 FileDeliveryStatus: Moved source file for TEST_NON_SSF_V2
+INFO     betl_src_poc_logger:extract_base.py:205 FileDeliveryStatus: Loaded Staging table for abfss://test-container@bsrcdadls.dfs.core.windows.net/LRD_STATIC/TEST_NON_SSF_V2.txt
+INFO     betl_src_poc_logger:parameter_utils.py:49 Standardized delivery entity 'LRD_STATIC' to 'lrdstatic'
+INFO     betl_src_poc_logger:dq_validation.py:71 No generic checks file available for stg.test_non_ssf_v2 at C:\Users\B25712\bsrc-etl-venv\bsrc-etl\dq_checks\stg\test_non_ssf_v2.yml
+INFO     betl_src_poc_logger:dq_validation.py:90 No specific checks file available for stg.test_non_ssf_v2 at C:\Users\B25712\bsrc-etl-venv\bsrc-etl\dq_checks\stg\test_non_ssf_v2.yml
+INFO     betl_src_poc_logger:dq_validation.py:198 No columns to check
+INFO     betl_src_poc_logger:dq_validation.py:266 No Primary Key to check
+INFO     betl_src_poc_logger:dq_validation.py:375 No not nullable columns to check
+INFO     betl_src_poc_logger:dq_validation.py:321 No unique columns to check
+INFO     betl_src_poc_logger:dq_validation.py:174 No checks done
+INFO     betl_src_poc_logger:extract_base.py:205 FileDeliveryStatus: Checked Data Quality for abfss://test-container@bsrcdadls.dfs.core.windows.net/LRD_STATIC/TEST_NON_SSF_V2.txt
 ============================================================================================ warnings summary ============================================================================================ 
 ..\bsrc-etl-venv\lib\site-packages\holidays\deprecations\v1_incompatibility.py:40
   C:\Users\B25712\bsrc-etl-venv\bsrc-etl-venv\lib\site-packages\holidays\deprecations\v1_incompatibility.py:40: FutureIncompatibilityWarning:
@@ -376,7 +583,7 @@ src\abnamro_bsrc_etl\config\exceptions.py                           21     21   
 src\abnamro_bsrc_etl\config\process.py                               4      4     0%   7-10
 src\abnamro_bsrc_etl\config\schema.py                                4      4     0%   3-52
 src\abnamro_bsrc_etl\dq\__init__.py                                  0      0   100%
-src\abnamro_bsrc_etl\dq\dq_validation.py                           141    132     6%   47-112, 166-181, 197-249, 265-286, 318-350, 372-392, 414-486
+src\abnamro_bsrc_etl\dq\dq_validation.py                           141     88    38%   54-55, 69, 77-78, 88, 176-181, 201-249, 269-286, 323-350, 377-392, 414-486
 src\abnamro_bsrc_etl\extract\__init__.py                             0      0   100%
 src\abnamro_bsrc_etl\extract\master_data_sql.py                     90     71    21%   31-33, 37-38, 42, 59-88, 109-137, 149-156, 162-164, 188, 222-231, 285-300, 329-356
 src\abnamro_bsrc_etl\month_setup\__init__.py                         0      0   100%
@@ -392,9 +599,9 @@ src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py              49     49   
 src\abnamro_bsrc_etl\scripts\run_mapping.py                         15     15     0%   26-108
 src\abnamro_bsrc_etl\scripts\ssf_staging_process.py                 48     48     0%   14-222
 src\abnamro_bsrc_etl\staging\__init__.py                             0      0   100%
-src\abnamro_bsrc_etl\staging\extract_base.py                        65     17    74%   156, 162-164, 304-312, 343-352, 387-404, 420
+src\abnamro_bsrc_etl\staging\extract_base.py                        65      8    88%   156, 162-164, 304-312
 src\abnamro_bsrc_etl\staging\extract_dial_data.py                   65     65     0%   16-360
-src\abnamro_bsrc_etl\staging\extract_nonssf_data.py                140     70    50%   81-98, 151-173, 224-229, 262-322, 333-355, 414-448, 463, 479, 502-524
+src\abnamro_bsrc_etl\staging\extract_nonssf_data.py                140     14    90%   81-98, 224-229, 278, 304, 319-320, 429-433
 src\abnamro_bsrc_etl\staging\extract_ssf_data.py                   164    164     0%   26-620
 src\abnamro_bsrc_etl\staging\status.py                              57      5    91%   18, 53-54, 107, 151
 src\abnamro_bsrc_etl\transform\__init__.py                           0      0   100%
@@ -402,14 +609,14 @@ src\abnamro_bsrc_etl\transform\table_write_and_comment.py           72     72   
 src\abnamro_bsrc_etl\transform\transform_business_logic_sql.py       6      6     0%   6-25
 src\abnamro_bsrc_etl\utils\__init__.py                               0      0   100%
 src\abnamro_bsrc_etl\utils\alias_util.py                            13     13     0%   10-109
-src\abnamro_bsrc_etl\utils\export_parquet.py                        15     12    20%   38-57, 67-68
+src\abnamro_bsrc_etl\utils\export_parquet.py                        15      6    60%   49-54, 67-68
 src\abnamro_bsrc_etl\utils\get_dbutils.py                            2      0   100%
 src\abnamro_bsrc_etl\utils\get_env.py                               10      0   100%
 src\abnamro_bsrc_etl\utils\logging_util.py                           6      0   100%
-src\abnamro_bsrc_etl\utils\parameter_utils.py                       23     19    17%   33-53, 79-84, 105-116
+src\abnamro_bsrc_etl\utils\parameter_utils.py                       23     13    43%   34, 38-42, 79-84, 105-116
 src\abnamro_bsrc_etl\utils\parse_yaml.py                            22     22     0%   11-127
 src\abnamro_bsrc_etl\utils\sources_util.py                          52     52     0%   7-218
-src\abnamro_bsrc_etl\utils\table_logging.py                         14      3    79%   54-56
+src\abnamro_bsrc_etl\utils\table_logging.py                         14      0   100%
 src\abnamro_bsrc_etl\utils\table_schema.py                           3      3     0%   8-16
 src\abnamro_bsrc_etl\utils\transformations_util.py                  17     12    29%   20-25, 39, 51, 65-68
 src\abnamro_bsrc_etl\validate\__init__.py                            0      0   100%
@@ -421,13 +628,12 @@ src\abnamro_bsrc_etl\validate\transformations.py                   192    192   
 src\abnamro_bsrc_etl\validate\validate_sql.py                       54     54     0%   13-130
 src\abnamro_bsrc_etl\validate\yaml.py                               18     18     0%   3-34
 ----------------------------------------------------------------------------------------------
-TOTAL                                                             1658   1354    18%
+TOTAL                                                             1658   1230    26%
 Coverage HTML written to dir htmlcov
 
 ======================================================================================== short test summary info ========================================================================================= 
-FAILED test/staging/test_extract_non_ssf_data.py::test_extract_non_ssf_data[202505-test-container] - AssertionError: assert 'Deadline not reached for TEST_NON_SSF_V1' in 'INFO     betl_src_poc_logger:extract_base.py:205 FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V3\nINFO     ...reached....
-FAILED test/staging/test_extract_non_ssf_data.py::test_append_to_process_log[202505-test-container] - AssertionError: Expected 'write_to_log' to have been called once. Called 0 times.
-================================================================================ 2 failed, 1 passed, 1 warning in 41.74s ================================================================================= 
-SUCCESS: The process with PID 20212 (child process of PID 28972) has been terminated.
-SUCCESS: The process with PID 28972 (child process of PID 29036) has been terminated.
-SUCCESS: The process with PID 29036 (child process of PID 25284) has been terminated.
+FAILED test/staging/test_extract_non_ssf_data.py::test_extract_non_ssf_data[202505-test-container] - assert 27 == 26
+=========================================================================== 1 failed, 2 passed, 1 warning in 110.02s (0:01:50) =========================================================================== 
+SUCCESS: The process with PID 28044 (child process of PID 22788) has been terminated.
+SUCCESS: The process with PID 22788 (child process of PID 6536) has been terminated.
+SUCCESS: The process with PID 6536 (child process of PID 28516) has been terminated.
