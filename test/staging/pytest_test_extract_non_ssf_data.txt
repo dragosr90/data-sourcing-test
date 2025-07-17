@@ -11,8 +11,8 @@ test\staging\test_extract_non_ssf_data.py F.F                                   
 ================================================================================================ FAILURES ================================================================================================ 
 ____________________________________________________________________________ test_extract_non_ssf_data[202505-test-container] ____________________________________________________________________________ 
 
-spark_session = <pyspark.sql.session.SparkSession object at 0x0000016D1F61E590>, mocker = <pytest_mock.plugin.MockerFixture object at 0x0000016D1F61DD50>, run_month = '202505'
-source_container = 'test-container', caplog = <_pytest.logging.LogCaptureFixture object at 0x0000016D1F61C340>
+spark_session = <pyspark.sql.session.SparkSession object at 0x00000170E8A2D810>, mocker = <pytest_mock.plugin.MockerFixture object at 0x00000170E8A2D990>, run_month = '202505'
+source_container = 'test-container', caplog = <_pytest.logging.LogCaptureFixture object at 0x00000170E8A2C0A0>
 
     @pytest.mark.parametrize(
         ("run_month", "source_container"),
@@ -213,27 +213,27 @@ source_container = 'test-container', caplog = <_pytest.logging.LogCaptureFixture
         # V1 should not be copied because deadline is not reached
 >       assert "Deadline not reached for TEST_NON_SSF_V1" in caplog.text
 E       AssertionError: assert 'Deadline not reached for TEST_NON_SSF_V1' in 'INFO     betl_src_poc_logger:extract_base.py:205 FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V3\nINFO     ...reached.\nINFO     betl_src_poc_logger:extract_base.py:205 FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V2\n'
-E        +  where 'INFO     betl_src_poc_logger:extract_base.py:205 FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V3\nINFO     ...reached.\nINFO     betl_src_poc_logger:extract_base.py:205 FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V2\n' = <_pytest.logging.LogCaptureFixture object at 0x0000016D1F61C340>.text
+E        +  where 'INFO     betl_src_poc_logger:extract_base.py:205 FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V3\nINFO     ...reached.\nINFO     betl_src_poc_logger:extract_base.py:205 FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V2\n' = <_pytest.logging.LogCaptureFixture object at 0x00000170E8A2C0A0>.text
 
 test\staging\test_extract_non_ssf_data.py:219: AssertionError
 ----------------------------------------------------------------------------------------- Captured stderr setup ------------------------------------------------------------------------------------------ 
 Setting default log level to "WARN".
 To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
 ------------------------------------------------------------------------------------------ Captured stdout call ------------------------------------------------------------------------------------------ 
-2025-07-17 15:10:10 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V3
-2025-07-17 15:10:10 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V3
-2025-07-17 15:10:13 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V3
-2025-07-17 15:10:13 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V3
-2025-07-17 15:10:16 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V4
-2025-07-17 15:10:16 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V4
-2025-07-17 15:10:19 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V1
-2025-07-17 15:10:19 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V1
-2025-07-17 15:10:20 [WARNING] get_all_files:  File TEST_NON_SSF_V5 not found in metadata. Please check if it should be delivered.
-2025-07-17 15:10:20 [WARNING] get_all_files:  File TEST_NON_SSF_V5 not found in metadata. Please check if it should be delivered.
-2025-07-17 15:10:23 [INFO] place_static_data:  Copied TEST_NON_SSF_V2 to static folder after deadline reached.
-2025-07-17 15:10:23 [INFO] place_static_data:  Copied TEST_NON_SSF_V2 to static folder after deadline reached.
-2025-07-17 15:10:23 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V2
-2025-07-17 15:10:23 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V2
+2025-07-17 15:17:08 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V3
+2025-07-17 15:17:08 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V3
+2025-07-17 15:17:11 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V3
+2025-07-17 15:17:11 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V3
+2025-07-17 15:17:14 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V4
+2025-07-17 15:17:14 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V4
+2025-07-17 15:17:17 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V1
+2025-07-17 15:17:17 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V1
+2025-07-17 15:17:18 [WARNING] get_all_files:  File TEST_NON_SSF_V5 not found in metadata. Please check if it should be delivered.
+2025-07-17 15:17:18 [WARNING] get_all_files:  File TEST_NON_SSF_V5 not found in metadata. Please check if it should be delivered.
+2025-07-17 15:17:22 [INFO] place_static_data:  Copied TEST_NON_SSF_V2 to static folder after deadline reached.
+2025-07-17 15:17:22 [INFO] place_static_data:  Copied TEST_NON_SSF_V2 to static folder after deadline reached.
+2025-07-17 15:17:22 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V2
+2025-07-17 15:17:22 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V2
 ------------------------------------------------------------------------------------------ Captured stderr call ------------------------------------------------------------------------------------------ 
 
 ------------------------------------------------------------------------------------------- Captured log call -------------------------------------------------------------------------------------------- 
@@ -246,7 +246,7 @@ INFO     betl_src_poc_logger:extract_nonssf_data.py:239 Copied TEST_NON_SSF_V2 t
 INFO     betl_src_poc_logger:extract_base.py:205 FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V2
 ___________________________________________________________________________ test_append_to_process_log[202505-test-container] ____________________________________________________________________________ 
 
-self = <MagicMock name='write_to_log' id='1568192947024'>
+self = <MagicMock name='write_to_log' id='1584454344592'>
 
     def assert_called_once(self):
         """assert that the mock was called only once.
@@ -263,7 +263,7 @@ C:\Program Files\Python310\lib\unittest\mock.py:908: AssertionError
 
 During handling of the above exception, another exception occurred:
 
-spark_session = <pyspark.sql.session.SparkSession object at 0x0000016D1F61E590>, mocker = <pytest_mock.plugin.MockerFixture object at 0x0000016D1F836500>, run_month = '202505'
+spark_session = <pyspark.sql.session.SparkSession object at 0x00000170E8A2D810>, mocker = <pytest_mock.plugin.MockerFixture object at 0x00000170E8C6F640>, run_month = '202505'
 source_container = 'test-container'
 
     @pytest.mark.parametrize(
@@ -307,7 +307,7 @@ E       AssertionError: Expected 'write_to_log' to have been called once. Called
 
 test\staging\test_extract_non_ssf_data.py:527: AssertionError
 ------------------------------------------------------------------------------------------ Captured stdout call ------------------------------------------------------------------------------------------ 
-2025-07-17 15:10:34 [ERROR] write_to_log:  Error writing to process log table log_202505.process_log
+2025-07-17 15:17:32 [ERROR] write_to_log:  Error writing to process log table log_202505.process_log
 Traceback (most recent call last):
   File "C:\Users\B25712\bsrc-etl-venv\bsrc-etl\src\abnamro_bsrc_etl\utils\table_logging.py", line 33, in write_to_log
     log_entry_df.write.mode("append").saveAsTable(
@@ -318,7 +318,7 @@ Traceback (most recent call last):
   File "C:\Users\B25712\bsrc-etl-venv\bsrc-etl-venv\lib\site-packages\pyspark\errors\exceptions\captured.py", line 185, in deco
     raise converted from None
 pyspark.errors.exceptions.captured.AnalysisException: Couldn't find a catalog to handle the identifier bsrc_d.log_202505.process_log.
-2025-07-17 15:10:34 [ERROR] write_to_log:  Error writing to process log table log_202505.process_log
+2025-07-17 15:17:32 [ERROR] write_to_log:  Error writing to process log table log_202505.process_log
 Traceback (most recent call last):
   File "C:\Users\B25712\bsrc-etl-venv\bsrc-etl\src\abnamro_bsrc_etl\utils\table_logging.py", line 33, in write_to_log
     log_entry_df.write.mode("append").saveAsTable(
@@ -341,7 +341,7 @@ Traceback (most recent call last):
   File "C:\Users\B25712\bsrc-etl-venv\bsrc-etl-venv\lib\site-packages\pyspark\errors\exceptions\captured.py", line 185, in deco
     raise converted from None
 pyspark.errors.exceptions.captured.AnalysisException: Couldn't find a catalog to handle the identifier bsrc_d.log_202505.process_log.
-============================================================================================ warnings summary ============================================================================================
+============================================================================================ warnings summary ============================================================================================ 
 ..\bsrc-etl-venv\lib\site-packages\holidays\deprecations\v1_incompatibility.py:40
   C:\Users\B25712\bsrc-etl-venv\bsrc-etl-venv\lib\site-packages\holidays\deprecations\v1_incompatibility.py:40: FutureIncompatibilityWarning:
 
@@ -427,7 +427,7 @@ Coverage HTML written to dir htmlcov
 ======================================================================================== short test summary info ========================================================================================= 
 FAILED test/staging/test_extract_non_ssf_data.py::test_extract_non_ssf_data[202505-test-container] - AssertionError: assert 'Deadline not reached for TEST_NON_SSF_V1' in 'INFO     betl_src_poc_logger:extract_base.py:205 FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V3\nINFO     ...reached....
 FAILED test/staging/test_extract_non_ssf_data.py::test_append_to_process_log[202505-test-container] - AssertionError: Expected 'write_to_log' to have been called once. Called 0 times.
-================================================================================ 2 failed, 1 passed, 1 warning in 50.48s ================================================================================= 
-SUCCESS: The process with PID 15448 (child process of PID 8272) has been terminated.
-SUCCESS: The process with PID 8272 (child process of PID 10224) has been terminated.
-SUCCESS: The process with PID 10224 (child process of PID 16696) has been terminated.
+================================================================================ 2 failed, 1 passed, 1 warning in 41.74s ================================================================================= 
+SUCCESS: The process with PID 20212 (child process of PID 28972) has been terminated.
+SUCCESS: The process with PID 28972 (child process of PID 29036) has been terminated.
+SUCCESS: The process with PID 29036 (child process of PID 25284) has been terminated.
