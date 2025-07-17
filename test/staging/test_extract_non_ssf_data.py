@@ -291,7 +291,7 @@ def test_extract_non_ssf_data(
         assert any(
             args[0] == f"{test_container}/{source_system}/{file_name_base}"
             and re.match(
-                f"{test_container}/{source_system}/processed/{file_name_no_ext}__\d{{8}}\d{{6}}{file_name_ext}",  # noqa: W605
+                rf"{test_container}/{source_system}/processed/{file_name_no_ext}__\d{{8}}\d{{6}}{file_name_ext}",
                 args[1],
             )
             for args, _ in calls
@@ -342,6 +342,7 @@ def test_deadline_functionality(
     mocker,
     run_month,
     source_container,
+    caplog,
 ):
     """Test specific deadline functionality."""
     # Create deadline dates
@@ -371,7 +372,9 @@ def test_deadline_functionality(
         schema=schema_meta,
     )
     
-    mock_log = spark_session.createDataFrame([], schema=["dummy"])
+    mock_log = spark_session.createDataFrame(
+        [("dummy", 1)], schema=["col1", "col2"]
+    )
     
     # Mock spark read
     mock_read = mocker.patch("pyspark.sql.SparkSession.read", autospec=True)
@@ -406,6 +409,9 @@ def test_deadline_functionality(
     assert any("STATIC_PAST.txt" in str(call) for call in mock_dbutils_fs_cp.call_args_list)
     assert not any("STATIC_FUTURE.txt" in str(call) for call in mock_dbutils_fs_cp.call_args_list)
     assert not any("STATIC_NO_DEADLINE.txt" in str(call) for call in mock_dbutils_fs_cp.call_args_list)
+    
+    # Check that deadline not reached message appears for STATIC_FUTURE
+    assert "Deadline not reached for STATIC_FUTURE" in caplog.text
 
 
 @pytest.mark.parametrize(
@@ -420,8 +426,12 @@ def test_append_to_process_log(
 ):
     """Test the append_to_process_log method."""
     # Mock metadata and log
-    mock_meta = spark_session.createDataFrame([], schema=["dummy"])
-    mock_log = spark_session.createDataFrame([], schema=["dummy"])
+    mock_meta = spark_session.createDataFrame(
+        [("dummy", 1)], schema=["col1", "col2"]
+    )
+    mock_log = spark_session.createDataFrame(
+        [("dummy", 1)], schema=["col1", "col2"]
+    )
     
     # Mock spark read
     mock_read = mocker.patch("pyspark.sql.SparkSession.read", autospec=True)
