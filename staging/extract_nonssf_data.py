@@ -5,13 +5,12 @@ from pathlib import Path
 from pyspark.sql import DataFrame
 from pyspark.sql.functions import col
 
-from src.config.exceptions import NonSSFExtractionError
-from src.staging.extract_base import ExtractStagingData
-from src.staging.status import NonSSFStepStatus
-from src.utils.export_parquet import export_to_parquet
-from src.utils.get_env import get_container_path
-from src.utils.logging_util import get_logger
-from src.utils.table_logging import get_result
+from abnamro_bsrc_etl.staging.extract_base import ExtractStagingData
+from abnamro_bsrc_etl.staging.status import NonSSFStepStatus
+from abnamro_bsrc_etl.utils.export_parquet import export_to_parquet
+from abnamro_bsrc_etl.utils.get_env import get_container_path
+from abnamro_bsrc_etl.utils.logging_util import get_logger
+from abnamro_bsrc_etl.utils.table_logging import get_result
 
 logger = get_logger()
 
@@ -70,26 +69,21 @@ class ExtractNonSSFData(ExtractStagingData):
         )
         return result
 
-    def place_static_data(
-        self, new_files: list[str], *, deadline_passed: bool = False
-    ) -> list[str]:
+    def place_static_data(self, new_files: list[str]) -> list[str]:
         """Handle static data files for the LRD_STATIC source system.
 
         Loops over metadata entries for LRD_STATIC files and checks if they are
         delivered this month. If not, copies the files from the processed folder to the
-        static folder only after deadline has passed and only for files that are still
-        expected.
+        static folder.
 
         Args:
             new_files (list[str]): List of files found in the source container. This
                 list will be updated with files copied from the processed folder.
-            deadline_passed (bool): Whether the deadline has passed. Only copy files
-                after deadline has passed.
 
         Returns:
             list[str]: List of copied static files.
         """
-        source_system = "lrd_static"  # Changed to lowercase to match metadata
+        source_system = "lrd_static"
         expected_files = (
             self.meta_data.where(f"SourceSystem = '{source_system}'")
             .select("SourceFileName", "SourceFileFormat")
@@ -100,100 +94,46 @@ class ExtractNonSSFData(ExtractStagingData):
         processed_folder = (
             f"{self.source_container_url}/{source_system.upper()}/processed"
         )
-
         for file in expected_files:
             file_name = file["SourceFileName"]
             extension = file["SourceFileFormat"]
-
-            # Check if file is already delivered this month
             if file_name not in [Path(f).stem for f in new_files]:
-                # Only proceed with copying if deadline has passed
-                if not deadline_passed:
-                    logger.info(
-                        f"File {file_name} not delivered but deadline not reached yet. "
-                        "Skipping copy from processed folder."
-                    )
-                    continue
-
-                # Check if the file is expected (still in metadata as expected)
-                expected_status = (
-                    self.meta_data.filter(col("SourceFileName") == file_name)
-                    .select("FileDeliveryStep")
-                    .collect()
-                )
-
-                # Use NonSSFStepStatus enum values for comparison
-                if not expected_status or expected_status[0][
-                    "FileDeliveryStep"
-                ] not in [
-                    NonSSFStepStatus.EXPECTED.value,
-                    NonSSFStepStatus.REDELIVERY.value,
-                ]:
-                    logger.info(
-                        f"File {file_name} is not in expected status. "
-                        "Skipping copy from processed folder."
-                    )
-                    continue
-
                 # Check if the file is already in the processed folder
-                # Let any OSError propagate - don't catch and continue
                 processed_files = [
                     file.path
                     for file in self.dbutils.fs.ls(processed_folder)
                     if file.name.startswith(file_name)
                 ]
-
                 if not processed_files:
                     logger.error(
                         f"File {file_name} not delivered and not found in "
                         f"{source_system.upper()}/processed folder."
                     )
                     continue
-
                 latest_processed_file = max(processed_files)
                 if self.dbutils.fs.ls(latest_processed_file):
                     # Copy the file to the static folder
                     processed_file = f"{processed_folder}/{file_name}"
-                    target_file = f"{static_folder}/{file_name}{extension}"
-
-                    try:
-                        self.dbutils.fs.cp(latest_processed_file, target_file)
-                        logger.info(
-                            f"Copied {file_name} to static folder after deadline passed. "  # noqa: E501
-                            f"Source: {latest_processed_file}, Target: {target_file}"
-                        )
-                        new_files.append(target_file)
-
-                        self.update_log_metadata(
-                            source_system=source_system.upper(),
-                            key=Path(file_name).stem,
-                            file_delivery_status=NonSSFStepStatus.RECEIVED,
-                            comment=(
-                                f"Static file {processed_file} copied from processed "
-                                f"folder after deadline."
-                            ),
-                        )
-                    except OSError as e:
-                        error_msg = f"Failed to copy {latest_processed_file} to {target_file}: {e!s}"  # noqa: E501
-                        logger.exception(error_msg)
-                        raise NonSSFExtractionError(
-                            NonSSFStepStatus.RECEIVED, additional_info=error_msg
-                        ) from e
-
+                    self.dbutils.fs.cp(
+                        latest_processed_file,
+                        f"{static_folder}/{file_name}{extension}",
+                    )
+                    logger.info(f"Copied {file_name} to static folder.")
+                    new_files.append(f"{static_folder}/{file_name}{extension}")
+                self.update_log_metadata(
+                    source_system=source_system.upper(),
+                    key=Path(file_name).stem,
+                    file_delivery_status=NonSSFStepStatus.RECEIVED,
+                    comment=f"Static file {processed_file} copied from process folder.",
+                )
         return new_files
 
-    def get_all_files(
-        self, *, deadline_passed: bool = False, deadline_date: datetime | None = None
-    ) -> list[dict[str, str]]:
+    def get_all_files(self) -> list[dict[str, str]]:
         """Retrieve all files from the source container along with their source systems.
 
         Filters files based on metadata records. If a file is not found in the metadata,
         it is removed from the list. For LRD_STATIC files, missing files are copied from
-        the processed folder only after deadline has passed and only for expected files.
-
-        Args:
-            deadline_passed (bool): Whether the deadline has passed
-            deadline_date (datetime | None): The deadline date
+        the processed folder.
 
         Returns:
             list[dict[str, str]]: List of dictionaries containing file names and their
@@ -201,31 +141,16 @@ class ExtractNonSSFData(ExtractStagingData):
         """
         all_files = {}
         for subfolder in ["NME", "FINOB", "LRD_STATIC"]:
-            try:
-                all_files[subfolder] = [
-                    p.path
-                    for p in self.dbutils.fs.ls(
-                        f"{self.source_container_url}/{subfolder}"
-                    )
-                    if (not p.isDir() or p.name.endswith(".parquet"))
-                ]
-            except OSError as e:
-                logger.warning(f"Could not access folder {subfolder}: {e}")
-                all_files[subfolder] = []
-
+            all_files[subfolder] = [
+                p.path
+                for p in self.dbutils.fs.ls(f"{self.source_container_url}/{subfolder}")
+                if (not p.isDir() or p.name.endswith(".parquet"))
+            ]
             expected_files = [
                 row["SourceFileName"]
-                for row in self.meta_data.filter(
-                    col("SourceSystem")
-                    == subfolder.lower()  # Use lowercase for comparison
-                )
-                .select("SourceFileName")
-                .collect()
+                for row in self.meta_data.select("SourceFileName").collect()
             ]
-
-            # Create a copy of the list to iterate over while modifying the original
-            files_to_check = all_files[subfolder].copy()
-            for file in files_to_check:
+            for file in all_files[subfolder]:
                 # Check if the file has a matching record in the metadata
                 if Path(file).stem not in expected_files:
                     logger.warning(
@@ -239,161 +164,12 @@ class ExtractNonSSFData(ExtractStagingData):
                     key=Path(file).stem,
                     file_delivery_status=NonSSFStepStatus.RECEIVED,
                 )
-
-        # Handle LRD_STATIC files with deadline logic
-        all_files["LRD_STATIC"] = self.place_static_data(
-            all_files["LRD_STATIC"], deadline_passed=deadline_passed
-        )
-
-        # Log deadline information
-        if deadline_date:
-            deadline_str = deadline_date.strftime("%Y-%m-%d %H:%M:%S UTC")
-            if deadline_passed:
-                logger.info(
-                    f"Deadline has passed ({deadline_str}). "
-                    f"LRD_STATIC files copied from processed folder."
-                )
-            else:
-                logger.info(
-                    f"Deadline not yet reached ({deadline_str}). "
-                    f"LRD_STATIC files will not be copied."
-                )
-
+        all_files["LRD_STATIC"] = self.place_static_data(all_files["LRD_STATIC"])
         return [
             {"source_system": source_system, "file_name": file_name}
             for source_system in all_files.keys()
             for file_name in all_files[source_system]
         ]
-
-    def check_deadline_violations(
-        self,
-        files_per_delivery_entity: list[dict[str, str]],
-    ) -> None:
-        """Check for deadline violations for FINOB and NME files.
-
-        Raises error if deadline has passed and expected files are missing.
-
-        Args:
-            files_per_delivery_entity: List of files found
-
-        Raises:
-            NonSSFExtractionError: If deadline violations are found
-        """
-        current_dt = datetime.now(tz=timezone.utc)
-
-        # Get expected files for FINOB and NME from metadata with their deadlines
-        finob_nme_expected = (
-            self.meta_data.filter(
-                self.meta_data.SourceSystem.isin(["finob", "nme"])  # Use lowercase
-            )
-            .select("SourceFileName", "SourceSystem", "Deadline")
-            .collect()
-        )
-
-        # Get delivered files for FINOB and NME
-        delivered_files = {
-            Path(file["file_name"]).stem: file["source_system"].lower()
-            for file in files_per_delivery_entity
-            if file["source_system"].lower() in ["finob", "nme"]
-        }
-
-        # Check for missing files
-        missing_files = []
-        for row in finob_nme_expected:
-            expected_file = row["SourceFileName"]
-            source_system = row["SourceSystem"]
-            deadline = row["Deadline"]
-
-            if expected_file not in delivered_files and deadline:
-                # Convert deadline to datetime
-                if isinstance(deadline, str):
-                    deadline_dt = datetime.strptime(deadline, "%Y-%m-%d").replace(
-                        tzinfo=timezone.utc
-                    )
-                else:
-                    deadline_dt = datetime.combine(
-                        deadline, datetime.min.time()
-                    ).replace(tzinfo=timezone.utc)
-
-                # Only report violation if deadline has passed
-                if current_dt >= deadline_dt:
-                    deadline_str = deadline_dt.strftime("%Y-%m-%d %H:%M:%S UTC")
-                    missing_files.append(
-                        {
-                            "file": f"{source_system}/{expected_file}",
-                            "deadline": deadline_str,
-                            "source_system": source_system,
-                        }
-                    )
-                    logger.error(
-                        f"Deadline passed ({deadline_str}): Missing expected file "
-                        f"{expected_file} from {source_system}"
-                    )
-
-        if missing_files:
-            # First, update metadata for ALL missing files
-            for missing_file_info in missing_files:
-                source_system = missing_file_info["source_system"]
-                file_path = missing_file_info["file"]
-                deadline = missing_file_info["deadline"]
-
-                # Update log metadata with deadline information
-                self.update_log_metadata(
-                    source_system=source_system.upper(),
-                    key=Path(file_path.split("/")[1]).stem,
-                    file_delivery_status=NonSSFStepStatus.RECEIVED,
-                    result="ERROR",
-                    comment=f"Deadline passed ({deadline}): Missing expected file {file_path.upper()}",  # noqa: E501
-                )
-
-            # Create error message with all missing files
-            missing_files_list = [
-                f"{mf['file']} (deadline: {mf['deadline']})" for mf in missing_files
-            ]
-            error_msg = (
-                f"Deadline violation: Missing files after deadline - "
-                f"{', '.join(missing_files_list)}"
-            )
-
-            # Now raise the exception with the comprehensive error message
-            raise NonSSFExtractionError(
-                NonSSFStepStatus.RECEIVED, additional_info=error_msg
-            )
-
-    def get_deadline_from_metadata(
-        self, source_system: str, file_name: str
-    ) -> datetime | None:
-        """Get deadline date from metadata for a specific file.
-
-        Args:
-            source_system: Source system name
-            file_name: File name to check
-
-        Returns:
-            Deadline date from metadata or None if not found
-        """
-        deadline_row = (
-            self.meta_data.filter(
-                (col("SourceSystem") == source_system.lower())
-                & (col("SourceFileName") == Path(file_name).stem)
-            )
-            .select("Deadline")
-            .collect()
-        )
-
-        if deadline_row and deadline_row[0]["Deadline"]:
-            # Assuming the Deadline column is a date type, convert to datetime
-            deadline_date = deadline_row[0]["Deadline"]
-            if isinstance(deadline_date, str):
-                return datetime.strptime(deadline_date, "%Y-%m-%d").replace(
-                    tzinfo=timezone.utc
-                )
-            # If it's already a date/datetime object
-            return datetime.combine(deadline_date, datetime.min.time()).replace(
-                tzinfo=timezone.utc
-            )
-
-        return None
 
     def convert_to_parquet(self, source_system: str, file_name: str) -> bool:
         """Convert a source file to Parquet format and save it in the target container.
@@ -416,7 +192,6 @@ class ExtractNonSSFData(ExtractStagingData):
         )
         source_file_format = file_info["SourceFileFormat"]
         source_file_delimiter = file_info["SourceFileDelimiter"]
-
         # Read the file with the given format and delimiter
         if source_file_format in (".csv", ".txt"):
             data = self.spark.read.csv(
@@ -429,16 +204,7 @@ class ExtractNonSSFData(ExtractStagingData):
                 f"Unsupported file format: {source_file_format}. "
                 "Only .csv, .txt and .parquet are supported."
             )
-            # Update metadata before returning
-            self.update_log_metadata(
-                source_system=source_system,
-                key=Path(file_name).stem,
-                file_delivery_status=NonSSFStepStatus.CONVERTED_PARQUET,
-                result="FAILURE",
-                comment=f"Unsupported file format: {source_file_format}. Only .csv, .txt and .parquet are supported.",  # noqa: E501
-            )
             return False
-
         result = export_to_parquet(
             self.spark,
             data,
