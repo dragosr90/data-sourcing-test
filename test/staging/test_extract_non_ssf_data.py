@@ -438,8 +438,7 @@ def test_append_to_process_log(
     extraction.append_to_process_log(
         source_system="TEST_SYSTEM",
         comments="Test comment",
-        status="Started",
-        file_delivery_status=NonSSFStepStatus.INIT_CHECKS
+        status="Started"
     )
     
     # Verify write_to_log was called
