@@ -22,7 +22,7 @@ class FileInfoMock(dict):
 
 @pytest.mark.parametrize(
     ("run_month", "source_container"),
-    [("202503", "test-container")],
+    [("202505", "test-container")],
 )
 def test_extract_non_ssf_data(
     spark_session,
@@ -335,7 +335,7 @@ def test_extract_non_ssf_data(
 
 @pytest.mark.parametrize(
     ("run_month", "source_container"),
-    [("202503", "test-container")],
+    [("202505", "test-container")],
 )
 def test_deadline_functionality(
     spark_session,
@@ -439,7 +439,7 @@ def test_deadline_functionality(
 
 @pytest.mark.parametrize(
     ("run_month", "source_container"),
-    [("202503", "test-container")],
+    [("202505", "test-container")],
 )
 def test_append_to_process_log(
     spark_session,
