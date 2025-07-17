@@ -1,273 +1,420 @@
-(bsrc-etl-venv) PS C:\Users\B25712\bsrc-etl-venv\bsrc-etl> pytest test/staging/test_extract_dial_data.py
+(bsrc-etl-venv) PS C:\Users\B25712\bsrc-etl-venv\bsrc-etl> pytest test/staging/test_extract_non_ssf_data.py
 ========================================================================================== test session starts ===========================================================================================
 platform win32 -- Python 3.10.11, pytest-8.3.3, pluggy-1.5.0
 rootdir: C:\Users\B25712\bsrc-etl-venv\bsrc-etl
 configfile: pyproject.toml
 plugins: cov-6.0.0, mock-3.14.0
-collected 1 item
+collected 3 items
 
-test\staging\test_extract_dial_data.py F                                                                                                                                                            [100%]
+test\staging\test_extract_non_ssf_data.py FFF                                                                                                                                                       [100%]
 
 ================================================================================================ FAILURES ================================================================================================ 
-_____________________________________________________________________________ test_extract_dial_data[202503-test-container] ______________________________________________________________________________ 
+____________________________________________________________________________ test_extract_non_ssf_data[202503-test-container] ____________________________________________________________________________ 
 
-spark_session = <pyspark.sql.session.SparkSession object at 0x000001A0BBD687C0>, mocker = <pytest_mock.plugin.MockerFixture object at 0x000001A0BBD6B2B0>, run_month = '202503'
-source_container = 'test-container'
+spark_session = <pyspark.sql.session.SparkSession object at 0x000001A375CFA110>, mocker = <pytest_mock.plugin.MockerFixture object at 0x000001A375CF8EB0>, run_month = '202503'
+source_container = 'test-container', caplog = <_pytest.logging.LogCaptureFixture object at 0x000001A375CF9C00>
 
     @pytest.mark.parametrize(
         ("run_month", "source_container"),
         [("202503", "test-container")],
     )
-    def test_extract_dial_data(
+    def test_extract_non_ssf_data(
         spark_session,
         mocker,
         run_month,
         source_container,
+        caplog,
     ):
         test_container = f"abfss://{source_container}@bsrcdadls.dfs.core.windows.net"
         month_container = f"abfss://{run_month}@bsrcdadls.dfs.core.windows.net"
-        metadata_path = f"bsrc_d.metadata_{run_month}.metadata_dial_schedule"
-        log_path = f"bsrc_d.log_{run_month}.log_dial_schedule"
+        metadata_path = f"bsrc_d.metadata_{run_month}.metadata_nonssf"
+        log_path = f"bsrc_d.log_{run_month}.log_nonssf"
 
-        # Create a mock DataFrame
-        schema_trigger = [
-            "dial_consumer_name",
-            "dial_source_system",
-            "dial_source_file_name",
-            "dial_source_file_snapshot_datetime",
-            "dial_notification_datetime",
-            "dial_target_file_full_path",
-            "dial_target_file_row_count",
-        ]
-        mock_trigger = spark_session.createDataFrame(
-            [
-                ("src", "epr", "TEST_DIAL_V2", "202503", "9999", "path/to/dest2/", 102),
-                ("src", "epr", "TEST_DIAL_V3", "202503", "9999", "path/to/dest3/", 103),
-                ("src", "epr", "TEST_DIAL_V4", "202509", "9999", "path/to/dest4/", 104),
-                ("src", "epr", "TEST_DIAL_V5", "202509", "9999", "path/to/dest5/", 105),
-            ],
-            schema=schema_trigger,
-        )
+        # Create deadline dates
+        future_date = (datetime.now(timezone.utc) + timedelta(days=10)).strftime("%Y-%m-%d")
+        past_date = (datetime.now(timezone.utc) - timedelta(days=5)).strftime("%Y-%m-%d")
 
+        # Create a mock DataFrame with deadline column
         schema_meta = [
-            "FileDeliveryStatus",
-            "FileDeliveryStep",
+            "SourceSystem",
             "SourceFileName",
-            "SnapshotDate",
+            "SourceFileFormat",
+            "SourceFileDelimiter",
             "StgTableName",
+            "FileDeliveryStep",
+            "FileDeliveryStatus",
+            "Deadline",
         ]
         mock_meta = spark_session.createDataFrame(
             [
-                ("Extracted", 1, "TEST_DIAL_V1", "202503", "test_dial_v1"),
-                ("Expected delivery", 0, "TEST_DIAL_V2", "202503", "test_dial_v2"),
-                ("Expected delivery", 0, "TEST_DIAL_V3", "202503", "test_dial_v3"),
+                (
+                    "lrd_static",
+                    "TEST_NON_SSF_V1",
+                    ".txt",
+                    "|",
+                    "test_non_ssf_v1",
+                    0,
+                    "Expected",
+                    future_date,  # Future deadline
+                ),
+                (
+                    "lrd_static",
+                    "TEST_NON_SSF_V2",
+                    ".txt",
+                    "|",
+                    "test_non_ssf_v2",
+                    0,
+                    "Expected",
+                    past_date,  # Past deadline - should be copied
+                ),
+                (
+                    "nme",
+                    "TEST_NON_SSF_V3",
+                    ".parquet",
+                    ",",
+                    "test_non_ssf_v3",
+                    0,
+                    "Expected",
+                    future_date,
+                ),
+                (
+                    "finob",
+                    "TEST_NON_SSF_V4",
+                    ".csv",
+                    ",",
+                    "test_non_ssf_v4",
+                    0,
+                    "Expected",
+                    past_date,  # Past deadline
+                ),
             ],
             schema=schema_meta,
         )
+
         schema_log = [
             "SourceSystem",
             "SourceFileName",
-            "SnapshotDate",
-            "FileDeliveryStatus",
-            "FileDeliveryStep",
             "DeliveryNumber",
+            "FileDeliveryStep",
+            "FileDeliveryStatus",
+            "Result",
             "LastUpdatedDateTimestamp",
             "Comment",
         ]
         mock_log = spark_session.createDataFrame(
             [
                 (
-                    "epr",
-                    "TEST_DIAL_V2",
-                    "202503",
-                    "Expected delivery",
+                    "lrd_static",
+                    "TEST_NON_SSF_V1",
+                    1,
                     0,
-                    0,
-                    datetime.now(tz=timezone.utc),
-                    "Data file stored in storage location.",
-                ),
-                (
-                    "epr",
-                    "TEST_DIAL_V3",
-                    "202503",
-                    "Expected delivery",
-                    0,
-                    0,
-                    datetime.now(tz=timezone.utc),
-                    "Data file stored in storage location.",
-                ),
+                    "Expected",
+                    "Success",
+                    datetime.now(timezone.utc),
+                    "Test comment",
+                )
             ],
             schema=schema_log,
         )
 
-        schema_staging_v2 = ["int_col", "str_col"]
-        mock_staging_v2 = spark_session.createDataFrame(
-            data=[(3, "b")], schema=schema_staging_v2
-        )
-
-        schema_staging_v3 = ["dt_col", "bool_col"]
-        mock_staging_v3 = spark_session.createDataFrame(
-            data=[(datetime.now(tz=timezone.utc), True)], schema=schema_staging_v3
-        )
-        mock_data_path_2 = spark_session.createDataFrame(
-            [(x,) for x in range(102)],
-            schema=StructType([StructField("col02", IntegerType())]),
-        )
-        mock_data_path_3 = spark_session.createDataFrame(
-            [(x,) for x in range(103)],
-            schema=StructType([StructField("col03", IntegerType())]),
+        dummy_df = spark_session.createDataFrame(
+            [(1, "2", 3)],
+            schema=StructType(
+                [
+                    StructField("col1", IntegerType()),
+                    StructField("col2", StringType()),
+                    StructField("col3", IntegerType()),
+                ]
+            ),
         )
 
         # Mock spark.read.json and spark.read.table to return the mock DataFrames
         mock_read = mocker.patch("pyspark.sql.SparkSession.read", autospec=True)
-        mock_read.json.return_value = mock_trigger
         mock_read.table.side_effect = [
             mock_meta,
             mock_log,
-            mock_staging_v2,
-            mock_staging_v3,
+            dummy_df,
+            dummy_df,
+            dummy_df,
+            dummy_df,
         ]
 
-        # Check ExtractDialData class initialisation
-        extraction = ExtractDialData(
+        mock_write = mocker.patch("pyspark.sql.DataFrameWriter.parquet")
+        mock_save_table = mocker.patch("pyspark.sql.DataFrameWriter.saveAsTable")
+
+        # Check ExtractNonSSFData class initialisation
+        extraction = ExtractNonSSFData(
             spark_session,
             run_month,
             source_container=source_container,
         )
 
-        mock_read.json.assert_called_once_with(
-            f"{test_container}/dial_trigger",
-            schema=StructType(
-                [
-                    StructField("dial_source_file_name", StringType()),
-                    StructField("dial_source_system", StringType()),
-                    StructField("dial_source_file_snapshot_datetime", StringType()),
-                    StructField("dial_notification_datetime", StringType()),
-                    StructField("dial_consumer_name", StringType()),
-                    StructField("dial_target_file_full_path", StringType()),
-                    StructField("dial_target_file_row_count", StringType()),
-                ]
-            ),
-        )
+        # Initialize process log
+        extraction.initialize_process_log(run_id=1)
+        assert extraction.base_process_record["RunID"] == 1
+        assert extraction.base_process_record["Component"] == "Non-SSF"
+
         # Verify that spark.read.table was called with the correct arguments
-        mock_read.table.assert_any_call("bsrc_d.metadata_202503.metadata_dial_schedule")
-        mock_read.table.assert_any_call("bsrc_d.log_202503.log_dial_schedule")
+        mock_read.table.assert_any_call(f"bsrc_d.metadata_{run_month}.metadata_nonssf")
+        mock_read.table.assert_any_call(f"bsrc_d.log_{run_month}.log_nonssf")
 
-        assert extraction.trigger_data == mock_trigger
-
-        matching_meta_trigger_data = extraction.get_matching_meta_trigger_data()
-        triggers, triggers_archive = (
-            extraction.get_triggers(matching_meta_trigger_data, matching=matching)
-            for matching in [True, False]
+        # Test deadline checking
+        deadline_reached, deadline_str = extraction.check_deadline_reached(
+            "TEST_NON_SSF_V1"
         )
-        assert matching_meta_trigger_data.columns == [
-            *schema_trigger,
-            *schema_meta,
-            "trigger_file_name",
+        assert not deadline_reached  # Future deadline
+        assert deadline_str == future_date
+
+        deadline_reached, deadline_str = extraction.check_deadline_reached(
+            "TEST_NON_SSF_V2"
+        )
+        assert deadline_reached  # Past deadline
+        assert deadline_str == past_date
+
+        mock_dbutils_fs_ls = mocker.patch.object(extraction.dbutils.fs, "ls")
+        effect = [
+            [
+                FileInfoMock(
+                    {
+                        "path": f"{test_container}/{folder}/{file}",
+                        "name": f"{file}",
+                    }
+                )
+                for file, folder in li
+            ]
+            for li in [
+                [
+                    ("TEST_NON_SSF_V3.parquet", "NME"),
+                    ("TEST_NON_SSF_V3.csv", "NME"),
+                    ("processed/", "NME"),
+                ],
+                [("TEST_NON_SSF_V4.csv", "FINOB"), ("processed/", "FINOB")],
+                [
+                    ("TEST_NON_SSF_V1.txt", "LRD_STATIC"),
+                    ("TEST_NON_SSF_V5.txt", "LRD_STATIC"),
+                    ("processed/", "LRD_STATIC"),
+                ],
+                [("TEST_NON_SSF_V2_999999.txt", "LRD_STATIC/processed")],
+                [("TEST_NON_SSF_V2_999999.txt", "LRD_STATIC/processed")],
+            ]
         ]
-        assert matching_meta_trigger_data.filter("SourceFileName is not null").count() == 2
-        assert matching_meta_trigger_data.filter("SourceFileName is null").count() == 2
+        mock_dbutils_fs_ls.side_effect = effect
+        mock_dbutils_fs_cp = mocker.patch.object(extraction.dbutils.fs, "cp")
+        mock_dbutils_fs_mv = mocker.patch.object(extraction.dbutils.fs, "mv")
 
-        # Create a mock dbutils
-        mock_dbutils = mocker.patch.object(
-            extraction, "dbutils", new_callable=mocker.MagicMock()
+        found_files = extraction.get_all_files()
+
+        # V2 should be copied because deadline is reached
+        mock_dbutils_fs_cp.assert_any_call(
+            f"{test_container}/LRD_STATIC/processed/TEST_NON_SSF_V2_999999.txt",
+            f"{test_container}/LRD_STATIC/TEST_NON_SSF_V2.txt",
         )
 
-        # Mock for reading parquet files
-        mock_read.parquet.side_effect = [mock_data_path_2, mock_data_path_3]
+        # V1 should not be copied because deadline is not reached
+>       assert "Deadline not reached for TEST_NON_SSF_V1" in caplog.text
+E       AssertionError: assert 'Deadline not reached for TEST_NON_SSF_V1' in 'INFO     betl_src_poc_logger:extract_base.py:205 FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V3\nINFO     ...reached.\nINFO     betl_src_poc_logger:extract_base.py:205 FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V2\n'
+E        +  where 'INFO     betl_src_poc_logger:extract_base.py:205 FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V3\nINFO     ...reached.\nINFO     betl_src_poc_logger:extract_base.py:205 FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V2\n' = <_pytest.logging.LogCaptureFixture object at 0x000001A375CF9C00>.text
 
-        # Mock for writing parquet files
-        mock_write = mocker.MagicMock()
-        mock_mode = mocker.MagicMock()
-        mock_write.mode.return_value = mock_mode
-        mock_mode.parquet.return_value = None
-        mocker.patch.object(
-            DataFrame,
-            "write",
-            new_callable=mocker.PropertyMock,
-            return_value=mock_write,
-        )
-
-        # Run full flow
-        for trigger_file_name, trigger_config in triggers.items():
-            file_mapping = extraction.get_file_mapping(
-                matching_meta_trigger_data.filter("SourceFileName is not null")
-            )[trigger_config["file_name"]]
-            data_path, row_count, stg_table_name = tuple(file_mapping.values())
-
-            # 1. Extracted raw parquet data
-            data = extraction.extract_from_blob_storage(
-                data_path=data_path,
-                **trigger_config,
-            )
-
-            # 2. Validated expected count
-            result_row_count = extraction.validate_expected_row_count(
-                data=data,
-                expected_row_count=row_count,
-                **trigger_config,
-            )
-
-            # 2. Validated expected count - Unhappy
-            result_row_count_unhappy = extraction.validate_expected_row_count(
-                data=data,
-                expected_row_count=+1,
-                **trigger_config,
-            )
-
-            # 3. Copy parquet file
-            result_copy_to_blob = extraction.copy_to_blob_storage(
-                data=data,
-                **trigger_config,
-            )
-
-            # 4. Moved JSON trigger file
-            extraction.move_trigger_file(
-                trigger_file_name=trigger_file_name,
-                **trigger_config,
-            )
-
-            # 5. Loaded Staging table
-            # Filter trigger_config to remove 'source_system' key
-            # that save_to_stg_table doesn't accept
-            stg_table_params = {k: v for k, v in trigger_config.items() if k != "source_system"} # noqa: E501
->           result_staging = extraction.save_to_stg_table(
-                data=data,
-                stg_table_name=stg_table_name,
-                **stg_table_params,
-            )
-E           TypeError: ExtractStagingData.save_to_stg_table() got an unexpected keyword argument 'snapshot_date'
-
-test\staging\test_extract_dial_data.py:228: TypeError
+test\staging\test_extract_non_ssf_data.py:219: AssertionError
 ----------------------------------------------------------------------------------------- Captured stderr setup ------------------------------------------------------------------------------------------ 
 Setting default log level to "WARN".
 To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
 ------------------------------------------------------------------------------------------ Captured stdout call ------------------------------------------------------------------------------------------ 
-2025-07-14 16:17:16 [INFO] update_log_metadata:  FileDeliveryStatus: Extracted raw parquet data for TEST_DIAL_V2
-2025-07-14 16:17:16 [INFO] update_log_metadata:  FileDeliveryStatus: Extracted raw parquet data for TEST_DIAL_V2
-2025-07-14 16:17:21 [INFO] update_log_metadata:  FileDeliveryStatus: Validated expected count for TEST_DIAL_V2
-2025-07-14 16:17:21 [INFO] update_log_metadata:  FileDeliveryStatus: Validated expected count for TEST_DIAL_V2
-2025-07-14 16:17:26 [ERROR] validate_expected_row_count:  Expected 1, received 102
-2025-07-14 16:17:26 [ERROR] validate_expected_row_count:  Expected 1, received 102
-2025-07-14 16:17:26 [INFO] update_log_metadata:  FileDeliveryStatus: Validated expected count for TEST_DIAL_V2
-2025-07-14 16:17:26 [INFO] update_log_metadata:  FileDeliveryStatus: Validated expected count for TEST_DIAL_V2
-2025-07-14 16:17:29 [INFO] export_to_parquet:  Exported to sourcing_landing_data/DIAL/epr/TEST_DIAL_V2.parquet
-2025-07-14 16:17:29 [INFO] export_to_parquet:  Exported to sourcing_landing_data/DIAL/epr/TEST_DIAL_V2.parquet
-2025-07-14 16:17:29 [INFO] update_log_metadata:  FileDeliveryStatus: Copied parquet to storage account for TEST_DIAL_V2
-2025-07-14 16:17:29 [INFO] update_log_metadata:  FileDeliveryStatus: Copied parquet to storage account for TEST_DIAL_V2
-2025-07-14 16:17:32 [INFO] update_log_metadata:  FileDeliveryStatus: Moved JSON trigger file for TEST_DIAL_V2
-2025-07-14 16:17:32 [INFO] update_log_metadata:  FileDeliveryStatus: Moved JSON trigger file for TEST_DIAL_V2
+2025-07-17 14:48:02 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V3
+2025-07-17 14:48:02 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V3
+2025-07-17 14:48:05 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V3
+2025-07-17 14:48:05 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V3
+2025-07-17 14:48:09 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V4
+2025-07-17 14:48:09 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V4
+2025-07-17 14:48:12 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V1
+2025-07-17 14:48:12 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V1
+2025-07-17 14:48:14 [WARNING] get_all_files:  File TEST_NON_SSF_V5 not found in metadata. Please check if it should be delivered.
+2025-07-17 14:48:14 [WARNING] get_all_files:  File TEST_NON_SSF_V5 not found in metadata. Please check if it should be delivered.
+2025-07-17 14:48:18 [INFO] place_static_data:  Copied TEST_NON_SSF_V2 to static folder after deadline reached.
+2025-07-17 14:48:18 [INFO] place_static_data:  Copied TEST_NON_SSF_V2 to static folder after deadline reached.
+2025-07-17 14:48:18 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V2
+2025-07-17 14:48:18 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V2
 ------------------------------------------------------------------------------------------ Captured stderr call ------------------------------------------------------------------------------------------ 
 
 ------------------------------------------------------------------------------------------- Captured log call -------------------------------------------------------------------------------------------- 
-INFO     betl_src_poc_logger:extract_base.py:214 FileDeliveryStatus: Extracted raw parquet data for TEST_DIAL_V2
-INFO     betl_src_poc_logger:extract_base.py:214 FileDeliveryStatus: Validated expected count for TEST_DIAL_V2
-ERROR    betl_src_poc_logger:extract_dial_data.py:221 Expected 1, received 102
-INFO     betl_src_poc_logger:extract_base.py:214 FileDeliveryStatus: Validated expected count for TEST_DIAL_V2
-INFO     betl_src_poc_logger:export_parquet.py:56 Exported to sourcing_landing_data/DIAL/epr/TEST_DIAL_V2.parquet
-INFO     betl_src_poc_logger:extract_base.py:214 FileDeliveryStatus: Copied parquet to storage account for TEST_DIAL_V2
-INFO     betl_src_poc_logger:extract_base.py:214 FileDeliveryStatus: Moved JSON trigger file for TEST_DIAL_V2
+INFO     betl_src_poc_logger:extract_base.py:205 FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V3
+INFO     betl_src_poc_logger:extract_base.py:205 FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V3
+INFO     betl_src_poc_logger:extract_base.py:205 FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V4
+INFO     betl_src_poc_logger:extract_base.py:205 FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V1
+WARNING  betl_src_poc_logger:extract_nonssf_data.py:382 File TEST_NON_SSF_V5 not found in metadata. Please check if it should be delivered.
+INFO     betl_src_poc_logger:extract_nonssf_data.py:239 Copied TEST_NON_SSF_V2 to static folder after deadline reached.
+INFO     betl_src_poc_logger:extract_base.py:205 FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V2
+___________________________________________________________________________ test_deadline_functionality[202503-test-container] ___________________________________________________________________________ 
+
+spark_session = <pyspark.sql.session.SparkSession object at 0x000001A375CFA110>, mocker = <pytest_mock.plugin.MockerFixture object at 0x000001A375F272E0>, run_month = '202503'
+source_container = 'test-container'
+
+    @pytest.mark.parametrize(
+        ("run_month", "source_container"),
+        [("202503", "test-container")],
+    )
+    def test_deadline_functionality(
+        spark_session,
+        mocker,
+        run_month,
+        source_container,
+    ):
+        """Test specific deadline functionality."""
+        # Create deadline dates
+        future_date = (datetime.now(timezone.utc) + timedelta(days=10)).strftime("%Y-%m-%d")
+        past_date = (datetime.now(timezone.utc) - timedelta(days=5)).strftime("%Y-%m-%d")
+
+        # Create mock metadata with various deadline scenarios
+        schema_meta = [
+            "SourceSystem",
+            "SourceFileName",
+            "SourceFileFormat",
+            "SourceFileDelimiter",
+            "StgTableName",
+            "FileDeliveryStep",
+            "FileDeliveryStatus",
+            "Deadline",
+        ]
+        mock_meta = spark_session.createDataFrame(
+            [
+                # LRD_STATIC with past deadline - should be copied
+                (
+                    "lrd_static",
+                    "STATIC_PAST",
+                    ".txt",
+                    "|",
+                    "static_past",
+                    0,
+                    "Expected",
+                    past_date,
+                ),
+                # LRD_STATIC with future deadline - should NOT be copied
+                (
+                    "lrd_static",
+                    "STATIC_FUTURE",
+                    ".txt",
+                    "|",
+                    "static_future",
+                    0,
+                    "Expected",
+                    future_date,
+                ),
+                # LRD_STATIC with no deadline - should NOT be copied
+                (
+                    "lrd_static",
+                    "STATIC_NO_DEADLINE",
+                    ".txt",
+                    "|",
+                    "static_no_deadline",
+                    0,
+                    "Expected",
+                    None,
+                ),
+            ],
+            schema=schema_meta,
+        )
+
+>       mock_log = spark_session.createDataFrame([], schema=["dummy"])
+
+test\staging\test_extract_non_ssf_data.py:416:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _  
+..\bsrc-etl-venv\lib\site-packages\pyspark\sql\session.py:1443: in createDataFrame
+    return self._create_dataframe(
+..\bsrc-etl-venv\lib\site-packages\pyspark\sql\session.py:1485: in _create_dataframe
+    rdd, struct = self._createFromLocal(map(prepare, data), schema)
+..\bsrc-etl-venv\lib\site-packages\pyspark\sql\session.py:1093: in _createFromLocal
+    struct = self._inferSchemaFromList(data, names=schema)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _  
+
+self = <pyspark.sql.session.SparkSession object at 0x000001A375CFA110>, data = [], names = ['dummy']
+
+    def _inferSchemaFromList(
+        self, data: Iterable[Any], names: Optional[List[str]] = None
+    ) -> StructType:
+        """
+        Infer schema from list of Row, dict, or tuple.
+
+        Parameters
+        ----------
+        data : iterable
+            list of Row, dict, or tuple
+        names : list, optional
+            list of column names
+
+        Returns
+        -------
+        :class:`pyspark.sql.types.StructType`
+        """
+        if not data:
+>           raise PySparkValueError(
+                error_class="CANNOT_INFER_EMPTY_SCHEMA",
+                message_parameters={},
+            )
+E           pyspark.errors.exceptions.base.PySparkValueError: [CANNOT_INFER_EMPTY_SCHEMA] Can not infer schema from empty dataset.
+
+..\bsrc-etl-venv\lib\site-packages\pyspark\sql\session.py:948: PySparkValueError
+___________________________________________________________________________ test_append_to_process_log[202503-test-container] ____________________________________________________________________________ 
+
+spark_session = <pyspark.sql.session.SparkSession object at 0x000001A375CFA110>, mocker = <pytest_mock.plugin.MockerFixture object at 0x000001A375F27D90>, run_month = '202503'
+source_container = 'test-container'
+
+    @pytest.mark.parametrize(
+        ("run_month", "source_container"),
+        [("202503", "test-container")],
+    )
+    def test_append_to_process_log(
+        spark_session,
+        mocker,
+        run_month,
+        source_container,
+    ):
+        """Test the append_to_process_log method."""
+        # Mock metadata and log
+>       mock_meta = spark_session.createDataFrame([], schema=["dummy"])
+
+test\staging\test_extract_non_ssf_data.py:474:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _  
+..\bsrc-etl-venv\lib\site-packages\pyspark\sql\session.py:1443: in createDataFrame
+    return self._create_dataframe(
+..\bsrc-etl-venv\lib\site-packages\pyspark\sql\session.py:1485: in _create_dataframe
+    rdd, struct = self._createFromLocal(map(prepare, data), schema)
+..\bsrc-etl-venv\lib\site-packages\pyspark\sql\session.py:1093: in _createFromLocal
+    struct = self._inferSchemaFromList(data, names=schema)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _  
+
+self = <pyspark.sql.session.SparkSession object at 0x000001A375CFA110>, data = [], names = ['dummy']
+
+    def _inferSchemaFromList(
+        self, data: Iterable[Any], names: Optional[List[str]] = None
+    ) -> StructType:
+        """
+        Infer schema from list of Row, dict, or tuple.
+
+        Parameters
+        ----------
+        data : iterable
+            list of Row, dict, or tuple
+        names : list, optional
+            list of column names
+
+        Returns
+        -------
+        :class:`pyspark.sql.types.StructType`
+        """
+        if not data:
+>           raise PySparkValueError(
+                error_class="CANNOT_INFER_EMPTY_SCHEMA",
+                message_parameters={},
+            )
+E           pyspark.errors.exceptions.base.PySparkValueError: [CANNOT_INFER_EMPTY_SCHEMA] Can not infer schema from empty dataset.
+
+..\bsrc-etl-venv\lib\site-packages\pyspark\sql\session.py:948: PySparkValueError
 ============================================================================================ warnings summary ============================================================================================ 
+test\staging\test_extract_non_ssf_data.py:309
+test\staging\test_extract_non_ssf_data.py:309
+  C:\Users\B25712\bsrc-etl-venv\bsrc-etl\test\staging\test_extract_non_ssf_data.py:309: DeprecationWarning: invalid escape sequence '\d'
+    f"{test_container}/{source_system}/processed/{file_name_no_ext}__\d{{8}}\d{{6}}{file_name_ext}",  # noqa: W605
+
 ..\bsrc-etl-venv\lib\site-packages\holidays\deprecations\v1_incompatibility.py:40
   C:\Users\B25712\bsrc-etl-venv\bsrc-etl-venv\lib\site-packages\holidays\deprecations\v1_incompatibility.py:40: FutureIncompatibilityWarning:
 
@@ -291,59 +438,70 @@ INFO     betl_src_poc_logger:extract_base.py:214 FileDeliveryStatus: Moved JSON 
 -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
 
 ---------- coverage: platform win32, python 3.10.11-final-0 ----------
-Name                                            Stmts   Miss  Cover   Missing
------------------------------------------------------------------------------
-src\__init__.py                                     0      0   100%
-src\config\__init__.py                              0      0   100%
-src\config\business_logic.py                       52      0   100%
-src\config\constants.py                             1      0   100%
-src\config\exceptions.py                           21     21     0%   6-48
-src\config\process.py                               4      4     0%   7-10
-src\config\schema.py                                4      4     0%   3-52
-src\dq\__init__.py                                  0      0   100%
-src\dq\dq_validation.py                           141    132     6%   47-112, 166-181, 197-249, 265-286, 318-350, 372-392, 414-486
-src\extract\__init__.py                             0      0   100%
-src\extract\master_data_sql.py                     90     71    21%   31-33, 37-38, 42, 59-88, 109-137, 149-156, 162-164, 188, 222-231, 285-300, 329-356
-src\month_setup\__init__.py                         0      0   100%
-src\month_setup\dial_derive_snapshotdate.py        32     27    16%   12-18, 28-37, 47-50, 69-85
-src\month_setup\metadata_log_tables.py             32     25    22%   23-84, 159, 166-203
-src\month_setup\setup_new_month.py                 13     13     0%   17-84
-src\staging\__init__.py                             0      0   100%
-src\staging\extract_base.py                        85     33    61%   165, 171-173, 320-321, 344-348, 368-404, 422-465
-src\staging\extract_dial_data.py                   65      5    92%   330-347
-src\staging\extract_nonssf_data.py                136    136     0%   16-532
-src\staging\extract_ssf_data.py                   164    164     0%   26-620
-src\staging\status.py                              57      5    91%   18, 53-54, 129, 151
-src\transform\__init__.py                           0      0   100%
-src\transform\table_write_and_comment.py           72     72     0%   14-237
-src\transform\transform_business_logic_sql.py       6      6     0%   6-25
-src\utils\__init__.py                               0      0   100%
-src\utils\alias_util.py                            13     13     0%   10-109
-src\utils\export_parquet.py                        15      6    60%   49-54, 67-68
-src\utils\get_dbutils.py                            2      0   100%
-src\utils\get_env.py                               10      0   100%
-src\utils\logging_util.py                           6      0   100%
-src\utils\parameter_utils.py                       23     19    17%   33-53, 79-84, 105-116
-src\utils\parse_yaml.py                            22     22     0%   11-127
-src\utils\sources_util.py                          52     52     0%   7-218
-src\utils\table_logging.py                         14      3    79%   36-37, 55
-src\utils\table_schema.py                           3      3     0%   8-16
-src\utils\transformations_util.py                  17     12    29%   20-25, 39, 51, 65-68
-src\validate\__init__.py                            0      0   100%
-src\validate\base.py                                4      4     0%   4-7
-src\validate\expressions.py                        27     27     0%   15-75
-src\validate\run_all.py                             7      7     0%   12-48
-src\validate\sources.py                            29     29     0%   7-67
-src\validate\transformations.py                   192    192     0%   21-593
-src\validate\validate_sql.py                       54     54     0%   13-130
-src\validate\yaml.py                               18     18     0%   3-34
------------------------------------------------------------------------------
-TOTAL                                            1483   1179    20%
+Name                                                             Stmts   Miss  Cover   Missing
+----------------------------------------------------------------------------------------------
+src\__init__.py                                                      0      0   100%
+src\abnamro_bsrc_etl\__init__.py                                     0      0   100%
+src\abnamro_bsrc_etl\config\__init__.py                              0      0   100%
+src\abnamro_bsrc_etl\config\business_logic.py                       52      0   100%
+src\abnamro_bsrc_etl\config\constants.py                             1      0   100%
+src\abnamro_bsrc_etl\config\exceptions.py                           21     21     0%   10-52
+src\abnamro_bsrc_etl\config\process.py                               4      4     0%   7-10
+src\abnamro_bsrc_etl\config\schema.py                                4      4     0%   3-52
+src\abnamro_bsrc_etl\dq\__init__.py                                  0      0   100%
+src\abnamro_bsrc_etl\dq\dq_validation.py                           141    132     6%   47-112, 166-181, 197-249, 265-286, 318-350, 372-392, 414-486
+src\abnamro_bsrc_etl\extract\__init__.py                             0      0   100%
+src\abnamro_bsrc_etl\extract\master_data_sql.py                     90     71    21%   31-33, 37-38, 42, 59-88, 109-137, 149-156, 162-164, 188, 222-231, 285-300, 329-356
+src\abnamro_bsrc_etl\month_setup\__init__.py                         0      0   100%
+src\abnamro_bsrc_etl\month_setup\dial_derive_snapshotdate.py        32     27    16%   12-18, 28-37, 47-50, 69-85
+src\abnamro_bsrc_etl\month_setup\metadata_log_tables.py             32     25    22%   23-84, 159, 166-203
+src\abnamro_bsrc_etl\month_setup\setup_new_month.py                 13     13     0%   17-84
+src\abnamro_bsrc_etl\scripts\__init__.py                             0      0   100%
+src\abnamro_bsrc_etl\scripts\dial_check_delayed_files.py            20     20     0%   4-71
+src\abnamro_bsrc_etl\scripts\dial_staging_process.py                54     54     0%   4-270
+src\abnamro_bsrc_etl\scripts\export_tine_tables.py                   1      1     0%   7
+src\abnamro_bsrc_etl\scripts\new_month_setup.py                      4      4     0%   8-18
+src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py              49     49     0%   10-224
+src\abnamro_bsrc_etl\scripts\run_mapping.py                         15     15     0%   26-108
+src\abnamro_bsrc_etl\scripts\ssf_staging_process.py                 48     48     0%   14-222
+src\abnamro_bsrc_etl\staging\__init__.py                             0      0   100%
+src\abnamro_bsrc_etl\staging\extract_base.py                        65     17    74%   156, 162-164, 304-312, 343-352, 387-404, 420
+src\abnamro_bsrc_etl\staging\extract_dial_data.py                   65     65     0%   16-360
+src\abnamro_bsrc_etl\staging\extract_nonssf_data.py                140     79    44%   60-65, 81-98, 118-119, 151-173, 210-214, 224-229, 262-322, 333-355, 414-448, 463, 479, 502-524
+src\abnamro_bsrc_etl\staging\extract_ssf_data.py                   164    164     0%   26-620
+src\abnamro_bsrc_etl\staging\status.py                              57      5    91%   18, 53-54, 107, 151
+src\abnamro_bsrc_etl\transform\__init__.py                           0      0   100%
+src\abnamro_bsrc_etl\transform\table_write_and_comment.py           72     72     0%   14-237
+src\abnamro_bsrc_etl\transform\transform_business_logic_sql.py       6      6     0%   6-25
+src\abnamro_bsrc_etl\utils\__init__.py                               0      0   100%
+src\abnamro_bsrc_etl\utils\alias_util.py                            13     13     0%   10-109
+src\abnamro_bsrc_etl\utils\export_parquet.py                        15     12    20%   38-57, 67-68
+src\abnamro_bsrc_etl\utils\get_dbutils.py                            2      0   100%
+src\abnamro_bsrc_etl\utils\get_env.py                               10      0   100%
+src\abnamro_bsrc_etl\utils\logging_util.py                           6      0   100%
+src\abnamro_bsrc_etl\utils\parameter_utils.py                       23     19    17%   33-53, 79-84, 105-116
+src\abnamro_bsrc_etl\utils\parse_yaml.py                            22     22     0%   11-127
+src\abnamro_bsrc_etl\utils\sources_util.py                          52     52     0%   7-218
+src\abnamro_bsrc_etl\utils\table_logging.py                         14      5    64%   36-37, 54-56
+src\abnamro_bsrc_etl\utils\table_schema.py                           3      3     0%   8-16
+src\abnamro_bsrc_etl\utils\transformations_util.py                  17     12    29%   20-25, 39, 51, 65-68
+src\abnamro_bsrc_etl\validate\__init__.py                            0      0   100%
+src\abnamro_bsrc_etl\validate\base.py                                4      4     0%   4-7
+src\abnamro_bsrc_etl\validate\expressions.py                        27     27     0%   15-75
+src\abnamro_bsrc_etl\validate\run_all.py                             7      7     0%   12-48
+src\abnamro_bsrc_etl\validate\sources.py                            29     29     0%   7-67
+src\abnamro_bsrc_etl\validate\transformations.py                   192    192     0%   21-593
+src\abnamro_bsrc_etl\validate\validate_sql.py                       54     54     0%   13-130
+src\abnamro_bsrc_etl\validate\yaml.py                               18     18     0%   3-34
+----------------------------------------------------------------------------------------------
+TOTAL                                                             1658   1365    18%
 Coverage HTML written to dir htmlcov
 
-======================================================================================== short test summary info ========================================================================================= 
-FAILED test/staging/test_extract_dial_data.py::test_extract_dial_data[202503-test-container] - TypeError: ExtractStagingData.save_to_stg_table() got an unexpected keyword argument 'snapshot_date'        
-================================================================================ 1 failed, 1 warning in 68.86s (0:01:08) ================================================================================= 
-SUCCESS: The process with PID 26012 (child process of PID 26824) has been terminated.
-SUCCESS: The process with PID 26824 (child process of PID 4172) has been terminated.
-SUCCESS: The process with PID 4172 (child process of PID 10344) has been terminated.
+======================================================================================== short test summary info =========================================================================================
+FAILED test/staging/test_extract_non_ssf_data.py::test_extract_non_ssf_data[202503-test-container] - AssertionError: assert 'Deadline not reached for TEST_NON_SSF_V1' in 'INFO     betl_src_poc_logger:extract_base.py:205 FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V3\nINFO     ...reached....
+FAILED test/staging/test_extract_non_ssf_data.py::test_deadline_functionality[202503-test-container] - pyspark.errors.exceptions.base.PySparkValueError: [CANNOT_INFER_EMPTY_SCHEMA] Can not infer schema from empty dataset.
+FAILED test/staging/test_extract_non_ssf_data.py::test_append_to_process_log[202503-test-container] - pyspark.errors.exceptions.base.PySparkValueError: [CANNOT_INFER_EMPTY_SCHEMA] Can not infer schema from empty dataset.
+===================================================================================== 3 failed, 3 warnings in 50.44s ===================================================================================== 
+SUCCESS: The process with PID 7728 (child process of PID 22620) has been terminated.
+SUCCESS: The process with PID 22620 (child process of PID 10072) has been terminated.
+SUCCESS: The process with PID 10072 (child process of PID 3240) has been terminated.
