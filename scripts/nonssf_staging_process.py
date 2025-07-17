@@ -30,7 +30,6 @@ def _handle_extraction_error(
     """
     extraction.append_to_process_log(
         source_system=source_system,
-        file_delivery_status=file_delivery_status,
         comments=file_comment,
         status="Failed",
     )
