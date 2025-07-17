@@ -1,13 +1,61 @@
-Background
-We have created the Non-SSF staging script, but it still needs to be scheduled. We also need to add erroring when files are missing/late.
+Pull Request Description
+Summary
+Implemented deadline-based file processing for Non-SSF staging pipeline as per user story requirements. The system now checks file deadlines from the metadata table and handles late file deliveries appropriately.
+Key Features Added
+1. Deadline Checking for Non-SSF Files
 
-Tasks
+Added check_deadline_reached() method to verify if current date has passed the file's deadline
+Deadlines are read from the new Deadline column in the metadata_nonssf table (format: YYYY-MM-DD)
 
-Update script
-  Only run LRD_STATIC copying of previous file after certain date, only for files that are still expected
-    Set deadline as agreed
-    Check in script if deadline is reached, else skip
-  Add delay warning / error for FINOB and NME
-    When deadline is reached
-    To make script end in error (and in turn also the pipeline end in error)
+2. LRD_STATIC File Handling
+
+Modified place_static_data() to only copy files from processed folder after their deadline has been reached
+Files with future deadlines are skipped with appropriate logging
+Files without deadlines are also skipped
+
+3. Missing File Detection and Error Handling
+
+Added check_missing_files_after_deadline() to identify all files missing after their deadline
+Added log_missing_files_errors() to log errors for missing files and determine if critical files are missing
+Process fails with error if NME or FINOB files are missing after their deadline
+
+4. Process Log Integration
+
+Moved append_to_process_log() functionality into ExtractNonSSFData class for better encapsulation
+Added initialize_process_log() method to set up process logging
+All logging logic now contained within the extraction class
+
+Files Modified
+src/abnamro_bsrc_etl/staging/extract_nonssf_data.py
+
+Added deadline checking methods
+Modified static file placement logic to respect deadlines
+Integrated process logging functionality
+Added error handling for missing files after deadline
+
+src/abnamro_bsrc_etl/scripts/nonssf_staging_process.py
+
+Refactored to use new logging methods from extraction class
+Added deadline checking before processing files
+Implemented error raising when critical files (NME/FINOB) are missing after deadline
+Broke down complex function into smaller, more maintainable helper functions
+
+test/staging/test_extract_non_ssf_data.py
+
+Updated all tests to include deadline data in mock DataFrames
+Added specific test cases for deadline functionality
+Fixed test assertions to match new behavior
+Updated run_month to 202505 to align with current date context
+Added tests for missing file detection and error logging
+
+Testing
+
+All existing tests updated to work with deadline functionality
+Added comprehensive test coverage for:
+
+Deadline checking logic
+Static file copying based on deadlines
+Missing file detection after deadline
+Process log integration
+
 
