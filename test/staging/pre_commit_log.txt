@@ -4,28 +4,181 @@ ruff lint................................................................Failed
 - exit code: 1
 
 All checks passed!
-test\staging\test_extract_non_ssf_data.py:581:5: F841 Local variable `result` is assigned to but never used
+src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py:13:5: C901 `non_ssf_load` is too complex (12 > 10)
+   |
+13 | def non_ssf_load(
+   |     ^^^^^^^^^^^^ C901
+14 |     spark: SparkSession,
+15 |     run_month: str,
+   |
+
+src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py:69:17: TRY301 Abstract `raise` to an inner function
+   |
+67 |                       source_system="", comments=error_summary, status="Failed"
+68 |                   )
+69 |                   raise NonSSFExtractionError(
+   |  _________________^
+70 | |                     NonSSFStepStatus.INIT_CHECKS, additional_info=error_summary
+71 | |                 )
+   | |_________________^ TRY301
+72 |
+73 |           # Get all files from basel-nonssf-landing container and place static data
+   |
+
+src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py:105:21: TRY301 Abstract `raise` to an inner function
     |
-580 |     # Call place_static_data with overall deadline passed
-581 |     result = extraction.place_static_data([], deadline_passed=True)
+103 |                           status="Failed",
+104 |                       )
+105 |                       raise NonSSFExtractionError(
+    |  _____________________^
+106 | |                         NonSSFStepStatus.INIT_CHECKS, additional_info=file_comment
+107 | |                     )
+    | |_____________________^ TRY301
+108 |
+109 |                   # 2. Convert to parquet and place in month container
+    |
+
+src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py:120:21: TRY301 Abstract `raise` to an inner function
+    |
+118 |                           status="Failed",
+119 |                       )
+120 |                       raise NonSSFExtractionError(
+    |  _____________________^
+121 | |                         NonSSFStepStatus.CONVERTED_PARQUET, additional_info=file_comment
+122 | |                     )
+    | |_____________________^ TRY301
+123 |
+124 |                   # 3. Move source file to processed folder
+    |
+
+src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py:134:21: TRY301 Abstract `raise` to an inner function
+    |
+132 |                           status="Failed",
+133 |                       )
+134 |                       raise NonSSFExtractionError(
+    |  _____________________^
+135 | |                         NonSSFStepStatus.MOVED_SRC, additional_info=file_comment
+136 | |                     )
+    | |_____________________^ TRY301
+137 |
+138 |                   # 4. Load to staging table
+    |
+
+src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py:155:21: TRY301 Abstract `raise` to an inner function
+    |
+153 |                           status="Failed",
+154 |                       )
+155 |                       raise NonSSFExtractionError(
+    |  _____________________^
+156 | |                         NonSSFStepStatus.LOADED_STG, additional_info=file_comment
+157 | |                     )
+    | |_____________________^ TRY301
+158 |
+159 |                   # 5. DQ checks
+    |
+
+src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py:171:21: TRY301 Abstract `raise` to an inner function
+    |
+169 |                           status="Failed",
+170 |                       )
+171 |                       raise NonSSFExtractionError(
+    |  _____________________^
+172 | |                         NonSSFStepStatus.CHECKED_DQ, additional_info=file_comment
+173 | |                     )
+    | |_____________________^ TRY301
+174 |
+175 |                   # Complete the process for corresponding trigger file
+    |
+
+src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py:189:13: TRY203 Remove exception handler; error is immediately re-raised
+    |
+187 |                   )
+188 |
+189 |               except NonSSFExtractionError:
+    |  _____________^
+190 | |                 # Re-raise the exception after logging
+191 | |                 raise
+    | |_____________________^ TRY203
+192 |
+193 |           # Complete the process after all trigger files
+    |
+
+test\staging\test_extract_non_ssf_data.py:447:5: F841 Local variable `result` is assigned to but never used
+    |
+445 |     # Test place_static_data
+446 |     new_files = []
+447 |     result = extraction.place_static_data(new_files)
     |     ^^^^^^ F841
-582 |
-583 |     # Verify that only files with passed deadlines were copied
+448 |
+449 |     # Only STATIC_PAST should be copied (deadline reached)
     |
     = help: Remove assignment to unused variable `result`
 
-Found 1 error.
+Found 9 errors.
 No fixes available (1 hidden fix can be enabled with the `--unsafe-fixes` option).
 All checks passed!
-All checks passed!
+src\abnamro_bsrc_etl\staging\extract_nonssf_data.py:51:9: ARG002 Unused method argument: `file_delivery_status`
+   |
+49 |         comments: str,
+50 |         status: Literal["Completed", "Started", "Failed"] = "Completed",
+51 |         file_delivery_status: NonSSFStepStatus = NonSSFStepStatus.COMPLETED,
+   |         ^^^^^^^^^^^^^^^^^^^^ ARG002
+52 |     ) -> None:
+53 |         """Append log entry to process log table.
+   |
 
-ruff format..............................................................Failed
-- hook id: ruff
-- files were modified by this hook
+src\abnamro_bsrc_etl\staging\extract_nonssf_data.py:98:25: DTZ007 Naive datetime constructed using `datetime.datetime.strptime()` without %z
+   |
+96 |         deadline_str = deadline_info[0]["Deadline"]
+97 |         # Parse deadline - assuming format YYYY-MM-DD
+98 |         deadline_date = datetime.strptime(deadline_str, "%Y-%m-%d").date()
+   |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ DTZ007
+99 |         current_date = datetime.now(timezone.utc).date()
+   |
+   = help: Call `.replace(tzinfo=<timezone>)` or `.astimezone()` to convert to an aware datetime
 
-21 files left unchanged
-21 files left unchanged
-21 files left unchanged
-1 file reformatted, 20 files left unchanged
+src\abnamro_bsrc_etl\staging\extract_nonssf_data.py:182:89: E501 Line too long (93 > 88)
+    |
+180 |                 if not deadline_reached:
+181 |                     logger.info(
+182 |                         f"Deadline not reached for {file_name} (deadline: {deadline_date}). "
+    |                                                                                         ^^^^^ E501
+183 |                         f"Skipping copy from processed folder."
+184 |                     )
+    |
 
+src\abnamro_bsrc_etl\staging\extract_nonssf_data.py:290:24: BLE001 Do not catch blind exception: `Exception`
+    |
+288 |                                 }
+289 |                             )
+290 |                 except Exception as e:
+    |                        ^^^^^^^^^ BLE001
+291 |                     logger.error(f"Error checking files in {source_folder}: {e}")
+    |
+
+src\abnamro_bsrc_etl\staging\extract_nonssf_data.py:291:21: TRY400 Use `logging.exception` instead of `logging.error`
+    |
+289 |                             )
+290 |                 except Exception as e:
+291 |                     logger.error(f"Error checking files in {source_folder}: {e}")
+    |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ TRY400
+292 |
+293 |         return missing_files
+    |
+    = help: Replace with `exception`
+
+src\abnamro_bsrc_etl\staging\extract_nonssf_data.py:308:89: E501 Line too long (89 > 88)
+    |
+306 |         for missing_file in missing_files:
+307 |             error_msg = (
+308 |                 f"File {missing_file['file_name']} from {missing_file['source_system']} "
+    |                                                                                         ^ E501
+309 |                 f"is missing after deadline ({missing_file['deadline']})"
+310 |             )
+    |
+
+Found 6 errors.
+No fixes available (1 hidden fix can be enabled with the `--unsafe-fixes` option).
+
+ruff format..............................................................Passed
 mypy.....................................................................Passed
