@@ -60,6 +60,7 @@ class ExtractNonSSFData(ExtractStagingData):
             file_delivery_status (NonSSFStepStatus): File delivery status.
                 Defaults to NonSSFStepStatus.COMPLETED.
         """
+        # Note: file_delivery_status is kept for API compatibility but not used in process log
         record = self.base_process_record.copy()
         record["Status"] = status
         record["Comments"] = comments
@@ -95,7 +96,7 @@ class ExtractNonSSFData(ExtractStagingData):
         
         deadline_str = deadline_info[0]["Deadline"]
         # Parse deadline - assuming format YYYY-MM-DD
-        deadline_date = datetime.strptime(deadline_str, "%Y-%m-%d").date()
+        deadline_date = datetime.strptime(deadline_str, "%Y-%m-%d").replace(tzinfo=timezone.utc).date()
         current_date = datetime.now(timezone.utc).date()
         
         return current_date >= deadline_date, deadline_str
@@ -284,8 +285,8 @@ class ExtractNonSSFData(ExtractStagingData):
                                 "file_name": file_name,
                                 "deadline": deadline_date
                             })
-                except Exception as e:
-                    logger.error(f"Error checking files in {source_folder}: {e}")
+                except Exception:
+                    logger.exception(f"Error checking files in {source_folder}")
                     
         return missing_files
 
