@@ -11,6 +11,156 @@ from abnamro_bsrc_etl.utils.logging_util import get_logger
 logger = get_logger()
 
 
+def _handle_extraction_error(
+    extraction: ExtractNonSSFData,
+    source_system: str,
+    file_delivery_status: NonSSFStepStatus,
+    file_comment: str,
+) -> None:
+    """Handle extraction errors by logging and raising exception.
+    
+    Args:
+        extraction: ExtractNonSSFData instance
+        source_system: Source system name
+        file_delivery_status: Current step status
+        file_comment: Comment for logging
+        
+    Raises:
+        NonSSFExtractionError: Always raises with the provided status and comment
+    """
+    extraction.append_to_process_log(
+        source_system=source_system,
+        file_delivery_status=file_delivery_status,
+        comments=file_comment,
+        status="Failed",
+    )
+    raise NonSSFExtractionError(file_delivery_status, additional_info=file_comment)
+
+
+def _process_single_file(
+    extraction: ExtractNonSSFData,
+    file: dict[str, str],
+) -> None:
+    """Process a single file through all stages.
+    
+    Args:
+        extraction: ExtractNonSSFData instance
+        file: Dictionary with 'source_system' and 'file_name' keys
+        
+    Raises:
+        NonSSFExtractionError: If any processing step fails
+    """
+    source_system = file["source_system"]
+    file_name = file["file_name"]
+    file_comment = f"Processing {Path(file_name).stem}"
+    
+    # Start the process for corresponding trigger file
+    extraction.append_to_process_log(
+        source_system=source_system,
+        status="Started",
+        comments=file_comment,
+    )
+
+    # 1. Initial checks
+    if not extraction.initial_checks(
+        file_name=file_name, source_system=source_system
+    ):
+        _handle_extraction_error(
+            extraction, source_system, NonSSFStepStatus.INIT_CHECKS, file_comment
+        )
+
+    # 2. Convert to parquet and place in month container
+    if not extraction.convert_to_parquet(
+        source_system=source_system,
+        file_name=file_name,
+    ):
+        _handle_extraction_error(
+            extraction, source_system, NonSSFStepStatus.CONVERTED_PARQUET, file_comment
+        )
+
+    # 3. Move source file to processed folder
+    if not extraction.move_source_file(
+        source_system=source_system, file_name=file_name
+    ):
+        _handle_extraction_error(
+            extraction, source_system, NonSSFStepStatus.MOVED_SRC, file_comment
+        )
+
+    # 4. Load to staging table
+    data = extraction.extract_from_parquet(
+        source_system=source_system, file_name=file_name
+    )
+    stg_table_name = extraction.get_staging_table_name(file_name)
+    if not extraction.save_to_stg_table(
+        data=data,
+        stg_table_name=stg_table_name,
+        source_system=source_system,
+        file_name=Path(file_name).stem,
+    ):
+        _handle_extraction_error(
+            extraction, source_system, NonSSFStepStatus.LOADED_STG, file_comment
+        )
+
+    # 5. DQ checks
+    elif not extraction.validate_data_quality(
+        source_system=source_system,
+        file_name=Path(file_name).stem,
+        stg_table_name=stg_table_name,
+    ):
+        _handle_extraction_error(
+            extraction, source_system, NonSSFStepStatus.CHECKED_DQ, file_comment
+        )
+
+    # Complete the process for corresponding trigger file
+    extraction.update_log_metadata(
+        source_system=source_system,
+        key=Path(file_name).stem,
+        file_delivery_status=NonSSFStepStatus.COMPLETED,
+        result="SUCCESS",
+        comment=file_comment,
+    )
+    extraction.append_to_process_log(
+        source_system=source_system,
+        comments=file_comment,
+        status="Completed",
+    )
+
+
+def _check_and_handle_missing_files(extraction: ExtractNonSSFData) -> None:
+    """Check for missing files after deadline and handle critical ones.
+    
+    Args:
+        extraction: ExtractNonSSFData instance
+        
+    Raises:
+        NonSSFExtractionError: If critical files (NME/FINOB) are missing after deadline
+    """
+    missing_files = extraction.check_missing_files_after_deadline()
+    if missing_files:
+        # Log errors for missing files
+        has_critical_missing = extraction.log_missing_files_errors(missing_files)
+        
+        # Fail the entire process if files are missing for NME or FINOB
+        if has_critical_missing:
+            nme_finob_missing = [
+                f for f in missing_files 
+                if f['source_system'].upper() in ['NME', 'FINOB']
+            ]
+            error_summary = (
+                f"Critical files missing after deadline: "
+                f"{', '.join([f['file_name'] for f in nme_finob_missing])}"
+            )
+            extraction.append_to_process_log(
+                source_system="",
+                comments=error_summary,
+                status="Failed"
+            )
+            raise NonSSFExtractionError(
+                NonSSFStepStatus.INIT_CHECKS,
+                additional_info=error_summary
+            )
+
+
 def non_ssf_load(
     spark: SparkSession,
     run_month: str,
@@ -51,31 +201,8 @@ def non_ssf_load(
     )
 
     try:
-        # Check for missing files after deadline BEFORE processing
-        missing_files = extraction.check_missing_files_after_deadline()
-        if missing_files:
-            # Log errors for missing files
-            has_critical_missing = extraction.log_missing_files_errors(missing_files)
-            
-            # Fail the entire process if files are missing for NME or FINOB
-            if has_critical_missing:
-                nme_finob_missing = [
-                    f for f in missing_files 
-                    if f['source_system'].upper() in ['NME', 'FINOB']
-                ]
-                error_summary = (
-                    f"Critical files missing after deadline: "
-                    f"{', '.join([f['file_name'] for f in nme_finob_missing])}"
-                )
-                extraction.append_to_process_log(
-                    source_system="",
-                    comments=error_summary,
-                    status="Failed"
-                )
-                raise NonSSFExtractionError(
-                    NonSSFStepStatus.INIT_CHECKS,
-                    additional_info=error_summary
-                )
+        # Check for missing files after deadline
+        _check_and_handle_missing_files(extraction)
         
         # Get all files from basel-nonssf-landing container and place static data
         files_per_delivery_entity = extraction.get_all_files()
@@ -86,121 +213,9 @@ def non_ssf_load(
 
         logger.info(files_per_delivery_entity)
 
+        # Process each file
         for file in files_per_delivery_entity:
-            source_system = file["source_system"]
-            file_name = file["file_name"]
-            file_comment = f"Processing {Path(file_name).stem}"
-            
-            # Start the process for corresponding trigger file
-            extraction.append_to_process_log(
-                source_system=source_system,
-                status="Started",
-                comments=file_comment,
-            )
-
-            try:
-                # 1. Initial checks
-                if not extraction.initial_checks(
-                    file_name=file_name, source_system=source_system
-                ):
-                    extraction.append_to_process_log(
-                        source_system=source_system,
-                        file_delivery_status=NonSSFStepStatus.INIT_CHECKS,
-                        comments=file_comment,
-                        status="Failed",
-                    )
-                    raise NonSSFExtractionError(
-                        NonSSFStepStatus.INIT_CHECKS,
-                        additional_info=file_comment
-                    )
-
-                # 2. Convert to parquet and place in month container
-                if not extraction.convert_to_parquet(
-                    source_system=source_system,
-                    file_name=file_name,
-                ):
-                    extraction.append_to_process_log(
-                        source_system=source_system,
-                        file_delivery_status=NonSSFStepStatus.CONVERTED_PARQUET,
-                        comments=file_comment,
-                        status="Failed",
-                    )
-                    raise NonSSFExtractionError(
-                        NonSSFStepStatus.CONVERTED_PARQUET,
-                        additional_info=file_comment
-                    )
-
-                # 3. Move source file to processed folder
-                if not extraction.move_source_file(
-                    source_system=source_system, file_name=file_name
-                ):
-                    extraction.append_to_process_log(
-                        source_system=source_system,
-                        file_delivery_status=NonSSFStepStatus.MOVED_SRC,
-                        comments=file_comment,
-                        status="Failed",
-                    )
-                    raise NonSSFExtractionError(
-                        NonSSFStepStatus.MOVED_SRC,
-                        additional_info=file_comment
-                    )
-
-                # 4. Load to staging table
-                data = extraction.extract_from_parquet(
-                    source_system=source_system, file_name=file_name
-                )
-                stg_table_name = extraction.get_staging_table_name(file_name)
-                if not extraction.save_to_stg_table(
-                    data=data,
-                    stg_table_name=stg_table_name,
-                    source_system=source_system,
-                    file_name=Path(file_name).stem,
-                ):
-                    extraction.append_to_process_log(
-                        source_system=source_system,
-                        file_delivery_status=NonSSFStepStatus.LOADED_STG,
-                        comments=file_comment,
-                        status="Failed",
-                    )
-                    raise NonSSFExtractionError(
-                        NonSSFStepStatus.LOADED_STG,
-                        additional_info=file_comment
-                    )
-
-                # 5. DQ checks
-                elif not extraction.validate_data_quality(
-                    source_system=source_system,
-                    file_name=Path(file_name).stem,
-                    stg_table_name=stg_table_name,
-                ):
-                    extraction.append_to_process_log(
-                        source_system=source_system,
-                        file_delivery_status=NonSSFStepStatus.CHECKED_DQ,
-                        comments=file_comment,
-                        status="Failed",
-                    )
-                    raise NonSSFExtractionError(
-                        NonSSFStepStatus.CHECKED_DQ,
-                        additional_info=file_comment
-                    )
-
-                # Complete the process for corresponding trigger file
-                extraction.update_log_metadata(
-                    source_system=source_system,
-                    key=Path(file_name).stem,
-                    file_delivery_status=NonSSFStepStatus.COMPLETED,
-                    result="SUCCESS",
-                    comment=file_comment,
-                )
-                extraction.append_to_process_log(
-                    source_system=source_system,
-                    comments=file_comment,
-                    status="Completed",
-                )
-                
-            except NonSSFExtractionError:
-                # Re-raise the exception after logging
-                raise
+            _process_single_file(extraction, file)
 
         # Complete the process after all trigger files
         extraction.append_to_process_log(
