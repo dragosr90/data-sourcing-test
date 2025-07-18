@@ -1,1 +1,1 @@
-[AMBIGUOUS_REFERENCE] Reference `UCR_BASE`.`RATING_ID` is ambiguous, could be: [`UCR_BASE`.`RATING_ID`, `UCR_BASE`.`RATING_ID`]
+TypeError: Transformations.validate_aggregation() missing 1 required positional argument: 'column_mapping'
