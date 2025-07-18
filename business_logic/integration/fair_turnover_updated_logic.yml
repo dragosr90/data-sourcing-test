@@ -42,27 +42,15 @@ sources:
     source: stg_{{ RUN_MONTH }}.dial_fair_lbr_quantitative_input
 
 transformations:
-  # Step 1: First get model essentials with their iterations
-  # Join PD_ITERATIONS with MODEL_ESSENTIALS
-  - join:
-      left_source: MODEL_ESSENTIALS
-      right_source: PD_ITERATIONS
-      condition:
-        - MODEL_ESSENTIALS.RATING_ID = PD_ITERATIONS.RATING_ID
-        - MODEL_ESSENTIALS.ITERATION_NUMBER = PD_ITERATIONS.ITERATION_NUMBER
-      how: inner
-      alias: MODEL_WITH_ITER
-  
-  # Step 2: Pivot model essentials by type
+  # Step 1: Pivot model essentials directly
   - pivot:
       alias: PIVOTED_ESSENTIALS
-      source: MODEL_WITH_ITER
+      source: MODEL_ESSENTIALS
       group_cols:
-        - MODEL_WITH_ITER.RATING_ID
-        - MODEL_WITH_ITER.ITERATION_NUMBER
-        - MODEL_WITH_ITER.RECOMMENDED
-      pivot_col: MODEL_WITH_ITER.MODEL_COMPONENT_ESSENTIAL_TYPE_CODE
-      pivot_value_col: MODEL_WITH_ITER.MODEL_COMPONENT_ESSENTIAL_VALUE
+        - MODEL_ESSENTIALS.RATING_ID
+        - MODEL_ESSENTIALS.ITERATION_NUMBER
+      pivot_col: MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_TYPE_CODE
+      pivot_value_col: MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_VALUE
       column_mapping:
         CorrectedTotalAssets: first
         TotalBalanceSheet: first
@@ -75,7 +63,16 @@ transformations:
         TotalRevenues: first
         TotalOperatingIncome: first
   
-  # Step 3: Get first iteration per rating (prioritize any available data)
+  # Step 2: Join with iterations to get all iteration data
+  - join:
+      left_source: PIVOTED_ESSENTIALS
+      right_source: PD_ITERATIONS
+      condition:
+        - PIVOTED_ESSENTIALS.RATING_ID = PD_ITERATIONS.RATING_ID
+        - PIVOTED_ESSENTIALS.ITERATION_NUMBER = PD_ITERATIONS.ITERATION_NUMBER
+      how: inner
+  
+  # Step 3: Get first iteration per rating (using any available iteration)
   - aggregation:
       alias: FIRST_ITER_DATA
       source: PIVOTED_ESSENTIALS
@@ -92,27 +89,25 @@ transformations:
       condition:
         - UCR_ACTUAL.RATING_ID = FIRST_ITER_DATA.RATING_ID
       how: left
-      alias: UCR_WITH_MODEL
   
   # Step 5: Join with LBR data
   - join:
-      left_source: UCR_WITH_MODEL
       right_source: LBR_QUANTITATIVE
       condition:
-        - UCR_WITH_MODEL.LB_RATING_ID = LBR_QUANTITATIVE.LB_RATING_ID
+        - UCR_ACTUAL.LB_RATING_ID = LBR_QUANTITATIVE.LB_RATING_ID
       how: left
 
 expressions:
-  RatingID: UCR_WITH_MODEL.RATING_ID
+  RatingID: UCR_ACTUAL.RATING_ID
   # Simple hierarchy: LBR if available, otherwise model data
   AnnualTurnover: COALESCE(
     CASE 
       WHEN LBR_QUANTITATIVE.NET_INTEREST_YIELD IS NOT NULL AND LBR_QUANTITATIVE.OTHER_OPERATING_INCOME IS NOT NULL 
       THEN CAST((LBR_QUANTITATIVE.NET_INTEREST_YIELD + LBR_QUANTITATIVE.OTHER_OPERATING_INCOME) * 1000000000 AS STRING) 
     END, 
-    UCR_WITH_MODEL.Turnover_calc
+    FIRST_ITER_DATA.Turnover_calc
     )
-  AnnualTurnoverDirect: UCR_WITH_MODEL.Turnover_calc
+  AnnualTurnoverDirect: FIRST_ITER_DATA.Turnover_calc
   AnnualTurnoverLBR: CASE 
     WHEN LBR_QUANTITATIVE.NET_INTEREST_YIELD IS NOT NULL AND LBR_QUANTITATIVE.OTHER_OPERATING_INCOME IS NOT NULL 
     THEN CAST((LBR_QUANTITATIVE.NET_INTEREST_YIELD + LBR_QUANTITATIVE.OTHER_OPERATING_INCOME) * 1000000000 AS STRING) 
@@ -122,9 +117,9 @@ expressions:
       WHEN LBR_QUANTITATIVE.TOTAL_ASSETS IS NOT NULL 
       THEN CAST(LBR_QUANTITATIVE.TOTAL_ASSETS * 1000000000 AS STRING) 
     END, 
-    UCR_WITH_MODEL.TotalAssets_calc
+    FIRST_ITER_DATA.TotalAssets_calc
     )
-  TotalAssetsDirect: UCR_WITH_MODEL.TotalAssets_calc
+  TotalAssetsDirect: FIRST_ITER_DATA.TotalAssets_calc
   TotalAssetsLBR: CASE 
     WHEN LBR_QUANTITATIVE.TOTAL_ASSETS IS NOT NULL 
     THEN CAST(LBR_QUANTITATIVE.TOTAL_ASSETS * 1000000000 AS STRING) 
@@ -132,12 +127,12 @@ expressions:
   # Source tracking
   TurnoverSource: CASE
     WHEN LBR_QUANTITATIVE.NET_INTEREST_YIELD IS NOT NULL AND LBR_QUANTITATIVE.OTHER_OPERATING_INCOME IS NOT NULL THEN 'LBR'
-    WHEN UCR_WITH_MODEL.Turnover_calc IS NOT NULL THEN 'Direct'
+    WHEN FIRST_ITER_DATA.Turnover_calc IS NOT NULL THEN 'Direct'
     ELSE 'None'
     END
   AssetsSource: CASE
     WHEN LBR_QUANTITATIVE.TOTAL_ASSETS IS NOT NULL THEN 'LBR'
-    WHEN UCR_WITH_MODEL.TotalAssets_calc IS NOT NULL THEN 'Direct'
+    WHEN FIRST_ITER_DATA.TotalAssets_calc IS NOT NULL THEN 'Direct'
     ELSE 'None'
     END
 
