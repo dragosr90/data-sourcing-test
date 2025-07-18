@@ -42,24 +42,7 @@ sources:
     source: stg_{{ RUN_MONTH }}.dial_fair_lbr_quantitative_input
 
 transformations:
-  # Step 1: Start with UCR_ACTUAL as the base (to preserve all records including LBR)
-  - aggregation:
-      alias: UCR_BASE
-      source: UCR_ACTUAL
-      group:
-        - UCR_ACTUAL.RATING_ID
-        - UCR_ACTUAL.COMPANY_ID
-        - UCR_ACTUAL.PARENT_COMPANY_ID
-        - UCR_ACTUAL.LB_RATING_ID
-        - UCR_ACTUAL.RATING_STATUS
-      column_mapping:
-        RATING_ID: first(UCR_ACTUAL.RATING_ID)
-        COMPANY_ID: first(UCR_ACTUAL.COMPANY_ID)
-        PARENT_COMPANY_ID: first(UCR_ACTUAL.PARENT_COMPANY_ID)
-        LB_RATING_ID: first(UCR_ACTUAL.LB_RATING_ID)
-        RATING_STATUS: first(UCR_ACTUAL.RATING_STATUS)
-  
-  # Step 2: Join iterations with model essentials (for non-LBR records)
+  # Step 1: Join iterations with model essentials (for non-LBR records)
   - join:
       left_source: PD_ITERATIONS
       right_source: MODEL_ESSENTIALS
@@ -69,27 +52,27 @@ transformations:
       how: inner
       alias: PD_MODEL_DATA
   
-  # Step 3: LEFT JOIN UCR_BASE with PD_MODEL_DATA to preserve all UCR records
+  # Step 2: LEFT JOIN UCR_ACTUAL with PD_MODEL_DATA to preserve all UCR records
   - join:
-      left_source: UCR_BASE
+      left_source: UCR_ACTUAL
       right_source: PD_MODEL_DATA
       condition:
-        - UCR_BASE.RATING_ID = PD_MODEL_DATA.RATING_ID
+        - UCR_ACTUAL.RATING_ID = PD_MODEL_DATA.RATING_ID
       how: left
       alias: COMBINED_DATA
   
-  # Step 4: Pivot the MODEL_COMPONENT_ESSENTIAL_TYPE_CODE values to columns
+  # Step 3: Pivot the MODEL_COMPONENT_ESSENTIAL_TYPE_CODE values to columns
   # Note: This will have nulls for LBR-only records, which is expected
   - pivot:
       alias: PIVOTED_ESSENTIALS
       source: COMBINED_DATA
       group_cols:
-        - UCR_BASE.RATING_ID
-        - UCR_BASE.COMPANY_ID
-        - UCR_BASE.PARENT_COMPANY_ID
-        - UCR_BASE.LB_RATING_ID
-      pivot_col: MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_TYPE_CODE
-      pivot_value_col: MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_VALUE
+        - UCR_ACTUAL.RATING_ID
+        - UCR_ACTUAL.COMPANY_ID
+        - UCR_ACTUAL.PARENT_COMPANY_ID
+        - UCR_ACTUAL.LB_RATING_ID
+      pivot_col: COMBINED_DATA.MODEL_COMPONENT_ESSENTIAL_TYPE_CODE
+      pivot_value_col: COMBINED_DATA.MODEL_COMPONENT_ESSENTIAL_VALUE
       column_mapping:
         CorrectedTotalAssets: first
         TotalBalanceSheet: first
@@ -143,7 +126,7 @@ transformations:
 
 expressions:
   RatingID: DIRECT.RATING_ID
-  ParentRatingID: Parent_RATING_ID
+  ParentRatingID: PARENT.Parent_RATING_ID
   LBRatingID: LBR_QUANTITATIVE.LB_RATING_ID
   # For LBR records, the COALESCE will use LBR data since PARENT and DIRECT values will be null
   AnnualTurnover: COALESCE(CASE WHEN LBR_QUANTITATIVE.NET_INTEREST_YIELD IS NOT NULL AND LBR_QUANTITATIVE.OTHER_OPERATING_INCOME IS NOT NULL THEN CAST((LBR_QUANTITATIVE.NET_INTEREST_YIELD + LBR_QUANTITATIVE.OTHER_OPERATING_INCOME) * 1000000000 AS STRING) END, PARENT.Parent_Turnover, DIRECT.Turnover)
