@@ -1,1 +1,11 @@
-Reference `PD_MODEL_DATA`.`RATING_ID` is ambiguous, could be: [`PD_MODEL_DATA`.`RATING_ID`, `PD_MODEL_DATA`.`RATING_ID`]. SQLSTATE: 42704
+2025-07-18 08:55:51 [INFO] validate:  YAML format validated successfully
+2025-07-18 08:55:56 [INFO] validate:  Sources validated successfully
+2025-07-18 08:55:57 [INFO] validate_join:  Joins validated successfully
+2025-07-18 08:55:57 [INFO] validate_join:  Joins validated successfully
+2025-07-18 08:55:57 [ERROR] validate_pivot:  Problem with pivot columns {'MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_VALUE', 'MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_TYPE_CODE'}
+2025-07-18 08:55:57 [ERROR] validate_pivot:  Available columns: {'PD_ITERATIONS.RECOMMENDED', 'UCR_ACTUAL.PARENT_COMPANY_ID', 'UCR_ACTUAL.COMPANY_ID', 'PD_ITERATIONS.RATING_ID', 'PD_ITERATIONS.ITERATION_NUMBER', 'UCR_ACTUAL.RATING_STATUS', 'UCR_ACTUAL.LB_RATING_ID', 'UCR_ACTUAL.RATING_ID'}
+2025-07-18 08:55:57 [INFO] validate_aggregation:  Aggregations validated successfully
+2025-07-18 08:55:57 [INFO] validate_aggregation:  Aggregations validated successfully
+2025-07-18 08:55:57 [INFO] validate_join:  Joins validated successfully
+2025-07-18 08:55:58 [INFO] validate_join:  Joins validated successfully
+False
