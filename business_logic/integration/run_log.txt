@@ -1,1 +1,1 @@
-[AMBIGUOUS_REFERENCE] Reference `MODEL_WITH_ITER`.`RATING_ID` is ambiguous, could be: [`MODEL_WITH_ITER`.`RATING_ID`, `MODEL_WITH_ITER`.`RATING_ID`]. SQLSTATE: 42704
+[UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `UCR_ACTUAL`.`RATING_ID` cannot be resolved. Did you mean one of the following? [`UCR_WITH_DIRECT`.`RATING_ID`, `UCR_WITH_DIRECT`.`RATING_ID`, `UCR_WITH_DIRECT`.`LB_RATING_ID`, `UCR_WITH_DIRECT`.`Assets`, `UCR_WITH_DIRECT`.`Budget`]. SQLSTATE: 42703
