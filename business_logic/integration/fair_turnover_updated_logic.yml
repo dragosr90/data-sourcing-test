@@ -1,4 +1,4 @@
-description: Pipeline to preprocess FAIR data - Final fix to match RDF logic exactly
+description: Pipeline to preprocess FAIR data - Final solution using all available data
 
 target: bsrc_d.int_{{ RUN_MONTH }}.fair_turnover
 
@@ -10,14 +10,14 @@ sources:
       - RATING_STATUS
       - PARENT_COMPANY_ID
       - LB_RATING_ID
-    source: int_{{ RUN_MONTH }}.pd_ucr_actual
+    source: int_{{ RUN_MONTH }}.dial_fair_pd_ucr_actual
   
   - alias: PD_ITERATIONS
     columns:
       - RATING_ID
       - RECOMMENDED
       - ITERATION_NUMBER
-    # NO FILTER - Use all iterations like RDF does
+    # REMOVE FILTER to get more records
     source: stg_{{ RUN_MONTH }}.dial_fair_pd_iterations
   
   - alias: MODEL_ESSENTIALS
@@ -28,7 +28,8 @@ sources:
       - MODEL_COMPONENT_ESSENTIAL_VALUE
       - MODEL_COMPONENT_ESSENTIAL_CATEGORY_VARIANT_ID
       - ITERATION_NUMBER
-    filter: MODEL_COMPONENT_ESSENTIAL_TYPE_CODE IN ('CorrectedTotalAssets', 'TotalBalanceSheet', 'Assets', 'TotalAssets', 'TotalTurnoverTurnover', 'Turnover', 'Budget', 'Revenues', 'TotalRevenues', 'TotalOperatingIncome') AND MODEL_COMPONENT_ESSENTIAL_CATEGORY_VARIANT_ID = 'cons'
+    # REMOVE VARIANT FILTER to get all available data
+    filter: MODEL_COMPONENT_ESSENTIAL_TYPE_CODE IN ('CorrectedTotalAssets', 'TotalBalanceSheet', 'Assets', 'TotalAssets', 'TotalTurnoverTurnover', 'Turnover', 'Budget', 'Revenues', 'TotalRevenues', 'TotalOperatingIncome')
     source: stg_{{ RUN_MONTH }}.dial_fair_pd_model_component_essentials
   
   - alias: LBR_QUANTITATIVE
@@ -42,15 +43,33 @@ sources:
     source: stg_{{ RUN_MONTH }}.dial_fair_lbr_quantitative_input
 
 transformations:
-  # Step 1: Pivot model essentials directly
+  # Step 1: Get model essentials with priority by variant
+  # First try to get data regardless of iteration
+  - aggregation:
+      alias: MODEL_BY_VARIANT
+      source: MODEL_ESSENTIALS
+      group:
+        - MODEL_ESSENTIALS.RATING_ID
+        - MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_TYPE_CODE
+      column_mapping:
+        # Prioritize variants: cons > single > comb > any other
+        ESSENTIAL_VALUE: first(
+          CASE 
+            WHEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_CATEGORY_VARIANT_ID = 'cons' THEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_VALUE
+            WHEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_CATEGORY_VARIANT_ID = 'single' THEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_VALUE
+            WHEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_CATEGORY_VARIANT_ID = 'comb' THEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_VALUE
+            ELSE MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_VALUE
+          END
+        )
+  
+  # Step 2: Pivot to get all component types as columns
   - pivot:
       alias: PIVOTED_ESSENTIALS
-      source: MODEL_ESSENTIALS
+      source: MODEL_BY_VARIANT
       group_cols:
-        - MODEL_ESSENTIALS.RATING_ID
-        - MODEL_ESSENTIALS.ITERATION_NUMBER
-      pivot_col: MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_TYPE_CODE
-      pivot_value_col: MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_VALUE
+        - MODEL_BY_VARIANT.RATING_ID
+      pivot_col: MODEL_BY_VARIANT.MODEL_COMPONENT_ESSENTIAL_TYPE_CODE
+      pivot_value_col: MODEL_BY_VARIANT.ESSENTIAL_VALUE
       column_mapping:
         CorrectedTotalAssets: first
         TotalBalanceSheet: first
@@ -63,51 +82,74 @@ transformations:
         TotalRevenues: first
         TotalOperatingIncome: first
   
-  # Step 2: Join with iterations to get all iteration data
-  - join:
-      left_source: PIVOTED_ESSENTIALS
-      right_source: PD_ITERATIONS
-      condition:
-        - PIVOTED_ESSENTIALS.RATING_ID = PD_ITERATIONS.RATING_ID
-        - PIVOTED_ESSENTIALS.ITERATION_NUMBER = PD_ITERATIONS.ITERATION_NUMBER
-      how: inner
-  
-  # Step 3: Get first iteration per rating (using any available iteration)
-  - aggregation:
-      alias: FIRST_ITER_DATA
-      source: PIVOTED_ESSENTIALS
-      group:
-        - PIVOTED_ESSENTIALS.RATING_ID
-      column_mapping:
-        TotalAssets_calc: first(COALESCE(PIVOTED_ESSENTIALS.CorrectedTotalAssets, PIVOTED_ESSENTIALS.TotalBalanceSheet, PIVOTED_ESSENTIALS.Assets, PIVOTED_ESSENTIALS.TotalAssets))
-        Turnover_calc: first(COALESCE(PIVOTED_ESSENTIALS.TotalTurnoverTurnover, PIVOTED_ESSENTIALS.Turnover, PIVOTED_ESSENTIALS.Budget, PIVOTED_ESSENTIALS.Revenues, PIVOTED_ESSENTIALS.TotalRevenues, PIVOTED_ESSENTIALS.TotalOperatingIncome))
-  
-  # Step 4: Join with UCR_ACTUAL
+  # Step 3: Join with UCR to get company relationships
   - join:
       left_source: UCR_ACTUAL
-      right_source: FIRST_ITER_DATA
+      right_source: PIVOTED_ESSENTIALS
       condition:
-        - UCR_ACTUAL.RATING_ID = FIRST_ITER_DATA.RATING_ID
+        - UCR_ACTUAL.RATING_ID = PIVOTED_ESSENTIALS.RATING_ID
+      how: left
+      alias: UCR_WITH_DIRECT
+  
+  # Step 4: Create calculated values for direct data
+  - aggregation:
+      alias: DIRECT
+      source: UCR_WITH_DIRECT
+      group:
+        - UCR_ACTUAL.RATING_ID
+        - UCR_ACTUAL.COMPANY_ID
+        - UCR_ACTUAL.PARENT_COMPANY_ID
+        - UCR_ACTUAL.LB_RATING_ID
+      column_mapping:
+        TotalAssets_Direct: first(COALESCE(PIVOTED_ESSENTIALS.CorrectedTotalAssets, PIVOTED_ESSENTIALS.TotalBalanceSheet, PIVOTED_ESSENTIALS.Assets, PIVOTED_ESSENTIALS.TotalAssets))
+        Turnover_Direct: first(COALESCE(PIVOTED_ESSENTIALS.TotalTurnoverTurnover, PIVOTED_ESSENTIALS.Turnover, PIVOTED_ESSENTIALS.Budget, PIVOTED_ESSENTIALS.Revenues, PIVOTED_ESSENTIALS.TotalRevenues, PIVOTED_ESSENTIALS.TotalOperatingIncome))
+  
+  # Step 5: Get parent company data
+  - join:
+      alias: PARENT_JOIN
+      left_source: PIVOTED_ESSENTIALS
+      right_source: UCR_ACTUAL
+      condition:
+        - PIVOTED_ESSENTIALS.RATING_ID = UCR_ACTUAL.RATING_ID
+      how: inner
+  
+  - aggregation:
+      alias: PARENT
+      source: PARENT_JOIN
+      group:
+        - UCR_ACTUAL.COMPANY_ID
+      column_mapping:
+        Parent_TotalAssets: first(COALESCE(PIVOTED_ESSENTIALS.CorrectedTotalAssets, PIVOTED_ESSENTIALS.TotalBalanceSheet, PIVOTED_ESSENTIALS.Assets, PIVOTED_ESSENTIALS.TotalAssets))
+        Parent_Turnover: first(COALESCE(PIVOTED_ESSENTIALS.TotalTurnoverTurnover, PIVOTED_ESSENTIALS.Turnover, PIVOTED_ESSENTIALS.Budget, PIVOTED_ESSENTIALS.Revenues, PIVOTED_ESSENTIALS.TotalRevenues, PIVOTED_ESSENTIALS.TotalOperatingIncome))
+  
+  # Step 6: Join direct with parent data
+  - join:
+      left_source: DIRECT
+      right_source: PARENT
+      condition:
+        - DIRECT.PARENT_COMPANY_ID = PARENT.COMPANY_ID
       how: left
   
-  # Step 5: Join with LBR data
+  # Step 7: Join with LBR data
   - join:
       right_source: LBR_QUANTITATIVE
       condition:
-        - UCR_ACTUAL.LB_RATING_ID = LBR_QUANTITATIVE.LB_RATING_ID
+        - DIRECT.LB_RATING_ID = LBR_QUANTITATIVE.LB_RATING_ID
       how: left
 
 expressions:
-  RatingID: UCR_ACTUAL.RATING_ID
-  # Simple hierarchy: LBR if available, otherwise model data
+  RatingID: DIRECT.RATING_ID
+  # Use the hierarchy from user story: LBR -> Parent -> Direct
   AnnualTurnover: COALESCE(
     CASE 
       WHEN LBR_QUANTITATIVE.NET_INTEREST_YIELD IS NOT NULL AND LBR_QUANTITATIVE.OTHER_OPERATING_INCOME IS NOT NULL 
       THEN CAST((LBR_QUANTITATIVE.NET_INTEREST_YIELD + LBR_QUANTITATIVE.OTHER_OPERATING_INCOME) * 1000000000 AS STRING) 
     END, 
-    FIRST_ITER_DATA.Turnover_calc
+    PARENT.Parent_Turnover,
+    DIRECT.Turnover_Direct
     )
-  AnnualTurnoverDirect: FIRST_ITER_DATA.Turnover_calc
+  AnnualTurnoverDirect: DIRECT.Turnover_Direct
+  AnnualTurnoverParent: PARENT.Parent_Turnover
   AnnualTurnoverLBR: CASE 
     WHEN LBR_QUANTITATIVE.NET_INTEREST_YIELD IS NOT NULL AND LBR_QUANTITATIVE.OTHER_OPERATING_INCOME IS NOT NULL 
     THEN CAST((LBR_QUANTITATIVE.NET_INTEREST_YIELD + LBR_QUANTITATIVE.OTHER_OPERATING_INCOME) * 1000000000 AS STRING) 
@@ -117,23 +159,14 @@ expressions:
       WHEN LBR_QUANTITATIVE.TOTAL_ASSETS IS NOT NULL 
       THEN CAST(LBR_QUANTITATIVE.TOTAL_ASSETS * 1000000000 AS STRING) 
     END, 
-    FIRST_ITER_DATA.TotalAssets_calc
-    )
-  TotalAssetsDirect: FIRST_ITER_DATA.TotalAssets_calc
+    PARENT.Parent_TotalAssets,
+    DIRECT.TotalAssets_Direct
+    )  
+  TotalAssetsDirect: DIRECT.TotalAssets_Direct
+  TotalAssetsParent: PARENT.Parent_TotalAssets  
   TotalAssetsLBR: CASE 
     WHEN LBR_QUANTITATIVE.TOTAL_ASSETS IS NOT NULL 
     THEN CAST(LBR_QUANTITATIVE.TOTAL_ASSETS * 1000000000 AS STRING) 
-    END
-  # Source tracking
-  TurnoverSource: CASE
-    WHEN LBR_QUANTITATIVE.NET_INTEREST_YIELD IS NOT NULL AND LBR_QUANTITATIVE.OTHER_OPERATING_INCOME IS NOT NULL THEN 'LBR'
-    WHEN FIRST_ITER_DATA.Turnover_calc IS NOT NULL THEN 'Direct'
-    ELSE 'None'
-    END
-  AssetsSource: CASE
-    WHEN LBR_QUANTITATIVE.TOTAL_ASSETS IS NOT NULL THEN 'LBR'
-    WHEN FIRST_ITER_DATA.TotalAssets_calc IS NOT NULL THEN 'Direct'
-    ELSE 'None'
     END
 
 drop_duplicates: true
