@@ -1,0 +1,145 @@
+description: Pipeline to preprocess FAIR data to get turnover and total asset values per rating ID - Aligned with RDF logic
+
+target: bsrc_d.int_{{ RUN_MONTH }}.fair_turnover
+
+sources:
+  - alias: UCR_ACTUAL
+    columns:
+      - COMPANY_ID
+      - RATING_ID
+      - RATING_STATUS
+      - PARENT_COMPANY_ID
+      - LB_RATING_ID
+    source: int_{{ RUN_MONTH }}.pd_ucr_actual
+  
+  - alias: PD_ITERATIONS
+    columns:
+      - RATING_ID
+      - RECOMMENDED
+      - ITERATION_NUMBER
+    filter: RECOMMENDED = 'y'
+    source: stg_{{ RUN_MONTH }}.dial_fair_pd_iterations
+  
+  - alias: MODEL_ESSENTIALS
+    columns:
+      - RATING_ID
+      - CALCULATION_PERIOD_ID
+      - MODEL_COMPONENT_ESSENTIAL_TYPE_CODE
+      - MODEL_COMPONENT_ESSENTIAL_VALUE
+      - MODEL_COMPONENT_ESSENTIAL_CATEGORY_VARIANT_ID
+      - ITERATION_NUMBER
+    filter: MODEL_COMPONENT_ESSENTIAL_TYPE_CODE IN ('CorrectedTotalAssets', 'TotalBalanceSheet', 'Assets', 'TotalAssets', 'TotalTurnoverTurnover', 'Turnover', 'Budget', 'Revenues', 'TotalRevenues', 'TotalOperatingIncome') AND MODEL_COMPONENT_ESSENTIAL_CATEGORY_VARIANT_ID = 'cons'
+    source: stg_{{ RUN_MONTH }}.dial_fair_pd_model_component_essentials
+  
+  - alias: LBR_QUANTITATIVE
+    columns:
+      - LB_RATING_ID
+      - DATA_TYPE
+      - TOTAL_ASSETS
+      - NET_INTEREST_YIELD
+      - OTHER_OPERATING_INCOME
+    filter: DATA_TYPE = 2
+    source: stg_{{ RUN_MONTH }}.dial_fair_lbr_quantitative_input
+
+transformations:
+  # Step 1: First, LEFT JOIN UCR with PD_ITERATIONS to preserve all UCR records
+  - join:
+      left_source: UCR_ACTUAL
+      right_source: PD_ITERATIONS
+      condition:
+        - UCR_ACTUAL.RATING_ID = PD_ITERATIONS.RATING_ID
+      how: left
+  
+  # Step 2: Then LEFT JOIN with MODEL_ESSENTIALS to get the model data
+  - join:
+      right_source: MODEL_ESSENTIALS
+      condition:
+        - UCR_ACTUAL.RATING_ID = MODEL_ESSENTIALS.RATING_ID
+        - PD_ITERATIONS.ITERATION_NUMBER = MODEL_ESSENTIALS.ITERATION_NUMBER
+      how: left
+  
+  # Step 3: Pivot the MODEL_COMPONENT_ESSENTIAL_TYPE_CODE values to columns
+  - pivot:
+      alias: PIVOTED_ESSENTIALS
+      group_cols:
+        - UCR_ACTUAL.RATING_ID
+        - UCR_ACTUAL.COMPANY_ID
+        - UCR_ACTUAL.PARENT_COMPANY_ID
+        - UCR_ACTUAL.LB_RATING_ID
+      pivot_col: MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_TYPE_CODE
+      pivot_value_col: MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_VALUE
+      column_mapping:
+        CorrectedTotalAssets: first
+        TotalBalanceSheet: first
+        Assets: first
+        TotalAssets: first
+        TotalTurnoverTurnover: first
+        Turnover: first
+        Budget: first
+        Revenues: first
+        TotalRevenues: first
+        TotalOperatingIncome: first
+  
+  # Step 4: Create DIRECT alias with calculated Total Assets and Turnover
+  # REMOVED PARENT LOGIC - Only using direct values
+  - aggregation:
+      alias: DIRECT
+      source: PIVOTED_ESSENTIALS
+      group:
+        - PIVOTED_ESSENTIALS.RATING_ID
+        - PIVOTED_ESSENTIALS.COMPANY_ID  
+        - PIVOTED_ESSENTIALS.PARENT_COMPANY_ID
+        - PIVOTED_ESSENTIALS.LB_RATING_ID
+      column_mapping:
+        TotalAssets: first(COALESCE(PIVOTED_ESSENTIALS.CorrectedTotalAssets, PIVOTED_ESSENTIALS.TotalBalanceSheet, PIVOTED_ESSENTIALS.Assets, PIVOTED_ESSENTIALS.TotalAssets))
+        Turnover: first(COALESCE(PIVOTED_ESSENTIALS.TotalTurnoverTurnover, PIVOTED_ESSENTIALS.Turnover, PIVOTED_ESSENTIALS.Budget, PIVOTED_ESSENTIALS.Revenues, PIVOTED_ESSENTIALS.TotalRevenues, PIVOTED_ESSENTIALS.TotalOperatingIncome))
+  
+  # Step 5: Join with LBR data
+  - join:
+      left_source: DIRECT
+      right_source: LBR_QUANTITATIVE
+      condition:
+        - DIRECT.LB_RATING_ID = LBR_QUANTITATIVE.LB_RATING_ID
+      how: left
+
+expressions:
+  RatingID: DIRECT.RATING_ID
+  # SIMPLIFIED LOGIC - Only use LBR if available, otherwise use Direct values
+  # No parent fallback to match RDF logic
+  AnnualTurnover: COALESCE(
+    CASE 
+      WHEN LBR_QUANTITATIVE.NET_INTEREST_YIELD IS NOT NULL AND LBR_QUANTITATIVE.OTHER_OPERATING_INCOME IS NOT NULL 
+      THEN CAST((LBR_QUANTITATIVE.NET_INTEREST_YIELD + LBR_QUANTITATIVE.OTHER_OPERATING_INCOME) * 1000000000 AS STRING) 
+    END, 
+    DIRECT.Turnover
+  )
+  AnnualTurnoverDirect: DIRECT.Turnover
+  AnnualTurnoverLBR: CASE 
+    WHEN LBR_QUANTITATIVE.NET_INTEREST_YIELD IS NOT NULL AND LBR_QUANTITATIVE.OTHER_OPERATING_INCOME IS NOT NULL 
+    THEN CAST((LBR_QUANTITATIVE.NET_INTEREST_YIELD + LBR_QUANTITATIVE.OTHER_OPERATING_INCOME) * 1000000000 AS STRING) 
+  END
+  TotalAssets: COALESCE(
+    CASE 
+      WHEN LBR_QUANTITATIVE.TOTAL_ASSETS IS NOT NULL 
+      THEN CAST(LBR_QUANTITATIVE.TOTAL_ASSETS * 1000000000 AS STRING) 
+    END, 
+    DIRECT.TotalAssets
+  )
+  TotalAssetsDirect: DIRECT.TotalAssets
+  TotalAssetsLBR: CASE 
+    WHEN LBR_QUANTITATIVE.TOTAL_ASSETS IS NOT NULL 
+    THEN CAST(LBR_QUANTITATIVE.TOTAL_ASSETS * 1000000000 AS STRING) 
+  END
+  # Add source tracking columns for debugging
+  TurnoverSource: CASE
+    WHEN LBR_QUANTITATIVE.NET_INTEREST_YIELD IS NOT NULL AND LBR_QUANTITATIVE.OTHER_OPERATING_INCOME IS NOT NULL THEN 'LBR'
+    WHEN DIRECT.Turnover IS NOT NULL THEN 'Direct'
+    ELSE 'None'
+  END
+  AssetsSource: CASE
+    WHEN LBR_QUANTITATIVE.TOTAL_ASSETS IS NOT NULL THEN 'LBR'
+    WHEN DIRECT.TotalAssets IS NOT NULL THEN 'Direct'
+    ELSE 'None'
+  END
+
+drop_duplicates: true
