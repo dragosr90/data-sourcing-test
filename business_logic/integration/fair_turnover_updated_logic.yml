@@ -103,10 +103,10 @@ transformations:
       alias: PARENT
       source: COMPANY_MAPPING
       group:
-        - UCR_ACTUAL.COMPANY_ID
+        - COMPANY_MAPPING.COMPANY_ID
       column_mapping:
-        Parent_TotalAssets: first(DIRECT_VALUES.TotalAssets_Direct)
-        Parent_Turnover: first(DIRECT_VALUES.Turnover_Direct)
+        Parent_TotalAssets: first(COMPANY_MAPPING.TotalAssets_Direct)
+        Parent_Turnover: first(COMPANY_MAPPING.Turnover_Direct)
   
   # Step 6: Join everything together
   - join:
@@ -131,7 +131,7 @@ expressions:
     END, 
     PARENT.Parent_Turnover,
     DIRECT_VALUES.Turnover_Direct
-    )  
+    )
   AnnualTurnoverDirect: DIRECT_VALUES.Turnover_Direct
   AnnualTurnoverParent: PARENT.Parent_Turnover
   AnnualTurnoverLBR: CASE 
