@@ -43,7 +43,6 @@ sources:
 
 transformations:
   # Step 1: Join iterations with model essentials (no recommended filter)
-  # This gets the first available iteration data
   - join:
       left_source: PD_ITERATIONS
       right_source: MODEL_ESSENTIALS
@@ -52,25 +51,46 @@ transformations:
         - PD_ITERATIONS.RATING_ID = MODEL_ESSENTIALS.RATING_ID
       how: inner
   
-  # Step 2: Aggregate to get one record per RATING_ID (use first iteration)
+  # Step 2: Pivot to get model component values as columns
+  - pivot:
+      alias: PIVOTED_MODEL
+      source: PD_ITERATIONS
+      group_cols:
+        - PD_ITERATIONS.RATING_ID
+        - PD_ITERATIONS.ITERATION_NUMBER
+      pivot_col: MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_TYPE_CODE
+      pivot_value_col: MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_VALUE
+      column_mapping:
+        CorrectedTotalAssets: first
+        TotalBalanceSheet: first
+        Assets: first
+        TotalAssets: first
+        TotalTurnoverTurnover: first
+        Turnover: first
+        Budget: first
+        Revenues: first
+        TotalRevenues: first
+        TotalOperatingIncome: first
+  
+  # Step 3: Aggregate to get one record per RATING_ID (use first iteration)
   - aggregation:
       alias: MODEL_DATA_AGG
+      source: PIVOTED_MODEL
       group:
-        - PD_ITERATIONS.RATING_ID
+        - PIVOTED_MODEL.RATING_ID
       column_mapping:
-        ITERATION_NUMBER: first(PD_ITERATIONS.ITERATION_NUMBER)
-        CorrectedTotalAssets: first(CASE WHEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_TYPE_CODE = 'CorrectedTotalAssets' THEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_VALUE END)
-        TotalBalanceSheet: first(CASE WHEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_TYPE_CODE = 'TotalBalanceSheet' THEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_VALUE END)
-        Assets: first(CASE WHEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_TYPE_CODE = 'Assets' THEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_VALUE END)
-        TotalAssets: first(CASE WHEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_TYPE_CODE = 'TotalAssets' THEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_VALUE END)
-        TotalTurnoverTurnover: first(CASE WHEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_TYPE_CODE = 'TotalTurnoverTurnover' THEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_VALUE END)
-        Turnover: first(CASE WHEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_TYPE_CODE = 'Turnover' THEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_VALUE END)
-        Budget: first(CASE WHEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_TYPE_CODE = 'Budget' THEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_VALUE END)
-        Revenues: first(CASE WHEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_TYPE_CODE = 'Revenues' THEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_VALUE END)
-        TotalRevenues: first(CASE WHEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_TYPE_CODE = 'TotalRevenues' THEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_VALUE END)
-        TotalOperatingIncome: first(CASE WHEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_TYPE_CODE = 'TotalOperatingIncome' THEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_VALUE END)
+        CorrectedTotalAssets: first(PIVOTED_MODEL.CorrectedTotalAssets)
+        TotalBalanceSheet: first(PIVOTED_MODEL.TotalBalanceSheet)
+        Assets: first(PIVOTED_MODEL.Assets)
+        TotalAssets: first(PIVOTED_MODEL.TotalAssets)
+        TotalTurnoverTurnover: first(PIVOTED_MODEL.TotalTurnoverTurnover)
+        Turnover: first(PIVOTED_MODEL.Turnover)
+        Budget: first(PIVOTED_MODEL.Budget)
+        Revenues: first(PIVOTED_MODEL.Revenues)
+        TotalRevenues: first(PIVOTED_MODEL.TotalRevenues)
+        TotalOperatingIncome: first(PIVOTED_MODEL.TotalOperatingIncome)
   
-  # Step 3: LEFT JOIN with UCR to get all records
+  # Step 4: LEFT JOIN with UCR to get all records
   - join:
       left_source: UCR_ACTUAL
       right_source: MODEL_DATA_AGG
@@ -78,7 +98,7 @@ transformations:
         - UCR_ACTUAL.RATING_ID = MODEL_DATA_AGG.RATING_ID
       how: left
   
-  # Step 4: Create calculated columns
+  # Step 5: Create calculated columns
   - aggregation:
       alias: DIRECT
       source: UCR_ACTUAL
@@ -108,34 +128,34 @@ expressions:
       THEN CAST((LBR_QUANTITATIVE.NET_INTEREST_YIELD + LBR_QUANTITATIVE.OTHER_OPERATING_INCOME) * 1000000000 AS STRING) 
     END, 
     DIRECT.Turnover
-  )
+    )
   AnnualTurnoverDirect: DIRECT.Turnover
   AnnualTurnoverLBR: CASE 
     WHEN LBR_QUANTITATIVE.NET_INTEREST_YIELD IS NOT NULL AND LBR_QUANTITATIVE.OTHER_OPERATING_INCOME IS NOT NULL 
     THEN CAST((LBR_QUANTITATIVE.NET_INTEREST_YIELD + LBR_QUANTITATIVE.OTHER_OPERATING_INCOME) * 1000000000 AS STRING) 
-  END
+    END
   TotalAssets: COALESCE(
     CASE 
       WHEN LBR_QUANTITATIVE.TOTAL_ASSETS IS NOT NULL 
       THEN CAST(LBR_QUANTITATIVE.TOTAL_ASSETS * 1000000000 AS STRING) 
     END, 
     DIRECT.TotalAssets
-  )
+    )
   TotalAssetsDirect: DIRECT.TotalAssets
   TotalAssetsLBR: CASE 
     WHEN LBR_QUANTITATIVE.TOTAL_ASSETS IS NOT NULL 
     THEN CAST(LBR_QUANTITATIVE.TOTAL_ASSETS * 1000000000 AS STRING) 
-  END
+    END
   # Source tracking
   TurnoverSource: CASE
     WHEN LBR_QUANTITATIVE.NET_INTEREST_YIELD IS NOT NULL AND LBR_QUANTITATIVE.OTHER_OPERATING_INCOME IS NOT NULL THEN 'LBR'
     WHEN DIRECT.Turnover IS NOT NULL THEN 'Direct'
     ELSE 'None'
-  END
+    END
   AssetsSource: CASE
     WHEN LBR_QUANTITATIVE.TOTAL_ASSETS IS NOT NULL THEN 'LBR'
     WHEN DIRECT.TotalAssets IS NOT NULL THEN 'Direct'
     ELSE 'None'
-  END
+    END
 
 drop_duplicates: true
