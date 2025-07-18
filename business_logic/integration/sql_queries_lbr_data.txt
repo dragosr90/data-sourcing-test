@@ -1,159 +1,83 @@
--- Query to check why LBR join is not working
+-- Diagnose why records with LBR data are missing from FAIR output
 -- Replace {{ RUN_MONTH }} with actual value
 
--- 1. Check data types and sample values for LB_RATING_ID across tables
-SELECT 
-    'UCR_ACTUAL' as Table_Name,
-    COUNT(*) as Total_Records,
-    COUNT(LB_RATING_ID) as Non_Null_LB_RATING_ID,
-    COUNT(DISTINCT LB_RATING_ID) as Unique_LB_RATING_ID
-FROM bsrc_d.int_{{ RUN_MONTH }}.pd_ucr_actual
-UNION ALL
-SELECT 
-    'LBR_QUANTITATIVE' as Table_Name,
-    COUNT(*) as Total_Records,
-    COUNT(LB_RATING_ID) as Non_Null_LB_RATING_ID,
-    COUNT(DISTINCT LB_RATING_ID) as Unique_LB_RATING_ID
-FROM bsrc_d.stg_{{ RUN_MONTH }}.dial_fair_lbr_quantitative_input
-WHERE DATA_TYPE = 2;
-
--- 2. Show sample LB_RATING_IDs from both tables
-SELECT 'UCR_ACTUAL Sample LB_RATING_IDs:' as Description;
-SELECT DISTINCT LB_RATING_ID, COUNT(*) as Count
-FROM bsrc_d.int_{{ RUN_MONTH }}.pd_ucr_actual
-WHERE LB_RATING_ID IS NOT NULL
-GROUP BY LB_RATING_ID
-LIMIT 10;
-
-SELECT 'LBR_QUANTITATIVE Sample LB_RATING_IDs:' as Description;
-SELECT DISTINCT LB_RATING_ID, COUNT(*) as Count
-FROM bsrc_d.stg_{{ RUN_MONTH }}.dial_fair_lbr_quantitative_input
-WHERE DATA_TYPE = 2 AND LB_RATING_ID IS NOT NULL
-GROUP BY LB_RATING_ID
-LIMIT 10;
-
--- 3. Check for exact matches
-SELECT 
-    COUNT(DISTINCT ucr.LB_RATING_ID) as Matching_LB_RATING_IDs
-FROM bsrc_d.int_{{ RUN_MONTH }}.pd_ucr_actual ucr
-INNER JOIN bsrc_d.stg_{{ RUN_MONTH }}.dial_fair_lbr_quantitative_input lbr
-    ON ucr.LB_RATING_ID = lbr.LB_RATING_ID
-WHERE lbr.DATA_TYPE = 2;
-
--- 4. Check specific RatingIDs that should have LBR data
--- Based on RDF data, these should have LBR values:
-WITH rdf_lbr_expected AS (
-    SELECT 
-        2853256 as RatingID, 67460489230.8 as Expected_Assets, 5239143649.92 as Expected_Turnover
-    UNION ALL
-    SELECT 2836723, 435829475000, 4816934000
-    UNION ALL
-    SELECT 2853787, 3694636854, 131239978
+-- 1. Check if these specific RatingIDs exist in the source tables
+WITH test_ratings AS (
+    SELECT 2853256 as RatingID UNION ALL
+    SELECT 2836723 UNION ALL
+    SELECT 2853787
 )
 SELECT 
-    rle.RatingID,
-    ucr.LB_RATING_ID as UCR_LB_RATING_ID,
-    rle.Expected_Assets,
-    rle.Expected_Turnover,
-    lbr.LB_RATING_ID as LBR_LB_RATING_ID,
-    lbr.TOTAL_ASSETS * 1000000000 as LBR_Assets_Calculated,
-    (lbr.NET_INTEREST_YIELD + lbr.OTHER_OPERATING_INCOME) * 1000000000 as LBR_Turnover_Calculated
-FROM rdf_lbr_expected rle
-LEFT JOIN bsrc_d.int_{{ RUN_MONTH }}.pd_ucr_actual ucr ON ucr.RATING_ID = rle.RatingID
+    tr.RatingID,
+    CASE WHEN ucr.RATING_ID IS NOT NULL THEN 'Yes' ELSE 'No' END as In_UCR_ACTUAL,
+    CASE WHEN iter.RATING_ID IS NOT NULL THEN 'Yes' ELSE 'No' END as In_PD_ITERATIONS,
+    CASE WHEN iter.RECOMMENDED = 'y' THEN 'Yes' ELSE 'No' END as Is_Recommended,
+    CASE WHEN ess.RATING_ID IS NOT NULL THEN 'Yes' ELSE 'No' END as In_MODEL_ESSENTIALS,
+    ucr.LB_RATING_ID,
+    CASE WHEN lbr.LB_RATING_ID IS NOT NULL THEN 'Yes' ELSE 'No' END as Has_LBR_Data
+FROM test_ratings tr
+LEFT JOIN bsrc_d.int_{{ RUN_MONTH }}.pd_ucr_actual ucr ON tr.RatingID = ucr.RATING_ID
+LEFT JOIN bsrc_d.stg_{{ RUN_MONTH }}.dial_fair_pd_iterations iter ON tr.RatingID = iter.RATING_ID
+LEFT JOIN bsrc_d.stg_{{ RUN_MONTH }}.dial_fair_pd_model_component_essentials ess 
+    ON tr.RatingID = ess.RATING_ID 
+    AND ess.MODEL_COMPONENT_ESSENTIAL_TYPE_CODE IN ('CorrectedTotalAssets', 'TotalBalanceSheet', 'Assets', 'TotalAssets', 'TotalTurnoverTurnover', 'Turnover', 'Budget', 'Revenues', 'TotalRevenues', 'TotalOperatingIncome')
+    AND ess.MODEL_COMPONENT_ESSENTIAL_CATEGORY_VARIANT_ID = 'cons'
 LEFT JOIN bsrc_d.stg_{{ RUN_MONTH }}.dial_fair_lbr_quantitative_input lbr 
-    ON ucr.LB_RATING_ID = lbr.LB_RATING_ID AND lbr.DATA_TYPE = 2;
+    ON ucr.LB_RATING_ID = lbr.LB_RATING_ID 
+    AND lbr.DATA_TYPE = 2;
 
--- 5. Check if there's a pattern mismatch (e.g., case sensitivity, spaces)
+-- 2. Check if these RatingIDs are in FAIR output
 SELECT 
-    'UCR LB_RATING_ID Format' as Check_Type,
-    LB_RATING_ID,
-    LENGTH(LB_RATING_ID) as Length,
-    CAST(LB_RATING_ID AS VARBINARY) as Binary_Value
+    'RatingIDs with LBR in FAIR output' as Check_Type,
+    COUNT(*) as Count
+FROM bsrc_d.int_{{ RUN_MONTH }}.fair_turnover
+WHERE RatingID IN (2853256, 2836723, 2853787);
+
+-- 3. Check the overall flow - how many records make it through each step
+SELECT 'Records in UCR_ACTUAL' as Step, COUNT(DISTINCT RATING_ID) as Count
 FROM bsrc_d.int_{{ RUN_MONTH }}.pd_ucr_actual
-WHERE LB_RATING_ID IS NOT NULL
-LIMIT 5
 UNION ALL
-SELECT 
-    'LBR LB_RATING_ID Format' as Check_Type,
-    LB_RATING_ID,
-    LENGTH(LB_RATING_ID) as Length,
-    CAST(LB_RATING_ID AS VARBINARY) as Binary_Value
-FROM bsrc_d.stg_{{ RUN_MONTH }}.dial_fair_lbr_quantitative_input
-WHERE DATA_TYPE = 2 AND LB_RATING_ID IS NOT NULL
-LIMIT 5;
+SELECT 'Records with recommended iterations' as Step, COUNT(DISTINCT RATING_ID) as Count
+FROM bsrc_d.stg_{{ RUN_MONTH }}.dial_fair_pd_iterations
+WHERE RECOMMENDED = 'y'
+UNION ALL
+SELECT 'Records with model essentials' as Step, COUNT(DISTINCT RATING_ID) as Count
+FROM bsrc_d.stg_{{ RUN_MONTH }}.dial_fair_pd_model_component_essentials
+WHERE MODEL_COMPONENT_ESSENTIAL_TYPE_CODE IN ('CorrectedTotalAssets', 'TotalBalanceSheet', 'Assets', 'TotalAssets', 'TotalTurnoverTurnover', 'Turnover', 'Budget', 'Revenues', 'TotalRevenues', 'TotalOperatingIncome')
+AND MODEL_COMPONENT_ESSENTIAL_CATEGORY_VARIANT_ID = 'cons'
+UNION ALL
+SELECT 'Records in FAIR output' as Step, COUNT(DISTINCT RatingID) as Count
+FROM bsrc_d.int_{{ RUN_MONTH }}.fair_turnover
+UNION ALL
+SELECT 'Records in FAIR with non-null LBR' as Step, COUNT(DISTINCT RatingID) as Count
+FROM bsrc_d.int_{{ RUN_MONTH }}.fair_turnover
+WHERE AnnualTurnoverLBR IS NOT NULL AND AnnualTurnoverLBR != 'null';
 
--- Check if there's a pattern mismatch in LB_RATING_ID between tables
--- Replace {{ RUN_MONTH }} with actual value
-
--- Check format, length, and pattern of LB_RATING_IDs
-WITH ucr_format AS (
-    SELECT 
-        'UCR_ACTUAL' as Source_Table,
-        LB_RATING_ID,
-        LENGTH(LB_RATING_ID) as Length,
-        -- Check for leading/trailing spaces
-        LENGTH(TRIM(LB_RATING_ID)) as Trimmed_Length,
-        -- Check if contains underscore
-        CASE WHEN LB_RATING_ID LIKE '%_%' THEN 'Has_Underscore' ELSE 'No_Underscore' END as Pattern
-    FROM bsrc_d.int_{{ RUN_MONTH }}.pd_ucr_actual
-    WHERE LB_RATING_ID IS NOT NULL
-    LIMIT 10
-),
-lbr_format AS (
-    SELECT 
-        'LBR_QUANTITATIVE' as Source_Table,
-        LB_RATING_ID,
-        LENGTH(LB_RATING_ID) as Length,
-        LENGTH(TRIM(LB_RATING_ID)) as Trimmed_Length,
-        CASE WHEN LB_RATING_ID LIKE '%_%' THEN 'Has_Underscore' ELSE 'No_Underscore' END as Pattern
-    FROM bsrc_d.stg_{{ RUN_MONTH }}.dial_fair_lbr_quantitative_input
-    WHERE DATA_TYPE = 2 AND LB_RATING_ID IS NOT NULL
-    LIMIT 10
+-- 4. Find records that have LBR data but are missing from FAIR output
+WITH ucr_with_lbr AS (
+    SELECT DISTINCT ucr.RATING_ID
+    FROM bsrc_d.int_{{ RUN_MONTH }}.pd_ucr_actual ucr
+    INNER JOIN bsrc_d.stg_{{ RUN_MONTH }}.dial_fair_lbr_quantitative_input lbr
+        ON ucr.LB_RATING_ID = lbr.LB_RATING_ID
+    WHERE lbr.DATA_TYPE = 2
 )
-SELECT * FROM ucr_format
-UNION ALL
-SELECT * FROM lbr_format;
-
--- Alternative approach using separate queries if UNION doesn't work
--- Query 1: UCR Format
 SELECT 
-    'UCR_ACTUAL' as Source_Table,
-    LB_RATING_ID,
-    LENGTH(LB_RATING_ID) as Length,
-    LENGTH(TRIM(LB_RATING_ID)) as Trimmed_Length,
-    SUBSTR(LB_RATING_ID, 1, 10) as First_10_Chars,
-    SUBSTR(LB_RATING_ID, -10, 10) as Last_10_Chars
-FROM bsrc_d.int_{{ RUN_MONTH }}.pd_ucr_actual
-WHERE LB_RATING_ID IS NOT NULL
+    'UCR records with LBR data' as Category,
+    COUNT(*) as Total_Count,
+    SUM(CASE WHEN f.RatingID IS NOT NULL THEN 1 ELSE 0 END) as In_FAIR_Output,
+    SUM(CASE WHEN f.RatingID IS NULL THEN 1 ELSE 0 END) as Missing_From_FAIR
+FROM ucr_with_lbr uwl
+LEFT JOIN bsrc_d.int_{{ RUN_MONTH }}.fair_turnover f ON uwl.RATING_ID = f.RatingID;
+
+-- 5. Sample of UCR records with LBR that are missing from output
+WITH ucr_with_lbr AS (
+    SELECT ucr.RATING_ID, ucr.LB_RATING_ID
+    FROM bsrc_d.int_{{ RUN_MONTH }}.pd_ucr_actual ucr
+    INNER JOIN bsrc_d.stg_{{ RUN_MONTH }}.dial_fair_lbr_quantitative_input lbr
+        ON ucr.LB_RATING_ID = lbr.LB_RATING_ID
+    WHERE lbr.DATA_TYPE = 2
+)
+SELECT uwl.RATING_ID, uwl.LB_RATING_ID, 'Has LBR but missing from FAIR' as Status
+FROM ucr_with_lbr uwl
+WHERE NOT EXISTS (SELECT 1 FROM bsrc_d.int_{{ RUN_MONTH }}.fair_turnover f WHERE f.RatingID = uwl.RATING_ID)
 LIMIT 10;
-
--- Query 2: LBR Format
-SELECT 
-    'LBR_QUANTITATIVE' as Source_Table,
-    LB_RATING_ID,
-    LENGTH(LB_RATING_ID) as Length,
-    LENGTH(TRIM(LB_RATING_ID)) as Trimmed_Length,
-    SUBSTR(LB_RATING_ID, 1, 10) as First_10_Chars,
-    SUBSTR(LB_RATING_ID, -10, 10) as Last_10_Chars
-FROM bsrc_d.stg_{{ RUN_MONTH }}.dial_fair_lbr_quantitative_input
-WHERE DATA_TYPE = 2 AND LB_RATING_ID IS NOT NULL
-LIMIT 10;
-
--- Query 3: Direct comparison to find pattern differences
-SELECT 
-    ucr.RATING_ID,
-    ucr.LB_RATING_ID as UCR_LB_RATING_ID,
-    lbr.LB_RATING_ID as LBR_LB_RATING_ID,
-    CASE 
-        WHEN ucr.LB_RATING_ID = lbr.LB_RATING_ID THEN 'Exact_Match'
-        WHEN UPPER(ucr.LB_RATING_ID) = UPPER(lbr.LB_RATING_ID) THEN 'Case_Difference'
-        WHEN TRIM(ucr.LB_RATING_ID) = TRIM(lbr.LB_RATING_ID) THEN 'Space_Difference'
-        ELSE 'No_Match'
-    END as Match_Type
-FROM bsrc_d.int_{{ RUN_MONTH }}.pd_ucr_actual ucr
-CROSS JOIN bsrc_d.stg_{{ RUN_MONTH }}.dial_fair_lbr_quantitative_input lbr
-WHERE ucr.LB_RATING_ID IS NOT NULL 
-  AND lbr.DATA_TYPE = 2 
-  AND lbr.LB_RATING_ID IS NOT NULL
-  AND ucr.LB_RATING_ID LIKE CONCAT(SUBSTR(lbr.LB_RATING_ID, 1, 6), '%')
-LIMIT 20;
