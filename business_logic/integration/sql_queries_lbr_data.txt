@@ -1,22 +1,43 @@
--- Check how many records we'd get with different variant IDs
+-- Compare FAIR turnover results with RDF counterparty data
 SELECT 
-    'Coverage by variant ID' as check_type,
-    MODEL_COMPONENT_ESSENTIAL_CATEGORY_VARIANT_ID,
-    COUNT(DISTINCT RATING_ID) as unique_ratings,
-    COUNT(*) as total_records
-FROM stg_{{ RUN_MONTH }}.dial_fair_pd_model_component_essentials
-WHERE MODEL_COMPONENT_ESSENTIAL_TYPE_CODE IN ('TotalTurnoverTurnover', 'Turnover', 'Budget', 'Revenues', 'TotalRevenues', 'TotalOperatingIncome')
-GROUP BY MODEL_COMPONENT_ESSENTIAL_CATEGORY_VARIANT_ID
+    f.RatingID,
+    r.XPK_COUNTERPARTY,
+    
+    -- Turnover comparison
+    f.AnnualTurnover as FAIR_AnnualTurnover,
+    r.TOTAL_TURNOVER as RDF_TotalTurnover,
+    CASE 
+        WHEN f.AnnualTurnover = r.TOTAL_TURNOVER THEN 'MATCH'
+        WHEN f.AnnualTurnover IS NULL AND r.TOTAL_TURNOVER IS NULL THEN 'BOTH_NULL'
+        WHEN f.AnnualTurnover IS NULL THEN 'FAIR_NULL'
+        WHEN r.TOTAL_TURNOVER IS NULL THEN 'RDF_NULL'
+        ELSE 'MISMATCH'
+    END as Turnover_Match_Status,
+    
+    -- Assets comparison
+    f.TotalAssets as FAIR_TotalAssets,
+    r.TOTAL_ASSETS as RDF_TotalAssets,
+    CASE 
+        WHEN f.TotalAssets = r.TOTAL_ASSETS THEN 'MATCH'
+        WHEN f.TotalAssets IS NULL AND r.TOTAL_ASSETS IS NULL THEN 'BOTH_NULL'
+        WHEN f.TotalAssets IS NULL THEN 'FAIR_NULL'
+        WHEN r.TOTAL_ASSETS IS NULL THEN 'RDF_NULL'
+        ELSE 'MISMATCH'
+    END as Assets_Match_Status,
+    
+    -- Overall match status
+    CASE 
+        WHEN f.AnnualTurnover = r.TOTAL_TURNOVER AND f.TotalAssets = r.TOTAL_ASSETS THEN 'FULL_MATCH'
+        WHEN (f.AnnualTurnover = r.TOTAL_TURNOVER OR (f.AnnualTurnover IS NULL AND r.TOTAL_TURNOVER IS NULL))
+         AND (f.TotalAssets = r.TOTAL_ASSETS OR (f.TotalAssets IS NULL AND r.TOTAL_ASSETS IS NULL)) THEN 'FULL_MATCH_WITH_NULLS'
+        ELSE 'MISMATCH'
+    END as Overall_Match_Status,
+    
+    -- Additional info for debugging
+    r.SOURCE_SYSTEM as RDF_Source_System
 
-UNION ALL
-
--- Check total unique ratings if we use ALL variant IDs
-SELECT 
-    'Total with all variants' as check_type,
-    'all' as MODEL_COMPONENT_ESSENTIAL_CATEGORY_VARIANT_ID,
-    COUNT(DISTINCT RATING_ID) as unique_ratings,
-    COUNT(*) as total_records
-FROM stg_{{ RUN_MONTH }}.dial_fair_pd_model_component_essentials
-WHERE MODEL_COMPONENT_ESSENTIAL_TYPE_CODE IN ('TotalTurnoverTurnover', 'Turnover', 'Budget', 'Revenues', 'TotalRevenues', 'TotalOperatingIncome')
-
-ORDER BY unique_ratings DESC;
+FROM bsrc_d.int_202505.fair_turnover f
+JOIN bsrc_d.enter_202505.rdf_counterparty r
+    ON f.RatingID = r.XPK_COUNTERPARTY
+    
+ORDER BY Overall_Match_Status, f.RatingID;
