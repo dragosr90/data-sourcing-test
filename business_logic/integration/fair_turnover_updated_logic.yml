@@ -10,7 +10,7 @@ sources:
       - RATING_STATUS
       - PARENT_COMPANY_ID
       - LB_RATING_ID
-    source: int_{{ RUN_MONTH }}.pd_ucr_actual
+    source: int_{{ RUN_MONTH }}.dial_fair_pd_ucr_actual
   
   - alias: PD_ITERATIONS
     columns:
