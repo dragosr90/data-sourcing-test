@@ -10,7 +10,7 @@ sources:
       - RATING_STATUS
       - PARENT_COMPANY_ID
       - LB_RATING_ID
-    source: int_{{ RUN_MONTH }}.pd_ucr_actual
+    source: int_{{ RUN_MONTH }}.dial_fair_pd_ucr_actual
   
   - alias: PD_ITERATIONS
     columns:
@@ -42,21 +42,20 @@ sources:
     source: stg_{{ RUN_MONTH }}.dial_fair_lbr_quantitative_input
 
 transformations:
-  # Step 1: Join iterations with model essentials on ITERATION_NUMBER and RATING_ID
-  - join:
-      left_source: PD_ITERATIONS
-      right_source: MODEL_ESSENTIALS
-      condition:
-        - PD_ITERATIONS.ITERATION_NUMBER = MODEL_ESSENTIALS.ITERATION_NUMBER
-        - PD_ITERATIONS.RATING_ID = MODEL_ESSENTIALS.RATING_ID
-      how: inner
-  
-  # Step 2: LEFT JOIN with UCR actual data to preserve all UCR records
+  # Step 1: First, LEFT JOIN UCR with PD_ITERATIONS to preserve all UCR records
   - join:
       left_source: UCR_ACTUAL
       right_source: PD_ITERATIONS
       condition:
         - UCR_ACTUAL.RATING_ID = PD_ITERATIONS.RATING_ID
+      how: left
+  
+  # Step 2: Then LEFT JOIN with MODEL_ESSENTIALS to get the model data
+  - join:
+      right_source: MODEL_ESSENTIALS
+      condition:
+        - UCR_ACTUAL.RATING_ID = MODEL_ESSENTIALS.RATING_ID
+        - PD_ITERATIONS.ITERATION_NUMBER = MODEL_ESSENTIALS.ITERATION_NUMBER
       how: left
   
   # Step 3: Pivot the MODEL_COMPONENT_ESSENTIAL_TYPE_CODE values to columns
@@ -122,7 +121,7 @@ transformations:
 
 expressions:
   RatingID: DIRECT.RATING_ID
-  ParentRatingID: PARENT.Parent_RATING_ID
+  ParentRatingID: Parent_RATING_ID
   LBRatingID: LBR_QUANTITATIVE.LB_RATING_ID
   AnnualTurnover: COALESCE(CASE WHEN LBR_QUANTITATIVE.NET_INTEREST_YIELD IS NOT NULL AND LBR_QUANTITATIVE.OTHER_OPERATING_INCOME IS NOT NULL THEN CAST((LBR_QUANTITATIVE.NET_INTEREST_YIELD + LBR_QUANTITATIVE.OTHER_OPERATING_INCOME) * 1000000000 AS STRING) END, PARENT.Parent_Turnover, DIRECT.Turnover)
   AnnualTurnoverDirect: DIRECT.Turnover
