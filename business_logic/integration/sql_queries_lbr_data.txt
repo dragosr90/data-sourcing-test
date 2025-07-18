@@ -1,68 +1,22 @@
--- 1. Check if these specific RatingIDs exist in MODEL_ESSENTIALS at all
+-- Check how many records we'd get with different variant IDs
 SELECT 
-    'Existence check for problem RatingIDs' as check_type,
-    COUNT(DISTINCT RATING_ID) as found_in_model_essentials
-FROM stg_{{ RUN_MONTH }}.dial_fair_pd_model_component_essentials
-WHERE RATING_ID IN (2780940, 2744465, 2726674, 2844928, 2769527)
-    AND MODEL_COMPONENT_ESSENTIAL_TYPE_CODE IN ('CorrectedTotalAssets', 'TotalBalanceSheet', 'Assets', 'TotalAssets', 'TotalTurnoverTurnover', 'Turnover', 'Budget', 'Revenues', 'TotalRevenues', 'TotalOperatingIncome');
-
--- 2. Check what MODEL_COMPONENT_ESSENTIAL_TYPE_CODE values exist for these ratings
-SELECT 
-    RATING_ID,
-    MODEL_COMPONENT_ESSENTIAL_TYPE_CODE,
-    MODEL_COMPONENT_ESSENTIAL_VALUE,
-    ITERATION_NUMBER,
-    MODEL_COMPONENT_ESSENTIAL_CATEGORY_VARIANT_ID
-FROM stg_{{ RUN_MONTH }}.dial_fair_pd_model_component_essentials
-WHERE RATING_ID IN (2780940, 2744465, 2726674, 2844928, 2769527)
-ORDER BY RATING_ID, MODEL_COMPONENT_ESSENTIAL_TYPE_CODE
-LIMIT 100;
-
--- 3. Check if there are other relevant source tables with 'turnover' or 'revenue' in the name
-SELECT 
-    table_schema,
-    table_name
-FROM information_schema.tables
-WHERE table_schema IN ('stg_{{ RUN_MONTH }}', 'int_{{ RUN_MONTH }}')
-    AND (
-        LOWER(table_name) LIKE '%turnover%' 
-        OR LOWER(table_name) LIKE '%revenue%'
-        OR LOWER(table_name) LIKE '%financial%'
-        OR LOWER(table_name) LIKE '%fair%'
-    )
-ORDER BY table_schema, table_name;
-
--- 4. Check RDF table structure to understand what columns it has
-SELECT 
-    column_name,
-    data_type
-FROM information_schema.columns
-WHERE table_schema = 'your_schema' -- Replace with actual schema
-    AND table_name = 'your_rdf_table' -- Replace with actual RDF table name
-ORDER BY ordinal_position;
-
--- 5. Sample RDF data for the problem RatingIDs
-SELECT 
-    RatingID,
-    TotalTurnover,
-    TotalAssets,
-    -- Add any other relevant columns from RDF
-FROM your_rdf_table -- Replace with actual RDF table
-WHERE RatingID IN (2780940, 2744465, 2726674, 2844928, 2769527);
-
--- 6. Check if there's a different variant ID being used
-SELECT 
+    'Coverage by variant ID' as check_type,
     MODEL_COMPONENT_ESSENTIAL_CATEGORY_VARIANT_ID,
-    COUNT(DISTINCT RATING_ID) as rating_count,
+    COUNT(DISTINCT RATING_ID) as unique_ratings,
     COUNT(*) as total_records
 FROM stg_{{ RUN_MONTH }}.dial_fair_pd_model_component_essentials
-WHERE MODEL_COMPONENT_ESSENTIAL_TYPE_CODE IN ('TotalTurnoverTurnover', 'Turnover', 'Revenues', 'TotalRevenues')
+WHERE MODEL_COMPONENT_ESSENTIAL_TYPE_CODE IN ('TotalTurnoverTurnover', 'Turnover', 'Budget', 'Revenues', 'TotalRevenues', 'TotalOperatingIncome')
 GROUP BY MODEL_COMPONENT_ESSENTIAL_CATEGORY_VARIANT_ID
-ORDER BY rating_count DESC;
 
--- 7. Check if these ratings exist in a different fair table
+UNION ALL
+
+-- Check total unique ratings if we use ALL variant IDs
 SELECT 
-    'Check other FAIR tables' as check_type,
-    COUNT(DISTINCT RATING_ID) as found_ratings
-FROM stg_{{ RUN_MONTH }}.dial_fair_pd_financials -- or similar table name
-WHERE RATING_ID IN (2780940, 2744465, 2726674, 2844928, 2769527);
+    'Total with all variants' as check_type,
+    'all' as MODEL_COMPONENT_ESSENTIAL_CATEGORY_VARIANT_ID,
+    COUNT(DISTINCT RATING_ID) as unique_ratings,
+    COUNT(*) as total_records
+FROM stg_{{ RUN_MONTH }}.dial_fair_pd_model_component_essentials
+WHERE MODEL_COMPONENT_ESSENTIAL_TYPE_CODE IN ('TotalTurnoverTurnover', 'Turnover', 'Budget', 'Revenues', 'TotalRevenues', 'TotalOperatingIncome')
+
+ORDER BY unique_ratings DESC;
