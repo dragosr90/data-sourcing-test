@@ -1,82 +1,68 @@
--- 1. Check why records have "None" source
--- These are records in UCR_ACTUAL but no data from MODEL_ESSENTIALS or LBR
-
+-- 1. Check if these specific RatingIDs exist in MODEL_ESSENTIALS at all
 SELECT 
-    'Records with None source analysis' as check_type,
-    COUNT(DISTINCT f.RatingID) as total_none_records,
-    COUNT(DISTINCT CASE WHEN r.TotalTurnover IS NOT NULL THEN f.RatingID END) as none_records_with_rdf_data,
-    COUNT(DISTINCT CASE WHEN r.TotalTurnover IS NULL THEN f.RatingID END) as none_records_without_rdf_data
-FROM fair_turnover f
-LEFT JOIN rdf_table r ON f.RatingID = r.RatingID  
-WHERE f.TurnoverSource = 'None';
+    'Existence check for problem RatingIDs' as check_type,
+    COUNT(DISTINCT RATING_ID) as found_in_model_essentials
+FROM stg_{{ RUN_MONTH }}.dial_fair_pd_model_component_essentials
+WHERE RATING_ID IN (2780940, 2744465, 2726674, 2844928, 2769527)
+    AND MODEL_COMPONENT_ESSENTIAL_TYPE_CODE IN ('CorrectedTotalAssets', 'TotalBalanceSheet', 'Assets', 'TotalAssets', 'TotalTurnoverTurnover', 'Turnover', 'Budget', 'Revenues', 'TotalRevenues', 'TotalOperatingIncome');
 
--- 2. Check PD_ITERATIONS coverage
--- How many UCR records have recommended iterations?
-
+-- 2. Check what MODEL_COMPONENT_ESSENTIAL_TYPE_CODE values exist for these ratings
 SELECT 
-    'PD_ITERATIONS coverage' as check_type,
-    COUNT(DISTINCT u.RATING_ID) as total_ucr_records,
-    COUNT(DISTINCT p.RATING_ID) as records_with_iterations,
-    COUNT(DISTINCT u.RATING_ID) - COUNT(DISTINCT p.RATING_ID) as records_without_iterations
-FROM int_{{ RUN_MONTH }}.pd_ucr_actual u
-LEFT JOIN stg_{{ RUN_MONTH }}.dial_fair_pd_iterations p 
-    ON u.RATING_ID = p.RATING_ID 
-    AND p.RECOMMENDED = 'y';
+    RATING_ID,
+    MODEL_COMPONENT_ESSENTIAL_TYPE_CODE,
+    MODEL_COMPONENT_ESSENTIAL_VALUE,
+    ITERATION_NUMBER,
+    MODEL_COMPONENT_ESSENTIAL_CATEGORY_VARIANT_ID
+FROM stg_{{ RUN_MONTH }}.dial_fair_pd_model_component_essentials
+WHERE RATING_ID IN (2780940, 2744465, 2726674, 2844928, 2769527)
+ORDER BY RATING_ID, MODEL_COMPONENT_ESSENTIAL_TYPE_CODE
+LIMIT 100;
 
--- 3. Check MODEL_ESSENTIALS coverage for records with iterations
-
+-- 3. Check if there are other relevant source tables with 'turnover' or 'revenue' in the name
 SELECT 
-    'MODEL_ESSENTIALS coverage' as check_type,
-    COUNT(DISTINCT p.RATING_ID) as records_with_iterations,
-    COUNT(DISTINCT m.RATING_ID) as records_with_model_data,
-    COUNT(DISTINCT p.RATING_ID) - COUNT(DISTINCT m.RATING_ID) as iterations_without_model_data
-FROM stg_{{ RUN_MONTH }}.dial_fair_pd_iterations p
-LEFT JOIN stg_{{ RUN_MONTH }}.dial_fair_pd_model_component_essentials m
-    ON p.RATING_ID = m.RATING_ID 
-    AND p.ITERATION_NUMBER = m.ITERATION_NUMBER
-WHERE p.RECOMMENDED = 'y'
-    AND m.MODEL_COMPONENT_ESSENTIAL_TYPE_CODE IN ('CorrectedTotalAssets', 'TotalBalanceSheet', 'Assets', 'TotalAssets', 'TotalTurnoverTurnover', 'Turnover', 'Budget', 'Revenues', 'TotalRevenues', 'TotalOperatingIncome')
-    AND m.MODEL_COMPONENT_ESSENTIAL_CATEGORY_VARIANT_ID = 'cons';
+    table_schema,
+    table_name
+FROM information_schema.tables
+WHERE table_schema IN ('stg_{{ RUN_MONTH }}', 'int_{{ RUN_MONTH }}')
+    AND (
+        LOWER(table_name) LIKE '%turnover%' 
+        OR LOWER(table_name) LIKE '%revenue%'
+        OR LOWER(table_name) LIKE '%financial%'
+        OR LOWER(table_name) LIKE '%fair%'
+    )
+ORDER BY table_schema, table_name;
 
--- 4. Sample records with "None" source that have RDF data
--- These are the problematic ones we need to understand
-
+-- 4. Check RDF table structure to understand what columns it has
 SELECT 
-    f.RatingID,
-    f.TurnoverSource,
-    f.AnnualTurnover as FAIR_Turnover,
-    r.TotalTurnover as RDF_Turnover,
-    u.COMPANY_ID,
-    u.LB_RATING_ID,
-    CASE WHEN p.RATING_ID IS NOT NULL THEN 'Has Iterations' ELSE 'No Iterations' END as Iteration_Status
-FROM fair_turnover f
-JOIN rdf_table r ON f.RatingID = r.RatingID
-JOIN int_{{ RUN_MONTH }}.pd_ucr_actual u ON f.RatingID = u.RATING_ID
-LEFT JOIN stg_{{ RUN_MONTH }}.dial_fair_pd_iterations p 
-    ON f.RatingID = p.RATING_ID AND p.RECOMMENDED = 'y'
-WHERE f.TurnoverSource = 'None' 
-    AND r.TotalTurnover IS NOT NULL
-LIMIT 20;
+    column_name,
+    data_type
+FROM information_schema.columns
+WHERE table_schema = 'your_schema' -- Replace with actual schema
+    AND table_name = 'your_rdf_table' -- Replace with actual RDF table name
+ORDER BY ordinal_position;
 
--- 5. Check if RDF might be using non-recommended iterations or different filters
-
+-- 5. Sample RDF data for the problem RatingIDs
 SELECT 
-    'Check different iteration filters' as check_type,
-    RECOMMENDED,
+    RatingID,
+    TotalTurnover,
+    TotalAssets,
+    -- Add any other relevant columns from RDF
+FROM your_rdf_table -- Replace with actual RDF table
+WHERE RatingID IN (2780940, 2744465, 2726674, 2844928, 2769527);
+
+-- 6. Check if there's a different variant ID being used
+SELECT 
+    MODEL_COMPONENT_ESSENTIAL_CATEGORY_VARIANT_ID,
     COUNT(DISTINCT RATING_ID) as rating_count,
-    COUNT(*) as total_iterations
-FROM stg_{{ RUN_MONTH }}.dial_fair_pd_iterations
-GROUP BY RECOMMENDED;
+    COUNT(*) as total_records
+FROM stg_{{ RUN_MONTH }}.dial_fair_pd_model_component_essentials
+WHERE MODEL_COMPONENT_ESSENTIAL_TYPE_CODE IN ('TotalTurnoverTurnover', 'Turnover', 'Revenues', 'TotalRevenues')
+GROUP BY MODEL_COMPONENT_ESSENTIAL_CATEGORY_VARIANT_ID
+ORDER BY rating_count DESC;
 
--- 6. Check if there's another source table RDF might be using
--- Look for records in RDF that don't have model essentials in FAIR
-
+-- 7. Check if these ratings exist in a different fair table
 SELECT 
-    'RDF records without FAIR model data' as check_type,
-    COUNT(DISTINCT r.RatingID) as total_rdf_records,
-    COUNT(DISTINCT CASE WHEN f.TurnoverSource = 'Direct' THEN r.RatingID END) as rdf_with_fair_direct,
-    COUNT(DISTINCT CASE WHEN f.TurnoverSource = 'LBR' THEN r.RatingID END) as rdf_with_fair_lbr,
-    COUNT(DISTINCT CASE WHEN f.TurnoverSource = 'None' THEN r.RatingID END) as rdf_with_fair_none
-FROM rdf_table r
-LEFT JOIN fair_turnover f ON r.RatingID = f.RatingID
-WHERE r.TotalTurnover IS NOT NULL;
+    'Check other FAIR tables' as check_type,
+    COUNT(DISTINCT RATING_ID) as found_ratings
+FROM stg_{{ RUN_MONTH }}.dial_fair_pd_financials -- or similar table name
+WHERE RATING_ID IN (2780940, 2744465, 2726674, 2844928, 2769527);
