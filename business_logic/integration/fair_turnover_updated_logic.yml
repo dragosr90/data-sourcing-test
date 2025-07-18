@@ -90,10 +90,6 @@ transformations:
         - PIVOTED_ESSENTIALS.PARENT_COMPANY_ID
         - PIVOTED_ESSENTIALS.LB_RATING_ID
       column_mapping:
-        RATING_ID: first(PIVOTED_ESSENTIALS.RATING_ID)
-        COMPANY_ID: first(PIVOTED_ESSENTIALS.COMPANY_ID)
-        PARENT_COMPANY_ID: first(PIVOTED_ESSENTIALS.PARENT_COMPANY_ID)
-        LB_RATING_ID: first(PIVOTED_ESSENTIALS.LB_RATING_ID)
         TotalAssets: first(COALESCE(PIVOTED_ESSENTIALS.CorrectedTotalAssets, PIVOTED_ESSENTIALS.TotalBalanceSheet, PIVOTED_ESSENTIALS.Assets, PIVOTED_ESSENTIALS.TotalAssets))
         Turnover: first(COALESCE(PIVOTED_ESSENTIALS.TotalTurnoverTurnover, PIVOTED_ESSENTIALS.Turnover, PIVOTED_ESSENTIALS.Budget, PIVOTED_ESSENTIALS.Revenues, PIVOTED_ESSENTIALS.TotalRevenues, PIVOTED_ESSENTIALS.TotalOperatingIncome))
   
@@ -104,7 +100,6 @@ transformations:
       group:
         - PIVOTED_ESSENTIALS.COMPANY_ID
       column_mapping:
-        COMPANY_ID_PARENT: first(PIVOTED_ESSENTIALS.COMPANY_ID)
         Parent_RATING_ID: first(PIVOTED_ESSENTIALS.RATING_ID)
         Parent_TotalAssets: first(COALESCE(PIVOTED_ESSENTIALS.CorrectedTotalAssets, PIVOTED_ESSENTIALS.TotalBalanceSheet, PIVOTED_ESSENTIALS.Assets, PIVOTED_ESSENTIALS.TotalAssets))
         Parent_Turnover: first(COALESCE(PIVOTED_ESSENTIALS.TotalTurnoverTurnover, PIVOTED_ESSENTIALS.Turnover, PIVOTED_ESSENTIALS.Budget, PIVOTED_ESSENTIALS.Revenues, PIVOTED_ESSENTIALS.TotalRevenues, PIVOTED_ESSENTIALS.TotalOperatingIncome))
@@ -114,7 +109,7 @@ transformations:
       left_source: DIRECT
       right_source: PARENT_DATA
       condition:
-        - DIRECT.PARENT_COMPANY_ID = PARENT_DATA.COMPANY_ID_PARENT
+        - DIRECT.PARENT_COMPANY_ID = PARENT_DATA.COMPANY_ID
       how: left
   
   # Step 6: Join with LBR data
