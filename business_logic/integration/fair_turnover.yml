@@ -69,16 +69,16 @@ transformations:
       pivot_col: MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_TYPE_CODE
       pivot_value_col: MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_VALUE
       column_mapping:
-        CorrectedTotalAssets: max
-        TotalBalanceSheet: max
-        Assets: max
-        TotalAssets: max
-        TotalTurnoverTurnover: max
-        Turnover: max
-        Budget: max
-        Revenues: max
-        TotalRevenues: max
-        TotalOperatingIncome: max
+        CorrectedTotalAssets: first
+        TotalBalanceSheet: first
+        Assets: first
+        TotalAssets: first
+        TotalTurnoverTurnover: first
+        Turnover: first
+        Budget: first
+        Revenues: first
+        TotalRevenues: first
+        TotalOperatingIncome: first
   
   # Step 4a: Create DIRECT alias with calculated Total Assets and Turnover
   - aggregation:
