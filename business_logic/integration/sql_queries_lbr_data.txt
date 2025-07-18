@@ -81,3 +81,79 @@ SELECT
 FROM bsrc_d.stg_{{ RUN_MONTH }}.dial_fair_lbr_quantitative_input
 WHERE DATA_TYPE = 2 AND LB_RATING_ID IS NOT NULL
 LIMIT 5;
+
+-- Check if there's a pattern mismatch in LB_RATING_ID between tables
+-- Replace {{ RUN_MONTH }} with actual value
+
+-- Check format, length, and pattern of LB_RATING_IDs
+WITH ucr_format AS (
+    SELECT 
+        'UCR_ACTUAL' as Source_Table,
+        LB_RATING_ID,
+        LENGTH(LB_RATING_ID) as Length,
+        -- Check for leading/trailing spaces
+        LENGTH(TRIM(LB_RATING_ID)) as Trimmed_Length,
+        -- Check if contains underscore
+        CASE WHEN LB_RATING_ID LIKE '%_%' THEN 'Has_Underscore' ELSE 'No_Underscore' END as Pattern
+    FROM bsrc_d.int_{{ RUN_MONTH }}.pd_ucr_actual
+    WHERE LB_RATING_ID IS NOT NULL
+    LIMIT 10
+),
+lbr_format AS (
+    SELECT 
+        'LBR_QUANTITATIVE' as Source_Table,
+        LB_RATING_ID,
+        LENGTH(LB_RATING_ID) as Length,
+        LENGTH(TRIM(LB_RATING_ID)) as Trimmed_Length,
+        CASE WHEN LB_RATING_ID LIKE '%_%' THEN 'Has_Underscore' ELSE 'No_Underscore' END as Pattern
+    FROM bsrc_d.stg_{{ RUN_MONTH }}.dial_fair_lbr_quantitative_input
+    WHERE DATA_TYPE = 2 AND LB_RATING_ID IS NOT NULL
+    LIMIT 10
+)
+SELECT * FROM ucr_format
+UNION ALL
+SELECT * FROM lbr_format;
+
+-- Alternative approach using separate queries if UNION doesn't work
+-- Query 1: UCR Format
+SELECT 
+    'UCR_ACTUAL' as Source_Table,
+    LB_RATING_ID,
+    LENGTH(LB_RATING_ID) as Length,
+    LENGTH(TRIM(LB_RATING_ID)) as Trimmed_Length,
+    SUBSTR(LB_RATING_ID, 1, 10) as First_10_Chars,
+    SUBSTR(LB_RATING_ID, -10, 10) as Last_10_Chars
+FROM bsrc_d.int_{{ RUN_MONTH }}.pd_ucr_actual
+WHERE LB_RATING_ID IS NOT NULL
+LIMIT 10;
+
+-- Query 2: LBR Format
+SELECT 
+    'LBR_QUANTITATIVE' as Source_Table,
+    LB_RATING_ID,
+    LENGTH(LB_RATING_ID) as Length,
+    LENGTH(TRIM(LB_RATING_ID)) as Trimmed_Length,
+    SUBSTR(LB_RATING_ID, 1, 10) as First_10_Chars,
+    SUBSTR(LB_RATING_ID, -10, 10) as Last_10_Chars
+FROM bsrc_d.stg_{{ RUN_MONTH }}.dial_fair_lbr_quantitative_input
+WHERE DATA_TYPE = 2 AND LB_RATING_ID IS NOT NULL
+LIMIT 10;
+
+-- Query 3: Direct comparison to find pattern differences
+SELECT 
+    ucr.RATING_ID,
+    ucr.LB_RATING_ID as UCR_LB_RATING_ID,
+    lbr.LB_RATING_ID as LBR_LB_RATING_ID,
+    CASE 
+        WHEN ucr.LB_RATING_ID = lbr.LB_RATING_ID THEN 'Exact_Match'
+        WHEN UPPER(ucr.LB_RATING_ID) = UPPER(lbr.LB_RATING_ID) THEN 'Case_Difference'
+        WHEN TRIM(ucr.LB_RATING_ID) = TRIM(lbr.LB_RATING_ID) THEN 'Space_Difference'
+        ELSE 'No_Match'
+    END as Match_Type
+FROM bsrc_d.int_{{ RUN_MONTH }}.pd_ucr_actual ucr
+CROSS JOIN bsrc_d.stg_{{ RUN_MONTH }}.dial_fair_lbr_quantitative_input lbr
+WHERE ucr.LB_RATING_ID IS NOT NULL 
+  AND lbr.DATA_TYPE = 2 
+  AND lbr.LB_RATING_ID IS NOT NULL
+  AND ucr.LB_RATING_ID LIKE CONCAT(SUBSTR(lbr.LB_RATING_ID, 1, 6), '%')
+LIMIT 20;
