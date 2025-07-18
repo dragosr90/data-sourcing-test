@@ -1,0 +1,83 @@
+-- Query to check why LBR join is not working
+-- Replace {{ RUN_MONTH }} with actual value
+
+-- 1. Check data types and sample values for LB_RATING_ID across tables
+SELECT 
+    'UCR_ACTUAL' as Table_Name,
+    COUNT(*) as Total_Records,
+    COUNT(LB_RATING_ID) as Non_Null_LB_RATING_ID,
+    COUNT(DISTINCT LB_RATING_ID) as Unique_LB_RATING_ID
+FROM bsrc_d.int_{{ RUN_MONTH }}.pd_ucr_actual
+UNION ALL
+SELECT 
+    'LBR_QUANTITATIVE' as Table_Name,
+    COUNT(*) as Total_Records,
+    COUNT(LB_RATING_ID) as Non_Null_LB_RATING_ID,
+    COUNT(DISTINCT LB_RATING_ID) as Unique_LB_RATING_ID
+FROM bsrc_d.stg_{{ RUN_MONTH }}.dial_fair_lbr_quantitative_input
+WHERE DATA_TYPE = 2;
+
+-- 2. Show sample LB_RATING_IDs from both tables
+SELECT 'UCR_ACTUAL Sample LB_RATING_IDs:' as Description;
+SELECT DISTINCT LB_RATING_ID, COUNT(*) as Count
+FROM bsrc_d.int_{{ RUN_MONTH }}.pd_ucr_actual
+WHERE LB_RATING_ID IS NOT NULL
+GROUP BY LB_RATING_ID
+LIMIT 10;
+
+SELECT 'LBR_QUANTITATIVE Sample LB_RATING_IDs:' as Description;
+SELECT DISTINCT LB_RATING_ID, COUNT(*) as Count
+FROM bsrc_d.stg_{{ RUN_MONTH }}.dial_fair_lbr_quantitative_input
+WHERE DATA_TYPE = 2 AND LB_RATING_ID IS NOT NULL
+GROUP BY LB_RATING_ID
+LIMIT 10;
+
+-- 3. Check for exact matches
+SELECT 
+    COUNT(DISTINCT ucr.LB_RATING_ID) as Matching_LB_RATING_IDs
+FROM bsrc_d.int_{{ RUN_MONTH }}.pd_ucr_actual ucr
+INNER JOIN bsrc_d.stg_{{ RUN_MONTH }}.dial_fair_lbr_quantitative_input lbr
+    ON ucr.LB_RATING_ID = lbr.LB_RATING_ID
+WHERE lbr.DATA_TYPE = 2;
+
+-- 4. Check specific RatingIDs that should have LBR data
+-- Based on RDF data, these should have LBR values:
+WITH rdf_lbr_expected AS (
+    SELECT 
+        2853256 as RatingID, 67460489230.8 as Expected_Assets, 5239143649.92 as Expected_Turnover
+    UNION ALL
+    SELECT 2836723, 435829475000, 4816934000
+    UNION ALL
+    SELECT 2853787, 3694636854, 131239978
+)
+SELECT 
+    rle.RatingID,
+    ucr.LB_RATING_ID as UCR_LB_RATING_ID,
+    rle.Expected_Assets,
+    rle.Expected_Turnover,
+    lbr.LB_RATING_ID as LBR_LB_RATING_ID,
+    lbr.TOTAL_ASSETS * 1000000000 as LBR_Assets_Calculated,
+    (lbr.NET_INTEREST_YIELD + lbr.OTHER_OPERATING_INCOME) * 1000000000 as LBR_Turnover_Calculated
+FROM rdf_lbr_expected rle
+LEFT JOIN bsrc_d.int_{{ RUN_MONTH }}.pd_ucr_actual ucr ON ucr.RATING_ID = rle.RatingID
+LEFT JOIN bsrc_d.stg_{{ RUN_MONTH }}.dial_fair_lbr_quantitative_input lbr 
+    ON ucr.LB_RATING_ID = lbr.LB_RATING_ID AND lbr.DATA_TYPE = 2;
+
+-- 5. Check if there's a pattern mismatch (e.g., case sensitivity, spaces)
+SELECT 
+    'UCR LB_RATING_ID Format' as Check_Type,
+    LB_RATING_ID,
+    LENGTH(LB_RATING_ID) as Length,
+    CAST(LB_RATING_ID AS VARBINARY) as Binary_Value
+FROM bsrc_d.int_{{ RUN_MONTH }}.pd_ucr_actual
+WHERE LB_RATING_ID IS NOT NULL
+LIMIT 5
+UNION ALL
+SELECT 
+    'LBR LB_RATING_ID Format' as Check_Type,
+    LB_RATING_ID,
+    LENGTH(LB_RATING_ID) as Length,
+    CAST(LB_RATING_ID AS VARBINARY) as Binary_Value
+FROM bsrc_d.stg_{{ RUN_MONTH }}.dial_fair_lbr_quantitative_input
+WHERE DATA_TYPE = 2 AND LB_RATING_ID IS NOT NULL
+LIMIT 5;
