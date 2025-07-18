@@ -1,0 +1,11 @@
+table_schema,table_name
+int_202505,dial_fair_pd_ucr_actual
+int_202505,fair_turnover
+stg_202505,dial_epr_organisation_financial_details
+stg_202505,dial_fair_globalid
+stg_202505,dial_fair_lbr_quantitative_input
+stg_202505,dial_fair_lgd_ead
+stg_202505,dial_fair_pd_iterations
+stg_202505,dial_fair_pd_model_component_essentials
+stg_202505,dial_fair_pd_ucr
+stg_202505,dial_fair_pd_ucr_actual
