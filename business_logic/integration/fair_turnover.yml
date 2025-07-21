@@ -1,4 +1,4 @@
-description: Preprocess FAIR data - Using minimum calculation period per iteration like RDF
+description: Preprocess FAIR data - Using minimum calculation period PER COMPONENT TYPE
 
 target: bsrc_d.int_{{ RUN_MONTH }}.fair_turnover
 
@@ -42,33 +42,32 @@ sources:
     source: stg_{{ RUN_MONTH }}.dial_fair_lbr_quantitative_input
 
 transformations:
-  # Step 1: First find minimum calculation period per rating/iteration
-  - aggregation:
-      alias: MIN_PERIODS
-      source: MODEL_ESSENTIALS
-      group:
-        - MODEL_ESSENTIALS.RATING_ID
-        - MODEL_ESSENTIALS.ITERATION_NUMBER
-      column_mapping:
-        MIN_CALCULATION_PERIOD_ID: min(MODEL_ESSENTIALS.CALCULATION_PERIOD_ID)
-  
-  # Step 2: Join back with MODEL_ESSENTIALS to get only minimum period records
+  # Step 1: Join iterations with model essentials
   - join:
-      left_source: MODEL_ESSENTIALS
-      right_source: MIN_PERIODS
-      condition:
-        - MODEL_ESSENTIALS.RATING_ID = MIN_PERIODS.RATING_ID
-        - MODEL_ESSENTIALS.ITERATION_NUMBER = MIN_PERIODS.ITERATION_NUMBER
-        - MODEL_ESSENTIALS.CALCULATION_PERIOD_ID = MIN_PERIODS.MIN_CALCULATION_PERIOD_ID
-      how: inner
-  
-  # Step 3: Join with PD_ITERATIONS
-  - join:
-      left_source: PD_ITERATIONS  
+      left_source: PD_ITERATIONS
       right_source: MODEL_ESSENTIALS
       condition:
         - PD_ITERATIONS.ITERATION_NUMBER = MODEL_ESSENTIALS.ITERATION_NUMBER
         - PD_ITERATIONS.RATING_ID = MODEL_ESSENTIALS.RATING_ID
+      how: inner
+  
+  # Step 2: Find minimum calculation period PER component type and rating
+  - aggregation:
+      alias: MIN_PERIODS_PER_TYPE
+      group:
+        - PD_ITERATIONS.RATING_ID
+        - MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_TYPE_CODE
+      column_mapping:
+        MIN_CALC_PERIOD: min(MODEL_ESSENTIALS.CALCULATION_PERIOD_ID)
+  
+  # Step 3: Join back to get values at minimum period per type
+  - join:
+      left_source: PD_ITERATIONS
+      right_source: MIN_PERIODS_PER_TYPE
+      condition:
+        - PD_ITERATIONS.RATING_ID = MIN_PERIODS_PER_TYPE.RATING_ID
+        - MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_TYPE_CODE = MIN_PERIODS_PER_TYPE.MODEL_COMPONENT_ESSENTIAL_TYPE_CODE
+        - MODEL_ESSENTIALS.CALCULATION_PERIOD_ID = MIN_PERIODS_PER_TYPE.MIN_CALC_PERIOD
       how: inner
   
   # Step 4: Join with UCR actual data
@@ -78,8 +77,7 @@ transformations:
         - PD_ITERATIONS.RATING_ID = UCR_ACTUAL.RATING_ID
       how: left
   
-  # Step 5: Aggregate model essentials by rating
-  # Change the COALESCE order to match RDF - prioritize CorrectedTotalAssets for TotalAssets
+  # Step 5: Aggregate to get one value per rating/component type
   - aggregation:
       alias: RATING_ESSENTIALS
       group:
@@ -88,7 +86,7 @@ transformations:
         - UCR_ACTUAL.PARENT_COMPANY_ID
         - UCR_ACTUAL.LB_RATING_ID
       column_mapping:
-        # Individual component values - using FIRST to get min period value
+        # Now each component will have its own minimum period value
         CorrectedTotalAssets: first(CASE WHEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_TYPE_CODE = 'CorrectedTotalAssets' THEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_VALUE END)
         TotalBalanceSheet: first(CASE WHEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_TYPE_CODE = 'TotalBalanceSheet' THEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_VALUE END)
         Assets: first(CASE WHEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_TYPE_CODE = 'Assets' THEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_VALUE END)
@@ -99,7 +97,7 @@ transformations:
         Revenues: first(CASE WHEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_TYPE_CODE = 'Revenues' THEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_VALUE END)
         TotalRevenues: first(CASE WHEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_TYPE_CODE = 'TotalRevenues' THEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_VALUE END)
         TotalOperatingIncome: first(CASE WHEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_TYPE_CODE = 'TotalOperatingIncome' THEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_VALUE END)
-        # Calculated fields - RDF prioritizes CorrectedTotalAssets for assets
+        # RDF uses CorrectedTotalAssets for assets, Turnover for turnover
         TotalAssets_calc: first(COALESCE(
           CASE WHEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_TYPE_CODE = 'CorrectedTotalAssets' THEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_VALUE END,
           CASE WHEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_TYPE_CODE = 'TotalAssets' THEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_VALUE END,
@@ -122,9 +120,9 @@ transformations:
       group:
         - RATING_ESSENTIALS.COMPANY_ID
       column_mapping:
-        Parent_RATING_ID: max(RATING_ESSENTIALS.RATING_ID)
-        Parent_TotalAssets: max(RATING_ESSENTIALS.TotalAssets_calc)
-        Parent_Turnover: max(RATING_ESSENTIALS.Turnover_calc)
+        Parent_RATING_ID: first(RATING_ESSENTIALS.RATING_ID)
+        Parent_TotalAssets: first(RATING_ESSENTIALS.TotalAssets_calc)
+        Parent_Turnover: first(RATING_ESSENTIALS.Turnover_calc)
   
   # Step 7: Join parent data back
   - join:
