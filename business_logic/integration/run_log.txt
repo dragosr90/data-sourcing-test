@@ -1,14 +1,25 @@
-2025-07-21 07:13:51 [INFO] validate:  Sources validated successfully
-2025-07-21 07:13:51 [INFO] validate_join:  Joins validated successfully
-2025-07-21 07:13:51 [INFO] validate_join:  Joins validated successfully
-2025-07-21 07:13:52 [INFO] validate_aggregation:  Aggregations validated successfully
-2025-07-21 07:13:53 [INFO] validate_add_variables:  Variables validated successfully
-2025-07-21 07:13:53 [INFO] validate_aggregation:  Aggregations validated successfully
-2025-07-21 07:13:53 [INFO] validate_join:  Joins validated successfully
-2025-07-21 07:13:53 [INFO] validate_join:  Joins validated successfully
-2025-07-21 07:13:53 [INFO] validate:  Transformations validated successfully
-2025-07-21 07:13:54 [ERROR] validate_sql_expressions:  Problem with expression(s):
-2025-07-21 07:13:54 [ERROR] validate_sql_expressions:  COALESCE( Turnover_Direct, PARENT_DATA.Parent_Turnover, CASE WHEN LBR_QUANTITATIVE.NET_INTEREST_YIELD IS NOT NULL AND LBR_QUANTITATIVE.OTHER_OPERATING_INCOME IS NOT NULL THEN CAST((LBR_QUANTITATIVE.NET_INTEREST_YIELD + LBR_QUANTITATIVE.OTHER_OPERATING_INCOME) * 1000000000 AS STRING) END ): [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `Turnover_Direct` cannot be resolved. Did you mean one of the following? [`RatingID`, `LBRatingID`, `ParentRatingID`, `PARENT_DATA`.`company_id`, `RATING_ESSENTIALS`.`assets`]. SQLSTATE: 42703
-Turnover_Direct: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `Turnover_Direct` cannot be resolved. Did you mean one of the following? [`RatingID`, `LBRatingID`, `ParentRatingID`, `PARENT_DATA`.`company_id`, `RATING_ESSENTIALS`.`assets`]. SQLSTATE: 42703
-COALESCE( TotalAssets_Direct, PARENT_DATA.Parent_TotalAssets, CASE WHEN LBR_QUANTITATIVE.TOTAL_ASSETS IS NOT NULL THEN CAST(LBR_QUANTITATIVE.TOTAL_ASSETS * 1000000000 AS STRING) END ): [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `TotalAssets_Direct` cannot be resolved. Did you mean one of the following? [`ParentRatingID`, `RatingID`, `AnnualTurnoverParent`, `LBRatingID`, `AnnualTurnoverLBR`]. SQLSTATE: 42703
-TotalAssets_Direct: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `TotalAssets_Direct` cannot be resolved. Did you mean one of the following? [`ParentRatingID`, `RatingID`, `AnnualTurnoverParent`, `LBRatingID`, `AnnualTurnoverLBR`]. SQLSTATE: 42703
+[UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `TotalAssets_Direct` cannot be resolved. Did you mean one of the following? [`TotalAssets`, `Assets`, `TotalRevenues`, `TotalBalanceSheet`, `Budget`]. SQLSTATE: 42703
+File <command-8319718378561211>, line 1
+----> 1 write_and_comment(
+      2     spark,
+      3     business_logic_dict,
+      4     transformed_data,
+      5     run_month=run_month,
+      6     source_system=delivery_entity,
+      7 )
+File /Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/src/transform/table_write_and_comment.py:222, in write_and_comment(spark, business_logic, data, run_month, dq_check_folder, source_system, schema, local)
+    210 def write_and_comment(
+    211     spark: SparkSession,
+    212     business_logic: BusinessLogicConfig,
+   (...)
+    219     local: bool = False,
+    220 ) -> bool:
+    221     """Write data to Unity Catalog and add table & column comments from logic."""
+--> 222     write_to_table(spark=spark, table_name=business_logic["target"], data=data)
+    223     table_summary(spark=spark, business_logic=business_logic)
+    224     target_expression_comments(spark=spark, business_logic=business_logic)
+File /Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/src/transform/table_write_and_comment.py:42, in write_to_table(spark, table_name, data, mode)
+     39         data.write.mode(mode).saveAsTable(table_name)
+     40 except AnalysisException:
+     41     # Table doesn't exist, create it
+---> 42     data.write.saveAsTable(table_name)
