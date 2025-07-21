@@ -1,5 +1,4 @@
-
-description: Preprocess FAIR data - Following user story exactly
+description: Preprocess FAIR data - Optimized with aggregation instead of pivot
 
 target: bsrc_d.int_{{ RUN_MONTH }}.fair_turnover
 
@@ -59,77 +58,79 @@ transformations:
         - PD_ITERATIONS.RATING_ID = UCR_ACTUAL.RATING_ID
       how: left
   
-  # Step 3: Pivot the MODEL_COMPONENT_ESSENTIAL_TYPE_CODE values
-  - pivot:
-      alias: PIVOTED_ESSENTIALS
-      group_cols:
+  # Step 3: Aggregate model essentials by rating to get all component values
+  - aggregation:
+      alias: RATING_ESSENTIALS
+      group:
         - UCR_ACTUAL.RATING_ID
         - UCR_ACTUAL.COMPANY_ID
         - UCR_ACTUAL.PARENT_COMPANY_ID
         - UCR_ACTUAL.LB_RATING_ID
-      pivot_col: MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_TYPE_CODE
-      pivot_value_col: MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_VALUE
       column_mapping:
-        CorrectedTotalAssets: max
-        TotalBalanceSheet: max
-        Assets: max
-        TotalAssets: max
-        TotalTurnoverTurnover: max
-        Turnover: max
-        Budget: max
-        Revenues: max
-        TotalRevenues: max
-        TotalOperatingIncome: max
+        CorrectedTotalAssets: max(CASE WHEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_TYPE_CODE = 'CorrectedTotalAssets' THEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_VALUE END)
+        TotalBalanceSheet: max(CASE WHEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_TYPE_CODE = 'TotalBalanceSheet' THEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_VALUE END)
+        Assets: max(CASE WHEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_TYPE_CODE = 'Assets' THEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_VALUE END)
+        TotalAssets: max(CASE WHEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_TYPE_CODE = 'TotalAssets' THEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_VALUE END)
+        TotalTurnoverTurnover: max(CASE WHEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_TYPE_CODE = 'TotalTurnoverTurnover' THEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_VALUE END)
+        Turnover: max(CASE WHEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_TYPE_CODE = 'Turnover' THEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_VALUE END)
+        Budget: max(CASE WHEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_TYPE_CODE = 'Budget' THEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_VALUE END)
+        Revenues: max(CASE WHEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_TYPE_CODE = 'Revenues' THEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_VALUE END)
+        TotalRevenues: max(CASE WHEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_TYPE_CODE = 'TotalRevenues' THEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_VALUE END)
+        TotalOperatingIncome: max(CASE WHEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_TYPE_CODE = 'TotalOperatingIncome' THEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_VALUE END)
   
-  # Step 4a: Create DIRECT alias with calculated values
-  - aggregation:
-      alias: DIRECT
-      source: PIVOTED_ESSENTIALS
-      group:
-        - PIVOTED_ESSENTIALS.RATING_ID
-        - PIVOTED_ESSENTIALS.COMPANY_ID  
-        - PIVOTED_ESSENTIALS.PARENT_COMPANY_ID
-        - PIVOTED_ESSENTIALS.LB_RATING_ID
+  # Step 4: Add variables for direct and parent calculations
+  - add_variables:
       column_mapping:
-        TotalAssets: max(COALESCE(PIVOTED_ESSENTIALS.CorrectedTotalAssets, PIVOTED_ESSENTIALS.TotalBalanceSheet, PIVOTED_ESSENTIALS.Assets, PIVOTED_ESSENTIALS.TotalAssets))
-        Turnover: max(COALESCE(PIVOTED_ESSENTIALS.TotalTurnoverTurnover, PIVOTED_ESSENTIALS.Turnover, PIVOTED_ESSENTIALS.Budget, PIVOTED_ESSENTIALS.Revenues, PIVOTED_ESSENTIALS.TotalRevenues, PIVOTED_ESSENTIALS.TotalOperatingIncome))
+        TotalAssets_Direct: COALESCE(RATING_ESSENTIALS.CorrectedTotalAssets, RATING_ESSENTIALS.TotalBalanceSheet, RATING_ESSENTIALS.Assets, RATING_ESSENTIALS.TotalAssets)
+        Turnover_Direct: COALESCE(RATING_ESSENTIALS.TotalTurnoverTurnover, RATING_ESSENTIALS.Turnover, RATING_ESSENTIALS.Budget, RATING_ESSENTIALS.Revenues, RATING_ESSENTIALS.TotalRevenues, RATING_ESSENTIALS.TotalOperatingIncome)
   
-  # Step 4b: Create PARENT alias
+  # Step 5: Create parent data by aggregating by company
   - aggregation:
       alias: PARENT_DATA
-      source: PIVOTED_ESSENTIALS
+      source: RATING_ESSENTIALS
       group:
-        - PIVOTED_ESSENTIALS.COMPANY_ID
+        - RATING_ESSENTIALS.COMPANY_ID
       column_mapping:
-        Parent_RATING_ID: max(PIVOTED_ESSENTIALS.RATING_ID)
-        Parent_TotalAssets: max(COALESCE(PIVOTED_ESSENTIALS.CorrectedTotalAssets, PIVOTED_ESSENTIALS.TotalBalanceSheet, PIVOTED_ESSENTIALS.Assets, PIVOTED_ESSENTIALS.TotalAssets))
-        Parent_Turnover: max(COALESCE(PIVOTED_ESSENTIALS.TotalTurnoverTurnover, PIVOTED_ESSENTIALS.Turnover, PIVOTED_ESSENTIALS.Budget, PIVOTED_ESSENTIALS.Revenues, PIVOTED_ESSENTIALS.TotalRevenues, PIVOTED_ESSENTIALS.TotalOperatingIncome))
+        Parent_RATING_ID: max(RATING_ESSENTIALS.RATING_ID)
+        Parent_TotalAssets: max(TotalAssets_Direct)
+        Parent_Turnover: max(Turnover_Direct)
   
-  # Step 5: Join on parent company
+  # Step 6: Join parent data back
   - join:
-      left_source: DIRECT
+      left_source: RATING_ESSENTIALS
       right_source: PARENT_DATA
       condition:
-        - DIRECT.PARENT_COMPANY_ID = PARENT_DATA.COMPANY_ID
+        - RATING_ESSENTIALS.PARENT_COMPANY_ID = PARENT_DATA.COMPANY_ID
       how: left
   
-  # Step 6: Join with LBR data
+  # Step 7: Join with LBR data
   - join:
       right_source: LBR_QUANTITATIVE
       condition:
-        - DIRECT.LB_RATING_ID = LBR_QUANTITATIVE.LB_RATING_ID
+        - RATING_ESSENTIALS.LB_RATING_ID = LBR_QUANTITATIVE.LB_RATING_ID
       how: left
 
 expressions:
-  RatingID: DIRECT.RATING_ID
-  ParentRatingID: Parent_RATING_ID
+  RatingID: RATING_ESSENTIALS.RATING_ID
+  ParentRatingID: PARENT_DATA.Parent_RATING_ID
   LBRatingID: LBR_QUANTITATIVE.LB_RATING_ID
-  AnnualTurnover: COALESCE(CASE WHEN LBR_QUANTITATIVE.NET_INTEREST_YIELD IS NOT NULL AND LBR_QUANTITATIVE.OTHER_OPERATING_INCOME IS NOT NULL THEN CAST((LBR_QUANTITATIVE.NET_INTEREST_YIELD + LBR_QUANTITATIVE.OTHER_OPERATING_INCOME) * 1000000000 AS STRING) END, PARENT_DATA.Parent_Turnover, DIRECT.Turnover)
-  AnnualTurnoverDirect: DIRECT.Turnover
+  # Correct hierarchy: Direct → Parent → LBR
+  AnnualTurnover: COALESCE(
+    Turnover_Direct,
+    PARENT_DATA.Parent_Turnover,
+    CASE WHEN LBR_QUANTITATIVE.NET_INTEREST_YIELD IS NOT NULL AND LBR_QUANTITATIVE.OTHER_OPERATING_INCOME IS NOT NULL 
+    THEN CAST((LBR_QUANTITATIVE.NET_INTEREST_YIELD + LBR_QUANTITATIVE.OTHER_OPERATING_INCOME) * 1000000000 AS STRING) END
+  )
+  AnnualTurnoverDirect: Turnover_Direct
   AnnualTurnoverParent: PARENT_DATA.Parent_Turnover
   AnnualTurnoverLBR: CASE WHEN LBR_QUANTITATIVE.NET_INTEREST_YIELD IS NOT NULL AND LBR_QUANTITATIVE.OTHER_OPERATING_INCOME IS NOT NULL THEN CAST((LBR_QUANTITATIVE.NET_INTEREST_YIELD + LBR_QUANTITATIVE.OTHER_OPERATING_INCOME) * 1000000000 AS STRING) END
-  TotalAssets: COALESCE(CASE WHEN LBR_QUANTITATIVE.TOTAL_ASSETS IS NOT NULL THEN CAST(LBR_QUANTITATIVE.TOTAL_ASSETS * 1000000000 AS STRING) END, PARENT_DATA.Parent_TotalAssets, DIRECT.TotalAssets)
-  TotalAssetsDirect: DIRECT.TotalAssets
+  TotalAssets: COALESCE(
+    TotalAssets_Direct,
+    PARENT_DATA.Parent_TotalAssets,
+    CASE WHEN LBR_QUANTITATIVE.TOTAL_ASSETS IS NOT NULL 
+    THEN CAST(LBR_QUANTITATIVE.TOTAL_ASSETS * 1000000000 AS STRING) END
+  )
+  TotalAssetsDirect: TotalAssets_Direct
   TotalAssetsParent: PARENT_DATA.Parent_TotalAssets
   TotalAssetsLBR: CASE WHEN LBR_QUANTITATIVE.TOTAL_ASSETS IS NOT NULL THEN CAST(LBR_QUANTITATIVE.TOTAL_ASSETS * 1000000000 AS STRING) END
 
