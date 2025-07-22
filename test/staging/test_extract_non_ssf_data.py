@@ -155,11 +155,6 @@ def test_extract_non_ssf_data(
         source_container=source_container,
     )
 
-    # Initialize process log
-    extraction.initialize_process_log(run_id=1)
-    assert extraction.base_process_record["RunID"] == 1
-    assert extraction.base_process_record["Component"] == "Non-SSF"
-
     # Verify that spark.read.table was called with the correct arguments
     mock_read.table.assert_any_call(f"bsrc_d.metadata_{run_month}.metadata_nonssf")
     mock_read.table.assert_any_call(f"bsrc_d.log_{run_month}.log_nonssf")
@@ -329,9 +324,10 @@ def test_extract_non_ssf_data(
 
     # For every file (v1 - v4) we log every step from received + 1 - 5: (4 x 6)
     # + 2 steps for v3.wrong_extension (received and initial checks)
-    # So in total 26 calls for metadata and log
-    assert metadata_path_calls == 26
-    assert log_path_calls == 26
+    # + 1 step for log_missing_files_errors test
+    # So in total 27 calls for metadata and log
+    assert metadata_path_calls == 27
+    assert log_path_calls == 27
 
 
 @pytest.mark.parametrize(
@@ -406,7 +402,6 @@ def test_deadline_functionality(
     
     # Create extraction instance
     extraction = ExtractNonSSFData(spark_session, run_month, source_container=source_container)
-    extraction.initialize_process_log()
     
     # Mock dbutils
     mock_dbutils_fs_ls = mocker.patch.object(extraction.dbutils.fs, "ls")
@@ -442,60 +437,45 @@ def test_deadline_functionality(
     ("run_month", "source_container"),
     [("202505", "test-container")],
 )
-def test_append_to_process_log(
+def test_check_file_expected_status(
     spark_session,
     mocker,
     run_month,
     source_container,
 ):
-    """Test the append_to_process_log method."""
-    # Mock metadata and log
+    """Test the check_file_expected_status method."""
+    # Create mock metadata
+    schema_meta = [
+        "SourceSystem",
+        "SourceFileName",
+        "FileDeliveryStep",
+    ]
     mock_meta = spark_session.createDataFrame(
-        [("dummy", 1)], schema=["col1", "col2"]
+        [
+            ("lrd_static", "TEST_FILE_EXPECTED", 0),  # EXPECTED = 0
+            ("lrd_static", "TEST_FILE_REDELIVERY", 9),  # REDELIVERY = 9
+            ("lrd_static", "TEST_FILE_OTHER", 5),  # Some other status
+        ],
+        schema=schema_meta,
     )
-    mock_log = spark_session.createDataFrame(
-        [("dummy", 1)], schema=["col1", "col2"]
-    )
+    
+    mock_log = spark_session.createDataFrame([("dummy", 1)], schema=["col1", "col2"])
     
     # Mock spark read
     mock_read = mocker.patch("pyspark.sql.SparkSession.read", autospec=True)
     mock_read.table.side_effect = [mock_meta, mock_log]
     
-    # Mock write_to_log at the correct import location
-    mock_write_to_log = mocker.patch(
-        "abnamro_bsrc_etl.staging.extract_nonssf_data.write_to_log"
-    )
-    
-    # Mock get_catalog to return a test catalog
-    mocker.patch(
-        "abnamro_bsrc_etl.staging.extract_base.get_catalog",
-        return_value="bsrc_d"
-    )
-    
     # Create extraction instance
-    extraction = ExtractNonSSFData(
-        spark_session, run_month, source_container=source_container
-    )
-    extraction.initialize_process_log(run_id=123)
+    extraction = ExtractNonSSFData(spark_session, run_month, source_container=source_container)
     
-    # Test append_to_process_log
-    extraction.append_to_process_log(
-        source_system="TEST_SYSTEM",
-        comments="Test comment",
-        status="Started"
-    )
+    # Test expected status
+    assert extraction.check_file_expected_status("TEST_FILE_EXPECTED") is True
     
-    # Verify write_to_log was called
-    mock_write_to_log.assert_called_once()
-    call_args = mock_write_to_log.call_args
+    # Test redelivery status
+    assert extraction.check_file_expected_status("TEST_FILE_REDELIVERY") is True
     
-    assert call_args[1]["spark"] == spark_session
-    assert call_args[1]["run_month"] == run_month
-    assert call_args[1]["log_table"] == "process_log"
+    # Test other status
+    assert extraction.check_file_expected_status("TEST_FILE_OTHER") is False
     
-    record = call_args[1]["record"]
-    assert record["RunID"] == 123
-    assert record["Status"] == "Started"
-    assert record["Comments"] == "Test comment"
-    assert record["SourceSystem"] == "TEST_SYSTEM"
-    assert record["Component"] == "Non-SSF"
+    # Test non-existent file
+    assert extraction.check_file_expected_status("NON_EXISTENT") is False
