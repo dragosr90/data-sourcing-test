@@ -67,7 +67,8 @@ def non_ssf_load(
         # Log errors for missing files
         has_critical_missing = extraction.log_missing_files_errors(missing_files)
         
-        # Fail the entire process if files are missing for NME or FINOB
+        # Only log the error but don't fail the process immediately
+        # This allows the process to continue and process available files
         if has_critical_missing:
             nme_finob_missing = [
                 f for f in missing_files 
@@ -77,12 +78,8 @@ def non_ssf_load(
                 f"Critical files missing after deadline: "
                 f"{', '.join([f['file_name'] for f in nme_finob_missing])}"
             )
-            append_to_process_log(
-                **log_config,
-                source_system="",
-                comments=error_summary,
-                status="Failed"
-            )
+            logger.error(error_summary)
+            # Don't raise exception here - let the process continue
     
     # Get all files from basel-nonssf-landing container and place static data
     files_per_delivery_entity = extraction.get_all_files()
