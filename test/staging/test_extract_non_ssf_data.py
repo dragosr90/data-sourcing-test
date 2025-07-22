@@ -59,7 +59,7 @@ def test_extract_non_ssf_data(
                 ".txt",
                 "|",
                 "test_non_ssf_v1",
-                0,
+                NonSSFStepStatus.EXPECTED.value,  # Use the actual enum value
                 "Expected",
                 future_date,  # Future deadline
             ),
@@ -69,7 +69,7 @@ def test_extract_non_ssf_data(
                 ".txt",
                 "|",
                 "test_non_ssf_v2",
-                0,
+                NonSSFStepStatus.EXPECTED.value,  # Use the actual enum value
                 "Expected",
                 past_date,  # Past deadline - should be copied
             ),
@@ -79,7 +79,7 @@ def test_extract_non_ssf_data(
                 ".parquet",
                 ",",
                 "test_non_ssf_v3",
-                0,
+                NonSSFStepStatus.EXPECTED.value,  # Use the actual enum value
                 "Expected",
                 future_date,
             ),
@@ -89,7 +89,7 @@ def test_extract_non_ssf_data(
                 ".csv",
                 ",",
                 "test_non_ssf_v4",
-                0,
+                NonSSFStepStatus.EXPECTED.value,  # Use the actual enum value
                 "Expected",
                 past_date,  # Past deadline
             ),
@@ -113,7 +113,7 @@ def test_extract_non_ssf_data(
                 "lrd_static",
                 "TEST_NON_SSF_V1",
                 1,
-                0,
+                NonSSFStepStatus.EXPECTED.value,  # Use the actual enum value
                 "Expected",
                 "Success",
                 datetime.now(timezone.utc),
@@ -360,11 +360,11 @@ def test_deadline_functionality(
     mock_meta = spark_session.createDataFrame(
         [
             # LRD_STATIC with past deadline - should be copied
-            ("lrd_static", "STATIC_PAST", ".txt", "|", "static_past", 0, "Expected", past_date),
+            ("lrd_static", "STATIC_PAST", ".txt", "|", "static_past", NonSSFStepStatus.EXPECTED.value, "Expected", past_date),
             # LRD_STATIC with future deadline - should NOT be copied
-            ("lrd_static", "STATIC_FUTURE", ".txt", "|", "static_future", 0, "Expected", future_date),
+            ("lrd_static", "STATIC_FUTURE", ".txt", "|", "static_future", NonSSFStepStatus.EXPECTED.value, "Expected", future_date),
             # LRD_STATIC with no deadline - should NOT be copied
-            ("lrd_static", "STATIC_NO_DEADLINE", ".txt", "|", "static_no_deadline", 0, "Expected", None),
+            ("lrd_static", "STATIC_NO_DEADLINE", ".txt", "|", "static_no_deadline", NonSSFStepStatus.EXPECTED.value, "Expected", None),
         ],
         schema=schema_meta,
     )
@@ -386,7 +386,7 @@ def test_deadline_functionality(
                 "lrd_static",
                 "DUMMY",
                 1,
-                0,
+                NonSSFStepStatus.EXPECTED.value,
                 "Expected",
                 "Success",
                 datetime.now(timezone.utc),
@@ -452,8 +452,8 @@ def test_check_file_expected_status(
     ]
     mock_meta = spark_session.createDataFrame(
         [
-            ("lrd_static", "TEST_FILE_EXPECTED", 0),  # EXPECTED = 0
-            ("lrd_static", "TEST_FILE_REDELIVERY", 9),  # REDELIVERY = 9
+            ("lrd_static", "TEST_FILE_EXPECTED", NonSSFStepStatus.EXPECTED.value),  # Use actual enum value
+            ("lrd_static", "TEST_FILE_REDELIVERY", NonSSFStepStatus.REDELIVERY.value),  # Use actual enum value
             ("lrd_static", "TEST_FILE_OTHER", 5),  # Some other status
         ],
         schema=schema_meta,
