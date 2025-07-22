@@ -1,17 +1,18 @@
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Literal
 
+from py4j.protocol import Py4JJavaError
 from pyspark.sql import DataFrame
-from pyspark.sql.functions import col, to_date
+from pyspark.sql.functions import col
+from pyspark.sql.utils import AnalysisException
 
 from abnamro_bsrc_etl.staging.extract_base import ExtractStagingData
 from abnamro_bsrc_etl.staging.status import NonSSFStepStatus
 from abnamro_bsrc_etl.utils.export_parquet import export_to_parquet
 from abnamro_bsrc_etl.utils.get_env import get_container_path
 from abnamro_bsrc_etl.utils.logging_util import get_logger
-from abnamro_bsrc_etl.utils.table_logging import get_result, write_to_log
+from abnamro_bsrc_etl.utils.table_logging import get_result
 
 logger = get_logger()
 
@@ -26,48 +27,6 @@ class ExtractNonSSFData(ExtractStagingData):
 
     def __post_init__(self) -> None:
         super().__post_init__()
-        # Initialize process log record
-        self.base_process_record: dict[str, int | datetime | str] = {}
-
-    def initialize_process_log(self, run_id: int = 1) -> None:
-        """Initialize the base process log record.
-
-        Args:
-            run_id (int, optional): Run ID. Defaults to 1.
-        """
-        self.base_process_record = {
-            "RunID": run_id,
-            "Timestamp": datetime.now(tz=timezone.utc),
-            "Workflow": "Staging",
-            "Component": "Non-SSF",
-            "Layer": "Staging",
-        }
-
-    def append_to_process_log(
-        self,
-        source_system: str,
-        comments: str,
-        status: Literal["Completed", "Started", "Failed"] = "Completed",
-    ) -> None:
-        """Append log entry to process log table.
-
-        Args:
-            source_system (str): Source System
-            comments (str): Comment of step
-            status (Literal["Completed", "Started", "Failed"]): Status of the step.
-                Defaults to "Completed".
-        """
-        record = self.base_process_record.copy()
-        record["Status"] = status
-        record["Comments"] = comments
-        record["SourceSystem"] = source_system
-        
-        write_to_log(
-            spark=self.spark,
-            run_month=self.run_month,
-            record=dict(record),
-            log_table="process_log",
-        )
 
     def check_file_expected_status(self, file_name: str) -> bool:
         """Check if file is in expected or redelivery status.
@@ -309,8 +268,8 @@ class ExtractNonSSFData(ExtractStagingData):
                                 "file_name": file_name,
                                 "deadline": deadline_date
                             })
-                except Exception:
-                    logger.exception(f"Error checking files in {source_folder}")
+                except (AnalysisException, Py4JJavaError) as e:
+                    logger.exception(f"Error checking files in {source_folder}: {e}")
                     
         return missing_files
 
