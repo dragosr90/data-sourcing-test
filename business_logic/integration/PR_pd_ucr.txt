@@ -1,0 +1,70 @@
+Pull Request: PD-UCR Rating Derivation Pipeline Enhancement
+Summary
+This PR introduces a three-step pipeline for deriving Uniform Counterparty Ratings (UCR) with enhanced default status handling and proxy rating mechanisms.
+Changes Overview
+1. pd_ucr_step1.yml - Base Rating Derivation
+
+Purpose: Derives initial UCR ratings based on counterparty characteristics
+Key Features:
+
+Filters counterparties based on role flags (CollateralProvider, Guarantor, InterCompany, Issuer, ObligorNPL)
+Only processes counterparties where at least one role flag = 'Y'
+Integrates ratings from multiple sources in priority order:
+
+FAIR BCDB (direct counterparty ratings)
+FAIR RAPID (AAC Alpha Code based)
+InterCompany (automatic '0' rating)
+FAIR GBC (Global Counterparty ID based)
+Sovereign ratings (for specific Basel II types)
+SSF fallback (for AACF/LEASE entities)
+
+
+Calculates PD (Probability of Default) with and without conservatism margins
+
+
+
+2. pd_ucr_step2.yml - Credit Facility Linkage Enhancement
+
+Purpose: Enhances ratings by leveraging credit facility relationships
+Key Features:
+
+Identifies counterparties needing ratings (null or expired >12 months)
+Searches for valid ratings from other counterparties sharing the same credit facilities
+Implements a ranking mechanism to select the most recent valid rating
+Derives ratings from related counterparties when direct ratings are unavailable
+Marks derived ratings with '_DERIVED' suffix in UCRCase field
+Tracks the source counterparty for derived ratings
+
+
+
+3. pd_ucr_step3.yml - Default Status Integration
+
+Purpose: Applies default status rules and creates final UCR ratings
+Key Features:
+
+Integrates default status from default_counterparty table
+Implements business rules for UniformCounterpartyRating:
+
+Default = 'Y' with UCR 6/7/8 → Keep original rating
+Default = 'Y' with UCR not 6/7/8 → Force to '6'
+Default = 'N' with UCR 6/7/8 → Upgrade to '6+'
+Other cases → Keep UCRStep2 or default to '6+'
+
+
+Sets UCRProxyFlag to 'Y' when ratings are overridden
+Adjusts PD values: Default → 1.0, Non-default proxy → 0.264
+Updates rating dates for proxy ratings to reporting date
+
+
+
+Business Impact
+
+Improved Risk Assessment: Ensures all counterparties have appropriate ratings even when direct ratings are unavailable
+Default Handling: Properly reflects default status in ratings while preserving granularity for already-distressed ratings
+Audit Trail: Maintains clear tracking of rating sources and proxy applications
+Compliance: Enforces business rules for counterparty ratings based on default status
+
+Technical Details
+
+Dependencies: Requires counterparty_scoping_local, default_counterparty, and integrated_creditfacility_links tables
+Performance: Uses filtering at source level to minimize data processing
