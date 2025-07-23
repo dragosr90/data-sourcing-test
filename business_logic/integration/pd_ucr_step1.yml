@@ -24,7 +24,7 @@ sources:
       - UniformCounterpartyRatingDate
       - ApprovedUniformCounterpartyRatingExpirationDate
     source: stg_{{ RUN_MONTH }}.ssf_{{ DELIVERY_ENTITY }}_cp
-  - alias: DEFAULT_CP
+  - alias: CP_SCOPING
     columns:
       - CounterpartyID
       - CounterpartySourceSystemIdentifier
@@ -32,8 +32,9 @@ sources:
       - GuarantorFlag
       - InterCompanyFlag
       - IssuerFlag
-      - ObligorFlag
-    source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_default_counterparty
+      - ObligorNPLFlag
+    filter: CollateralProviderFlag = 'Y' OR GuarantorFlag = 'Y' OR InterCompanyFlag = 'Y' OR IssuerFlag = 'Y' OR ObligorNPLFlag = 'Y'
+    source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_counterparty_scoping_local
   - alias: FAIR
     columns:
       - fair_id
@@ -97,17 +98,17 @@ sources:
     source: stg_{{ RUN_MONTH }}.dial_epr_party_local_identifier
   - alias: MDM_1094
     columns:
-      - abn_amro_country_code
-      - sovereign_local_currency_ucr
-      - pd_model_code
-      - Model_Approval_Date
+      - ABN_AMRO_COUNTRY_CODE
+      - SOVEREIGN_LOCAL_CURRENCY_UCR
+      - PD_MODEL_CODE
+      - APPROVAL_DATE
     source: stg_{{ RUN_MONTH }}.bsl_andes_1094_sovrgn_cty_cur_rtg
   - alias: MDM_1010
     columns:
-      - abbreviated_name
-      - approved_pd
-      - rating_scale
-    filter: rating_scale = 'GS'
+      - Rating_Grade_Code
+      - Approved_PD
+      - Rating_Scale_Code
+    filter: Rating_Scale_Code = 'GS'
     source: stg_{{ RUN_MONTH }}.bsl_andes_1010_rating_grade
   - alias: IC
     columns:
@@ -137,14 +138,11 @@ transformations:
         - rank_num = 1
   - join:
       left_source: SSF_CP
-      right_source: DEFAULT_CP
+      right_source: CP_SCOPING
       condition:
-        - SSF_CP.LocalId = DEFAULT_CP.CounterpartyID
-        - SSF_CP.SourceSystemIdentifier = DEFAULT_CP.CounterpartySourceSystemIdentifier
+        - SSF_CP.LocalId = CP_SCOPING.CounterpartyID
+        - SSF_CP.SourceSystemIdentifier = CP_SCOPING.CounterpartySourceSystemIdentifier
       how: inner
-  - filter:
-      conditions:
-        - DEFAULT_CP.CollateralProviderFlag = 'Y' OR DEFAULT_CP.GuarantorFlag = 'Y' OR DEFAULT_CP.InterCompanyFlag = 'Y' OR DEFAULT_CP.IssuerFlag = 'Y' OR DEFAULT_CP.ObligorFlag = 'Y'
   - join:
       right_source: FAIR_BCDB
       condition:
@@ -174,7 +172,7 @@ transformations:
   - join:
       right_source: MDM_1010
       condition:
-        - MDM_1094.sovereign_local_currency_ucr = MDM_1010.abbreviated_name
+        - MDM_1094.SOVEREIGN_LOCAL_CURRENCY_UCR = MDM_1010.Rating_Grade_Code
       how: left
   - add_variables:
       column_mapping:
@@ -270,7 +268,7 @@ expressions:
       when var_UCRStep = 'FAIR_RAPID' then FAIR_RAPID.pd_approval_date
       when var_UCRStep = 'InterCompany' then null
       when var_UCRStep = 'FAIR_GBC' then FAIR_GBC.pd_approval_date
-      when var_UCRStep = 'Sovereign_UCR' then MDM_1094.Model_Approval_Date
+      when var_UCRStep = 'Sovereign_UCR' then MDM_1094.APPROVAL_DATE
       when var_UCRStep = 'SSF' then SSF_CP.UniformCounterpartyRatingDate
     end as date)
 
@@ -280,7 +278,7 @@ expressions:
       when var_UCRStep = 'FAIR_RAPID' then FAIR_RAPID.pd_expiry_date
       when var_UCRStep = 'InterCompany' then null
       when var_UCRStep = 'FAIR_GBC' then FAIR_GBC.pd_expiry_date
-      when var_UCRStep = 'Sovereign_UCR' then add_months(Model_Approval_Date, 12)
+      when var_UCRStep = 'Sovereign_UCR' then add_months(APPROVAL_DATE, 12)
       when var_UCRStep = 'SSF' then SSF_CP.ApprovedUniformCounterpartyRatingExpirationDate
     end as date)
 
