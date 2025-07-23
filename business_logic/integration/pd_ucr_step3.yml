@@ -10,6 +10,7 @@ sources:
       - DeliveryEntity
       - ReportingDate
       - CounterpartyID
+      - CounterpartySourceSystemIdentifier
       - Default
       - DefaultDate
       - DefaultEndDate
@@ -24,6 +25,18 @@ transformations:
         - PD_UCR_STEP2.CounterpartySourceSystemIdentifier = DEFAULT_CP.CounterpartySourceSystemIdentifier
       how: left
 
+  - add_variables:
+      column_mapping:
+        var_UCRProxy: >
+          CASE 
+            WHEN DEFAULT_CP.Default = 'Y' AND PD_UCR_STEP2.UCRStep2 IN ('6','7','8') THEN 'N'
+            WHEN DEFAULT_CP.Default = 'Y' AND PD_UCR_STEP2.UCRStep2 NOT IN ('6','7','8') THEN 'Default'
+            WHEN DEFAULT_CP.Default = 'Y' THEN 'Default'
+            WHEN DEFAULT_CP.Default = 'N' AND PD_UCR_STEP2.UCRStep2 IN ('6','7','8') THEN 'NonDefault'
+            WHEN PD_UCR_STEP2.UCRStep2 IS NOT NULL THEN 'N'
+            ELSE 'NonDefault'
+          END
+
 expressions:
   DeliveryEntity: PD_UCR_STEP2.DeliveryEntity
   ReportingDate: PD_UCR_STEP2.ReportingDate
@@ -33,46 +46,46 @@ expressions:
   AacAlphaCode: PD_UCR_STEP2.AacAlphaCode
   GlobalCounterpartyIdentifier: PD_UCR_STEP2.GlobalCounterpartyIdentifier
   InterCompanyIndicator: PD_UCR_STEP2.InterCompanyIndicator
+  Default: DEFAULT_CP.Default
   PDModelCode: PD_UCR_STEP2.PDModelCode
   LastPerformingPDModelCode: PD_UCR_STEP2.LastPerformingPDModelCode
   ApprovedUniformCounterpartyRating: PD_UCR_STEP2.ApprovedUniformCounterpartyRating
   UCRStep1: PD_UCR_STEP2.UCRStep1
   UCRStep2: PD_UCR_STEP2.UCRStep2
+  UniformCounterpartyRating: >
+    CASE 
+      WHEN var_UCRProxy = 'N' THEN PD_UCR_STEP2.UCRStep2
+      WHEN var_UCRProxy = 'Default' THEN '6'
+      WHEN var_UCRProxy = 'NonDefault' THEN '6+'
+    END
   ProbabilityOfDefaultBeforeConservatism: PD_UCR_STEP2.ProbabilityOfDefaultBeforeConservatism
-  ProbabilityOfDefault: PD_UCR_STEP2.ProbabilityOfDefault
-  UniformCounterpartyRatingDate: PD_UCR_STEP2.UniformCounterpartyRatingDate
-  UniformCounterpartyRatingExpiryDate: PD_UCR_STEP2.UniformCounterpartyRatingExpiryDate
+  ProbabilityOfDefault: >
+    CASE 
+      WHEN var_UCRProxy = 'N' THEN PD_UCR_STEP2.ProbabilityOfDefault
+      WHEN var_UCRProxy = 'Default' THEN 1
+      WHEN var_UCRProxy = 'NonDefault' THEN 0.264
+    END
+  UniformCounterpartyRatingDate: >
+    CASE 
+      WHEN var_UCRProxy = 'N' THEN PD_UCR_STEP2.UniformCounterpartyRatingDate
+      WHEN var_UCRProxy = 'Default' THEN PD_UCR_STEP2.ReportingDate
+      WHEN var_UCRProxy = 'NonDefault' THEN PD_UCR_STEP2.ReportingDate
+    END
+  UniformCounterpartyRatingExpiryDate: >
+    CASE 
+      WHEN var_UCRProxy = 'N' THEN PD_UCR_STEP2.UniformCounterpartyRatingExpiryDate
+      WHEN var_UCRProxy = 'Default' THEN add_months(PD_UCR_STEP2.ReportingDate, 12)
+      WHEN var_UCRProxy = 'NonDefault' THEN add_months(PD_UCR_STEP2.ReportingDate, 12)
+    END
   PDMarginOfConservatism: PD_UCR_STEP2.PDMarginOfConservatism
   UCRCase: PD_UCR_STEP2.UCRCase
   RatingSourceCounterpartyID: PD_UCR_STEP2.RatingSourceCounterpartyID
-  RatingSourceCounterpartySSI: PD_UCR_STEP2.RatingSourceCounterpartySSI
+  RatingSourceCounterpartySourceSystemIdentifier: PD_UCR_STEP2.RatingSourceCounterpartySSI
   fairid: PD_UCR_STEP2.fairid
   UniquePDRatingId: PD_UCR_STEP2.UniquePDRatingId
-  Default: DEFAULT_CP.Default
-  
-  UniformCounterpartyRating: >
-    CASE 
-      WHEN DEFAULT_CP.Default = 'Y' AND PD_UCR_STEP2.UCRStep2 IN ('6','7','8') THEN PD_UCR_STEP2.UCRStep2
-      WHEN DEFAULT_CP.Default = 'Y' AND PD_UCR_STEP2.UCRStep2 NOT IN ('6','7','8') THEN '6'
-      WHEN DEFAULT_CP.Default = 'Y' THEN '6'
-      WHEN DEFAULT_CP.Default = 'N' AND PD_UCR_STEP2.UCRStep2 IN ('6','7','8') THEN '6+'
-      WHEN PD_UCR_STEP2.UCRStep2 IS NOT NULL THEN PD_UCR_STEP2.UCRStep2
-      ELSE '6+'
-    END
-  
   UCRProxyFlag: >
     CASE 
-      WHEN (
-        CASE 
-          WHEN DEFAULT_CP.Default = 'Y' AND PD_UCR_STEP2.UCRStep2 IN ('6','7','8') THEN PD_UCR_STEP2.UCRStep2
-          WHEN DEFAULT_CP.Default = 'Y' AND PD_UCR_STEP2.UCRStep2 NOT IN ('6','7','8') THEN '6'
-          WHEN DEFAULT_CP.Default = 'Y' THEN '6'
-          WHEN DEFAULT_CP.Default = 'N' AND PD_UCR_STEP2.UCRStep2 IN ('6','7','8') THEN '6+'
-          WHEN PD_UCR_STEP2.UCRStep2 IS NOT NULL THEN PD_UCR_STEP2.UCRStep2
-          ELSE '6+'
-        END
-      ) != COALESCE(PD_UCR_STEP2.UCRStep2, '6+') THEN 'Y'
+      WHEN var_UCRProxy IN ('Default','NonDefault') THEN 'Y'
       ELSE 'N'
     END
-
 drop_duplicates: true
