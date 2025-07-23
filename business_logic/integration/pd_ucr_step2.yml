@@ -1,10 +1,11 @@
+
 description: This YAML implements Step-2 of PD-UCR logic by applying ratings via CPxCF when counterparties don't have their own ratings
 
 target: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_pd_ucr_step2
 
 sources:
   - alias: PD_UCR_STEP1
-    source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_pd_ucr
+    source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_pd_ucr_step1
   - alias: INT_CPXCF
     columns:
       - DeliveryEntity
@@ -14,16 +15,16 @@ sources:
       - CreditFacilitySourceSystemIdentifier
       - ParticipatingCounterparty
       - ParticipatingCounterpartySourceSystemIdentifier
-    source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_integrated_cpxcf
+    source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_integrated_creditfacility_links
   - alias: INT_CPXCF_OTHER
     columns:
       - CreditFacility
       - CreditFacilitySourceSystemIdentifier
       - ParticipatingCounterparty
       - ParticipatingCounterpartySourceSystemIdentifier
-    source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_integrated_cpxcf
+    source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_integrated_creditfacility_links
   - alias: OTHER_CP_RATINGS
-    source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_pd_ucr
+    source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_pd_ucr_step1
 
 transformations:
   - join:
