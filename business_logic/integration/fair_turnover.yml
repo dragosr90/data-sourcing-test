@@ -42,7 +42,7 @@ sources:
     source: stg_{{ RUN_MONTH }}.dial_fair_lbr_quantitative_input
 
 transformations:  
-  # Step 1: Join with model essentials for the recommended iteration
+  # Step 1: Join with model essentials for the latest iteration
   - join:
       left_source: PD_ITERATIONS
       right_source: MODEL_ESSENTIALS
@@ -51,7 +51,7 @@ transformations:
         - PD_ITERATIONS.RATING_ID = MODEL_ESSENTIALS.RATING_ID
       how: inner
   
-  # Step 2: Find minimum calculation period per rating
+  # Step 2: Find minimum calculation period per rating (for the latest iteration)
   - aggregation:
       alias: MIN_CALC_PERIODS
       group:
@@ -70,14 +70,15 @@ transformations:
         - MIN_CALC_PERIODS.MIN_CALCULATION_PERIOD_ID = MODEL_ESSENTIALS.CALCULATION_PERIOD_ID
       how: inner
   
-  # Step 4: Join with UCR actual data - RIGHT JOIN to keep all UCR_ACTUAL records
+  # Step 4: Join with UCR actual data
   - join:
       right_source: UCR_ACTUAL
       condition:
         - MIN_CALC_PERIODS.RATING_ID = UCR_ACTUAL.RATING_ID
-      how: right
+      how: left
   
   # Step 5: Aggregate model essentials by rating to get all component values
+  # Now we have only latest iteration + minimum calculation period records
   - aggregation:
       alias: RATING_ESSENTIALS
       group:
@@ -103,7 +104,7 @@ transformations:
           max(CASE WHEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_TYPE_CODE = 'TotalBalanceSheet' THEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_VALUE END),
           max(CASE WHEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_TYPE_CODE = 'Assets' THEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_VALUE END),
           max(CASE WHEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_TYPE_CODE = 'TotalAssets' THEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_VALUE END)
-        )
+          )
         Turnover_calc: COALESCE(
           max(CASE WHEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_TYPE_CODE = 'TotalTurnover' THEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_VALUE END),
           max(CASE WHEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_TYPE_CODE = 'Turnover' THEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_VALUE END),
@@ -111,7 +112,7 @@ transformations:
           max(CASE WHEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_TYPE_CODE = 'Revenues' THEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_VALUE END),
           max(CASE WHEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_TYPE_CODE = 'TotalRevenues' THEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_VALUE END),
           max(CASE WHEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_TYPE_CODE = 'TotalOperatingIncome' THEN MODEL_ESSENTIALS.MODEL_COMPONENT_ESSENTIAL_VALUE END)
-        )
+          )
   
   # Step 6: Create parent data by aggregating by company
   - aggregation:
@@ -142,25 +143,24 @@ transformations:
 expressions:
   RatingID: RATING_ESSENTIALS.RATING_ID
   ParentRatingID: PARENT_DATA.Parent_RATING_ID
-  LBRatingID: RATING_ESSENTIALS.LB_RATING_ID
-  # Hierarchy: LBR → Parent → Direct
+  LBRatingID: LBR_QUANTITATIVE.LB_RATING_ID
   AnnualTurnover: COALESCE(
     CASE WHEN LBR_QUANTITATIVE.NET_INTEREST_YIELD IS NOT NULL AND LBR_QUANTITATIVE.OTHER_OPERATING_INCOME IS NOT NULL 
     THEN CAST((LBR_QUANTITATIVE.NET_INTEREST_YIELD + LBR_QUANTITATIVE.OTHER_OPERATING_INCOME) * 1000000000 AS STRING) END,
-    CAST(PARENT_DATA.Parent_Turnover AS STRING),
-    CAST(RATING_ESSENTIALS.Turnover_calc AS STRING)
-  )
-  AnnualTurnoverDirect: CAST(RATING_ESSENTIALS.Turnover_calc AS STRING)
-  AnnualTurnoverParent: CAST(PARENT_DATA.Parent_Turnover AS STRING)
+    PARENT_DATA.Parent_Turnover,
+    RATING_ESSENTIALS.Turnover_calc
+    )
+  AnnualTurnoverDirect: RATING_ESSENTIALS.Turnover_calc
+  AnnualTurnoverParent: PARENT_DATA.Parent_Turnover
   AnnualTurnoverLBR: CASE WHEN LBR_QUANTITATIVE.NET_INTEREST_YIELD IS NOT NULL AND LBR_QUANTITATIVE.OTHER_OPERATING_INCOME IS NOT NULL THEN CAST((LBR_QUANTITATIVE.NET_INTEREST_YIELD + LBR_QUANTITATIVE.OTHER_OPERATING_INCOME) * 1000000000 AS STRING) END
   TotalAssets: COALESCE(
     CASE WHEN LBR_QUANTITATIVE.TOTAL_ASSETS IS NOT NULL 
     THEN CAST(LBR_QUANTITATIVE.TOTAL_ASSETS * 1000000000 AS STRING) END,
-    CAST(PARENT_DATA.Parent_TotalAssets AS STRING),
-    CAST(RATING_ESSENTIALS.TotalAssets_calc AS STRING)
-  )
-  TotalAssetsDirect: CAST(RATING_ESSENTIALS.TotalAssets_calc AS STRING)
-  TotalAssetsParent: CAST(PARENT_DATA.Parent_TotalAssets AS STRING)
+    PARENT_DATA.Parent_TotalAssets,
+    RATING_ESSENTIALS.TotalAssets_calc
+    )
+  TotalAssetsDirect: RATING_ESSENTIALS.TotalAssets_calc
+  TotalAssetsParent: PARENT_DATA.Parent_TotalAssets
   TotalAssetsLBR: CASE WHEN LBR_QUANTITATIVE.TOTAL_ASSETS IS NOT NULL THEN CAST(LBR_QUANTITATIVE.TOTAL_ASSETS * 1000000000 AS STRING) END
 
 drop_duplicates: true
