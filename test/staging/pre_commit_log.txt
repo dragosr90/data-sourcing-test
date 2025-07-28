@@ -5,18 +5,615 @@ ruff lint................................................................Failed
 
 All checks passed!
 All checks passed!
-All checks passed!
-src\abnamro_bsrc_etl\staging\extract_nonssf_data.py:51:9: ARG002 Unused method argument: `file_delivery_status`
+src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py:26:89: E501 Line too long (96 > 88)
    |
-49 |         comments: str,
-50 |         status: Literal["Completed", "Started", "Failed"] = "Completed",
-51 |         file_delivery_status: NonSSFStepStatus = NonSSFStepStatus.COMPLETED,
-   |         ^^^^^^^^^^^^^^^^^^^^ ARG002
-52 |     ) -> None:
-53 |         """Append log entry to process log table.
+24 |     1. Check availability of LRD_STATIC/NME/FINOB data in blob storage
+25 |     2. Copy processed LRD_STATIC for missing files (only after deadline)
+26 |     3. Check for missing files after deadline and fail if critical files (NME/FINOB) are missing
+   |                                                                                         ^^^^^^^^ E501
+27 |     4. For every file in blob storage:
+28 |         1. Initial checks
    |
 
-Found 1 error.
+src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py:63:1: W293 Blank line contains whitespace
+   |
+62 |     extraction = ExtractNonSSFData(spark, run_month=run_month)
+63 |
+   | ^^^^ W293
+64 |     # Get all files from basel-nonssf-landing container and place static data
+65 |     # This will copy LRD_STATIC files from processed folder only if deadline is reached
+   |
+   = help: Remove whitespace from blank line
 
-ruff format..............................................................Passed
-mypy.....................................................................Passed
+src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py:67:1: W293 Blank line contains whitespace
+   |
+65 |     # This will copy LRD_STATIC files from processed folder only if deadline is reached
+66 |     files_per_delivery_entity = extraction.get_all_files()
+67 |
+   | ^^^^ W293
+68 |     # Check for missing files after deadline AFTER getting all files
+69 |     missing_files = extraction.check_missing_files_after_deadline()
+   |
+   = help: Remove whitespace from blank line
+
+src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py:73:1: W293 Blank line contains whitespace
+   |
+71 |         # Log errors for missing files
+72 |         has_critical_missing = extraction.log_missing_files_errors(missing_files)
+73 |
+   | ^^^^^^^^ W293
+74 |         # Fail the process if critical files (NME/FINOB) are missing after deadline
+75 |         if has_critical_missing:
+   |
+   = help: Remove whitespace from blank line
+
+src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py:77:41: W291 Trailing whitespace
+   |
+75 |         if has_critical_missing:
+76 |             nme_finob_missing = [
+77 |                 f for f in missing_files
+   |                                         ^ W291
+78 |                 if f['source_system'].upper() in ['NME', 'FINOB']
+79 |             ]
+   |
+   = help: Remove trailing whitespace
+
+src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py:82:36: SyntaxError: Expected a newline after line continuation character
+   |
+80 |             error_summary = (
+81 |                 f"Critical files missing after deadline: "
+82 |                 f"{', '.join([f'{f[\"file_name\"]} (deadline: {f[\"deadline\"]})' for f in nme_finob_missing])}"
+   |                                    ^
+83 |             )
+84 |             append_to_process_log(
+   |
+
+src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py:82:37: SyntaxError: Expected FStringEnd, found string
+   |
+80 |             error_summary = (
+81 |                 f"Critical files missing after deadline: "
+82 |                 f"{', '.join([f'{f[\"file_name\"]} (deadline: {f[\"deadline\"]})' for f in nme_finob_missing])}"
+   |                                     ^
+83 |             )
+84 |             append_to_process_log(
+   |
+
+src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py:82:89: E501 Line too long (112 > 88)
+   |
+80 |             error_summary = (
+81 |                 f"Critical files missing after deadline: "
+82 |                 f"{', '.join([f'{f[\"file_name\"]} (deadline: {f[\"deadline\"]})' for f in nme_finob_missing])}"
+   |                                                                                         ^^^^^^^^^^^^^^^^^^^^^^^^ E501
+83 |             )
+84 |             append_to_process_log(
+   |
+
+src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py:82:113: SyntaxError: f-string: unterminated string
+   |
+80 |             error_summary = (
+81 |                 f"Critical files missing after deadline: "
+82 |                 f"{', '.join([f'{f[\"file_name\"]} (deadline: {f[\"deadline\"]})' for f in nme_finob_missing])}"
+   |                                                                                                                 ^
+83 |             )
+84 |             append_to_process_log(
+   |
+
+src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py:83:14: SyntaxError: Expected FStringEnd, found NonLogicalNewline
+   |
+81 |                 f"Critical files missing after deadline: "
+82 |                 f"{', '.join([f'{f[\"file_name\"]} (deadline: {f[\"deadline\"]})' for f in nme_finob_missing])}"
+83 |             )
+   |              ^
+84 |             append_to_process_log(
+85 |                 **log_config,
+   |
+
+src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py:84:13: SyntaxError: f-string: expecting '}'
+   |
+82 |                 f"{', '.join([f'{f[\"file_name\"]} (deadline: {f[\"deadline\"]})' for f in nme_finob_missing])}"
+83 |             )
+84 |             append_to_process_log(
+   |             ^
+85 |                 **log_config,
+86 |                 source_system="",
+   |
+
+src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py:84:13: SyntaxError: Invalid annotated assignment target
+   |
+82 |                 f"{', '.join([f'{f[\"file_name\"]} (deadline: {f[\"deadline\"]})' for f in nme_finob_missing])}"
+83 |             )
+84 |             append_to_process_log(
+   |             ^
+85 |                 **log_config,
+86 |                 source_system="",
+   |
+
+src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py:90:89: E501 Line too long (96 > 88)
+   |
+88 |                 status="Failed"
+89 |             )
+90 |             # The append_to_process_log will raise NonSSFExtractionError when status is "Failed"
+   |                                                                                         ^^^^^^^^ E501
+91 |
+92 |     if not files_per_delivery_entity:
+   |
+
+src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py:91:1: W293 Blank line contains whitespace
+   |
+89 |             )
+90 |             # The append_to_process_log will raise NonSSFExtractionError when status is "Failed"
+91 |
+   | ^^^^ W293
+92 |     if not files_per_delivery_entity:
+93 |         logger.error("No files found in basel-nonssf-landing container. ")
+   |
+   = help: Remove whitespace from blank line
+
+src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py:92:37: SyntaxError: Expected 'else', found ':'
+   |
+90 |             # The append_to_process_log will raise NonSSFExtractionError when status is "Failed"
+91 |
+92 |     if not files_per_delivery_entity:
+   |                                     ^
+93 |         logger.error("No files found in basel-nonssf-landing container. ")
+94 |     else:
+   |
+
+src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py:94:5: SyntaxError: Expected a statement
+   |
+92 |     if not files_per_delivery_entity:
+93 |         logger.error("No files found in basel-nonssf-landing container. ")
+94 |     else:
+   |     ^
+95 |         logger.info(f"Processing {len(files_per_delivery_entity)} source files")
+   |
+
+src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py:94:9: SyntaxError: Expected a statement
+   |
+92 |     if not files_per_delivery_entity:
+93 |         logger.error("No files found in basel-nonssf-landing container. ")
+94 |     else:
+   |         ^
+95 |         logger.info(f"Processing {len(files_per_delivery_entity)} source files")
+   |
+
+src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py:97:5: SyntaxError: Simple statements must be separated by newlines or semicolons
+   |
+95 |         logger.info(f"Processing {len(files_per_delivery_entity)} source files")
+96 |
+97 |     logger.info(files_per_delivery_entity)
+   |     ^
+98 |
+99 |     for file in files_per_delivery_entity:
+   |
+
+src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py:99:5: SyntaxError: Compound statements are not allowed on the same line as simple statements
+    |
+ 97 |     logger.info(files_per_delivery_entity)
+ 98 |
+ 99 |     for file in files_per_delivery_entity:
+    |     ^
+100 |         source_system = file["source_system"]
+101 |         file_name = file["file_name"]
+    |
+
+src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py:101:9: SyntaxError: Simple statements must be separated by newlines or semicolons
+    |
+ 99 |     for file in files_per_delivery_entity:
+100 |         source_system = file["source_system"]
+101 |         file_name = file["file_name"]
+    |         ^
+102 |         file_comment = f"Processing {Path(file_name).stem}"
+103 |         # Start the process for corresponding trigger file
+    |
+
+src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py:102:9: SyntaxError: Simple statements must be separated by newlines or semicolons
+    |
+100 |         source_system = file["source_system"]
+101 |         file_name = file["file_name"]
+102 |         file_comment = f"Processing {Path(file_name).stem}"
+    |         ^
+103 |         # Start the process for corresponding trigger file
+104 |         append_to_process_log(
+    |
+
+src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py:104:9: SyntaxError: Simple statements must be separated by newlines or semicolons
+    |
+102 |         file_comment = f"Processing {Path(file_name).stem}"
+103 |         # Start the process for corresponding trigger file
+104 |         append_to_process_log(
+    |         ^
+105 |             **log_config,
+106 |             source_system=source_system,
+    |
+
+src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py:104:9: SyntaxError: Invalid annotated assignment target
+    |
+102 |         file_comment = f"Processing {Path(file_name).stem}"
+103 |         # Start the process for corresponding trigger file
+104 |         append_to_process_log(
+    |         ^
+105 |             **log_config,
+106 |             source_system=source_system,
+    |
+
+src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py:114:10: SyntaxError: Expected 'else', found ':'
+    |
+112 |         if not extraction.initial_checks(
+113 |             file_name=file_name, source_system=source_system
+114 |         ):
+    |          ^
+115 |             append_to_process_log(
+116 |                 **log_config,
+    |
+
+src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py:127:10: SyntaxError: Expected 'else', found ':'
+    |
+125 |             source_system=source_system,
+126 |             file_name=file_name,
+127 |         ):
+    |          ^
+128 |             append_to_process_log(
+129 |                 **log_config,
+    |
+
+src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py:128:13: SyntaxError: Invalid annotated assignment target
+    |
+126 |             file_name=file_name,
+127 |         ):
+128 |             append_to_process_log(
+    |             ^
+129 |                 **log_config,
+130 |                 source_system=source_system,
+    |
+
+src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py:139:10: SyntaxError: Expected 'else', found ':'
+    |
+137 |         if not extraction.move_source_file(
+138 |             source_system=source_system, file_name=file_name
+139 |         ):
+    |          ^
+140 |             append_to_process_log(
+141 |                 **log_config,
+    |
+
+src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py:149:9: SyntaxError: Simple statements must be separated by newlines or semicolons
+    |
+148 |         # 4. Load to staging table
+149 |         data = extraction.extract_from_parquet(
+    |         ^
+150 |             source_system=source_system, file_name=file_name
+151 |         )
+    |
+
+src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py:152:9: SyntaxError: Simple statements must be separated by newlines or semicolons
+    |
+150 |             source_system=source_system, file_name=file_name
+151 |         )
+152 |         stg_table_name = extraction.get_staging_table_name(file_name)
+    |         ^
+153 |         if not extraction.save_to_stg_table(
+154 |             data=data,
+    |
+
+src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py:158:10: SyntaxError: Expected 'else', found ':'
+    |
+156 |             source_system=source_system,
+157 |             file_name=Path(file_name).stem,
+158 |         ):
+    |          ^
+159 |             append_to_process_log(
+160 |                 **log_config,
+    |
+
+src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py:168:9: SyntaxError: Expected a statement
+    |
+167 |         # 5. DQ checks
+168 |         elif not extraction.validate_data_quality(
+    |         ^
+169 |             source_system=source_system,
+170 |             file_name=Path(file_name).stem,
+    |
+
+src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py:168:14: SyntaxError: Invalid annotated assignment target
+    |
+167 |         # 5. DQ checks
+168 |         elif not extraction.validate_data_quality(
+    |              ^
+169 |             source_system=source_system,
+170 |             file_name=Path(file_name).stem,
+    |
+
+src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py:182:9: SyntaxError: Simple statements must be separated by newlines or semicolons
+    |
+181 |         # Complete the process for corresponding trigger file
+182 |         extraction.update_log_metadata(
+    |         ^
+183 |             source_system=source_system,
+184 |             key=Path(file_name).stem,
+    |
+
+src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py:189:9: SyntaxError: Simple statements must be separated by newlines or semicolons
+    |
+187 |             comment=file_comment,
+188 |         )
+189 |         append_to_process_log(
+    |         ^
+190 |             **log_config,
+191 |             source_system=source_system,
+    |
+
+src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py:197:5: SyntaxError: Simple statements must be separated by newlines or semicolons
+    |
+196 |     # Complete the process after all trigger files
+197 |     append_to_process_log(
+    |     ^
+198 |         **log_config, comments="", source_system="", status="Completed"
+199 |     )
+    |
+
+src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py:202:1: SyntaxError: Compound statements are not allowed on the same line as simple statements
+    |
+202 | def append_to_process_log(
+    | ^
+203 |     spark: SparkSession,
+204 |     run_month: str,
+    |
+
+src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py:225:5: SyntaxError: Simple statements must be separated by newlines or semicolons
+    |
+223 |         NonSSFExtractionError: If status is "Failed".
+224 |     """
+225 |     record["Status"] = status
+    |     ^
+226 |     record["Comments"] = comments
+227 |     record["SourceSystem"] = source_system
+    |
+
+src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py:226:5: SyntaxError: Simple statements must be separated by newlines or semicolons
+    |
+224 |     """
+225 |     record["Status"] = status
+226 |     record["Comments"] = comments
+    |     ^
+227 |     record["SourceSystem"] = source_system
+228 |     write_to_log(
+    |
+
+src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py:227:5: SyntaxError: Simple statements must be separated by newlines or semicolons
+    |
+225 |     record["Status"] = status
+226 |     record["Comments"] = comments
+227 |     record["SourceSystem"] = source_system
+    |     ^
+228 |     write_to_log(
+229 |         spark=spark,
+    |
+
+src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py:228:5: SyntaxError: Simple statements must be separated by newlines or semicolons
+    |
+226 |     record["Comments"] = comments
+227 |     record["SourceSystem"] = source_system
+228 |     write_to_log(
+    |     ^
+229 |         spark=spark,
+230 |         run_month=run_month,
+    |
+
+src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py:228:5: SyntaxError: Invalid annotated assignment target
+    |
+226 |     record["Comments"] = comments
+227 |     record["SourceSystem"] = source_system
+228 |     write_to_log(
+    |     ^
+229 |         spark=spark,
+230 |         run_month=run_month,
+    |
+
+src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py:234:26: SyntaxError: Expected 'else', found ':'
+    |
+232 |         log_table="process_log",
+233 |     )
+234 |     if status == "Failed":
+    |                          ^
+235 |         # Overall process should be set to failed as well
+236 |         record["SourceSystem"] = ""
+    |
+
+src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py:237:9: SyntaxError: Simple statements must be separated by newlines or semicolons
+    |
+235 |         # Overall process should be set to failed as well
+236 |         record["SourceSystem"] = ""
+237 |         write_to_log(
+    |         ^
+238 |             spark=spark,
+239 |             run_month=run_month,
+    |
+
+src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py:243:9: SyntaxError: Simple statements must be separated by newlines or semicolons
+    |
+241 |             log_table="process_log",
+242 |         )
+243 |         raise NonSSFExtractionError(file_delivery_status, additional_info=comments)
+    |         ^
+    |
+
+src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py:243:84: SyntaxError: unexpected EOF while parsing
+    |
+241 |             log_table="process_log",
+242 |         )
+243 |         raise NonSSFExtractionError(file_delivery_status, additional_info=comments)
+    |
+    |
+
+src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py:243:84: SyntaxError: f-string: unterminated string
+    |
+241 |             log_table="process_log",
+242 |         )
+243 |         raise NonSSFExtractionError(file_delivery_status, additional_info=comments)
+    |
+    |
+
+src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py:243:84: W292 No newline at end of file
+    |
+241 |             log_table="process_log",
+242 |         )
+243 |         raise NonSSFExtractionError(file_delivery_status, additional_info=comments)
+    |                                                                                     W292
+    |
+    = help: Add trailing newline
+
+Found 47 errors.
+src\abnamro_bsrc_etl\staging\extract_nonssf_data.py:181:24: BLE001 Do not catch blind exception: `Exception`
+    |
+179 |                         if file.name.startswith(file_name)
+180 |                     ]
+181 |                 except Exception as e:
+    |                        ^^^^^^^^^ BLE001
+182 |                     logger.error(
+183 |                         f"Error accessing processed folder for {file_name}: {e}"
+    |
+
+src\abnamro_bsrc_etl\staging\extract_nonssf_data.py:182:21: TRY400 Use `logging.exception` instead of `logging.error`
+    |
+180 |                       ]
+181 |                   except Exception as e:
+182 |                       logger.error(
+    |  _____________________^
+183 | |                         f"Error accessing processed folder for {file_name}: {e}"
+184 | |                     )
+    | |_____________________^ TRY400
+185 |                       continue
+    |
+    = help: Replace with `exception`
+
+src\abnamro_bsrc_etl\staging\extract_nonssf_data.py:217:24: BLE001 Do not catch blind exception: `Exception`
+    |
+215 |                         ),
+216 |                     )
+217 |                 except Exception as e:
+    |                        ^^^^^^^^^ BLE001
+218 |                     logger.error(
+219 |                         f"Failed to copy {file_name} from processed folder: {e}"
+    |
+
+src\abnamro_bsrc_etl\staging\extract_nonssf_data.py:218:21: TRY400 Use `logging.exception` instead of `logging.error`
+    |
+216 |                       )
+217 |                   except Exception as e:
+218 |                       logger.error(
+    |  _____________________^
+219 | |                         f"Failed to copy {file_name} from processed folder: {e}"
+220 | |                     )
+    | |_____________________^ TRY400
+221 |
+222 |           return new_files
+    |
+    = help: Replace with `exception`
+
+src\abnamro_bsrc_etl\staging\extract_nonssf_data.py:256:13: PERF203 `try`-`except` within a loop incurs performance overhead
+    |
+254 |                       if not f.isDir() and not f.name.endswith("/")
+255 |                   ]
+256 |               except Exception as e:
+    |  _____________^
+257 | |                 logger.exception(f"Error accessing {source_system} folder: {e}")
+258 | |                 current_files[source_system.upper()] = []
+    | |_________________________________________________________^ PERF203
+259 |
+260 |           # Check each expected file
+    |
+
+src\abnamro_bsrc_etl\staging\extract_nonssf_data.py:257:77: TRY401 Redundant exception object included in `logging.exception` call
+    |
+255 |                 ]
+256 |             except Exception as e:
+257 |                 logger.exception(f"Error accessing {source_system} folder: {e}")
+    |                                                                             ^ TRY401
+258 |                 current_files[source_system.upper()] = []
+    |
+
+src\abnamro_bsrc_etl\staging\extract_nonssf_data.py:271:13: SIM102 Use a single `if` statement instead of nested `if` statements
+    |
+269 |               deadline_reached, deadline_date = self.check_deadline_reached(file_name)
+270 |
+271 |               if deadline_reached:
+    |  _____________^
+272 | |                 # Check if file exists in current files
+273 | |                 if file_name not in current_files.get(source_system, []):
+    | |_________________________________________________________________________^ SIM102
+274 |                       missing_files.append(
+275 |                           {
+    |
+    = help: Combine `if` statements using `and`
+
+src\abnamro_bsrc_etl\staging\extract_nonssf_data.py:297:89: E501 Line too long (89 > 88)
+    |
+295 |         for missing_file in missing_files:
+296 |             error_msg = (
+297 |                 f"File {missing_file['file_name']} from {missing_file['source_system']} "
+    |                                                                                         ^ E501
+298 |                 f"is missing after deadline ({missing_file['deadline']})"
+299 |             )
+    |
+
+src\abnamro_bsrc_etl\staging\extract_nonssf_data.py:347:73: TRY401 Redundant exception object included in `logging.exception` call
+    |
+345 |                 ]
+346 |             except Exception as e:
+347 |                 logger.exception(f"Error accessing {subfolder} folder: {e}")
+    |                                                                         ^ TRY401
+348 |                 raw_files = []
+    |
+
+test\scripts\test_nonssf_staging_process.py:242:89: E501 Line too long (89 > 88)
+    |
+240 |     mock_spark, mock_extraction, mock_write_to_log
+241 | ):
+242 |     """Test scenario where non-critical files (LRD_STATIC) are missing after deadline."""
+    |                                                                                         ^ E501
+243 |     # Since LRD_STATIC is now handled in place_static_data,
+244 |     # check_missing_files_after_deadline won't return LRD_STATIC files
+    |
+
+test\scripts\test_nonssf_staging_process.py:282:89: E501 Line too long (91 > 88)
+    |
+280 |     mock_extraction.check_missing_files_after_deadline.assert_called_once()
+281 |
+282 |     # Since no files are returned as missing, log_missing_files_errors should not be called
+    |                                                                                         ^^^ E501
+283 |     mock_extraction.log_missing_files_errors.assert_not_called()
+    |
+
+test\scripts\test_nonssf_staging_process.py:292:89: E501 Line too long (89 > 88)
+    |
+290 |     mock_spark, mock_extraction, mock_write_to_log
+291 | ):
+292 |     """Test scenario with both critical and non-critical files missing after deadline."""
+    |                                                                                         ^ E501
+293 |     missing_files = [
+294 |         {
+    |
+
+Found 12 errors.
+No fixes available (2 hidden fixes can be enabled with the `--unsafe-fixes` option).
+
+ruff format..............................................................Failed
+- hook id: ruff
+- exit code: 2
+
+24 files left unchanged
+error: Failed to parse src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py:82:36: Expected a newline after line continuation character
+23 files left unchanged
+24 files left unchanged
+21 files left unchanged
+
+mypy.....................................................................Failed
+- hook id: mypy
+- exit code: 2
+
+Success: no issues found in 14 source files
+Success: no issues found in 14 source files
+Success: no issues found in 14 source files
+src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py:83: error: f-string expression part cannot include a backslash  [syntax]
+Found 1 error in 1 file (errors prevented further checking)
