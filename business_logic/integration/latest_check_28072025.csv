@@ -1,0 +1,452 @@
+XPK_COUNTERPARTY,FK_DATA,OWNERSHIP,COI,UNIT,SOURCE_SYSTEM,FULL_NAME,TOTAL_ASSETS,TOTAL_ASSETS_CURRENCY,TOTAL_TURNOVER,TOTAL_TURNOVER_CURRENCY,RatingID,ParentRatingID,LBRatingID,AnnualTurnover,AnnualTurnoverDirect,AnnualTurnoverParent,AnnualTurnoverLBR,TotalAssets,TotalAssetsDirect,TotalAssetsParent,TotalAssetsLBR
+2616561,2616561,AAB,null,ABN AMRO Commercial ,FAIR,null,5583000,EUR,9087000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2705252,2705252,AAB,null,Bedrijven Regio Zuid,FAIR,null,3841000,EUR,2964000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2707853,2707853,AAB,null,NGM France Banque Ne,FAIR,null,6855000,EUR,5056000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2709368,2709368,AAB,null,Bedrijven Regio Midd,FAIR,null,7386000,EUR,15252000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2709413,2709413,AAB,null,Bedrijven Regio Midd,FAIR,null,4813000,EUR,475000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2711561,2711561,AAB,null,Bedrijven Regio Zuid,FAIR,null,8088000,EUR,14818000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2711581,2711581,AAB,null,CIB CFB T&L Transpor,FAIR,null,439721740.759826,EUR,75566590.1531831,EUR,null,null,null,null,null,null,null,null,null,null,null
+2712640,2712640,AAB,null,Bedrijven Regio Zuid,FAIR,null,11609000,EUR,15632000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2713069,2713069,AAB,null,Bedrijven Regio Noor,FAIR,null,868000,EUR,800000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2715790,2715790,AAB,null,C&IB FI Europe,FAIR,null,850000000,EUR,100000000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2716229,2716229,AAB,null,Bedrijven Regio Zuid,FAIR,null,6355000,EUR,9370000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2716300,2716300,AAB,null,CBC Transport&Logist,FAIR,null,9501000,EUR,8035000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2716322,2716322,AAB,null,CIB CFB T&L Transpor,FAIR,null,2320409880.5646,EUR,690324828.085415,EUR,null,null,null,null,null,null,null,null,null,null,null
+2716405,2716405,AAB,null,CIB CFB T&L Transpor,FAIR,null,2320409880.5646,EUR,690324828.085415,EUR,null,null,null,null,null,null,null,null,null,null,null
+2716690,2716690,AAB,null,ABN AMRO Commercial ,FAIR,null,5528000,EUR,21955000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2717080,2717080,AAB,null,Bedrijven Regio Noor,FAIR,null,5769000,EUR,15525000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2717653,2717653,AAB,null,Bedrijven Regio Zuid,FAIR,null,5338000,EUR,13902000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2718327,2718327,AAB,null,Bedrijven Regio Zuid,FAIR,null,1994000,EUR,2295000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2718618,2718618,AAB,null,FR&R,FAIR,null,2937000,EUR,5388000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2718637,2718637,AAB,null,Bedrijven Regio Midd,FAIR,null,2609000,EUR,2569000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2719306,2719306,AAB,null,ABN AMRO Commercial ,FAIR,null,136569000,EUR,548603000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2719764,2719764,AAB,null,Bedrijven Regio Zuid,FAIR,null,12438000,EUR,33444000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2719782,2719782,AAB,null,CIB Corporate Lendin,FAIR,null,291922000,EUR,429416000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2719784,2719784,AAB,null,CIB Corporate Lendin,FAIR,null,291922000,EUR,429416000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2720055,2720055,AAB,null,CIB Corporate Lendin,FAIR,null,585235678.845286,EUR,360182679.296346,EUR,null,null,null,null,null,null,null,null,null,null,null
+2720363,2720363,AAB,null,CIB Corporate Lendin,FAIR,null,1177178000,EUR,590800000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2720730,2720730,AAB,null,Bedrijven Regio Zuid,FAIR,null,7262000,EUR,11191000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2721125,2721125,AAB,null,Bedrijven Regio Zuid,FAIR,null,206252000,EUR,390156000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2721704,2721704,AAB,null,Bedrijven Regio Noor,FAIR,null,1754000,EUR,3607000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2722428,2722428,AAB,null,CIB Corporate Lendin,FAIR,null,23586613956.0541,EUR,20940161196.4083,EUR,null,null,null,null,null,null,null,null,null,null,null
+2722670,2722670,AAB,null,ABN AMRO Commercial ,FAIR,null,13006314.8398737,EUR,17545105.9990979,EUR,null,null,null,null,null,null,null,null,null,null,null
+2722830,2722830,AAB,null,CIB Corporate Lendin,FAIR,null,13072600000,EUR,3068700000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2723649,2723649,AAB,null,CIB Corporate Lendin,FAIR,null,2056200000,EUR,1689200000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2724220,2724220,AAB,null,Bedrijven Regio Zuid,FAIR,null,5739000,EUR,6893000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2724510,2724510,AAB,null,Bedrijven Regio Zuid,FAIR,null,1762000,EUR,649000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2724755,2724755,AAB,null,CIB NR Energy EMEA,FAIR,null,7929919895.06722,EUR,4354054433.8783,EUR,null,null,null,null,null,null,null,null,null,null,null
+2724757,2724757,AAB,null,CIB NR Energy EMEA,FAIR,null,7929919895.06722,EUR,4354054433.8783,EUR,null,null,null,null,null,null,null,null,null,null,null
+2724759,2724759,AAB,null,CIB NR Energy EMEA,FAIR,null,7929919895.06722,EUR,4354054433.8783,EUR,null,null,null,null,null,null,null,null,null,null,null
+2724760,2724760,AAB,null,CIB NR Energy EMEA,FAIR,null,7929919895.06722,EUR,4354054433.8783,EUR,null,null,null,null,null,null,null,null,null,null,null
+2725543,2725543,AAB,null,ABN AMRO Commercial ,FAIR,null,2090663.05818674,EUR,5993459.63013081,EUR,null,null,null,null,null,null,null,null,null,null,null
+2725574,2725574,AAB,null,CBC Real Estate,FAIR,null,132701000,EUR,1452000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2725892,2725892,AAB,null,Bedrijven Regio Zuid,FAIR,null,6151000,EUR,7038000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2726214,2726214,AAB,null,CIB Corporate Lendin,FAIR,null,3729687000,EUR,2046841000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2726215,2726215,AAB,null,CIB Corporate Lendin,FAIR,null,3729687000,EUR,2046841000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2726216,2726216,AAB,null,CIB Corporate Lendin,FAIR,null,3729687000,EUR,2046841000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2726224,2726224,AAB,null,CIB Corporate Lendin,FAIR,null,3729687000,EUR,2046841000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2726260,2726260,AAB,null,CIB Corporate Lendin,FAIR,null,3729687000,EUR,2046841000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2726262,2726262,AAB,null,CIB Corporate Lendin,FAIR,null,3729687000,EUR,2046841000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2726276,2726276,AAB,null,CIB Corporate Lendin,FAIR,null,3729687000,EUR,2046841000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2726283,2726283,AAB,null,CIB Corporate Lendin,FAIR,null,3729687000,EUR,2046841000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2726367,2726367,AAB,null,Bedrijven Regio Zuid,FAIR,null,96178000,EUR,440399000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2726371,2726371,AAB,null,Bedrijven Regio Zuid,FAIR,null,5377000,EUR,8539000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2726447,2726447,AAB,null,CIB Corporate Lendin,FAIR,null,165425000,EUR,168802000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2726449,2726449,AAB,null,CIB Corporate Lendin,FAIR,null,165425000,EUR,168802000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2726450,2726450,AAB,null,CIB Corporate Lendin,FAIR,null,165425000,EUR,168802000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2726451,2726451,AAB,null,CIB Corporate Lendin,FAIR,null,165425000,EUR,168802000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2726453,2726453,AAB,null,CIB Corporate Lendin,FAIR,null,165425000,EUR,168802000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2726456,2726456,AAB,null,BU NL CC Midden,FAIR,null,165425000,EUR,168802000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2726457,2726457,AAB,null,CBC Tech Media&Telec,FAIR,null,165425000,EUR,168802000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2726458,2726458,AAB,null,CIB Corporate Lendin,FAIR,null,165425000,EUR,168802000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2726459,2726459,AAB,null,CIB Corporate Lendin,FAIR,null,165425000,EUR,168802000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2726461,2726461,AAB,null,CIB Corporate Lendin,FAIR,null,165425000,EUR,168802000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2726733,2726733,AAB,null,CIB Corporate Lendin,FAIR,null,1335598000,EUR,2117317000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2726811,2726811,AAB,null,CIB Corporate Lendin,FAIR,null,1335598000,EUR,2117317000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2726827,2726827,AAB,null,CIB Corporate Lendin,FAIR,null,305555000,EUR,278954000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2727597,2727597,AAB,null,CIB NR Energy Oslo,FAIR,null,3902439024.39024,EUR,582869214.518917,EUR,null,null,null,null,null,null,null,null,null,null,null
+2728133,2728133,AAB,null,Bedrijven Regio Zuid,FAIR,null,7662000,EUR,11873000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2728721,2728721,AAB,null,CIB Corporate Lendin,FAIR,null,7229506000,EUR,10090629000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2728887,2728887,AAB,null,CBC Business Service,FAIR,null,595838000,EUR,374191000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2728900,2728900,AAB,null,CBC Business Service,FAIR,null,595838000,EUR,374191000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2728901,2728901,AAB,null,CBC Business Service,FAIR,null,595838000,EUR,374191000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2728914,2728914,AAB,null,CBC Business Service,FAIR,null,595838000,EUR,374191000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2728950,2728950,AAB,null,CBC Business Service,FAIR,null,595838000,EUR,374191000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2728952,2728952,AAB,null,CBC Business Service,FAIR,null,595838000,EUR,374191000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2729013,2729013,AAB,null,FR&R,FAIR,null,1732000,EUR,2449000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2730288,2730288,AAB,null,ABN AMRO Commercial ,FAIR,null,318682.62054259,EUR,855348.892311337,EUR,null,null,null,null,null,null,null,null,null,null,null
+2730309,2730309,AAB,null,ABN AMRO Commercial ,FAIR,null,34570135.7466063,EUR,112235055.965706,EUR,null,null,null,null,null,null,null,null,null,null,null
+2730316,2730316,AAB,null,BU NL CC Noord West,FAIR,null,374208000,EUR,29965000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2730317,2730317,AAB,null,CBC Leisure,FAIR,null,374208000,EUR,29965000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2730323,2730323,AAB,null,BU NL CC Noord West,FAIR,null,374208000,EUR,29965000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2730324,2730324,AAB,null,BU NL CC Noord West,FAIR,null,374208000,EUR,29965000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2730326,2730326,AAB,null,BU NL CC Noord West,FAIR,null,374208000,EUR,29965000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2730328,2730328,AAB,null,BU NL CC Noord West,FAIR,null,374208000,EUR,29965000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2730331,2730331,AAB,null,BU NL CC Noord West,FAIR,null,374208000,EUR,29965000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2730334,2730334,AAB,null,CBC Leisure,FAIR,null,374208000,EUR,29965000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2730335,2730335,AAB,null,CBC Leisure,FAIR,null,374208000,EUR,29965000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2730337,2730337,AAB,null,BU NL CC Noord West,FAIR,null,374208000,EUR,29965000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2730338,2730338,AAB,null,BU NL CC Noord West,FAIR,null,374208000,EUR,29965000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2730454,2730454,AAB,null,CIB Corporate Lendin,FAIR,null,3984470392.98204,EUR,264833145.634521,EUR,null,null,null,null,null,null,null,null,null,null,null
+2730534,2730534,AAB,null,CBC Business Service,FAIR,null,18531000,EUR,48679000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2730589,2730589,AAB,null,ABN AMRO Commercial ,FAIR,null,47661000,EUR,59881000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2730854,2730854,AAB,null,CBC Construction,FAIR,null,106093000,EUR,204711000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2730855,2730855,AAB,null,Bedrijven Regio Zuid,FAIR,null,106093000,EUR,204711000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2732064,2732064,AAB,null,BU NL CC Midden,FAIR,null,512930000,EUR,323516000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2732205,2732205,AAB,null,FR&R,FAIR,null,2047000,EUR,1955000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2733002,2733002,AAB,null,Bedrijven Regio Zuid,FAIR,null,9834000,EUR,21647000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2733055,2733055,AAB,null,CBC Transport&Logist,FAIR,null,120233000,EUR,281675000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2733527,2733527,AAB,null,CBC Transport&Logist,FAIR,null,120233000,EUR,281675000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2733530,2733530,AAB,null,CBC Transport&Logist,FAIR,null,120233000,EUR,281675000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2733531,2733531,AAB,null,CBC Transport&Logist,FAIR,null,120233000,EUR,281675000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2733532,2733532,AAB,null,BU NL FRR CC,FAIR,null,120233000,EUR,281675000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2733535,2733535,AAB,null,CBC Transport&Logist,FAIR,null,120233000,EUR,281675000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2733536,2733536,AAB,null,CBC Transport&Logist,FAIR,null,120233000,EUR,281675000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2733537,2733537,AAB,null,CBC Transport&Logist,FAIR,null,120233000,EUR,281675000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2733538,2733538,AAB,null,CBC Transport&Logist,FAIR,null,120233000,EUR,281675000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2733541,2733541,AAB,null,BU NL FRR CC,FAIR,null,120233000,EUR,281675000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2733543,2733543,AAB,null,CBC Transport&Logist,FAIR,null,120233000,EUR,281675000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2733544,2733544,AAB,null,CBC Transport&Logist,FAIR,null,120233000,EUR,281675000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2733546,2733546,AAB,null,CBC Transport&Logist,FAIR,null,120233000,EUR,281675000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2733555,2733555,AAB,null,CBC Real Estate,FAIR,null,143248000,EUR,15835000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2733556,2733556,AAB,null,CBC Real Estate,FAIR,null,143248000,EUR,15835000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2734877,2734877,AAB,null,Bedrijven Regio Zuid,FAIR,null,4856000,EUR,17746000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2735071,2735071,AAB,null,Bedrijven Regio Zuid,FAIR,null,1239000,EUR,730000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2736201,2736201,AAB,null,CBC Leisure,FAIR,null,1038171000,EUR,158931000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2736204,2736204,AAB,null,CBC Leisure,FAIR,null,1038171000,EUR,158931000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2736206,2736206,AAB,null,CBC Leisure,FAIR,null,1038171000,EUR,158931000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2736207,2736207,AAB,null,CBC Leisure,FAIR,null,1038171000,EUR,158931000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2736217,2736217,AAB,null,CBC Leisure,FAIR,null,1038171000,EUR,158931000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2737292,2737292,AAB,null,NGM France Banque Ne,FAIR,null,69148000,EUR,65259000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2738573,2738573,AAB,null,CBC Business Service,FAIR,null,201842000,EUR,403817000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2738718,2738718,AAB,null,CIB Corporate Lendin,FAIR,null,1308416000,EUR,1855231000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2738731,2738731,AAB,null,CIB Corporate Lendin,FAIR,null,267316000,EUR,894050000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2844893,2844893,AAB,null,null,FAIR,null,53224800000,EUR,1220600000,EUR,2844893,2958783,666100_100914,1.2206000000000002E9,null,null,1.2206000000000002E9,5.32248E10,null,null,5.32248E10
+2853256,2853256,AAB,null,null,FAIR,null,67460489230.8,EUR,5239143649.92,EUR,2853256,2958792,666100_100843,5.23914364992E9,null,null,5.23914364992E9,6.7460489230799995E10,null,null,6.7460489230799995E10
+2853798,2853798,AAB,null,null,FAIR,null,64087895060,EUR,1105937980,EUR,2853798,null,666100_101031,1.10593798E9,null,null,1.10593798E9,6.408789505999999E10,null,null,6.408789505999999E10
+2853800,2853800,AAB,null,null,FAIR,null,65199840000,EUR,3463068000,EUR,2853800,null,666100_101050,3.463068E9,null,null,3.463068E9,6.519983999999999E10,null,null,6.519983999999999E10
+2853801,2853801,AAB,null,null,FAIR,null,1312331000000,EUR,28879000000,EUR,2853801,null,666100_101054,2.8878999999999996E10,null,null,2.8878999999999996E10,1.312331E12,null,null,1.312331E12
+2853802,2853802,AAB,null,null,FAIR,null,644589000000,EUR,8242000000,EUR,2853802,null,666100_101058,8.242000000000001E9,null,null,8.242000000000001E9,6.44589E11,null,null,6.44589E11
+2853815,2853815,AAB,null,null,FAIR,null,273364000000,EUR,3447000000,EUR,2853815,null,666100_101081,3.447E9,null,null,3.447E9,2.7336399999999997E11,null,null,2.7336399999999997E11
+2854427,2854427,AAB,null,null,FAIR,null,115540000000,EUR,516000000,EUR,2854427,null,666100_100937,5.159999999999999E8,null,null,5.159999999999999E8,1.1554E11,null,null,1.1554E11
+2854430,2854430,AAB,null,null,FAIR,null,16835900000,EUR,669400000,EUR,2854430,null,666100_100946,6.694E8,null,null,6.694E8,1.6835899999999998E10,null,null,1.6835899999999998E10
+2854431,2854431,AAB,null,null,FAIR,null,16175571000,EUR,466300000,EUR,2854431,null,666100_100947,4.6630000000000006E8,null,null,4.6630000000000006E8,1.6175571000000002E10,null,null,1.6175571000000002E10
+2854433,2854433,AAB,null,null,FAIR,null,10282400000,EUR,251200000,EUR,2854433,null,666100_101008,2.5120000000000003E8,null,null,2.5120000000000003E8,1.02824E10,null,null,1.02824E10
+2854447,2854447,AAB,null,null,FAIR,null,84486420000,EUR,5995764000,EUR,2854447,null,666100_101049,5.995763999999999E9,null,null,5.995763999999999E9,8.448642E10,null,null,8.448642E10
+2854455,2854455,AAB,null,null,FAIR,null,517166000000,EUR,10337000000,EUR,2854455,null,666100_101084,1.0337E10,null,null,1.0337E10,5.1716600000000006E11,null,null,5.1716600000000006E11
+2854463,2854463,AAB,null,null,FAIR,null,517166000000,EUR,10337000000,EUR,2854463,null,666100_101136,1.0337E10,null,null,1.0337E10,5.1716600000000006E11,null,null,5.1716600000000006E11
+2862826,2862826,AAB,null,null,FAIR,null,21887718864,EUR,1066226700,EUR,2862826,2960985,666100_101097,1.0662267000000001E9,null,null,1.0662267000000001E9,2.1887718864E10,null,null,2.1887718864E10
+2862827,2862827,AAB,null,null,FAIR,null,72793731800,EUR,1947204590,EUR,2862827,2960985,666100_101098,1.9472045900000002E9,null,null,1.9472045900000002E9,7.27937318E10,null,null,7.27937318E10
+2862845,2862845,AAB,null,null,FAIR,null,14283400000,EUR,430000000,EUR,2862845,null,666100_101177,4.3000000000000006E8,null,null,4.3000000000000006E8,1.42834E10,null,null,1.42834E10
+2863099,2863099,AAB,null,null,FAIR,null,2189398000000,EUR,25173000000,EUR,2863099,null,666100_101166,2.5173E10,null,null,2.5173E10,2.1893980000000002E12,null,null,2.1893980000000002E12
+2863100,2863100,AAB,null,null,FAIR,null,903573000000,EUR,10598000000,EUR,2863100,null,666100_101180,1.0597999999999998E10,null,null,1.0597999999999998E10,9.03573E11,null,null,9.03573E11
+2867864,2867864,AAB,null,null,FAIR,null,4793937846.44,EUR,167416407.06,EUR,2867864,null,666100_101130,1.6741640706000003E8,null,null,1.6741640706000003E8,4.793937846440001E9,null,null,4.793937846440001E9
+2872665,2872665,AAB,null,null,FAIR,null,8129900000,EUR,579100000,EUR,2872665,2863099,666100_101178,5.791E8,null,null,5.791E8,8.129899999999999E9,null,null,8.129899999999999E9
+2872670,2872670,AAB,null,null,FAIR,null,45795018000,EUR,15897000,EUR,2872670,2863100,666100_101187,1.5896999999999998E7,null,null,1.5896999999999998E7,4.5795018E10,null,null,4.5795018E10
+2872671,2872671,AAB,null,null,FAIR,null,11018229815,EUR,516074599,EUR,2872671,2863102,666100_101189,5.1607459899999994E8,null,null,5.1607459899999994E8,1.1018229815E10,null,null,1.1018229815E10
+2872672,2872672,AAB,null,null,FAIR,null,16860356920,EUR,769372296,EUR,2872672,2863102,666100_101190,7.69372296E8,null,null,7.69372296E8,1.6860356920000002E10,null,null,1.6860356920000002E10
+2872674,2872674,AAB,null,null,FAIR,null,2995564560,EUR,158833040,EUR,2872674,2863102,666100_101192,1.5883303999999997E8,null,null,1.5883303999999997E8,2.99556456E9,null,null,2.99556456E9
+2872681,2872681,AAB,null,null,FAIR,null,39230100000,EUR,23100000,EUR,2872681,2863099,666100_101203,2.3100000000000004E7,null,null,2.3100000000000004E7,3.92301E10,null,null,3.92301E10
+2872686,2872686,AAB,null,null,FAIR,null,8521800000,EUR,126900000,EUR,2872686,null,666100_101208,1.2690000000000001E8,null,null,1.2690000000000001E8,8.521800000000001E9,null,null,8.521800000000001E9
+2872689,2872689,AAB,null,null,FAIR,null,3425711509.64,EUR,100108721.76,EUR,2872689,null,666100_101216,1.0010872176E8,null,null,1.0010872176E8,3.4257115096400003E9,null,null,3.4257115096400003E9
+2872691,2872691,AAB,null,null,FAIR,null,69648000000,EUR,178000000,EUR,2872691,null,666100_101221,1.7800000000000003E8,null,null,1.7800000000000003E8,6.9648E10,null,null,6.9648E10
+2879437,2879437,AAB,null,null,FAIR,null,136349000000,EUR,4734000000,EUR,2879437,null,666100_101256,4.734E9,null,null,4.734E9,1.3634899999999998E11,null,null,1.3634899999999998E11
+2881661,2881661,AAB,null,null,FAIR,null,4586200000,EUR,127700000,EUR,2881661,null,666100_101156,1.2770000000000001E8,null,null,1.2770000000000001E8,4.5862E9,null,null,4.5862E9
+2881666,2881666,AAB,null,null,FAIR,null,12917583230.88,EUR,1077918754.24,EUR,2881666,2863098,666100_101164,1.0779187542400002E9,null,null,1.0779187542400002E9,1.291758323088E10,null,null,1.291758323088E10
+2881676,2881676,AAB,null,null,FAIR,null,155901945192,EUR,6106065392,EUR,2881676,null,666100_101246,6.106065392000001E9,null,null,6.106065392000001E9,1.55901945192E11,null,null,1.55901945192E11
+2881679,2881679,AAB,null,null,FAIR,null,262883808936,EUR,12535443672,EUR,2881679,null,666100_101249,1.2535443672E10,null,null,1.2535443672E10,2.6288380893599997E11,null,null,2.6288380893599997E11
+2881680,2881680,AAB,null,null,FAIR,null,2041423549,EUR,79403621,EUR,2881680,2881679,666100_101250,7.940362100000001E7,null,null,7.940362100000001E7,2.041423549E9,null,null,2.041423549E9
+2883225,2883225,AAB,null,null,FAIR,null,47690895818,EUR,2089461811,EUR,2883225,null,666100_101271,2.0894618109999995E9,null,null,2.0894618109999995E9,4.7690895818E10,null,null,4.7690895818E10
+2888678,2888678,AAB,null,null,FAIR,null,136131250900.54,EUR,6052469097.64,EUR,2888678,null,666100_101305,6.05246909764E9,null,null,6.05246909764E9,1.3613125090054001E11,null,null,1.3613125090054001E11
+2888692,2888692,AAB,null,null,FAIR,null,16891283875,EUR,1037631275,EUR,2888692,2888689,666100_101321,1.0376312749999999E9,null,null,1.0376312749999999E9,1.6891283875E10,null,null,1.6891283875E10
+2890897,2890897,AAB,null,null,FAIR,null,265679492760,EUR,10563287180,EUR,2890897,null,666100_101338,1.056328718E10,null,null,1.056328718E10,2.6567949276000003E11,null,null,2.6567949276000003E11
+2891979,2891979,AAB,null,null,FAIR,null,4150344283020,EUR,77731281460,EUR,2891979,null,666100_101290,7.773128145999998E10,null,null,7.773128145999998E10,4.15034428302E12,null,null,4.15034428302E12
+2891989,2891989,AAB,null,null,FAIR,null,544482405020,EUR,11922708960,EUR,2891989,null,666100_101300,1.1922708960000002E10,null,null,1.1922708960000002E10,5.4448240502E11,null,null,5.4448240502E11
+2893124,2893124,AAB,null,null,FAIR,null,265679492760,EUR,10563287180,EUR,2893124,null,666100_101341,1.056328718E10,null,null,1.056328718E10,2.6567949276000003E11,null,null,2.6567949276000003E11
+2901352,2901352,AAB,null,null,FAIR,null,22488889275,EUR,456813000,EUR,2901352,null,666100_101238,4.5681299999999994E8,null,null,4.5681299999999994E8,2.2488889275E10,null,null,2.2488889275E10
+2901355,2901355,AAB,null,null,FAIR,null,97524164520,EUR,981127800,EUR,2901355,null,666100_101350,9.811278000000001E8,null,null,9.811278000000001E8,9.752416452E10,null,null,9.752416452E10
+2901372,2901372,AAB,null,null,FAIR,null,12110400000,EUR,415000000,EUR,2901372,2901374,666100_101370,4.1500000000000006E8,null,null,4.1500000000000006E8,1.21104E10,null,null,1.21104E10
+2901377,2901377,AAB,null,null,FAIR,null,140632557120,EUR,1476388800,EUR,2901377,null,666100_101382,1.4763887999999998E9,null,null,1.4763887999999998E9,1.4063255712E11,null,null,1.4063255712E11
+2910534,2910534,AAB,null,null,FAIR,null,32234554000,EUR,742883000,EUR,2910534,null,666100_101431,7.42883E8,null,null,7.42883E8,3.2234554000000004E10,null,null,3.2234554000000004E10
+2913841,2913841,AAB,null,null,FAIR,null,242781350000,EUR,2464630000,EUR,2913841,null,666100_101453,2.4646299999999995E9,null,null,2.4646299999999995E9,2.4278135E11,null,null,2.4278135E11
+2913849,2913849,AAB,null,null,FAIR,null,53919300000,EUR,1260900000,EUR,2913849,null,666100_101489,1.2609000000000002E9,null,null,1.2609000000000002E9,5.39193E10,null,null,5.39193E10
+2914373,2914373,AAB,null,null,FAIR,null,27268739022,EUR,901776912,EUR,2914373,null,666100_101474,9.017769120000001E8,null,null,9.017769120000001E8,2.7268739022E10,null,null,2.7268739022E10
+2914374,2914374,AAB,null,null,FAIR,null,1047373616320,EUR,30489385040,EUR,2914374,null,666100_101475,3.048938504E10,null,null,3.048938504E10,1.0473736163200001E12,null,null,1.0473736163200001E12
+2914381,2914381,AAB,null,null,FAIR,null,33950135080,EUR,1636462400,EUR,2914381,null,666100_101487,1.6364624E9,null,null,1.6364624E9,3.3950135080000004E10,null,null,3.3950135080000004E10
+2919665,2919665,AAB,null,null,FAIR,null,134516800000,EUR,2026800000,EUR,2919665,2853815,666100_101515,2.0268000000000002E9,null,null,2.0268000000000002E9,1.3451679999999998E11,null,null,1.3451679999999998E11
+2928446,2928446,AAB,null,null,FAIR,null,265679492760,EUR,10563287180,EUR,2928446,null,666100_101626,1.056328718E10,null,null,1.056328718E10,2.6567949276000003E11,null,null,2.6567949276000003E11
+2932145,2932145,AAB,null,null,FAIR,null,780637228480,EUR,16759029040,EUR,2932145,null,666100_101511,1.6759029040000002E10,null,null,1.6759029040000002E10,7.8063722848E11,null,null,7.8063722848E11
+2942865,2942865,AAB,null,null,FAIR,null,33000889900,EUR,1071110920,EUR,2942865,null,666100_101665,1.0711109200000002E9,null,null,1.0711109200000002E9,3.3000889899999996E10,null,null,3.3000889899999996E10
+2942871,2942871,AAB,null,null,FAIR,null,512077316650,EUR,14418236950,EUR,2942871,null,666100_101702,1.441823695E10,null,null,1.441823695E10,5.1207731664999994E11,null,null,5.1207731664999994E11
+2942873,2942873,AAB,null,null,FAIR,null,45155499600,EUR,1211677400,EUR,2942873,null,666100_101704,1.2116774000000002E9,null,null,1.2116774000000002E9,4.51554996E10,null,null,4.51554996E10
+2944078,2944078,AAB,null,null,FAIR,null,39016468393,EUR,721012901,EUR,2944078,null,666100_101690,7.210129009999999E8,null,null,7.210129009999999E8,3.9016468393E10,null,null,3.9016468393E10
+2944080,2944080,AAB,null,null,FAIR,null,265008000000,EUR,3360000000,EUR,2944080,null,666100_101695,3.3600000000000005E9,null,null,3.3600000000000005E9,2.6500799999999997E11,null,null,2.6500799999999997E11
+2944081,2944081,AAB,null,null,FAIR,null,265008000000,EUR,3360000000,EUR,2944081,null,666100_101696,3.3600000000000005E9,null,null,3.3600000000000005E9,2.6500799999999997E11,null,null,2.6500799999999997E11
+2944082,2944082,AAB,null,null,FAIR,null,158675148417.28,EUR,4091456026.24,EUR,2944082,null,666100_101697,4.0914560262399993E9,null,null,4.0914560262399993E9,1.5867514841728E11,null,null,1.5867514841728E11
+2948987,2948987,AAB,null,null,FAIR,null,1584294804000,EUR,16308576000,EUR,2948987,null,666100_101726,1.6308576000000002E10,null,null,1.6308576000000002E10,1.584294804E12,null,null,1.584294804E12
+2950842,2950842,AAB,null,null,FAIR,null,1363497788830,EUR,33912341070,EUR,2950842,null,666100_101708,3.3912341069999996E10,null,null,3.3912341069999996E10,1.36349778883E12,null,null,1.36349778883E12
+2950845,2950845,AAB,null,null,FAIR,null,305683920580,EUR,7539162000,EUR,2950845,null,666100_101712,7.539161999999999E9,null,null,7.539161999999999E9,3.0568392058E11,null,null,3.0568392058E11
+2950852,2950852,AAB,null,null,FAIR,null,10431913170,EUR,87446550,EUR,2950852,2950848,666100_101753,8.744655000000001E7,null,null,8.744655000000001E7,1.043191317E10,null,null,1.043191317E10
+2950854,2950854,AAB,null,null,FAIR,null,689095940050,EUR,16934015980,EUR,2950854,null,666100_101764,1.6934015979999998E10,null,null,1.6934015979999998E10,6.8909594005E11,null,null,6.8909594005E11
+2951297,2951297,AAB,null,null,FAIR,null,21595943430,EUR,1290675537,EUR,2951297,2951294,666100_101730,1.2906755369999998E9,null,null,1.2906755369999998E9,2.159594343E10,null,null,2.159594343E10
+2955344,2955344,AAB,null,null,FAIR,null,53557100000,EUR,456500000,EUR,2955344,null,666100_101807,4.5649999999999994E8,null,null,4.5649999999999994E8,5.35571E10,null,null,5.35571E10
+2958208,2958208,AAB,null,null,FAIR,null,42413000000,EUR,1595900000,EUR,2958208,null,666100_101755,1.5958999999999998E9,null,null,1.5958999999999998E9,4.2413E10,null,null,4.2413E10
+2958219,2958219,AAB,null,null,FAIR,null,59119200000,EUR,595200000,EUR,2958219,null,666100_101788,5.952000000000001E8,null,null,5.952000000000001E8,5.91192E10,null,null,5.91192E10
+2958220,2958220,AAB,null,null,FAIR,null,99226300000,EUR,3762800000,EUR,2958220,null,666100_101789,3.7628000000000005E9,null,null,3.7628000000000005E9,9.92263E10,null,null,9.92263E10
+2958789,2958789,AAB,null,null,FAIR,null,71180880254,EUR,3305026450,EUR,2958789,2958783,666100_101768,3.3050264499999995E9,null,null,3.3050264499999995E9,7.1180880254E10,null,null,7.1180880254E10
+2958791,2958791,AAB,null,null,FAIR,null,148076100000,EUR,4545200000,EUR,2958791,2958783,666100_101770,4.545199999999999E9,null,null,4.545199999999999E9,1.480761E11,null,null,1.480761E11
+2959713,2959713,AAB,null,null,FAIR,null,318004171170,EUR,8289228750,EUR,2959713,null,666100_101882,8.289228749999999E9,null,null,8.289228749999999E9,3.1800417117E11,null,null,3.1800417117E11
+2960329,2960329,AAB,null,null,FAIR,null,29056699320,EUR,699778156,EUR,2960329,null,666100_101849,6.997781559999999E8,null,null,6.997781559999999E8,2.905669932E10,null,null,2.905669932E10
+2960335,2960335,AAB,null,null,FAIR,null,34787373360,EUR,1359538161,EUR,2960335,null,666100_101855,1.3595381610000002E9,null,null,1.3595381610000002E9,3.478737336E10,null,null,3.478737336E10
+2960338,2960338,AAB,null,null,FAIR,null,41292504880,EUR,673422640,EUR,2960338,null,666100_101858,6.734226400000001E8,null,null,6.734226400000001E8,4.129250488E10,null,null,4.129250488E10
+2960340,2960340,AAB,null,null,FAIR,null,14880343945.81,EUR,372734207.93,EUR,2960340,2960338,666100_101865,3.7273420793E8,null,null,3.7273420793E8,1.4880343945810001E10,null,null,1.4880343945810001E10
+2960343,2960343,AAB,null,null,FAIR,null,24049530850.71,EUR,116305752.48,EUR,2960343,2950842,666100_101885,1.1630575248000002E8,null,null,1.1630575248000002E8,2.404953085071E10,null,null,2.404953085071E10
+2960986,2960986,AAB,null,null,FAIR,null,26379400000,EUR,823700000,EUR,2960986,2960985,666100_101731,8.237000000000001E8,null,null,8.237000000000001E8,2.63794E10,null,null,2.63794E10
+2960989,2960989,AAB,null,null,FAIR,null,8243600000,EUR,199200000,EUR,2960989,2959169,666100_101774,1.992E8,null,null,1.992E8,8.243600000000001E9,null,null,8.243600000000001E9
+2670134,2670134,AAB,null,CBC Construction,FAIR,null,40010000,EUR,3814000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2699348,2699348,AAB,null,ABN AMRO Commercial ,FAIR,null,24836671.4353839,EUR,38283261.8025751,EUR,null,null,null,null,null,null,null,null,null,null,null
+2703245,2703245,AAB,null,ABN AMRO Commercial ,FAIR,null,59730567.4773486,EUR,142001669.051025,EUR,null,null,null,null,null,null,null,null,null,null,null
+2705505,2705505,AAB,null,CBC Transport&Logist,FAIR,null,38924000,EUR,6354000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2711218,2711218,AAB,null,CIB Corporate Lendin,FAIR,null,88781799886.0258,EUR,1763152765.42528,EUR,null,null,null,null,null,null,null,null,null,null,null
+2711790,2711790,AAB,null,Bedrijven Regio Noor,FAIR,null,2234000,EUR,4134000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2714513,2714513,AAB,null,CIB Corporate Lendin,FAIR,null,291922000,EUR,429416000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2715993,2715993,AAB,null,NGM France Banque Ne,FAIR,null,89634000,EUR,32604000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2716083,2716083,AAB,null,CIB Corporate Lendin,FAIR,null,13972000000,EUR,-114000000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2716562,2716562,AAB,null,C&IB FI Infrastructu,FAIR,null,37692300000,EUR,null,EUR,null,null,null,null,null,null,null,null,null,null,null
+2717708,2717708,AAB,null,Bedrijven Regio Zuid,FAIR,null,11894000,EUR,20576000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2718243,2718243,AAB,null,CIB Corporate Lendin,FAIR,null,3970500000,EUR,831100000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2719108,2719108,AAB,null,CIB CFB T&L Transpor,FAIR,null,439721740.759826,EUR,75566590.1531831,EUR,null,null,null,null,null,null,null,null,null,null,null
+2719600,2719600,AAB,null,CBC Leisure,FAIR,null,1494636000,EUR,45849000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2719602,2719602,AAB,null,CBC Leisure,FAIR,null,374208000,EUR,29965000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2719775,2719775,AAB,null,CBC Construction,FAIR,null,199270000,EUR,179159000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2719781,2719781,AAB,null,CIB Corporate Lendin,FAIR,null,291922000,EUR,429416000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2719783,2719783,AAB,null,CIB Corporate Lendin,FAIR,null,291922000,EUR,429416000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2719785,2719785,AAB,null,CB FSPM Event Financ,FAIR,null,15200000,EUR,15462000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2719927,2719927,AAB,null,CB FSPM Event Financ,FAIR,null,15200000,EUR,15462000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2720286,2720286,AAB,null,Retail Regio Noord,FAIR,null,2580000,EUR,53000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2720320,2720320,AAB,null,CIB Corporate Lendin,FAIR,null,585235678.845286,EUR,360182679.296346,EUR,null,null,null,null,null,null,null,null,null,null,null
+2721076,2721076,AAB,null,Bedrijven Regio Noor,FAIR,null,25964000,EUR,35741000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2721224,2721224,AAB,null,C&IB FI Europe,FAIR,null,100000000,EUR,10000000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2721614,2721614,AAB,null,Bedrijven Regio Zuid,FAIR,null,2985000,EUR,7653000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2721672,2721672,AAB,null,CBC Transport&Logist,FAIR,null,104592000,EUR,45679000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2722432,2722432,AAB,null,CIB Corporate Lendin,FAIR,null,23586613956.0541,EUR,20940161196.4083,EUR,null,null,null,null,null,null,null,null,null,null,null
+2722434,2722434,AAB,null,CIB Corporate Lendin,FAIR,null,23586613956.0541,EUR,20940161196.4083,EUR,null,null,null,null,null,null,null,null,null,null,null
+2722521,2722521,AAB,null,Bedrijven Regio Zuid,FAIR,null,6639000,EUR,3179000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2722594,2722594,AAB,null,Bedrijven Regio Noor,FAIR,null,5925000,EUR,1078000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2722759,2722759,AAB,null,Bedrijven Regio Noor,FAIR,null,10275000,EUR,7396000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2723261,2723261,AAB,null,C&IB FI Infrastructu,FAIR,null,2517000000,EUR,211000000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2723461,2723461,AAB,null,CIB CFB T&L Transpor,FAIR,null,0,EUR,0,EUR,null,null,null,null,null,null,null,null,null,null,null
+2723826,2723826,AAB,null,CIB NR Energy EMEA,FAIR,null,7929919895.06722,EUR,4354054433.8783,EUR,null,null,null,null,null,null,null,null,null,null,null
+2724083,2724083,AAB,null,CIB Corporate Lendin,FAIR,null,1360283000,EUR,3283773000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2724365,2724365,AAB,null,Bedrijven Regio Noor,FAIR,null,1359000,EUR,872000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2724736,2724736,AAB,null,Bedrijven Regio Noor,FAIR,null,4139000,EUR,185000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2724753,2724753,AAB,null,CIB NR Energy EMEA,FAIR,null,7929919895.06722,EUR,4354054433.8783,EUR,null,null,null,null,null,null,null,null,null,null,null
+2724754,2724754,AAB,null,CIB NR Energy EMEA,FAIR,null,7929919895.06722,EUR,4354054433.8783,EUR,null,null,null,null,null,null,null,null,null,null,null
+2724756,2724756,AAB,null,CIB NR Energy EMEA,FAIR,null,7929919895.06722,EUR,4354054433.8783,EUR,null,null,null,null,null,null,null,null,null,null,null
+2724758,2724758,AAB,null,CIB NR Energy EMEA,FAIR,null,7929919895.06722,EUR,4354054433.8783,EUR,null,null,null,null,null,null,null,null,null,null,null
+2725191,2725191,AAB,null,Bedrijven Regio Midd,FAIR,null,4811000,EUR,3974000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2725409,2725409,AAB,null,Bedrijven Regio Zuid,FAIR,null,1541000,EUR,1769000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2725446,2725446,AAB,null,BU NL CC Midden,FAIR,null,120827000,EUR,105065000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2725698,2725698,AAB,null,Bedrijven Regio Noor,FAIR,null,2665000,EUR,2988000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2726099,2726099,AAB,null,Bedrijven Regio Midd,FAIR,null,4609000,EUR,2569000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2726220,2726220,AAB,null,CIB Corporate Lendin,FAIR,null,3729687000,EUR,2046841000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2726223,2726223,AAB,null,CIB Corporate Lendin,FAIR,null,3729687000,EUR,2046841000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2726254,2726254,AAB,null,CIB Corporate Lendin,FAIR,null,3729687000,EUR,2046841000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2726256,2726256,AAB,null,CIB Corporate Lendin,FAIR,null,3729687000,EUR,2046841000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2726258,2726258,AAB,null,CIB Corporate Lendin,FAIR,null,3729687000,EUR,2046841000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2726261,2726261,AAB,null,CIB Corporate Lendin,FAIR,null,3729687000,EUR,2046841000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2726263,2726263,AAB,null,CIB Corporate Lendin,FAIR,null,3729687000,EUR,2046841000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2726274,2726274,AAB,null,CIB Corporate Lendin,FAIR,null,3729687000,EUR,2046841000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2726275,2726275,AAB,null,CIB Corporate Lendin,FAIR,null,3729687000,EUR,2046841000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2726277,2726277,AAB,null,Bedrijven Regio Zuid,FAIR,null,1571000,EUR,5286000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2726279,2726279,AAB,null,CIB Corporate Lendin,FAIR,null,3729687000,EUR,2046841000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2726281,2726281,AAB,null,CIB Corporate Lendin,FAIR,null,3729687000,EUR,2046841000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2726282,2726282,AAB,null,CIB Corporate Lendin,FAIR,null,3729687000,EUR,2046841000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2726448,2726448,AAB,null,CIB Corporate Lendin,FAIR,null,165425000,EUR,168802000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2726452,2726452,AAB,null,CIB Corporate Lendin,FAIR,null,165425000,EUR,168802000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2726454,2726454,AAB,null,CIB Corporate Lendin,FAIR,null,165425000,EUR,168802000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2726455,2726455,AAB,null,CIB Corporate Lendin,FAIR,null,165425000,EUR,168802000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2726460,2726460,AAB,null,CIB Corporate Lendin,FAIR,null,165425000,EUR,168802000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2726462,2726462,AAB,null,CIB Corporate Lendin,FAIR,null,165425000,EUR,168802000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2726463,2726463,AAB,null,CIB Corporate Lendin,FAIR,null,165425000,EUR,168802000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2726848,2726848,AAB,null,FR&R,FAIR,null,5530000,EUR,15510000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2726988,2726988,AAB,null,C&IB FI Infrastructu,FAIR,null,10034000000,EUR,1755000000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2727373,2727373,AAB,null,CB FSPM Event Financ,FAIR,null,9076000,EUR,55000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2727434,2727434,AAB,null,Retail Regio Noord,FAIR,null,9907000,EUR,12660000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2727756,2727756,AAB,null,CBC Healthcare,FAIR,null,342511000,EUR,379919000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2727801,2727801,AAB,null,Bedrijven Regio Zuid,FAIR,null,590076000,EUR,22392000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2728553,2728553,AAB,null,ABN AMRO Commercial ,FAIR,null,4407549.80775953,EUR,6992892.92788069,EUR,null,null,null,null,null,null,null,null,null,null,null
+2728822,2728822,AAB,null,CIB Corporate Lendin,FAIR,null,7229506000,EUR,10090629000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2728842,2728842,AAB,null,C&IB FI Infrastructu,FAIR,null,3410698458.79983,EUR,483388766.571415,EUR,null,null,null,null,null,null,null,null,null,null,null
+2728881,2728881,AAB,null,CBC Business Service,FAIR,null,595838000,EUR,374191000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2728892,2728892,AAB,null,CBC Business Service,FAIR,null,595838000,EUR,374191000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2728898,2728898,AAB,null,CBC Business Service,FAIR,null,595838000,EUR,374191000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2728912,2728912,AAB,null,CBC Business Service,FAIR,null,595838000,EUR,374191000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2728913,2728913,AAB,null,CBC Business Service,FAIR,null,595838000,EUR,374191000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2728940,2728940,AAB,null,CBC Business Service,FAIR,null,595838000,EUR,374191000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2730315,2730315,AAB,null,CBC Leisure,FAIR,null,374208000,EUR,29965000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2730318,2730318,AAB,null,BU NL CC Noord West,FAIR,null,374208000,EUR,29965000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2730319,2730319,AAB,null,BU NL CC Noord West,FAIR,null,374208000,EUR,29965000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2730322,2730322,AAB,null,BU NL CC Noord West,FAIR,null,374208000,EUR,29965000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2730325,2730325,AAB,null,CBC Leisure,FAIR,null,374208000,EUR,29965000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2730327,2730327,AAB,null,BU NL CC Noord West,FAIR,null,374208000,EUR,29965000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2730329,2730329,AAB,null,BU NL CC Noord West,FAIR,null,374208000,EUR,29965000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2730330,2730330,AAB,null,BU NL CC Noord West,FAIR,null,374208000,EUR,29965000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2730332,2730332,AAB,null,BU NL CC Noord West,FAIR,null,374208000,EUR,29965000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2730333,2730333,AAB,null,BU NL CC Noord West,FAIR,null,374208000,EUR,29965000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2730336,2730336,AAB,null,BU NL CC Noord West,FAIR,null,374208000,EUR,29965000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2730448,2730448,AAB,null,CIB Corporate Lendin,FAIR,null,3186500000,EUR,1098100000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2730531,2730531,AAB,null,Bedrijven Regio Midd,FAIR,null,6398000,EUR,15832000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2730795,2730795,AAB,null,CIB Corporate Lendin,FAIR,null,1686800000,EUR,1443800000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2730851,2730851,AAB,null,CBC Construction,FAIR,null,106093000,EUR,204711000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2730852,2730852,AAB,null,Bedrijven Regio Zuid,FAIR,null,106093000,EUR,204711000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2730853,2730853,AAB,null,CBC Construction,FAIR,null,106093000,EUR,204711000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2730886,2730886,AAB,null,CB FSPM Event Financ,FAIR,null,37105000,EUR,9585000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2730897,2730897,AAB,null,CB FSPM Event Financ,FAIR,null,37105000,EUR,9585000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2731120,2731120,AAB,null,Bedrijven Regio Noor,FAIR,null,38483000,EUR,73261000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2731206,2731206,AAB,null,CIB CFB T&L Transpor,FAIR,null,630846000.723851,EUR,129866087.585958,EUR,null,null,null,null,null,null,null,null,null,null,null
+2731679,2731679,AAB,null,Bedrijven Regio Zuid,FAIR,null,5177000,EUR,759000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2731685,2731685,AAB,null,CIB SF Subdebt,FAIR,null,11605000,EUR,10946000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2732063,2732063,AAB,null,CBC Construction,FAIR,null,512930000,EUR,323516000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2732544,2732544,AAB,null,CIB Corporate Lendin,FAIR,null,135877000,EUR,497735000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2733439,2733439,AAB,null,Bedrijven Regio Zuid,FAIR,null,1843000,EUR,701000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2733519,2733519,AAB,null,CBC Transport&Logist,FAIR,null,120233000,EUR,281675000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2733520,2733520,AAB,null,CBC Transport&Logist,FAIR,null,120233000,EUR,281675000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2733521,2733521,AAB,null,BU NL FRR CC,FAIR,null,120233000,EUR,281675000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2733522,2733522,AAB,null,CBC Transport&Logist,FAIR,null,120233000,EUR,281675000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2733523,2733523,AAB,null,CBC Transport&Logist,FAIR,null,120233000,EUR,281675000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2733524,2733524,AAB,null,CBC Transport&Logist,FAIR,null,120233000,EUR,281675000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2733525,2733525,AAB,null,BU NL FRR CC,FAIR,null,120233000,EUR,281675000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2733526,2733526,AAB,null,CBC Transport&Logist,FAIR,null,120233000,EUR,281675000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2733528,2733528,AAB,null,CBC Transport&Logist,FAIR,null,120233000,EUR,281675000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2733529,2733529,AAB,null,CBC Transport&Logist,FAIR,null,120233000,EUR,281675000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2733533,2733533,AAB,null,CBC Transport&Logist,FAIR,null,120233000,EUR,281675000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2733534,2733534,AAB,null,BU NL FRR CC,FAIR,null,120233000,EUR,281675000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2733539,2733539,AAB,null,BU NL FRR CC,FAIR,null,120233000,EUR,281675000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2733540,2733540,AAB,null,CBC Transport&Logist,FAIR,null,120233000,EUR,281675000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2733542,2733542,AAB,null,BU NL FRR CC,FAIR,null,120233000,EUR,281675000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2733545,2733545,AAB,null,CBC Transport&Logist,FAIR,null,120233000,EUR,281675000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2733547,2733547,AAB,null,BU NL FRR CC,FAIR,null,120233000,EUR,281675000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2733817,2733817,AAB,null,Bedrijven Regio Noor,FAIR,null,31056000,EUR,9333000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2734242,2734242,AAB,null,CIB Corporate Lendin,FAIR,null,5249168780.20769,EUR,2391398765.37302,EUR,null,null,null,null,null,null,null,null,null,null,null
+2735363,2735363,AAB,null,Bedrijven Regio Noor,FAIR,null,21252000,EUR,1296000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2735714,2735714,AAB,null,CBC Manufacturing,FAIR,null,433597000,EUR,518069000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2735787,2735787,AAB,null,ABN AMRO Commercial ,FAIR,null,111785069.914299,EUR,9786874.15426252,EUR,null,null,null,null,null,null,null,null,null,null,null
+2736199,2736199,AAB,null,CBC Leisure,FAIR,null,1038171000,EUR,158931000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2736202,2736202,AAB,null,CBC Leisure,FAIR,null,1038171000,EUR,158931000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2736205,2736205,AAB,null,CBC Leisure,FAIR,null,1038171000,EUR,158931000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2736209,2736209,AAB,null,CBC Leisure,FAIR,null,1038171000,EUR,158931000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2736216,2736216,AAB,null,CBC Leisure,FAIR,null,1038171000,EUR,158931000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2736220,2736220,AAB,null,CBC Leisure,FAIR,null,1038171000,EUR,158931000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2736223,2736223,AAB,null,CBC Leisure,FAIR,null,1038171000,EUR,158931000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2736224,2736224,AAB,null,CBC Leisure,FAIR,null,1038171000,EUR,158931000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2736225,2736225,AAB,null,CBC Leisure,FAIR,null,1038171000,EUR,158931000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2736227,2736227,AAB,null,CBC Leisure,FAIR,null,1038171000,EUR,158931000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2736228,2736228,AAB,null,CBC Leisure,FAIR,null,1038171000,EUR,158931000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2736229,2736229,AAB,null,CBC Leisure,FAIR,null,1038171000,EUR,158931000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2736231,2736231,AAB,null,CBC Leisure,FAIR,null,1038171000,EUR,158931000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2737552,2737552,AAB,null,CB FSPM Event Financ,FAIR,null,305555000,EUR,278954000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2737558,2737558,AAB,null,CB FSPM Event Financ,FAIR,null,305555000,EUR,278954000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2737559,2737559,AAB,null,CB FSPM Event Financ,FAIR,null,305555000,EUR,278954000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2737561,2737561,AAB,null,CB FSPM Event Financ,FAIR,null,305555000,EUR,278954000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2738572,2738572,AAB,null,CBC Business Service,FAIR,null,201842000,EUR,403817000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2738576,2738576,AAB,null,CBC Business Service,FAIR,null,201842000,EUR,403817000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2738577,2738577,AAB,null,CBC Business Service,FAIR,null,201842000,EUR,403817000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2738578,2738578,AAB,null,CBC Business Service,FAIR,null,201842000,EUR,403817000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2738580,2738580,AAB,null,CBC Business Service,FAIR,null,201842000,EUR,403817000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2738581,2738581,AAB,null,CBC Business Service,FAIR,null,201842000,EUR,403817000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2738582,2738582,AAB,null,CBC Business Service,FAIR,null,201842000,EUR,403817000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2738585,2738585,AAB,null,CBC Business Service,FAIR,null,201842000,EUR,403817000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2738625,2738625,AAB,null,CBC Business Service,FAIR,null,201842000,EUR,403817000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2738627,2738627,AAB,null,CBC Business Service,FAIR,null,201842000,EUR,403817000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2738629,2738629,AAB,null,CBC Business Service,FAIR,null,201842000,EUR,403817000,EUR,null,null,null,null,null,null,null,null,null,null,null
+2844281,2844281,AAB,null,null,FAIR,null,507948000,EUR,7096000,EUR,2844281,null,666100_100903,7096000.0,null,null,7096000.0,5.0794799999999994E8,null,null,5.0794799999999994E8
+2852572,2852572,AAB,null,null,FAIR,null,114011809394.01,EUR,3303277763.32,EUR,2852572,null,666100_101023,3.3032777633199997E9,null,null,3.3032777633199997E9,1.1401180939401E11,null,null,1.1401180939401E11
+2853789,2853789,AAB,null,null,FAIR,null,19202492608,EUR,748751614,EUR,2853789,null,666100_101006,7.487516139999999E8,null,null,7.487516139999999E8,1.9202492608E10,null,null,1.9202492608E10
+2853792,2853792,AAB,null,null,FAIR,null,7660919000,EUR,232260000,EUR,2853792,null,666100_101010,2.3226000000000003E8,null,null,2.3226000000000003E8,7.660919E9,null,null,7.660919E9
+2853811,2853811,AAB,null,null,FAIR,null,58351700000,EUR,1293200000,EUR,2853811,null,666100_101077,1.2932000000000002E9,null,null,1.2932000000000002E9,5.83517E10,null,null,5.83517E10
+2853813,2853813,AAB,null,null,FAIR,null,111981000000,EUR,1525000000,EUR,2853813,null,666100_101079,1.5250000000000002E9,null,null,1.5250000000000002E9,1.11981E11,null,null,1.11981E11
+2854446,2854446,AAB,null,null,FAIR,null,130453164000,EUR,7321602000,EUR,2854446,null,666100_101048,7.321601999999999E9,null,null,7.321601999999999E9,1.3045316399999998E11,null,null,1.3045316399999998E11
+2862833,2862833,AAB,null,null,FAIR,null,17114100000,EUR,508400000,EUR,2862833,null,666100_101104,5.0839999999999994E8,null,null,5.0839999999999994E8,1.71141E10,null,null,1.71141E10
+2872666,2872666,AAB,null,null,FAIR,null,2693800000,EUR,132900000,EUR,2872666,2863099,666100_101179,1.3289999999999999E8,null,null,1.3289999999999999E8,2.6938E9,null,null,2.6938E9
+2872667,2872667,AAB,null,null,FAIR,null,110828900000,EUR,1367300000,EUR,2872667,2863100,666100_101184,1.3673000000000002E9,null,null,1.3673000000000002E9,1.108289E11,null,null,1.108289E11
+2872673,2872673,AAB,null,null,FAIR,null,66363600000,EUR,969700000,EUR,2872673,2863102,666100_101191,9.697E8,null,null,9.697E8,6.636360000000001E10,null,null,6.636360000000001E10
+2872680,2872680,AAB,null,null,FAIR,null,4033640000,EUR,1798000,EUR,2872680,2863099,666100_101202,1798000.0000000002,null,null,1798000.0000000002,4.03364E9,null,null,4.03364E9
+2872683,2872683,AAB,null,null,FAIR,null,16244100000,EUR,14000000,EUR,2872683,null,666100_101205,1.4000000000000002E7,null,null,1.4000000000000002E7,1.62441E10,null,null,1.62441E10
+2872698,2872698,AAB,null,null,FAIR,null,2016345150,EUR,104533200,EUR,2872698,2863098,666100_101230,1.045332E8,null,null,1.045332E8,2.0163451499999998E9,null,null,2.0163451499999998E9
+2881653,2881653,AAB,null,null,FAIR,null,312334000000,EUR,8242000000,EUR,2881653,null,666100_101144,8.242000000000001E9,null,null,8.242000000000001E9,3.12334E11,null,null,3.12334E11
+2881656,2881656,AAB,null,null,FAIR,null,16975100000,EUR,428200000,EUR,2881656,2881653,666100_101147,4.282E8,null,null,4.282E8,1.6975100000000002E10,null,null,1.6975100000000002E10
+2881660,2881660,AAB,null,null,FAIR,null,161567300000,EUR,6562000000,EUR,2881660,null,666100_101154,6.561999999999999E9,null,null,6.561999999999999E9,1.615673E11,null,null,1.615673E11
+2881662,2881662,AAB,null,null,FAIR,null,56184400000,EUR,1136000000,EUR,2881662,null,666100_101157,1.1360000000000002E9,null,null,1.1360000000000002E9,5.61844E10,null,null,5.61844E10
+2881670,2881670,AAB,null,null,FAIR,null,53988000000,EUR,1029000000,EUR,2881670,null,666100_101218,1.0289999999999999E9,null,null,1.0289999999999999E9,5.3988E10,null,null,5.3988E10
+2881671,2881671,AAB,null,null,FAIR,null,1312331000000,EUR,28879000000,EUR,2881671,null,666100_101235,2.8878999999999996E10,null,null,2.8878999999999996E10,1.312331E12,null,null,1.312331E12
+2881684,2881684,AAB,null,null,FAIR,null,179179400000,EUR,3120600000,EUR,2881684,null,666100_101266,3.1205999999999995E9,null,null,3.1205999999999995E9,1.791794E11,null,null,1.791794E11
+2881685,2881685,AAB,null,null,FAIR,null,161567300000,EUR,6562000000,EUR,2881685,null,666100_101267,6.561999999999999E9,null,null,6.561999999999999E9,1.615673E11,null,null,1.615673E11
+2883598,2883598,AAB,null,null,FAIR,null,179179400000,EUR,3120600000,EUR,2883598,null,666100_101280,3.1205999999999995E9,null,null,3.1205999999999995E9,1.791794E11,null,null,1.791794E11
+2885072,2885072,AAB,null,null,FAIR,null,16458100000,EUR,219900000,EUR,2885072,2863099,666100_101175,2.1989999999999997E8,null,null,2.1989999999999997E8,1.6458100000000002E10,null,null,1.6458100000000002E10
+2885073,2885073,AAB,null,null,FAIR,null,46833000000,EUR,1223000000,EUR,2885073,null,666100_101258,1.2229999999999998E9,null,null,1.2229999999999998E9,4.6833E10,null,null,4.6833E10
+2885960,2885960,AAB,null,null,FAIR,null,17084800000,EUR,1433000000,EUR,2885960,null,666100_101255,1.433E9,null,null,1.433E9,1.7084800000000002E10,null,null,1.7084800000000002E10
+2888680,2888680,AAB,null,null,FAIR,null,265679492760,EUR,10563287180,EUR,2888680,null,666100_101307,1.056328718E10,null,null,1.056328718E10,2.6567949276000003E11,null,null,2.6567949276000003E11
+2888693,2888693,AAB,null,null,FAIR,null,6284540678,EUR,335915848,EUR,2888693,2888689,666100_101322,3.3591584799999994E8,null,null,3.3591584799999994E8,6.284540678E9,null,null,6.284540678E9
+2888697,2888697,AAB,null,null,FAIR,null,68784132380,EUR,2736180400,EUR,2888697,2888688,666100_101326,2.7361804000000005E9,null,null,2.7361804000000005E9,6.878413238E10,null,null,6.878413238E10
+2891973,2891973,AAB,null,null,FAIR,null,4155600000,EUR,432200000,EUR,2891973,null,666100_101273,4.322E8,null,null,4.322E8,4.1555999999999995E9,null,null,4.1555999999999995E9
+2891976,2891976,AAB,null,null,FAIR,null,346091257.3,EUR,6654904.53,EUR,2891976,2891974,666100_101287,6654904.529999999,null,null,6654904.529999999,3.460912573E8,null,null,3.460912573E8
+2891983,2891983,AAB,null,null,FAIR,null,1299960978220,EUR,26977483670,EUR,2891983,null,666100_101294,2.6977483669999996E10,null,null,2.6977483669999996E10,1.29996097822E12,null,null,1.29996097822E12
+2891991,2891991,AAB,null,null,FAIR,null,449113479152,EUR,8914159854,EUR,2891991,null,666100_101302,8.914159854000002E9,null,null,8.914159854000002E9,4.49113479152E11,null,null,4.49113479152E11
+2897686,2897686,AAB,null,null,FAIR,null,130355736486.88,EUR,6317503283.12,EUR,2897686,null,666100_101374,6.317503283120001E9,null,null,6.317503283120001E9,1.3035573648688E11,null,null,1.3035573648688E11
+2898678,2898678,AAB,null,null,FAIR,null,104238402580,EUR,2889969320,EUR,2898678,null,666100_101335,2.8899693199999995E9,null,null,2.8899693199999995E9,1.0423840258E11,null,null,1.0423840258E11
+2901357,2901357,AAB,null,null,FAIR,null,66154807080,EUR,401937120,EUR,2901357,null,666100_101352,4.0193712000000006E8,null,null,4.0193712000000006E8,6.615480708E10,null,null,6.615480708E10
+2901358,2901358,AAB,null,null,FAIR,null,77619042000,EUR,549661680,EUR,2901358,null,666100_101353,5.496616799999999E8,null,null,5.496616799999999E8,7.7619042E10,null,null,7.7619042E10
+2901363,2901363,AAB,null,null,FAIR,null,5244200000,EUR,125900000,EUR,2901363,null,666100_101360,1.2590000000000001E8,null,null,1.2590000000000001E8,5.2442E9,null,null,5.2442E9
+2901375,2901375,AAB,null,null,FAIR,null,4246611000,EUR,64652000,EUR,2901375,null,666100_101376,6.4651999999999985E7,null,null,6.4651999999999985E7,4.2466109999999995E9,null,null,4.2466109999999995E9
+2901376,2901376,AAB,null,null,FAIR,null,590861520000,EUR,-1693404000,EUR,2901376,null,666100_101377,-1.6934040000000002E9,null,null,-1.6934040000000002E9,5.9086152E11,null,null,5.9086152E11
+2910535,2910535,AAB,null,null,FAIR,null,28521429500,EUR,60564500,EUR,2910535,null,666100_101432,6.056449999999999E7,null,null,6.056449999999999E7,2.85214295E10,null,null,2.85214295E10
+2910536,2910536,AAB,null,null,FAIR,null,10772497700,EUR,17630900,EUR,2910536,null,666100_101434,1.7630900000000004E7,null,null,1.7630900000000004E7,1.07724977E10,null,null,1.07724977E10
+2911226,2911226,AAB,null,null,FAIR,null,172682890900,EUR,5364883370,EUR,2911226,null,666100_101443,5.364883369999999E9,null,null,5.364883369999999E9,1.726828909E11,null,null,1.726828909E11
+2911228,2911228,AAB,null,null,FAIR,null,55737287290,EUR,1652552100,EUR,2911228,null,666100_101445,1.6525520999999998E9,null,null,1.6525520999999998E9,5.573728729E10,null,null,5.573728729E10
+2911229,2911229,AAB,null,null,FAIR,null,99536457720,EUR,3962352090,EUR,2911229,null,666100_101447,3.9623520900000005E9,null,null,3.9623520900000005E9,9.953645772E10,null,null,9.953645772E10
+2912897,2912897,AAB,null,null,FAIR,null,371009030000,EUR,8641920000,EUR,2912897,null,666100_101448,8.641919999999998E9,null,null,8.641919999999998E9,3.7100903E11,null,null,3.7100903E11
+2913377,2913377,AAB,null,null,FAIR,null,112736752120,EUR,3669822700,EUR,2913377,null,666100_101496,3.6698226999999995E9,null,null,3.6698226999999995E9,1.1273675212E11,null,null,1.1273675212E11
+2913842,2913842,AAB,null,null,FAIR,null,130071210150,EUR,2133244050,EUR,2913842,null,666100_101464,2.13324405E9,null,null,2.13324405E9,1.3007121015000002E11,null,null,1.3007121015000002E11
+2913846,2913846,AAB,null,null,FAIR,null,1047373616320,EUR,30489385040,EUR,2913846,null,666100_101471,3.048938504E10,null,null,3.048938504E10,1.0473736163200001E12,null,null,1.0473736163200001E12
+2913848,2913848,AAB,null,null,FAIR,null,1047373616320,EUR,30489385040,EUR,2913848,null,666100_101477,3.048938504E10,null,null,3.048938504E10,1.0473736163200001E12,null,null,1.0473736163200001E12
+2913851,2913851,AAB,null,null,FAIR,null,653185354,EUR,119827806,EUR,2913851,null,666100_101494,1.1982780600000001E8,null,null,1.1982780600000001E8,6.53185354E8,null,null,6.53185354E8
+2914367,2914367,AAB,null,null,FAIR,null,110091931340,EUR,1324242600,EUR,2914367,null,666100_101456,1.3242425999999998E9,null,null,1.3242425999999998E9,1.1009193134E11,null,null,1.1009193134E11
+2914368,2914368,AAB,null,null,FAIR,null,30102725848,EUR,429571380,EUR,2914368,null,666100_101458,4.2957137999999994E8,null,null,4.2957137999999994E8,3.0102725848E10,null,null,3.0102725848E10
+2914370,2914370,AAB,null,null,FAIR,null,71608396800,EUR,1465709550,EUR,2914370,null,666100_101468,1.4657095500000002E9,null,null,1.4657095500000002E9,7.16083968E10,null,null,7.16083968E10
+2914377,2914377,AAB,null,null,FAIR,null,1047373616320,EUR,30489385040,EUR,2914377,null,666100_101479,3.048938504E10,null,null,3.048938504E10,1.0473736163200001E12,null,null,1.0473736163200001E12
+2924318,2924318,AAB,null,null,FAIR,null,780637228480,EUR,16759029040,EUR,2924318,null,666100_101576,1.6759029040000002E10,null,null,1.6759029040000002E10,7.8063722848E11,null,null,7.8063722848E11
+2928444,2928444,AAB,null,null,FAIR,null,2185169840680,EUR,71305586040,EUR,2928444,null,666100_101607,7.130558604000002E10,null,null,7.130558604000002E10,2.18516984068E12,null,null,2.18516984068E12
+2932151,2932151,AAB,null,null,FAIR,null,205499271560,EUR,6580075040,EUR,2932151,null,666100_101574,6.580075040000001E9,null,null,6.580075040000001E9,2.0549927156E11,null,null,2.0549927156E11
+2933501,2933501,AAB,null,null,FAIR,null,216679464580,EUR,3492555280,EUR,2933501,null,666100_101638,3.4925552800000005E9,null,null,3.4925552800000005E9,2.1667946458E11,null,null,2.1667946458E11
+2940818,2940818,AAB,null,null,FAIR,null,1047373616320,EUR,30489385040,EUR,2940818,null,666100_101701,3.048938504E10,null,null,3.048938504E10,1.0473736163200001E12,null,null,1.0473736163200001E12
+2942274,2942274,AAB,null,null,FAIR,null,328012783280,EUR,7000520760,EUR,2942274,null,666100_101653,7.000520760000001E9,null,null,7.000520760000001E9,3.2801278328E11,null,null,3.2801278328E11
+2942275,2942275,AAB,null,null,FAIR,null,262626160220,EUR,6466402300,EUR,2942275,null,666100_101655,6.466402299999999E9,null,null,6.466402299999999E9,2.6262616021999997E11,null,null,2.6262616021999997E11
+2942287,2942287,AAB,null,null,FAIR,null,68625688570,EUR,279599680,EUR,2942287,2942285,666100_101673,2.7959968E8,null,null,2.7959968E8,6.862568856999999E10,null,null,6.862568856999999E10
+2942289,2942289,AAB,null,null,FAIR,null,14545545610,EUR,50813170,EUR,2942289,null,666100_101676,5.081317000000001E7,null,null,5.081317000000001E7,1.454554561E10,null,null,1.454554561E10
+2942868,2942868,AAB,null,null,FAIR,null,737642409050,EUR,20602136350,EUR,2942868,null,666100_101698,2.0602136350000004E10,null,null,2.0602136350000004E10,7.3764240905E11,null,null,7.3764240905E11
+2944074,2944074,AAB,null,null,FAIR,null,138112000000,EUR,1485000000,EUR,2944074,null,666100_101685,1.4849999999999998E9,null,null,1.4849999999999998E9,1.38112E11,null,null,1.38112E11
+2950841,2950841,AAB,null,null,FAIR,null,689095940050,EUR,16934015980,EUR,2950841,null,666100_101707,1.6934015979999998E10,null,null,1.6934015979999998E10,6.8909594005E11,null,null,6.8909594005E11
+2950850,2950850,AAB,null,null,FAIR,null,1799339644.48,EUR,84006246.4,EUR,2950850,2950846,666100_101720,8.400624639999999E7,null,null,8.400624639999999E7,1.79933964448E9,null,null,1.79933964448E9
+2950851,2950851,AAB,null,null,FAIR,null,651330012.56,EUR,28370365.76,EUR,2950851,2950846,666100_101721,2.837036576E7,null,null,2.837036576E7,6.513300125600001E8,null,null,6.513300125600001E8
+2951296,2951296,AAB,null,null,FAIR,null,322156636548,EUR,16773613737,EUR,2951296,null,666100_101729,1.6773613737000002E10,null,null,1.6773613737000002E10,3.22156636548E11,null,null,3.22156636548E11
+2951300,2951300,AAB,null,null,FAIR,null,56156417580,EUR,2782966860,EUR,2951300,null,666100_101741,2.7829668599999995E9,null,null,2.7829668599999995E9,5.615641758E10,null,null,5.615641758E10
+2958210,2958210,AAB,null,null,FAIR,null,631003000000,EUR,15723000000,EUR,2958210,null,666100_101775,1.5722999999999998E10,null,null,1.5722999999999998E10,6.31003E11,null,null,6.31003E11
+2958214,2958214,AAB,null,null,FAIR,null,63712400000,EUR,1581800000,EUR,2958214,null,666100_101779,1.5817999999999998E9,null,null,1.5817999999999998E9,6.37124E10,null,null,6.37124E10
+2958221,2958221,AAB,null,null,FAIR,null,67968500000,EUR,2209300000,EUR,2958221,null,666100_101790,2.2093E9,null,null,2.2093E9,6.796850000000001E10,null,null,6.796850000000001E10
+2958222,2958222,AAB,null,null,FAIR,null,198209100000,EUR,5848800000,EUR,2958222,null,666100_101791,5.848800000000001E9,null,null,5.848800000000001E9,1.982091E11,null,null,1.982091E11
+2958225,2958225,AAB,null,null,FAIR,null,8415600300,EUR,419775210,EUR,2958225,2958218,666100_101795,4.1977521E8,null,null,4.1977521E8,8.415600299999999E9,null,null,8.415600299999999E9
+2958228,2958228,AAB,null,null,FAIR,null,17842436001,EUR,732116151,EUR,2958228,2958223,666100_101800,7.321161509999999E8,null,null,7.321161509999999E8,1.7842436001E10,null,null,1.7842436001E10
+2958781,2958781,AAB,null,null,FAIR,null,32541969790,EUR,1402411648,EUR,2958781,2958780,666100_101757,1.402411648E9,null,null,1.402411648E9,3.2541969790000004E10,null,null,3.2541969790000004E10
+2958785,2958785,AAB,null,null,FAIR,null,66405165010,EUR,2529174120,EUR,2958785,2958783,666100_101763,2.52917412E9,null,null,2.52917412E9,6.640516501000001E10,null,null,6.640516501000001E10
+2958786,2958786,AAB,null,null,FAIR,null,57068300000,EUR,2085100000,EUR,2958786,2958783,666100_101765,2.0851000000000002E9,null,null,2.0851000000000002E9,5.70683E10,null,null,5.70683E10
+2958790,2958790,AAB,null,null,FAIR,null,17957577870,EUR,673465370,EUR,2958790,2958783,666100_101769,6.734653700000001E8,null,null,6.734653700000001E8,1.795757787E10,null,null,1.795757787E10
+2959703,2959703,AAB,null,null,FAIR,null,261214108020,EUR,10745985780,EUR,2959703,null,666100_101822,1.074598578E10,null,null,1.074598578E10,2.6121410802000003E11,null,null,2.6121410802000003E11
+2959704,2959704,AAB,null,null,FAIR,null,318004171170,EUR,8289228750,EUR,2959704,null,666100_101824,8.289228749999999E9,null,null,8.289228749999999E9,3.1800417117E11,null,null,3.1800417117E11
+2960326,2960326,AAB,null,null,FAIR,null,42983607929.64,EUR,2872803122,EUR,2960326,2959703,666100_101823,2.8728031219999995E9,null,null,2.8728031219999995E9,4.298360792964E10,null,null,4.298360792964E10
+2960333,2960333,AAB,null,null,FAIR,null,25485359130,EUR,715033242,EUR,2960333,null,666100_101853,7.150332420000001E8,null,null,7.150332420000001E8,2.548535913E10,null,null,2.548535913E10
+2960334,2960334,AAB,null,null,FAIR,null,13109028525,EUR,378330189,EUR,2960334,2960328,666100_101854,3.7833018900000006E8,null,null,3.7833018900000006E8,1.3109028525E10,null,null,1.3109028525E10
+2960337,2960337,AAB,null,null,FAIR,null,11207181444,EUR,367132128,EUR,2960337,2960336,666100_101857,3.6713212799999994E8,null,null,3.6713212799999994E8,1.1207181444E10,null,null,1.1207181444E10
+2960988,2960988,AAB,null,null,FAIR,null,16357600000,EUR,223400000,EUR,2960988,null,666100_101746,2.2340000000000003E8,null,null,2.2340000000000003E8,1.6357600000000002E10,null,null,1.6357600000000002E10
+2960992,2960992,AAB,null,null,FAIR,null,15391400000,EUR,571900000,EUR,2960992,null,666100_101784,5.719000000000001E8,null,null,5.719000000000001E8,1.53914E10,null,null,1.53914E10
+2961115,2961115,AAB,null,null,FAIR,null,1363497788830,EUR,33912341070,EUR,2961115,null,666100_101891,3.3912341069999996E10,null,null,3.3912341069999996E10,1.36349778883E12,null,null,1.36349778883E12
