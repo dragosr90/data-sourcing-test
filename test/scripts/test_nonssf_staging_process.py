@@ -286,7 +286,8 @@ def test_non_ssf_load_missing_lrd_static_after_deadline(
 def test_non_ssf_load_mixed_missing_files_after_deadline(
     mock_spark, mock_extraction, mock_write_to_log
 ):
-    """Test scenario with both critical and non-critical files missing after deadline."""
+    """Test scenario with both critical and non-critical files missing after
+    deadline."""
     missing_files = [
         {"source_system": "LRD_STATIC", "file_name": "static_file1", "deadline": "2024-01-01"},
         {"source_system": "NME", "file_name": "critical_file1", "deadline": "2024-01-02"},
