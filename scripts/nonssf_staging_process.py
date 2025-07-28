@@ -23,7 +23,8 @@ def non_ssf_load(
 
     1. Check availability of LRD_STATIC/NME/FINOB data in blob storage
     2. Copy processed LRD_STATIC for missing files (only after deadline)
-    3. Check for missing files after deadline and fail if critical files (NME/FINOB) are missing
+    3. Check for missing files after deadline and fail if critical
+       files (NME/FINOB) are missing
     4. For every file in blob storage:
         1. Initial checks
         2. Convert to parquet and copy to month_no/sourcing_landing_data/NON_SSF/<>
@@ -60,26 +61,29 @@ def non_ssf_load(
     append_to_process_log(**log_config, comments="", source_system="", status="Started")
 
     extraction = ExtractNonSSFData(spark, run_month=run_month)
-    
+
     # Get all files from basel-nonssf-landing container and place static data
     # This will copy LRD_STATIC files from processed folder only if deadline is reached
     files_per_delivery_entity = extraction.get_all_files()
-    
+
     # Check for missing files after deadline AFTER getting all files
     missing_files = extraction.check_missing_files_after_deadline()
     if missing_files:
         # Log errors for missing files
         has_critical_missing = extraction.log_missing_files_errors(missing_files)
-        
+
         # Fail the process if critical files (NME/FINOB) are missing after deadline
         if has_critical_missing:
             nme_finob_missing = [
-                f for f in missing_files 
+                f for f in missing_files
                 if f['source_system'].upper() in ['NME', 'FINOB']
             ]
+            # Create error summary with proper f-string formatting
+            file_details = []
+            for f in nme_finob_missing:
+                file_details.append(f"{f['file_name']} (deadline: {f['deadline']})")
             error_summary = (
-                f"Critical files missing after deadline: "
-                f"{', '.join([f'{f[\"file_name\"]} (deadline: {f[\"deadline\"]})' for f in nme_finob_missing])}"
+                f"Critical files missing after deadline: {', '.join(file_details)}"
             )
             append_to_process_log(
                 **log_config,
@@ -87,8 +91,9 @@ def non_ssf_load(
                 comments=error_summary,
                 status="Failed"
             )
-            # The append_to_process_log will raise NonSSFExtractionError when status is "Failed"
-    
+            # The append_to_process_log will raise NonSSFExtractionError when
+            # status is "Failed"
+
     if not files_per_delivery_entity:
         logger.error("No files found in basel-nonssf-landing container. ")
     else:
