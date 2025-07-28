@@ -139,7 +139,7 @@ class ExtractNonSSFData(ExtractStagingData):
                 list will be updated with files copied from the processed folder.
 
         Returns:
-            list[str]: List of copied static files.
+            list[str]: Updated list including copied static files.
         """
         source_system = "lrd_static"
         expected_files = (
@@ -157,6 +157,7 @@ class ExtractNonSSFData(ExtractStagingData):
             file_name = file["SourceFileName"]
             extension = file["SourceFileFormat"]
             
+            # Check if file is already delivered this month
             if file_name not in [Path(f).stem for f in new_files]:
                 # Check if deadline has been reached
                 deadline_reached, deadline_date = self.check_deadline_reached(file_name)
@@ -169,12 +170,18 @@ class ExtractNonSSFData(ExtractStagingData):
                     continue
                 
                 # Deadline reached, try to copy from processed folder
-                # Check if the file is already in the processed folder
-                processed_files = [
-                    file.path
-                    for file in self.dbutils.fs.ls(processed_folder)
-                    if file.name.startswith(file_name)
-                ]
+                try:
+                    processed_files = [
+                        file.path
+                        for file in self.dbutils.fs.ls(processed_folder)
+                        if file.name.startswith(file_name)
+                    ]
+                except Exception as e:
+                    logger.error(
+                        f"Error accessing processed folder for {file_name}: {e}"
+                    )
+                    continue
+                    
                 if not processed_files:
                     logger.error(
                         f"File {file_name} not delivered and not found in "
@@ -183,10 +190,10 @@ class ExtractNonSSFData(ExtractStagingData):
                     )
                     continue
                     
+                # Get the latest processed file
                 latest_processed_file = max(processed_files)
-                if self.dbutils.fs.ls(latest_processed_file):
+                try:
                     # Copy the file to the static folder
-                    processed_file = f"{processed_folder}/{file_name}"
                     self.dbutils.fs.cp(
                         latest_processed_file,
                         f"{static_folder}/{file_name}{extension}",
@@ -196,19 +203,27 @@ class ExtractNonSSFData(ExtractStagingData):
                     )
                     new_files.append(f"{static_folder}/{file_name}{extension}")
                     
-                self.update_log_metadata(
-                    source_system=source_system.upper(),
-                    key=Path(file_name).stem,
-                    file_delivery_status=NonSSFStepStatus.RECEIVED,
-                    comment=(
-                        f"Static file {processed_file} copied from process folder "
-                        f"after deadline ({deadline_date})."
-                    ),
-                )
+                    self.update_log_metadata(
+                        source_system=source_system.upper(),
+                        key=Path(file_name).stem,
+                        file_delivery_status=NonSSFStepStatus.RECEIVED,
+                        comment=(
+                            f"Static file copied from processed folder "
+                            f"after deadline ({deadline_date})."
+                        ),
+                    )
+                except Exception as e:
+                    logger.error(
+                        f"Failed to copy {file_name} from processed folder: {e}"
+                    )
+                    
         return new_files
 
     def check_missing_files_after_deadline(self) -> list[dict[str, str]]:
         """Check for files that are missing after their deadline.
+        
+        For NME and FINOB, checks if expected files with reached deadlines are present.
+        For LRD_STATIC, the check is already done in place_static_data method.
 
         Returns:
             list[dict[str, str]]: List of dictionaries with missing file information
@@ -216,17 +231,32 @@ class ExtractNonSSFData(ExtractStagingData):
         """
         missing_files = []
         
-        # Get all expected files from metadata
+        # Get all expected files from metadata for NME and FINOB only
         expected_files = (
             self.meta_data
+            .filter(col("SourceSystem").isin(["nme", "NME", "finob", "FINOB"]))
             .select("SourceSystem", "SourceFileName", "Deadline")
             .distinct()
             .collect()
         )
         
+        # Get current list of files in the source folders
+        current_files = {}
+        for source_system in ["NME", "FINOB"]:
+            try:
+                source_folder = f"{self.source_container_url}/{source_system}"
+                current_files[source_system.upper()] = [
+                    Path(f.path).stem 
+                    for f in self.dbutils.fs.ls(source_folder)
+                    if not f.isDir() and not f.name.endswith("/")
+                ]
+            except Exception as e:
+                logger.error(f"Error accessing {source_system} folder: {e}")
+                current_files[source_system.upper()] = []
+        
         # Check each expected file
         for file_info in expected_files:
-            source_system = file_info["SourceSystem"]
+            source_system = file_info["SourceSystem"].upper()
             file_name = file_info["SourceFileName"]
             
             # Skip if no deadline is set
@@ -236,40 +266,13 @@ class ExtractNonSSFData(ExtractStagingData):
             deadline_reached, deadline_date = self.check_deadline_reached(file_name)
             
             if deadline_reached:
-                # Check if file exists in the source folder
-                source_folder = f"{self.source_container_url}/{source_system.upper()}"
-                try:
-                    existing_files = [
-                        f.name for f in self.dbutils.fs.ls(source_folder)
-                        if not f.isDir()
-                    ]
-                    file_found = any(
-                        f.startswith(file_name) for f in existing_files
-                    )
-                    
-                    if not file_found:
-                        # For LRD_STATIC, also check if it was copied from processed
-                        if source_system.upper() == "LRD_STATIC":
-                            # Check if we already handled this in place_static_data
-                            processed_folder = f"{source_folder}/processed"
-                            processed_files = [
-                                f.name for f in self.dbutils.fs.ls(processed_folder)
-                                if f.name.startswith(file_name)
-                            ]
-                            if not processed_files:
-                                missing_files.append({
-                                    "source_system": source_system,
-                                    "file_name": file_name,
-                                    "deadline": deadline_date
-                                })
-                        else:
-                            missing_files.append({
-                                "source_system": source_system,
-                                "file_name": file_name,
-                                "deadline": deadline_date
-                            })
-                except (AnalysisException, Py4JJavaError) as e:
-                    logger.exception(f"Error checking files in {source_folder}: {e}")
+                # Check if file exists in current files
+                if file_name not in current_files.get(source_system, []):
+                    missing_files.append({
+                        "source_system": source_system,
+                        "file_name": file_name,
+                        "deadline": deadline_date
+                    })
                     
         return missing_files
 
@@ -311,38 +314,57 @@ class ExtractNonSSFData(ExtractStagingData):
 
         Filters files based on metadata records. If a file is not found in the metadata,
         it is removed from the list. For LRD_STATIC files, missing files are copied from
-        the processed folder.
+        the processed folder if their deadline has been reached.
 
         Returns:
             list[dict[str, str]]: List of dictionaries containing file names and their
             corresponding source systems.
         """
         all_files = {}
+        
+        # Get expected files from metadata once
+        expected_files = [
+            row["SourceFileName"]
+            for row in self.meta_data.select("SourceFileName").collect()
+        ]
+        
         for subfolder in ["NME", "FINOB", "LRD_STATIC"]:
-            all_files[subfolder] = [
-                p.path
-                for p in self.dbutils.fs.ls(f"{self.source_container_url}/{subfolder}")
-                if (not p.isDir() or p.name.endswith(".parquet"))
-            ]
-            expected_files = [
-                row["SourceFileName"]
-                for row in self.meta_data.select("SourceFileName").collect()
-            ]
-            for file in all_files[subfolder]:
+            # Get all files from the subfolder
+            try:
+                raw_files = [
+                    p.path
+                    for p in self.dbutils.fs.ls(f"{self.source_container_url}/{subfolder}")
+                    if not p.isDir() and not p.name.endswith("/")
+                ]
+            except Exception as e:
+                logger.error(f"Error accessing {subfolder} folder: {e}")
+                raw_files = []
+            
+            # Filter files to only include those in metadata
+            valid_files = []
+            for file in raw_files:
                 # Check if the file has a matching record in the metadata
                 if Path(file).stem not in expected_files:
                     logger.warning(
                         f"File {Path(file).stem} not found in metadata. "
                         "Please check if it should be delivered."
                     )
-                    all_files[subfolder].remove(file)
                     continue
+                
+                # File is valid, add to list and update log
+                valid_files.append(file)
                 self.update_log_metadata(
                     source_system=subfolder,
                     key=Path(file).stem,
                     file_delivery_status=NonSSFStepStatus.RECEIVED,
                 )
+            
+            all_files[subfolder] = valid_files
+        
+        # Handle LRD_STATIC files - copy from processed folder if deadline reached
         all_files["LRD_STATIC"] = self.place_static_data(all_files["LRD_STATIC"])
+        
+        # Convert to list of dictionaries
         return [
             {"source_system": source_system, "file_name": file_name}
             for source_system in all_files.keys()
