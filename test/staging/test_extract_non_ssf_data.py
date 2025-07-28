@@ -226,10 +226,6 @@ def test_extract_non_ssf_data(
                 return []  # No files in FINOB
             elif "NME" in path:
                 return [FileInfoMock({"name": "TEST_NON_SSF_V3.parquet", "isDir": lambda: False})]
-            elif "LRD_STATIC/processed" in path:
-                return [FileInfoMock({"name": "TEST_NON_SSF_V2_999999.txt", "isDir": lambda: False})]
-            elif "LRD_STATIC" in path:
-                return [FileInfoMock({"name": "TEST_NON_SSF_V1.txt", "isDir": lambda: False})]
             return []
             
         mock_ls_missing.side_effect = ls_side_effect
@@ -240,6 +236,8 @@ def test_extract_non_ssf_data(
         assert any(f["file_name"] == "TEST_NON_SSF_V4" for f in missing_files)
         # V3 should not be missing (NME, future deadline)
         assert not any(f["file_name"] == "TEST_NON_SSF_V3" for f in missing_files)
+        # LRD_STATIC files should not be checked in this method anymore
+        assert not any(f["source_system"] == "LRD_STATIC" for f in missing_files)
 
     # Test log_missing_files_errors
     missing_test_files = [
@@ -479,3 +477,62 @@ def test_check_file_expected_status(
     
     # Test non-existent file
     assert extraction.check_file_expected_status("NON_EXISTENT") is False
+
+
+@pytest.mark.parametrize(
+    ("run_month", "source_container"),
+    [("202505", "test-container")],
+)
+def test_check_missing_files_filters_lrd_static(
+    spark_session,
+    mocker,
+    run_month,
+    source_container,
+):
+    """Test that check_missing_files_after_deadline only checks NME/FINOB files."""
+    past_date = (datetime.now(timezone.utc) - timedelta(days=5)).strftime("%Y-%m-%d")
+    
+    # Create mock metadata with all source systems
+    schema_meta = [
+        "SourceSystem",
+        "SourceFileName",
+        "SourceFileFormat",
+        "SourceFileDelimiter",
+        "StgTableName",
+        "FileDeliveryStep",
+        "FileDeliveryStatus",
+        "Deadline",
+    ]
+    mock_meta = spark_session.createDataFrame(
+        [
+            ("lrd_static", "STATIC_FILE", ".txt", "|", "static_file", NonSSFStepStatus.EXPECTED.value, "Expected", past_date),
+            ("nme", "NME_FILE", ".csv", ",", "nme_file", NonSSFStepStatus.EXPECTED.value, "Expected", past_date),
+            ("finob", "FINOB_FILE", ".csv", ",", "finob_file", NonSSFStepStatus.EXPECTED.value, "Expected", past_date),
+        ],
+        schema=schema_meta,
+    )
+    
+    mock_log = spark_session.createDataFrame([("dummy", 1)], schema=["col1", "col2"])
+    
+    # Mock spark read
+    mock_read = mocker.patch("pyspark.sql.SparkSession.read", autospec=True)
+    mock_read.table.side_effect = [mock_meta, mock_log]
+    
+    # Create extraction instance
+    extraction = ExtractNonSSFData(spark_session, run_month, source_container=source_container)
+    
+    # Mock dbutils to simulate all files missing
+    mock_dbutils_fs_ls = mocker.patch.object(extraction.dbutils.fs, "ls")
+    mock_dbutils_fs_ls.return_value = []  # No files found
+    
+    # Call check_missing_files_after_deadline
+    missing_files = extraction.check_missing_files_after_deadline()
+    
+    # Verify only NME and FINOB files are checked
+    missing_source_systems = [f["source_system"] for f in missing_files]
+    assert "NME" in missing_source_systems
+    assert "FINOB" in missing_source_systems
+    assert "LRD_STATIC" not in missing_source_systems
+    
+    # Should have exactly 2 missing files (NME and FINOB)
+    assert len(missing_files) == 2
