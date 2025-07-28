@@ -14,6 +14,50 @@ from abnamro_bsrc_etl.utils.table_logging import write_to_log
 logger = get_logger()
 
 
+def _check_and_fail_if_critical_files_missing(
+    extraction: ExtractNonSSFData,
+    log_config: ProcessLogConfig,
+) -> None:
+    """Check for missing files and fail if critical files are missing.
+    
+    Args:
+        extraction: ExtractNonSSFData instance
+        log_config: Process log configuration
+        
+    Raises:
+        NonSSFExtractionError: If critical files (NME/FINOB) are missing
+    """
+    missing_files = extraction.check_missing_files_after_deadline()
+    if not missing_files:
+        return
+        
+    # Log errors for missing files
+    has_critical_missing = extraction.log_missing_files_errors(missing_files)
+
+    # Fail the process if critical files (NME/FINOB) are missing after deadline
+    if has_critical_missing:
+        nme_finob_missing = [
+            f for f in missing_files
+            if f['source_system'].upper() in ['NME', 'FINOB']
+        ]
+        # Create error summary with proper f-string formatting
+        file_details = [
+            f"{f['file_name']} (deadline: {f['deadline']})"
+            for f in nme_finob_missing
+        ]
+        error_summary = (
+            f"Critical files missing after deadline: {', '.join(file_details)}"
+        )
+        append_to_process_log(
+            **log_config,
+            source_system="",
+            comments=error_summary,
+            status="Failed"
+        )
+        # The append_to_process_log will raise NonSSFExtractionError when
+        # status is "Failed"
+
+
 def _process_single_file(
     extraction: ExtractNonSSFData,
     file: dict[str, str],
@@ -125,47 +169,6 @@ def _process_single_file(
         comments=file_comment,
         status="Completed",
     )
-    extraction: ExtractNonSSFData,
-    log_config: ProcessLogConfig,
-) -> None:
-    """Check for missing files and fail if critical files are missing.
-    
-    Args:
-        extraction: ExtractNonSSFData instance
-        log_config: Process log configuration
-        
-    Raises:
-        NonSSFExtractionError: If critical files (NME/FINOB) are missing
-    """
-    missing_files = extraction.check_missing_files_after_deadline()
-    if not missing_files:
-        return
-        
-    # Log errors for missing files
-    has_critical_missing = extraction.log_missing_files_errors(missing_files)
-
-    # Fail the process if critical files (NME/FINOB) are missing after deadline
-    if has_critical_missing:
-        nme_finob_missing = [
-            f for f in missing_files
-            if f['source_system'].upper() in ['NME', 'FINOB']
-        ]
-        # Create error summary with proper f-string formatting
-        file_details = [
-            f"{f['file_name']} (deadline: {f['deadline']})"
-            for f in nme_finob_missing
-        ]
-        error_summary = (
-            f"Critical files missing after deadline: {', '.join(file_details)}"
-        )
-        append_to_process_log(
-            **log_config,
-            source_system="",
-            comments=error_summary,
-            status="Failed"
-        )
-        # The append_to_process_log will raise NonSSFExtractionError when
-        # status is "Failed"
 
 
 def non_ssf_load(
