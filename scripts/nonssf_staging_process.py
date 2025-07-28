@@ -14,6 +14,160 @@ from abnamro_bsrc_etl.utils.table_logging import write_to_log
 logger = get_logger()
 
 
+def _process_single_file(
+    extraction: ExtractNonSSFData,
+    file: dict[str, str],
+    log_config: ProcessLogConfig,
+) -> None:
+    """Process a single file through all stages.
+    
+    Args:
+        extraction: ExtractNonSSFData instance
+        file: Dictionary with 'source_system' and 'file_name'
+        log_config: Process log configuration
+        
+    Raises:
+        NonSSFExtractionError: If any processing step fails
+    """
+    source_system = file["source_system"]
+    file_name = file["file_name"]
+    file_comment = f"Processing {Path(file_name).stem}"
+    
+    # Start the process for corresponding trigger file
+    append_to_process_log(
+        **log_config,
+        source_system=source_system,
+        status="Started",
+        comments=file_comment,
+    )
+
+    # 1. Initial checks
+    if not extraction.initial_checks(
+        file_name=file_name, source_system=source_system
+    ):
+        append_to_process_log(
+            **log_config,
+            source_system=source_system,
+            file_delivery_status=NonSSFStepStatus.INIT_CHECKS,
+            comments=file_comment,
+            status="Failed",
+        )
+
+    # 2. Convert to parquet and place in month container
+    if not extraction.convert_to_parquet(
+        source_system=source_system,
+        file_name=file_name,
+    ):
+        append_to_process_log(
+            **log_config,
+            source_system=source_system,
+            file_delivery_status=NonSSFStepStatus.CONVERTED_PARQUET,
+            comments=file_comment,
+            status="Failed",
+        )
+
+    # 3. Move source file to processed folder
+    if not extraction.move_source_file(
+        source_system=source_system, file_name=file_name
+    ):
+        append_to_process_log(
+            **log_config,
+            source_system=source_system,
+            file_delivery_status=NonSSFStepStatus.MOVED_SRC,
+            comments=file_comment,
+            status="Failed",
+        )
+
+    # 4. Load to staging table
+    data = extraction.extract_from_parquet(
+        source_system=source_system, file_name=file_name
+    )
+    stg_table_name = extraction.get_staging_table_name(file_name)
+    if not extraction.save_to_stg_table(
+        data=data,
+        stg_table_name=stg_table_name,
+        source_system=source_system,
+        file_name=Path(file_name).stem,
+    ):
+        append_to_process_log(
+            **log_config,
+            source_system=source_system,
+            file_delivery_status=NonSSFStepStatus.LOADED_STG,
+            comments=file_comment,
+            status="Failed",
+        )
+
+    # 5. DQ checks
+    elif not extraction.validate_data_quality(
+        source_system=source_system,
+        file_name=Path(file_name).stem,
+        stg_table_name=stg_table_name,
+    ):
+        append_to_process_log(
+            **log_config,
+            source_system=source_system,
+            file_delivery_status=NonSSFStepStatus.CHECKED_DQ,
+            comments=file_comment,
+            status="Failed",
+        )
+
+    # Complete the process for corresponding trigger file
+    extraction.update_log_metadata(
+        source_system=source_system,
+        key=Path(file_name).stem,
+        file_delivery_status=NonSSFStepStatus.COMPLETED,
+        result="SUCCESS",
+        comment=file_comment,
+    )
+    append_to_process_log(
+        **log_config,
+        source_system=source_system,
+        comments=file_comment,
+        status="Completed",
+    )
+    extraction: ExtractNonSSFData,
+    log_config: ProcessLogConfig,
+) -> None:
+    """Check for missing files and fail if critical files are missing.
+    
+    Args:
+        extraction: ExtractNonSSFData instance
+        log_config: Process log configuration
+        
+    Raises:
+        NonSSFExtractionError: If critical files (NME/FINOB) are missing
+    """
+    missing_files = extraction.check_missing_files_after_deadline()
+    if not missing_files:
+        return
+        
+    # Log errors for missing files
+    has_critical_missing = extraction.log_missing_files_errors(missing_files)
+
+    # Fail the process if critical files (NME/FINOB) are missing after deadline
+    if has_critical_missing:
+        nme_finob_missing = [
+            f for f in missing_files
+            if f['source_system'].upper() in ['NME', 'FINOB']
+        ]
+        # Create error summary with proper f-string formatting
+        file_details = [
+            f"{f['file_name']} (deadline: {f['deadline']})"
+            for f in nme_finob_missing
+        ]
+        error_summary = (
+            f"Critical files missing after deadline: {', '.join(file_details)}"
+        )
+        append_to_process_log(
+            **log_config,
+            source_system="",
+            comments=error_summary,
+            status="Failed"
+        )
+        # The append_to_process_log will raise NonSSFExtractionError when
+        # status is "Failed"
+
+
 def non_ssf_load(
     spark: SparkSession,
     run_month: str,
@@ -67,32 +221,7 @@ def non_ssf_load(
     files_per_delivery_entity = extraction.get_all_files()
 
     # Check for missing files after deadline AFTER getting all files
-    missing_files = extraction.check_missing_files_after_deadline()
-    if missing_files:
-        # Log errors for missing files
-        has_critical_missing = extraction.log_missing_files_errors(missing_files)
-
-        # Fail the process if critical files (NME/FINOB) are missing after deadline
-        if has_critical_missing:
-            nme_finob_missing = [
-                f for f in missing_files
-                if f['source_system'].upper() in ['NME', 'FINOB']
-            ]
-            # Create error summary with proper f-string formatting
-            file_details = []
-            for f in nme_finob_missing:
-                file_details.append(f"{f['file_name']} (deadline: {f['deadline']})")
-            error_summary = (
-                f"Critical files missing after deadline: {', '.join(file_details)}"
-            )
-            append_to_process_log(
-                **log_config,
-                source_system="",
-                comments=error_summary,
-                status="Failed"
-            )
-            # The append_to_process_log will raise NonSSFExtractionError when
-            # status is "Failed"
+    _check_and_fail_if_critical_files_missing(extraction, log_config)
 
     if not files_per_delivery_entity:
         logger.error("No files found in basel-nonssf-landing container. ")
@@ -102,101 +231,7 @@ def non_ssf_load(
     logger.info(files_per_delivery_entity)
 
     for file in files_per_delivery_entity:
-        source_system = file["source_system"]
-        file_name = file["file_name"]
-        file_comment = f"Processing {Path(file_name).stem}"
-        # Start the process for corresponding trigger file
-        append_to_process_log(
-            **log_config,
-            source_system=source_system,
-            status="Started",
-            comments=file_comment,
-        )
-
-        # 1. Initial checks
-        if not extraction.initial_checks(
-            file_name=file_name, source_system=source_system
-        ):
-            append_to_process_log(
-                **log_config,
-                source_system=source_system,
-                file_delivery_status=NonSSFStepStatus.INIT_CHECKS,
-                comments=file_comment,
-                status="Failed",
-            )
-
-        # 2. Convert to parquet and place in month container
-        if not extraction.convert_to_parquet(
-            source_system=source_system,
-            file_name=file_name,
-        ):
-            append_to_process_log(
-                **log_config,
-                source_system=source_system,
-                file_delivery_status=NonSSFStepStatus.CONVERTED_PARQUET,
-                comments=file_comment,
-                status="Failed",
-            )
-
-        # 3. Move source file to processed folder
-        if not extraction.move_source_file(
-            source_system=source_system, file_name=file_name
-        ):
-            append_to_process_log(
-                **log_config,
-                source_system=source_system,
-                file_delivery_status=NonSSFStepStatus.MOVED_SRC,
-                comments=file_comment,
-                status="Failed",
-            )
-
-        # 4. Load to staging table
-        data = extraction.extract_from_parquet(
-            source_system=source_system, file_name=file_name
-        )
-        stg_table_name = extraction.get_staging_table_name(file_name)
-        if not extraction.save_to_stg_table(
-            data=data,
-            stg_table_name=stg_table_name,
-            source_system=source_system,
-            file_name=Path(file_name).stem,
-        ):
-            append_to_process_log(
-                **log_config,
-                source_system=source_system,
-                file_delivery_status=NonSSFStepStatus.LOADED_STG,
-                comments=file_comment,
-                status="Failed",
-            )
-
-        # 5. DQ checks
-        elif not extraction.validate_data_quality(
-            source_system=source_system,
-            file_name=Path(file_name).stem,
-            stg_table_name=stg_table_name,
-        ):
-            append_to_process_log(
-                **log_config,
-                source_system=source_system,
-                file_delivery_status=NonSSFStepStatus.CHECKED_DQ,
-                comments=file_comment,
-                status="Failed",
-            )
-
-        # Complete the process for corresponding trigger file
-        extraction.update_log_metadata(
-            source_system=source_system,
-            key=Path(file_name).stem,
-            file_delivery_status=NonSSFStepStatus.COMPLETED,
-            result="SUCCESS",
-            comment=file_comment,
-        )
-        append_to_process_log(
-            **log_config,
-            source_system=source_system,
-            comments=file_comment,
-            status="Completed",
-        )
+        _process_single_file(extraction, file, log_config)
 
     # Complete the process after all trigger files
     append_to_process_log(
