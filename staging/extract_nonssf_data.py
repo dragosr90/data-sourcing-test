@@ -176,9 +176,9 @@ class ExtractNonSSFData(ExtractStagingData):
                         for file in self.dbutils.fs.ls(processed_folder)
                         if file.name.startswith(file_name)
                     ]
-                except Exception as e:
-                    logger.error(
-                        f"Error accessing processed folder for {file_name}: {e}"
+                except Exception:
+                    logger.exception(
+                        f"Error accessing processed folder for {file_name}"
                     )
                     continue
                     
@@ -212,9 +212,9 @@ class ExtractNonSSFData(ExtractStagingData):
                             f"after deadline ({deadline_date})."
                         ),
                     )
-                except Exception as e:
-                    logger.error(
-                        f"Failed to copy {file_name} from processed folder: {e}"
+                except Exception:
+                    logger.exception(
+                        f"Failed to copy {file_name} from processed folder"
                     )
                     
         return new_files
@@ -243,15 +243,15 @@ class ExtractNonSSFData(ExtractStagingData):
         # Get current list of files in the source folders
         current_files = {}
         for source_system in ["NME", "FINOB"]:
+            source_folder = f"{self.source_container_url}/{source_system}"
             try:
-                source_folder = f"{self.source_container_url}/{source_system}"
                 current_files[source_system.upper()] = [
                     Path(f.path).stem 
                     for f in self.dbutils.fs.ls(source_folder)
                     if not f.isDir() and not f.name.endswith("/")
                 ]
-            except Exception as e:
-                logger.error(f"Error accessing {source_system} folder: {e}")
+            except Exception:
+                logger.exception(f"Error accessing {source_system} folder")
                 current_files[source_system.upper()] = []
         
         # Check each expected file
@@ -265,14 +265,13 @@ class ExtractNonSSFData(ExtractStagingData):
                 
             deadline_reached, deadline_date = self.check_deadline_reached(file_name)
             
-            if deadline_reached:
-                # Check if file exists in current files
-                if file_name not in current_files.get(source_system, []):
-                    missing_files.append({
-                        "source_system": source_system,
-                        "file_name": file_name,
-                        "deadline": deadline_date
-                    })
+            # Check if file is missing and deadline has been reached
+            if deadline_reached and file_name not in current_files.get(source_system, []):
+                missing_files.append({
+                    "source_system": source_system,
+                    "file_name": file_name,
+                    "deadline": deadline_date
+                })
                     
         return missing_files
 
@@ -289,8 +288,9 @@ class ExtractNonSSFData(ExtractStagingData):
         
         for missing_file in missing_files:
             error_msg = (
-                f"File {missing_file['file_name']} from {missing_file['source_system']} "
-                f"is missing after deadline ({missing_file['deadline']})"
+                f"File {missing_file['file_name']} from "
+                f"{missing_file['source_system']} is missing after "
+                f"deadline ({missing_file['deadline']})"
             )
             logger.error(error_msg)
             
@@ -336,8 +336,8 @@ class ExtractNonSSFData(ExtractStagingData):
                     for p in self.dbutils.fs.ls(f"{self.source_container_url}/{subfolder}")
                     if not p.isDir() and not p.name.endswith("/")
                 ]
-            except Exception as e:
-                logger.error(f"Error accessing {subfolder} folder: {e}")
+            except Exception:
+                logger.exception(f"Error accessing {subfolder} folder")
                 raw_files = []
             
             # Filter files to only include those in metadata
