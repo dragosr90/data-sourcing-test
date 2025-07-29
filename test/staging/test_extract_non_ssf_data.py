@@ -17,7 +17,7 @@ class FileInfoMock(dict):
     __getattr__ = dict.get
 
     def isDir(self):  # noqa: N802
-        return bool(self.name.endswith("/") or self.name.endswith(".parquet"))
+        return bool(self.name.endswith("/"))
 
 
 @pytest.mark.parametrize(
