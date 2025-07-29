@@ -11,8 +11,8 @@ test\scripts\test_nonssf_staging_process.py .............F..F                   
 =========================================================================================== FAILURES =========================================================================================== 
 ___________________________________________________________________ test_non_ssf_load_missing_critical_files_after_deadline ____________________________________________________________________ 
 
-mock_spark = <MagicMock spec='SparkSession' id='1688710067872'>, mock_extraction = <MagicMock name='ExtractNonSSFData()' spec='ExtractNonSSFData' id='1688710030976'>
-mock_write_to_log = <MagicMock name='write_to_log' id='1688710069600'>
+mock_spark = <MagicMock spec='SparkSession' id='1686836489632'>, mock_extraction = <MagicMock name='ExtractNonSSFData()' spec='ExtractNonSSFData' id='1686836523024'>
+mock_write_to_log = <MagicMock name='write_to_log' id='1686836442208'>
 
     def test_non_ssf_load_missing_critical_files_after_deadline(
         mock_spark, mock_extraction, mock_write_to_log
@@ -53,7 +53,7 @@ mock_write_to_log = <MagicMock name='write_to_log' id='1688710069600'>
 test\scripts\test_nonssf_staging_process.py:237:
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _  
 
-mock_write_to_log = <MagicMock name='write_to_log' id='1688710069600'>, started = 1, failed = 1, completed = 0
+mock_write_to_log = <MagicMock name='write_to_log' id='1686836442208'>, started = 1, failed = 1, completed = 0
 
     def assert_write_to_log_calls(
         mock_write_to_log, started: int, failed: int, completed: int
@@ -68,8 +68,8 @@ E       AssertionError
 test\scripts\assert_utils.py:45: AssertionError
 _____________________________________________________________________ test_non_ssf_load_mixed_missing_files_after_deadline _____________________________________________________________________ 
 
-mock_spark = <MagicMock spec='SparkSession' id='1688709527584'>, mock_extraction = <MagicMock name='ExtractNonSSFData()' spec='ExtractNonSSFData' id='1688708262224'>
-mock_write_to_log = <MagicMock name='write_to_log' id='1688709607200'>
+mock_spark = <MagicMock spec='SparkSession' id='1686835960544'>, mock_extraction = <MagicMock name='ExtractNonSSFData()' spec='ExtractNonSSFData' id='1686836013776'>
+mock_write_to_log = <MagicMock name='write_to_log' id='1686835450336'>
 
     def test_non_ssf_load_mixed_missing_files_after_deadline(
         mock_spark, mock_extraction, mock_write_to_log
@@ -99,7 +99,7 @@ mock_write_to_log = <MagicMock name='write_to_log' id='1688709607200'>
         # Process should fail because NME (critical) is missing
         with pytest.raises(NonSSFExtractionError) as exc_info:
             non_ssf_load(mock_spark, run_month="202402", run_id=1)
-    
+
         # Verify the error message
         assert "Critical files missing after deadline" in str(exc_info.value)
 
@@ -113,7 +113,7 @@ mock_write_to_log = <MagicMock name='write_to_log' id='1688709607200'>
 test\scripts\test_nonssf_staging_process.py:327:
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _  
 
-mock_write_to_log = <MagicMock name='write_to_log' id='1688709607200'>, started = 1, failed = 1, completed = 0
+mock_write_to_log = <MagicMock name='write_to_log' id='1686835450336'>, started = 1, failed = 1, completed = 0
 
     def assert_write_to_log_calls(
         mock_write_to_log, started: int, failed: int, completed: int
@@ -212,4 +212,4 @@ Coverage HTML written to dir htmlcov
 =================================================================================== short test summary info ==================================================================================== 
 FAILED test/scripts/test_nonssf_staging_process.py::test_non_ssf_load_missing_critical_files_after_deadline - AssertionError
 FAILED test/scripts/test_nonssf_staging_process.py::test_non_ssf_load_mixed_missing_files_after_deadline - AssertionError
-=========================================================================== 2 failed, 15 passed, 1 warning in 6.83s ============================================================================ 
+=========================================================================== 2 failed, 15 passed, 1 warning in 4.62s ============================================================================
