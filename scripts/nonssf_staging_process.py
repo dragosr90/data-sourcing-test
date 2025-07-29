@@ -1,279 +1,315 @@
-from datetime import datetime, timezone
-from pathlib import Path
-from typing import Literal
+from unittest.mock import MagicMock
 
-from pyspark.sql import SparkSession
+import pytest
 
 from abnamro_bsrc_etl.config.exceptions import NonSSFExtractionError
-from abnamro_bsrc_etl.config.process import ProcessLogConfig
+from abnamro_bsrc_etl.scripts.nonssf_staging_process import non_ssf_load
 from abnamro_bsrc_etl.staging.extract_nonssf_data import ExtractNonSSFData
-from abnamro_bsrc_etl.staging.status import NonSSFStepStatus
-from abnamro_bsrc_etl.utils.logging_util import get_logger
-from abnamro_bsrc_etl.utils.table_logging import write_to_log
+from test.scripts.assert_utils import (
+    assert_before_and_after_failing_step,
+    assert_write_to_log_calls,
+    get_assert_calls_args,
+    get_step_args,
+)
 
-logger = get_logger()
+NONSSF_STEPS = [
+    "initial_checks",
+    "convert_to_parquet",
+    "move_source_file",
+    "save_to_stg_table",
+    "validate_data_quality",
+]
 
 
-def _check_and_fail_if_critical_files_missing(
-    extraction: ExtractNonSSFData,
-    log_config: ProcessLogConfig,
-) -> None:
-    """Check for missing files and fail if critical files are missing.
+@pytest.fixture
+def mock_extraction(mock_extraction):
+    """Generate mock_extraction fixture to use ExtractNonSSFData."""
+    return mock_extraction(ExtractNonSSFData)
 
-    Args:
-        extraction: ExtractNonSSFData instance
-        log_config: Process log configuration
 
-    Raises:
-        NonSSFExtractionError: If critical files (NME/FINOB) are missing
-    """
-    missing_files = extraction.check_missing_files_after_deadline()
-    if not missing_files:
-        return
+@pytest.fixture
+def mock_write_to_log(mock_write_to_log):
+    """Generate mock_write_to_log fixture to use ExtractNonSSFData."""
+    return mock_write_to_log("nonssf_staging_process")
 
-    # Log errors for missing files
-    has_critical_missing = extraction.log_missing_files_errors(missing_files)
 
-    # Fail the process if critical files (NME/FINOB) are missing after deadline
-    if has_critical_missing:
-        nme_finob_missing = [
-            f for f in missing_files if f["source_system"].upper() in ["NME", "FINOB"]
+def setup_mock_data(
+    mock_extraction,
+    *,
+    initial_checks=True,
+    convert_to_parquet=True,
+    move_source_file=True,
+    save_to_stg_table=True,
+    validate_data_quality=True,
+    missing_files=None,
+    has_critical_missing=False,
+):
+    nme = {"source_system": "NME", "file_name": "file1.csv"}
+    finob = {"source_system": "FINOB", "file_name": "file2.csv"}
+    files = [nme, finob]
+    mock_extraction.get_all_files.return_value = files
+    mock_nme_df = MagicMock()
+    mock_finob_df = MagicMock()
+    mock_extraction.initial_checks.side_effect = [True, initial_checks]
+    mock_extraction.convert_to_parquet.side_effect = [True, convert_to_parquet]
+    mock_extraction.move_source_file.side_effect = [True, move_source_file]
+    mock_extraction.extract_from_parquet.side_effect = [mock_nme_df, mock_finob_df]
+    mock_extraction.get_staging_table_name.side_effect = ["stg_nme", "stg_finob"]
+    mock_extraction.save_to_stg_table.side_effect = [True, save_to_stg_table]
+    mock_extraction.validate_data_quality.side_effect = [True, validate_data_quality]
+    
+    # Setup deadline checking mocks
+    mock_extraction.check_missing_files_after_deadline.return_value = missing_files or []
+    mock_extraction.log_missing_files_errors.return_value = has_critical_missing
+    
+    return files, mock_nme_df, mock_finob_df
+
+
+@pytest.mark.parametrize("run_month", ["202402", "202504"])
+def test_non_ssf_load_success(
+    mock_spark, mock_extraction, mock_write_to_log, run_month
+):
+    """Test successful execution of non_ssf_load."""
+    files, mock_nme_df, mock_finob_df = setup_mock_data(mock_extraction)
+    non_ssf_load(mock_spark, run_month=run_month, run_id=1)
+
+    # Check deadline checking was called
+    mock_extraction.check_missing_files_after_deadline.assert_called_once()
+    
+    generic_calls = get_assert_calls_args(files)
+    mock_extraction.get_all_files.assert_called_once_with()  # No parameters
+    mock_extraction.initial_checks.assert_has_calls(**generic_calls)
+    mock_extraction.convert_to_parquet.assert_has_calls(**generic_calls)
+    mock_extraction.move_source_file.assert_has_calls(**generic_calls)
+    mock_extraction.extract_from_parquet.assert_has_calls(**generic_calls)
+    save_to_stg_table_calls = get_assert_calls_args(
+        [
+            {
+                "file_name": "file1",
+                "source_system": "NME",
+                "stg_table_name": "stg_nme",
+                "data": mock_nme_df,
+            },
+            {
+                "file_name": "file2",
+                "source_system": "FINOB",
+                "stg_table_name": "stg_finob",
+                "data": mock_finob_df,
+            },
         ]
-        # Create error summary with proper f-string formatting
-        file_details = [
-            f"{f['file_name']} (deadline: {f['deadline']})" for f in nme_finob_missing
+    )
+
+    mock_extraction.save_to_stg_table.assert_has_calls(**save_to_stg_table_calls)
+    validate_data_quality_calls = get_assert_calls_args(
+        [
+            {
+                "file_name": "file1",
+                "source_system": "NME",
+                "stg_table_name": "stg_nme",
+            },
+            {
+                "file_name": "file2",
+                "source_system": "FINOB",
+                "stg_table_name": "stg_finob",
+            },
         ]
-        error_summary = (
-            f"Critical files missing after deadline: {', '.join(file_details)}"
-        )
-        append_to_process_log(
-            **log_config, source_system="", comments=error_summary, status="Failed"
-        )
-        # The append_to_process_log will raise NonSSFExtractionError when
-        # status is "Failed"
+    )
+    mock_extraction.validate_data_quality.assert_has_calls(
+        **validate_data_quality_calls
+    )
+    # Retrieve all called paths of write_to_log
+    # Overall (+1) and two single files (+2) = 3
+    assert_write_to_log_calls(mock_write_to_log, started=3, completed=3, failed=0)
 
 
-def _process_single_file(
-    extraction: ExtractNonSSFData,
-    file: dict[str, str],
-    log_config: ProcessLogConfig,
-) -> None:
-    """Process a single file through all stages.
+@pytest.mark.parametrize(
+    "failing_step",
+    NONSSF_STEPS,
+)
+@pytest.mark.parametrize(
+    "run_month",
+    ["202402", "202505"],
+)
+def test_non_ssf_load_failure(
+    mock_spark,
+    mock_extraction,
+    mock_write_to_log,
+    run_month,
+    failing_step,
+):
+    """Test failure scenarios in non_ssf_load.
 
-    Args:
-        extraction: ExtractNonSSFData instance
-        file: Dictionary with 'source_system' and 'file_name'
-        log_config: Process log configuration
+    This test verifies the behavior of the `non_ssf_load` function when one of the steps
+    fails. It ensures that the process raises a `NonSSFExtractionError`,
+    performs the correct assertions, and logs the appropriate status.
 
-    Raises:
-        NonSSFExtractionError: If any processing step fails
+    Scenarios:
+        - Each step in `NONSSF_STEPS` is tested as the failing step.
+        - The process raises a `NonSSFExtractionError` when failing step is executed.
+        - The process logs the appropriate status:
+            - Started: Logs the start of the process and individual file processing.
+            - Completed: Logs the completion of one file.
+            - Failed: Logs the failure of the second file and the overall process.
+        - Special handling for the failing step:
+            - The `assert_before_and_after_failing_step` function verifies the behavior
+              of steps before, including, and after the failing step.
+            - The `fail_on_iteration` parameter is set to `1` to simulate the failure
+              occurring during the second iteration.
     """
-    source_system = file["source_system"]
-    file_name = file["file_name"]
-    file_comment = f"Processing {Path(file_name).stem}"
-
-    # Start the process for corresponding trigger file
-    append_to_process_log(
-        **log_config,
-        source_system=source_system,
-        status="Started",
-        comments=file_comment,
+    step_args = get_step_args(failing_step=failing_step, steps=NONSSF_STEPS)
+    files, _, _ = setup_mock_data(
+        mock_extraction,
+        **step_args,
     )
+    with pytest.raises(NonSSFExtractionError):
+        non_ssf_load(mock_spark, run_month=run_month, run_id=1)
 
-    # 1. Initial checks
-    if not extraction.initial_checks(file_name=file_name, source_system=source_system):
-        append_to_process_log(
-            **log_config,
-            source_system=source_system,
-            file_delivery_status=NonSSFStepStatus.INIT_CHECKS,
-            comments=file_comment,
-            status="Failed",
-        )
+    # Check deadline checking was called
+    mock_extraction.check_missing_files_after_deadline.assert_called_once()
+    
+    # Assertions with with correct parameters
+    generic_calls = get_assert_calls_args(files)
+    mock_extraction.get_all_files.assert_called_once_with()  # No parameters
+    mock_extraction.initial_checks.assert_has_calls(**generic_calls)
 
-    # 2. Convert to parquet and place in month container
-    if not extraction.convert_to_parquet(
-        source_system=source_system,
-        file_name=file_name,
-    ):
-        append_to_process_log(
-            **log_config,
-            source_system=source_system,
-            file_delivery_status=NonSSFStepStatus.CONVERTED_PARQUET,
-            comments=file_comment,
-            status="Failed",
-        )
+    # Retrieve all called paths of write_to_log
+    # Overall started (+1) and single files (+2) = 3
+    # 2nd file failed so overall as well (+2)
+    assert_write_to_log_calls(mock_write_to_log, started=3, completed=1, failed=2)
 
-    # 3. Move source file to processed folder
-    if not extraction.move_source_file(
-        source_system=source_system, file_name=file_name
-    ):
-        append_to_process_log(
-            **log_config,
-            source_system=source_system,
-            file_delivery_status=NonSSFStepStatus.MOVED_SRC,
-            comments=file_comment,
-            status="Failed",
-        )
-
-    # 4. Load to staging table
-    data = extraction.extract_from_parquet(
-        source_system=source_system, file_name=file_name
-    )
-    stg_table_name = extraction.get_staging_table_name(file_name)
-    if not extraction.save_to_stg_table(
-        data=data,
-        stg_table_name=stg_table_name,
-        source_system=source_system,
-        file_name=Path(file_name).stem,
-    ):
-        append_to_process_log(
-            **log_config,
-            source_system=source_system,
-            file_delivery_status=NonSSFStepStatus.LOADED_STG,
-            comments=file_comment,
-            status="Failed",
-        )
-
-    # 5. DQ checks
-    elif not extraction.validate_data_quality(
-        source_system=source_system,
-        file_name=Path(file_name).stem,
-        stg_table_name=stg_table_name,
-    ):
-        append_to_process_log(
-            **log_config,
-            source_system=source_system,
-            file_delivery_status=NonSSFStepStatus.CHECKED_DQ,
-            comments=file_comment,
-            status="Failed",
-        )
-
-    # Complete the process for corresponding trigger file
-    extraction.update_log_metadata(
-        source_system=source_system,
-        key=Path(file_name).stem,
-        file_delivery_status=NonSSFStepStatus.COMPLETED,
-        result="SUCCESS",
-        comment=file_comment,
-    )
-    append_to_process_log(
-        **log_config,
-        source_system=source_system,
-        comments=file_comment,
-        status="Completed",
+    assert_before_and_after_failing_step(
+        mock_extraction,
+        failing_step,
+        NONSSF_STEPS,
+        # In the setup mock data the second call is returned False, so iteration 1
+        fail_on_iteration=1,
     )
 
 
-def non_ssf_load(
-    spark: SparkSession,
-    run_month: str,
-    run_id: int = 1,
-) -> None:
-    """Full load of Non-SSF data.
+def test_non_ssf_load_no_files(mock_spark, mock_extraction, mock_write_to_log):
+    """Test scenario where no files are found."""
+    mock_extraction.get_all_files.return_value = []  # No files found
+    mock_extraction.check_missing_files_after_deadline.return_value = []
+    
+    non_ssf_load(mock_spark, run_month="202301", run_id=1)
 
-    1. Check availability of LRD_STATIC/NME/FINOB data in blob storage
-    2. Copy processed LRD_STATIC for missing files (only after deadline)
-    3. Check for missing files after deadline and fail if critical
-       files (NME/FINOB) are missing
-    4. For every file in blob storage:
-        1. Initial checks
-        2. Convert to parquet and copy to month_no/sourcing_landing_data/NON_SSF/<>
-        3. Move source file to processed folder
-        4. Lookup table name in metadata table and load to staging
-        5. Run DQ checks on staging table
+    mock_extraction.check_missing_files_after_deadline.assert_called_once()
+    mock_extraction.get_all_files.assert_called_once_with()  # No parameters
+    assert_write_to_log_calls(mock_write_to_log, started=1, completed=1, failed=0)
 
-    All steps are logged in process log.
 
-    Args:
-        spark (SparkSession): Spark session
-        run_month (str): Run month in yyyymm format
-        run_id (int, optional): Run ID. Defaults to 1.
-
-    Raises:
-        NonSSFExtractionError: If any of the steps has status "Failed" or if
-            critical files (NME/FINOB) are missing after their deadline.
-    """
-    base_record: dict[str, int | datetime | str] = {
-        "RunID": run_id,
-        "Timestamp": datetime.now(tz=timezone.utc),
-        "Workflow": "Staging",
-        "Component": "Non-SSF",
-        "Layer": "Staging",
-    }
-
-    log_config: ProcessLogConfig = {
-        "spark": spark,
-        "run_month": run_month,
-        "record": base_record,
-    }
-
-    # Start the process
-    append_to_process_log(**log_config, comments="", source_system="", status="Started")
-
-    extraction = ExtractNonSSFData(spark, run_month=run_month)
-
-    # Get all files from basel-nonssf-landing container and place static data
-    # This will copy LRD_STATIC files from processed folder only if deadline is reached
-    files_per_delivery_entity = extraction.get_all_files()
-
-    # Check for missing files after deadline AFTER getting all files
-    _check_and_fail_if_critical_files_missing(extraction, log_config)
-
-    if not files_per_delivery_entity:
-        logger.error("No files found in basel-nonssf-landing container. ")
-    else:
-        logger.info(f"Processing {len(files_per_delivery_entity)} source files")
-
-    logger.info(files_per_delivery_entity)
-
-    for file in files_per_delivery_entity:
-        _process_single_file(extraction, file, log_config)
-
-    # Complete the process after all trigger files
-    append_to_process_log(
-        **log_config, comments="", source_system="", status="Completed"
+def test_non_ssf_load_missing_critical_files_after_deadline(
+    mock_spark, mock_extraction, mock_write_to_log
+):
+    """Test scenario where critical files (NME/FINOB) are missing after deadline."""
+    missing_files = [
+        {"source_system": "NME", "file_name": "critical_file1", "deadline": "2024-01-01"},
+        {"source_system": "FINOB", "file_name": "critical_file2", "deadline": "2024-01-02"},
+    ]
+    
+    # Set up mock data with missing critical files
+    files, _, _ = setup_mock_data(
+        mock_extraction,
+        missing_files=missing_files,
+        has_critical_missing=True
     )
+    
+    # Process should fail when critical files are missing after deadline
+    with pytest.raises(NonSSFExtractionError) as exc_info:
+        non_ssf_load(mock_spark, run_month="202402", run_id=1)
+    
+    # Verify the error message contains info about missing files
+    assert "Critical files missing after deadline" in str(exc_info.value)
+    
+    # Verify deadline checking was performed
+    mock_extraction.check_missing_files_after_deadline.assert_called_once()
+    mock_extraction.log_missing_files_errors.assert_called_once_with(missing_files)
+    
+    # Process should have started (+1) and then failed (+2 entries) = 3 total
+    assert_write_to_log_calls(mock_write_to_log, started=1, completed=0, failed=2)
 
 
-def append_to_process_log(
-    spark: SparkSession,
-    run_month: str,
-    record: dict[str, int | datetime | str],
-    source_system: str,
-    comments: str,
-    status: Literal["Completed", "Started", "Failed"] = "Completed",
-    file_delivery_status: NonSSFStepStatus = NonSSFStepStatus.COMPLETED,
-) -> None:
-    """Append log entry to process log table.
-
-    Args:
-        spark (SparkSession): SparkSession
-        run_month (str): Run month ID
-        record (RecordConfig): Data record, incl all columns of process log table.
-        source_system (str): Source System
-        comment (str): Comment of step
-        status (Literal["Completed", "Started", "Failed"]): Status of the step.
-            Defaults to "Completed".
-
-    Raises:
-        NonSSFExtractionError: If status is "Failed".
-    """
-    record["Status"] = status
-    record["Comments"] = comments
-    record["SourceSystem"] = source_system
-    write_to_log(
-        spark=spark,
-        run_month=run_month,
-        record=dict(record),
-        log_table="process_log",
+def test_non_ssf_load_missing_non_critical_files_after_deadline(
+    mock_spark, mock_extraction, mock_write_to_log
+):
+    """Test scenario where non-critical files (LRD_STATIC) are missing after deadline."""
+    # Since LRD_STATIC is now handled in place_static_data, 
+    # check_missing_files_after_deadline won't return LRD_STATIC files
+    missing_files = []
+    
+    # Set up mock data with no missing critical files
+    files, _, _ = setup_mock_data(
+        mock_extraction,
+        missing_files=missing_files,
+        has_critical_missing=False
     )
-    if status == "Failed":
-        # Overall process should be set to failed as well
-        record["SourceSystem"] = ""
-        write_to_log(
-            spark=spark,
-            run_month=run_month,
-            record=dict(record),
-            log_table="process_log",
-        )
-        raise NonSSFExtractionError(file_delivery_status, additional_info=comments)
+    
+    non_ssf_load(mock_spark, run_month="202402", run_id=1)
+    
+    # Verify deadline checking was performed
+    mock_extraction.check_missing_files_after_deadline.assert_called_once()
+    
+    # Since no critical files are missing, log_missing_files_errors won't be called
+    mock_extraction.log_missing_files_errors.assert_not_called()
+    
+    # Process should complete successfully
+    assert_write_to_log_calls(mock_write_to_log, started=3, completed=3, failed=0)
+
+
+def test_non_ssf_load_missing_lrd_static_after_deadline(
+    mock_spark, mock_extraction, mock_write_to_log
+):
+    """Test scenario where only LRD_STATIC files are missing after deadline."""
+    # No missing files returned since LRD_STATIC is handled in place_static_data
+    missing_files = []
+    
+    # Set up mock data with no missing critical files
+    files, _, _ = setup_mock_data(
+        mock_extraction,
+        missing_files=missing_files,
+        has_critical_missing=False
+    )
+    
+    # Process should complete successfully
+    non_ssf_load(mock_spark, run_month="202402", run_id=1)
+    
+    # Verify deadline checking was performed
+    mock_extraction.check_missing_files_after_deadline.assert_called_once()
+    
+    # Since no files are returned as missing, log_missing_files_errors should not be called
+    mock_extraction.log_missing_files_errors.assert_not_called()
+    
+    # Process should complete successfully
+    assert_write_to_log_calls(mock_write_to_log, started=3, completed=3, failed=0)
+
+
+def test_non_ssf_load_mixed_missing_files_after_deadline(
+    mock_spark, mock_extraction, mock_write_to_log
+):
+    """Test scenario with both critical and non-critical files missing after
+    deadline."""
+    missing_files = [
+        {"source_system": "LRD_STATIC", "file_name": "static_file1", "deadline": "2024-01-01"},
+        {"source_system": "NME", "file_name": "critical_file1", "deadline": "2024-01-02"},
+    ]
+    
+    # Set up mock data with mixed missing files
+    files, _, _ = setup_mock_data(
+        mock_extraction,
+        missing_files=missing_files,
+        has_critical_missing=True  # Because NME is critical
+    )
+    
+    # Process should fail because NME (critical) is missing
+    with pytest.raises(NonSSFExtractionError) as exc_info:
+        non_ssf_load(mock_spark, run_month="202402", run_id=1)
+    
+    # Verify the error message
+    assert "Critical files missing after deadline" in str(exc_info.value)
+    
+    # Verify deadline checking was performed
+    mock_extraction.check_missing_files_after_deadline.assert_called_once()
+    mock_extraction.log_missing_files_errors.assert_called_once_with(missing_files)
+    
+    # Process should have started and then failed immediately (2 entries)
+    assert_write_to_log_calls(mock_write_to_log, started=1, completed=0, failed=2)
