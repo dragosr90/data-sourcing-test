@@ -11,8 +11,8 @@ test\staging\test_extract_non_ssf_data.py F...                                  
 =========================================================================================== FAILURES =========================================================================================== 
 _______________________________________________________________________ test_extract_non_ssf_data[202505-test-container] _______________________________________________________________________ 
 
-spark_session = <pyspark.sql.session.SparkSession object at 0x000001D5336DA3E0>, mocker = <pytest_mock.plugin.MockerFixture object at 0x000001D5336D9BA0>, run_month = '202505'
-source_container = 'test-container', caplog = <_pytest.logging.LogCaptureFixture object at 0x000001D5336DA3B0>
+spark_session = <pyspark.sql.session.SparkSession object at 0x000001C112FCA3E0>, mocker = <pytest_mock.plugin.MockerFixture object at 0x000001C112FC9BA0>, run_month = '202505'
+source_container = 'test-container', caplog = <_pytest.logging.LogCaptureFixture object at 0x000001C112FCA3B0>
 
     @pytest.mark.parametrize(
         ("run_month", "source_container"),
@@ -256,7 +256,7 @@ source_container = 'test-container', caplog = <_pytest.logging.LogCaptureFixture
 
             result = file_name_base != "TEST_NON_SSF_V3.csv"
             assert extraction.initial_checks(**file) is result
-    
+
             if file_name_base == "TEST_NON_SSF_V3.csv":
                 continue
 
@@ -329,111 +329,111 @@ test\staging\test_extract_non_ssf_data.py:331: AssertionError
 ------------------------------------------------------------------------------------ Captured stderr setup ------------------------------------------------------------------------------------- 
 Setting default log level to "WARN".
 To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
-------------------------------------------------------------------------------------- Captured stdout call -------------------------------------------------------------------------------------
-2025-07-29 12:34:50 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V3
-2025-07-29 12:34:50 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V3
-2025-07-29 12:34:52 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V4
-2025-07-29 12:34:52 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V4
-2025-07-29 12:34:54 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V1
-2025-07-29 12:34:54 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V1
-2025-07-29 12:34:56 [WARNING] get_all_files:  File TEST_NON_SSF_V5 not found in metadata. Please check if it should be delivered.
-2025-07-29 12:34:56 [WARNING] get_all_files:  File TEST_NON_SSF_V5 not found in metadata. Please check if it should be delivered.
-2025-07-29 12:34:59 [INFO] place_static_data:  Copied TEST_NON_SSF_V2 to static folder after deadline reached.
-2025-07-29 12:34:59 [INFO] place_static_data:  Copied TEST_NON_SSF_V2 to static folder after deadline reached.
-2025-07-29 12:34:59 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V2
-2025-07-29 12:34:59 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V2
-2025-07-29 12:35:07 [ERROR] log_missing_files_errors:  File TEST_FILE from FINOB is missing after deadline (2024-01-01)
-2025-07-29 12:35:07 [ERROR] log_missing_files_errors:  File TEST_FILE from FINOB is missing after deadline (2024-01-01)
-2025-07-29 12:35:07 [INFO] update_log_metadata:  FileDeliveryStatus: Initial checks done for TEST_FILE
-2025-07-29 12:35:07 [INFO] update_log_metadata:  FileDeliveryStatus: Initial checks done for TEST_FILE
-2025-07-29 12:35:10 [ERROR] initial_checks:  File abfss://test-container@bsrcdadls.dfs.core.windows.net/NME/TEST_NON_SSF_V3.csv does not match expected format .parquet.
-2025-07-29 12:35:10 [ERROR] initial_checks:  File abfss://test-container@bsrcdadls.dfs.core.windows.net/NME/TEST_NON_SSF_V3.csv does not match expected format .parquet.
-2025-07-29 12:35:10 [INFO] update_log_metadata:  FileDeliveryStatus: Initial checks done for TEST_NON_SSF_V3
-2025-07-29 12:35:10 [INFO] update_log_metadata:  FileDeliveryStatus: Initial checks done for TEST_NON_SSF_V3
-2025-07-29 12:35:13 [INFO] update_log_metadata:  FileDeliveryStatus: Initial checks done for TEST_NON_SSF_V4
-2025-07-29 12:35:13 [INFO] update_log_metadata:  FileDeliveryStatus: Initial checks done for TEST_NON_SSF_V4
-2025-07-29 12:35:16 [INFO] export_to_parquet:  Exported to sourcing_landing_data/NON_SSF/FINOB/TEST_NON_SSF_V4.parquet
-2025-07-29 12:35:16 [INFO] export_to_parquet:  Exported to sourcing_landing_data/NON_SSF/FINOB/TEST_NON_SSF_V4.parquet
-2025-07-29 12:35:16 [INFO] update_log_metadata:  FileDeliveryStatus: Converted to Parquet for TEST_NON_SSF_V4
-2025-07-29 12:35:16 [INFO] update_log_metadata:  FileDeliveryStatus: Converted to Parquet for TEST_NON_SSF_V4
-2025-07-29 12:35:18 [INFO] update_log_metadata:  FileDeliveryStatus: Moved source file for TEST_NON_SSF_V4
-2025-07-29 12:35:18 [INFO] update_log_metadata:  FileDeliveryStatus: Moved source file for TEST_NON_SSF_V4
-2025-07-29 12:35:21 [INFO] update_log_metadata:  FileDeliveryStatus: Loaded Staging table for abfss://test-container@bsrcdadls.dfs.core.windows.net/FINOB/TEST_NON_SSF_V4.csv
-2025-07-29 12:35:21 [INFO] update_log_metadata:  FileDeliveryStatus: Loaded Staging table for abfss://test-container@bsrcdadls.dfs.core.windows.net/FINOB/TEST_NON_SSF_V4.csv
-2025-07-29 12:35:23 [INFO] standardize_delivery_entity:  Standardized delivery entity 'FINOB' to 'finob'
-2025-07-29 12:35:23 [INFO] standardize_delivery_entity:  Standardized delivery entity 'FINOB' to 'finob'
-2025-07-29 12:35:23 [INFO] __init__:  No generic checks file available for stg.test_non_ssf_v4 at C:\Users\B25712\bsrc-etl-venv\bsrc-etl\dq_checks\stg\test_non_ssf_v4.yml
-2025-07-29 12:35:23 [INFO] __init__:  No generic checks file available for stg.test_non_ssf_v4 at C:\Users\B25712\bsrc-etl-venv\bsrc-etl\dq_checks\stg\test_non_ssf_v4.yml
-2025-07-29 12:35:23 [INFO] __init__:  No specific checks file available for stg.test_non_ssf_v4 at C:\Users\B25712\bsrc-etl-venv\bsrc-etl\dq_checks\stg\test_non_ssf_v4.yml
-2025-07-29 12:35:23 [INFO] __init__:  No specific checks file available for stg.test_non_ssf_v4 at C:\Users\B25712\bsrc-etl-venv\bsrc-etl\dq_checks\stg\test_non_ssf_v4.yml
-2025-07-29 12:35:23 [INFO] columns_datatypes:  No columns to check
-2025-07-29 12:35:23 [INFO] columns_datatypes:  No columns to check
-2025-07-29 12:35:23 [INFO] primary_key:  No Primary Key to check
-2025-07-29 12:35:23 [INFO] primary_key:  No Primary Key to check
-2025-07-29 12:35:23 [INFO] not_null:  No not nullable columns to check
-2025-07-29 12:35:23 [INFO] not_null:  No not nullable columns to check
-2025-07-29 12:35:23 [INFO] unique:  No unique columns to check
-2025-07-29 12:35:23 [INFO] unique:  No unique columns to check
-2025-07-29 12:35:23 [INFO] checks:  No checks done
-2025-07-29 12:35:23 [INFO] checks:  No checks done
-2025-07-29 12:35:23 [INFO] update_log_metadata:  FileDeliveryStatus: Checked Data Quality for abfss://test-container@bsrcdadls.dfs.core.windows.net/FINOB/TEST_NON_SSF_V4.csv
-2025-07-29 12:35:23 [INFO] update_log_metadata:  FileDeliveryStatus: Checked Data Quality for abfss://test-container@bsrcdadls.dfs.core.windows.net/FINOB/TEST_NON_SSF_V4.csv
-2025-07-29 12:35:26 [INFO] update_log_metadata:  FileDeliveryStatus: Initial checks done for TEST_NON_SSF_V1
-2025-07-29 12:35:26 [INFO] update_log_metadata:  FileDeliveryStatus: Initial checks done for TEST_NON_SSF_V1
-2025-07-29 12:35:29 [INFO] export_to_parquet:  Exported to sourcing_landing_data/NON_SSF/LRD_STATIC/TEST_NON_SSF_V1.parquet
-2025-07-29 12:35:29 [INFO] export_to_parquet:  Exported to sourcing_landing_data/NON_SSF/LRD_STATIC/TEST_NON_SSF_V1.parquet
-2025-07-29 12:35:29 [INFO] update_log_metadata:  FileDeliveryStatus: Converted to Parquet for TEST_NON_SSF_V1
-2025-07-29 12:35:29 [INFO] update_log_metadata:  FileDeliveryStatus: Converted to Parquet for TEST_NON_SSF_V1
-2025-07-29 12:35:31 [INFO] update_log_metadata:  FileDeliveryStatus: Moved source file for TEST_NON_SSF_V1
-2025-07-29 12:35:31 [INFO] update_log_metadata:  FileDeliveryStatus: Moved source file for TEST_NON_SSF_V1
-2025-07-29 12:35:33 [INFO] update_log_metadata:  FileDeliveryStatus: Loaded Staging table for abfss://test-container@bsrcdadls.dfs.core.windows.net/LRD_STATIC/TEST_NON_SSF_V1.txt
-2025-07-29 12:35:33 [INFO] update_log_metadata:  FileDeliveryStatus: Loaded Staging table for abfss://test-container@bsrcdadls.dfs.core.windows.net/LRD_STATIC/TEST_NON_SSF_V1.txt
-2025-07-29 12:35:36 [INFO] standardize_delivery_entity:  Standardized delivery entity 'LRD_STATIC' to 'lrdstatic'
-2025-07-29 12:35:36 [INFO] standardize_delivery_entity:  Standardized delivery entity 'LRD_STATIC' to 'lrdstatic'
-2025-07-29 12:35:36 [INFO] __init__:  No generic checks file available for stg.test_non_ssf_v1 at C:\Users\B25712\bsrc-etl-venv\bsrc-etl\dq_checks\stg\test_non_ssf_v1.yml
-2025-07-29 12:35:36 [INFO] __init__:  No generic checks file available for stg.test_non_ssf_v1 at C:\Users\B25712\bsrc-etl-venv\bsrc-etl\dq_checks\stg\test_non_ssf_v1.yml
-2025-07-29 12:35:36 [INFO] __init__:  No specific checks file available for stg.test_non_ssf_v1 at C:\Users\B25712\bsrc-etl-venv\bsrc-etl\dq_checks\stg\test_non_ssf_v1.yml
-2025-07-29 12:35:36 [INFO] __init__:  No specific checks file available for stg.test_non_ssf_v1 at C:\Users\B25712\bsrc-etl-venv\bsrc-etl\dq_checks\stg\test_non_ssf_v1.yml
-2025-07-29 12:35:36 [INFO] columns_datatypes:  No columns to check
-2025-07-29 12:35:36 [INFO] columns_datatypes:  No columns to check
-2025-07-29 12:35:36 [INFO] primary_key:  No Primary Key to check
-2025-07-29 12:35:36 [INFO] primary_key:  No Primary Key to check
-2025-07-29 12:35:36 [INFO] not_null:  No not nullable columns to check
-2025-07-29 12:35:36 [INFO] not_null:  No not nullable columns to check
-2025-07-29 12:35:36 [INFO] unique:  No unique columns to check
-2025-07-29 12:35:36 [INFO] unique:  No unique columns to check
-2025-07-29 12:35:36 [INFO] checks:  No checks done
-2025-07-29 12:35:36 [INFO] checks:  No checks done
-2025-07-29 12:35:36 [INFO] update_log_metadata:  FileDeliveryStatus: Checked Data Quality for abfss://test-container@bsrcdadls.dfs.core.windows.net/LRD_STATIC/TEST_NON_SSF_V1.txt
-2025-07-29 12:35:36 [INFO] update_log_metadata:  FileDeliveryStatus: Checked Data Quality for abfss://test-container@bsrcdadls.dfs.core.windows.net/LRD_STATIC/TEST_NON_SSF_V1.txt
-2025-07-29 12:35:39 [INFO] update_log_metadata:  FileDeliveryStatus: Initial checks done for TEST_NON_SSF_V2
-2025-07-29 12:35:39 [INFO] update_log_metadata:  FileDeliveryStatus: Initial checks done for TEST_NON_SSF_V2
-2025-07-29 12:35:41 [INFO] export_to_parquet:  Exported to sourcing_landing_data/NON_SSF/LRD_STATIC/TEST_NON_SSF_V2.parquet
-2025-07-29 12:35:41 [INFO] export_to_parquet:  Exported to sourcing_landing_data/NON_SSF/LRD_STATIC/TEST_NON_SSF_V2.parquet
-2025-07-29 12:35:41 [INFO] update_log_metadata:  FileDeliveryStatus: Converted to Parquet for TEST_NON_SSF_V2
-2025-07-29 12:35:41 [INFO] update_log_metadata:  FileDeliveryStatus: Converted to Parquet for TEST_NON_SSF_V2
-2025-07-29 12:35:43 [INFO] update_log_metadata:  FileDeliveryStatus: Moved source file for TEST_NON_SSF_V2
-2025-07-29 12:35:43 [INFO] update_log_metadata:  FileDeliveryStatus: Moved source file for TEST_NON_SSF_V2
-2025-07-29 12:35:46 [INFO] update_log_metadata:  FileDeliveryStatus: Loaded Staging table for abfss://test-container@bsrcdadls.dfs.core.windows.net/LRD_STATIC/TEST_NON_SSF_V2.txt
-2025-07-29 12:35:46 [INFO] update_log_metadata:  FileDeliveryStatus: Loaded Staging table for abfss://test-container@bsrcdadls.dfs.core.windows.net/LRD_STATIC/TEST_NON_SSF_V2.txt
-2025-07-29 12:35:47 [INFO] standardize_delivery_entity:  Standardized delivery entity 'LRD_STATIC' to 'lrdstatic'
-2025-07-29 12:35:47 [INFO] standardize_delivery_entity:  Standardized delivery entity 'LRD_STATIC' to 'lrdstatic'
-2025-07-29 12:35:47 [INFO] __init__:  No generic checks file available for stg.test_non_ssf_v2 at C:\Users\B25712\bsrc-etl-venv\bsrc-etl\dq_checks\stg\test_non_ssf_v2.yml
-2025-07-29 12:35:47 [INFO] __init__:  No generic checks file available for stg.test_non_ssf_v2 at C:\Users\B25712\bsrc-etl-venv\bsrc-etl\dq_checks\stg\test_non_ssf_v2.yml
-2025-07-29 12:35:47 [INFO] __init__:  No specific checks file available for stg.test_non_ssf_v2 at C:\Users\B25712\bsrc-etl-venv\bsrc-etl\dq_checks\stg\test_non_ssf_v2.yml
-2025-07-29 12:35:47 [INFO] __init__:  No specific checks file available for stg.test_non_ssf_v2 at C:\Users\B25712\bsrc-etl-venv\bsrc-etl\dq_checks\stg\test_non_ssf_v2.yml
-2025-07-29 12:35:47 [INFO] columns_datatypes:  No columns to check
-2025-07-29 12:35:47 [INFO] columns_datatypes:  No columns to check
-2025-07-29 12:35:47 [INFO] primary_key:  No Primary Key to check
-2025-07-29 12:35:47 [INFO] primary_key:  No Primary Key to check
-2025-07-29 12:35:47 [INFO] not_null:  No not nullable columns to check
-2025-07-29 12:35:47 [INFO] not_null:  No not nullable columns to check
-2025-07-29 12:35:47 [INFO] unique:  No unique columns to check
-2025-07-29 12:35:47 [INFO] unique:  No unique columns to check
-2025-07-29 12:35:47 [INFO] checks:  No checks done
-2025-07-29 12:35:47 [INFO] checks:  No checks done
-2025-07-29 12:35:47 [INFO] update_log_metadata:  FileDeliveryStatus: Checked Data Quality for abfss://test-container@bsrcdadls.dfs.core.windows.net/LRD_STATIC/TEST_NON_SSF_V2.txt
-2025-07-29 12:35:47 [INFO] update_log_metadata:  FileDeliveryStatus: Checked Data Quality for abfss://test-container@bsrcdadls.dfs.core.windows.net/LRD_STATIC/TEST_NON_SSF_V2.txt
+------------------------------------------------------------------------------------- Captured stdout call ------------------------------------------------------------------------------------- 
+2025-07-29 14:25:19 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V3
+2025-07-29 14:25:19 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V3
+2025-07-29 14:25:22 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V4
+2025-07-29 14:25:22 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V4
+2025-07-29 14:25:24 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V1
+2025-07-29 14:25:24 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V1
+2025-07-29 14:25:26 [WARNING] get_all_files:  File TEST_NON_SSF_V5 not found in metadata. Please check if it should be delivered.
+2025-07-29 14:25:26 [WARNING] get_all_files:  File TEST_NON_SSF_V5 not found in metadata. Please check if it should be delivered.
+2025-07-29 14:25:29 [INFO] place_static_data:  Copied TEST_NON_SSF_V2 to static folder after deadline reached.
+2025-07-29 14:25:29 [INFO] place_static_data:  Copied TEST_NON_SSF_V2 to static folder after deadline reached.
+2025-07-29 14:25:29 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V2
+2025-07-29 14:25:29 [INFO] update_log_metadata:  FileDeliveryStatus: Received / Placed for TEST_NON_SSF_V2
+2025-07-29 14:25:35 [ERROR] log_missing_files_errors:  File TEST_FILE from FINOB is missing after deadline (2024-01-01)
+2025-07-29 14:25:35 [ERROR] log_missing_files_errors:  File TEST_FILE from FINOB is missing after deadline (2024-01-01)
+2025-07-29 14:25:35 [INFO] update_log_metadata:  FileDeliveryStatus: Initial checks done for TEST_FILE
+2025-07-29 14:25:35 [INFO] update_log_metadata:  FileDeliveryStatus: Initial checks done for TEST_FILE
+2025-07-29 14:25:38 [ERROR] initial_checks:  File abfss://test-container@bsrcdadls.dfs.core.windows.net/NME/TEST_NON_SSF_V3.csv does not match expected format .parquet.
+2025-07-29 14:25:38 [ERROR] initial_checks:  File abfss://test-container@bsrcdadls.dfs.core.windows.net/NME/TEST_NON_SSF_V3.csv does not match expected format .parquet.
+2025-07-29 14:25:38 [INFO] update_log_metadata:  FileDeliveryStatus: Initial checks done for TEST_NON_SSF_V3
+2025-07-29 14:25:38 [INFO] update_log_metadata:  FileDeliveryStatus: Initial checks done for TEST_NON_SSF_V3
+2025-07-29 14:25:41 [INFO] update_log_metadata:  FileDeliveryStatus: Initial checks done for TEST_NON_SSF_V4
+2025-07-29 14:25:41 [INFO] update_log_metadata:  FileDeliveryStatus: Initial checks done for TEST_NON_SSF_V4
+2025-07-29 14:25:44 [INFO] export_to_parquet:  Exported to sourcing_landing_data/NON_SSF/FINOB/TEST_NON_SSF_V4.parquet
+2025-07-29 14:25:44 [INFO] export_to_parquet:  Exported to sourcing_landing_data/NON_SSF/FINOB/TEST_NON_SSF_V4.parquet
+2025-07-29 14:25:44 [INFO] update_log_metadata:  FileDeliveryStatus: Converted to Parquet for TEST_NON_SSF_V4
+2025-07-29 14:25:44 [INFO] update_log_metadata:  FileDeliveryStatus: Converted to Parquet for TEST_NON_SSF_V4
+2025-07-29 14:25:45 [INFO] update_log_metadata:  FileDeliveryStatus: Moved source file for TEST_NON_SSF_V4
+2025-07-29 14:25:45 [INFO] update_log_metadata:  FileDeliveryStatus: Moved source file for TEST_NON_SSF_V4
+2025-07-29 14:25:48 [INFO] update_log_metadata:  FileDeliveryStatus: Loaded Staging table for abfss://test-container@bsrcdadls.dfs.core.windows.net/FINOB/TEST_NON_SSF_V4.csv
+2025-07-29 14:25:48 [INFO] update_log_metadata:  FileDeliveryStatus: Loaded Staging table for abfss://test-container@bsrcdadls.dfs.core.windows.net/FINOB/TEST_NON_SSF_V4.csv
+2025-07-29 14:25:50 [INFO] standardize_delivery_entity:  Standardized delivery entity 'FINOB' to 'finob'
+2025-07-29 14:25:50 [INFO] standardize_delivery_entity:  Standardized delivery entity 'FINOB' to 'finob'
+2025-07-29 14:25:50 [INFO] __init__:  No generic checks file available for stg.test_non_ssf_v4 at C:\Users\B25712\bsrc-etl-venv\bsrc-etl\dq_checks\stg\test_non_ssf_v4.yml
+2025-07-29 14:25:50 [INFO] __init__:  No generic checks file available for stg.test_non_ssf_v4 at C:\Users\B25712\bsrc-etl-venv\bsrc-etl\dq_checks\stg\test_non_ssf_v4.yml
+2025-07-29 14:25:50 [INFO] __init__:  No specific checks file available for stg.test_non_ssf_v4 at C:\Users\B25712\bsrc-etl-venv\bsrc-etl\dq_checks\stg\test_non_ssf_v4.yml
+2025-07-29 14:25:50 [INFO] __init__:  No specific checks file available for stg.test_non_ssf_v4 at C:\Users\B25712\bsrc-etl-venv\bsrc-etl\dq_checks\stg\test_non_ssf_v4.yml
+2025-07-29 14:25:50 [INFO] columns_datatypes:  No columns to check
+2025-07-29 14:25:50 [INFO] columns_datatypes:  No columns to check
+2025-07-29 14:25:50 [INFO] primary_key:  No Primary Key to check
+2025-07-29 14:25:50 [INFO] primary_key:  No Primary Key to check
+2025-07-29 14:25:50 [INFO] not_null:  No not nullable columns to check
+2025-07-29 14:25:50 [INFO] not_null:  No not nullable columns to check
+2025-07-29 14:25:50 [INFO] unique:  No unique columns to check
+2025-07-29 14:25:50 [INFO] unique:  No unique columns to check
+2025-07-29 14:25:50 [INFO] checks:  No checks done
+2025-07-29 14:25:50 [INFO] checks:  No checks done
+2025-07-29 14:25:50 [INFO] update_log_metadata:  FileDeliveryStatus: Checked Data Quality for abfss://test-container@bsrcdadls.dfs.core.windows.net/FINOB/TEST_NON_SSF_V4.csv
+2025-07-29 14:25:50 [INFO] update_log_metadata:  FileDeliveryStatus: Checked Data Quality for abfss://test-container@bsrcdadls.dfs.core.windows.net/FINOB/TEST_NON_SSF_V4.csv
+2025-07-29 14:25:53 [INFO] update_log_metadata:  FileDeliveryStatus: Initial checks done for TEST_NON_SSF_V1
+2025-07-29 14:25:53 [INFO] update_log_metadata:  FileDeliveryStatus: Initial checks done for TEST_NON_SSF_V1
+2025-07-29 14:25:55 [INFO] export_to_parquet:  Exported to sourcing_landing_data/NON_SSF/LRD_STATIC/TEST_NON_SSF_V1.parquet
+2025-07-29 14:25:55 [INFO] export_to_parquet:  Exported to sourcing_landing_data/NON_SSF/LRD_STATIC/TEST_NON_SSF_V1.parquet
+2025-07-29 14:25:55 [INFO] update_log_metadata:  FileDeliveryStatus: Converted to Parquet for TEST_NON_SSF_V1
+2025-07-29 14:25:55 [INFO] update_log_metadata:  FileDeliveryStatus: Converted to Parquet for TEST_NON_SSF_V1
+2025-07-29 14:25:57 [INFO] update_log_metadata:  FileDeliveryStatus: Moved source file for TEST_NON_SSF_V1
+2025-07-29 14:25:57 [INFO] update_log_metadata:  FileDeliveryStatus: Moved source file for TEST_NON_SSF_V1
+2025-07-29 14:26:00 [INFO] update_log_metadata:  FileDeliveryStatus: Loaded Staging table for abfss://test-container@bsrcdadls.dfs.core.windows.net/LRD_STATIC/TEST_NON_SSF_V1.txt
+2025-07-29 14:26:00 [INFO] update_log_metadata:  FileDeliveryStatus: Loaded Staging table for abfss://test-container@bsrcdadls.dfs.core.windows.net/LRD_STATIC/TEST_NON_SSF_V1.txt
+2025-07-29 14:26:02 [INFO] standardize_delivery_entity:  Standardized delivery entity 'LRD_STATIC' to 'lrdstatic'
+2025-07-29 14:26:02 [INFO] standardize_delivery_entity:  Standardized delivery entity 'LRD_STATIC' to 'lrdstatic'
+2025-07-29 14:26:02 [INFO] __init__:  No generic checks file available for stg.test_non_ssf_v1 at C:\Users\B25712\bsrc-etl-venv\bsrc-etl\dq_checks\stg\test_non_ssf_v1.yml
+2025-07-29 14:26:02 [INFO] __init__:  No generic checks file available for stg.test_non_ssf_v1 at C:\Users\B25712\bsrc-etl-venv\bsrc-etl\dq_checks\stg\test_non_ssf_v1.yml
+2025-07-29 14:26:02 [INFO] __init__:  No specific checks file available for stg.test_non_ssf_v1 at C:\Users\B25712\bsrc-etl-venv\bsrc-etl\dq_checks\stg\test_non_ssf_v1.yml
+2025-07-29 14:26:02 [INFO] __init__:  No specific checks file available for stg.test_non_ssf_v1 at C:\Users\B25712\bsrc-etl-venv\bsrc-etl\dq_checks\stg\test_non_ssf_v1.yml
+2025-07-29 14:26:02 [INFO] columns_datatypes:  No columns to check
+2025-07-29 14:26:02 [INFO] columns_datatypes:  No columns to check
+2025-07-29 14:26:02 [INFO] primary_key:  No Primary Key to check
+2025-07-29 14:26:02 [INFO] primary_key:  No Primary Key to check
+2025-07-29 14:26:02 [INFO] not_null:  No not nullable columns to check
+2025-07-29 14:26:02 [INFO] not_null:  No not nullable columns to check
+2025-07-29 14:26:02 [INFO] unique:  No unique columns to check
+2025-07-29 14:26:02 [INFO] unique:  No unique columns to check
+2025-07-29 14:26:02 [INFO] checks:  No checks done
+2025-07-29 14:26:02 [INFO] checks:  No checks done
+2025-07-29 14:26:02 [INFO] update_log_metadata:  FileDeliveryStatus: Checked Data Quality for abfss://test-container@bsrcdadls.dfs.core.windows.net/LRD_STATIC/TEST_NON_SSF_V1.txt
+2025-07-29 14:26:02 [INFO] update_log_metadata:  FileDeliveryStatus: Checked Data Quality for abfss://test-container@bsrcdadls.dfs.core.windows.net/LRD_STATIC/TEST_NON_SSF_V1.txt
+2025-07-29 14:26:05 [INFO] update_log_metadata:  FileDeliveryStatus: Initial checks done for TEST_NON_SSF_V2
+2025-07-29 14:26:05 [INFO] update_log_metadata:  FileDeliveryStatus: Initial checks done for TEST_NON_SSF_V2
+2025-07-29 14:26:08 [INFO] export_to_parquet:  Exported to sourcing_landing_data/NON_SSF/LRD_STATIC/TEST_NON_SSF_V2.parquet
+2025-07-29 14:26:08 [INFO] export_to_parquet:  Exported to sourcing_landing_data/NON_SSF/LRD_STATIC/TEST_NON_SSF_V2.parquet
+2025-07-29 14:26:08 [INFO] update_log_metadata:  FileDeliveryStatus: Converted to Parquet for TEST_NON_SSF_V2
+2025-07-29 14:26:08 [INFO] update_log_metadata:  FileDeliveryStatus: Converted to Parquet for TEST_NON_SSF_V2
+2025-07-29 14:26:10 [INFO] update_log_metadata:  FileDeliveryStatus: Moved source file for TEST_NON_SSF_V2
+2025-07-29 14:26:10 [INFO] update_log_metadata:  FileDeliveryStatus: Moved source file for TEST_NON_SSF_V2
+2025-07-29 14:26:12 [INFO] update_log_metadata:  FileDeliveryStatus: Loaded Staging table for abfss://test-container@bsrcdadls.dfs.core.windows.net/LRD_STATIC/TEST_NON_SSF_V2.txt
+2025-07-29 14:26:12 [INFO] update_log_metadata:  FileDeliveryStatus: Loaded Staging table for abfss://test-container@bsrcdadls.dfs.core.windows.net/LRD_STATIC/TEST_NON_SSF_V2.txt
+2025-07-29 14:26:14 [INFO] standardize_delivery_entity:  Standardized delivery entity 'LRD_STATIC' to 'lrdstatic'
+2025-07-29 14:26:14 [INFO] standardize_delivery_entity:  Standardized delivery entity 'LRD_STATIC' to 'lrdstatic'
+2025-07-29 14:26:14 [INFO] __init__:  No generic checks file available for stg.test_non_ssf_v2 at C:\Users\B25712\bsrc-etl-venv\bsrc-etl\dq_checks\stg\test_non_ssf_v2.yml
+2025-07-29 14:26:14 [INFO] __init__:  No generic checks file available for stg.test_non_ssf_v2 at C:\Users\B25712\bsrc-etl-venv\bsrc-etl\dq_checks\stg\test_non_ssf_v2.yml
+2025-07-29 14:26:14 [INFO] __init__:  No specific checks file available for stg.test_non_ssf_v2 at C:\Users\B25712\bsrc-etl-venv\bsrc-etl\dq_checks\stg\test_non_ssf_v2.yml
+2025-07-29 14:26:14 [INFO] __init__:  No specific checks file available for stg.test_non_ssf_v2 at C:\Users\B25712\bsrc-etl-venv\bsrc-etl\dq_checks\stg\test_non_ssf_v2.yml
+2025-07-29 14:26:14 [INFO] columns_datatypes:  No columns to check
+2025-07-29 14:26:14 [INFO] columns_datatypes:  No columns to check
+2025-07-29 14:26:14 [INFO] primary_key:  No Primary Key to check
+2025-07-29 14:26:14 [INFO] primary_key:  No Primary Key to check
+2025-07-29 14:26:14 [INFO] not_null:  No not nullable columns to check
+2025-07-29 14:26:14 [INFO] not_null:  No not nullable columns to check
+2025-07-29 14:26:14 [INFO] unique:  No unique columns to check
+2025-07-29 14:26:14 [INFO] unique:  No unique columns to check
+2025-07-29 14:26:14 [INFO] checks:  No checks done
+2025-07-29 14:26:14 [INFO] checks:  No checks done
+2025-07-29 14:26:14 [INFO] update_log_metadata:  FileDeliveryStatus: Checked Data Quality for abfss://test-container@bsrcdadls.dfs.core.windows.net/LRD_STATIC/TEST_NON_SSF_V2.txt
+2025-07-29 14:26:14 [INFO] update_log_metadata:  FileDeliveryStatus: Checked Data Quality for abfss://test-container@bsrcdadls.dfs.core.windows.net/LRD_STATIC/TEST_NON_SSF_V2.txt
 ------------------------------------------------------------------------------------- Captured stderr call ------------------------------------------------------------------------------------- 
 
 -------------------------------------------------------------------------------------- Captured log call --------------------------------------------------------------------------------------- 
@@ -574,7 +574,7 @@ Coverage HTML written to dir htmlcov
 
 =================================================================================== short test summary info ==================================================================================== 
 FAILED test/staging/test_extract_non_ssf_data.py::test_extract_non_ssf_data[202505-test-container] - assert 21 == 27
-====================================================================== 1 failed, 3 passed, 1 warning in 104.58s (0:01:44) ====================================================================== 
-SUCCESS: The process with PID 23164 (child process of PID 22568) has been terminated.
-SUCCESS: The process with PID 22568 (child process of PID 7472) has been terminated.
-SUCCESS: The process with PID 7472 (child process of PID 7756) has been terminated.
+====================================================================== 1 failed, 3 passed, 1 warning in 106.57s (0:01:46) ====================================================================== 
+SUCCESS: The process with PID 19624 (child process of PID 7400) has been terminated.
+SUCCESS: The process with PID 7400 (child process of PID 15032) has been terminated.
+SUCCESS: The process with PID 15032 (child process of PID 23436) has been terminated.
