@@ -186,7 +186,6 @@ def test_extract_non_ssf_data(
         for li in [
             [
                 ("TEST_NON_SSF_V3.parquet", "NME"),
-                ("TEST_NON_SSF_V3.csv", "NME"),
                 ("processed/", "NME"),
             ],
             [("TEST_NON_SSF_V4.csv", "FINOB"), ("processed/", "FINOB")],
@@ -260,11 +259,8 @@ def test_extract_non_ssf_data(
         file_name_ext = Path(file_name).suffix
         source_system = file["source_system"]
 
-        result = file_name_base != "TEST_NON_SSF_V3.csv"
-        assert extraction.initial_checks(**file) is result
-
-        if file_name_base == "TEST_NON_SSF_V3.csv":
-            continue
+        # All files should pass initial checks since we removed the .csv version
+        assert extraction.initial_checks(**file) is True
 
         assert extraction.convert_to_parquet(**file)
 
@@ -324,12 +320,11 @@ def test_extract_non_ssf_data(
         for path in [metadata_path, log_path]
     )
 
-    # For every file (v1 - v4) we log every step from received + 1 - 5: (4 x 6)
-    # + 2 steps for v3.wrong_extension (received and initial checks)
+    # For every file (v1, v2, v3, v4) we log every step: 4 files × 6 steps = 24
     # + 1 step for log_missing_files_errors test
-    # So in total 27 calls for metadata and log
-    assert metadata_path_calls == 27
-    assert log_path_calls == 27
+    # So in total 25 calls for metadata and log
+    assert metadata_path_calls == 25
+    assert log_path_calls == 25
 
 
 @pytest.mark.parametrize(
