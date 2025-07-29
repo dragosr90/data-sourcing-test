@@ -1,942 +1,132 @@
-(bsrc-etl-venv) PS C:\Users\B25712\bsrc-etl-venv\bsrc-etl> pytest                         
-========================================================================================== test session starts ===========================================================================================
+(bsrc-etl-venv) PS C:\Users\B25712\bsrc-etl-venv\bsrc-etl> pytest test/scripts/test_nonssf_staging_process.py
+===================================================================================== test session starts ======================================================================================
 platform win32 -- Python 3.10.11, pytest-8.3.3, pluggy-1.5.0
 rootdir: C:\Users\B25712\bsrc-etl-venv\bsrc-etl
 configfile: pyproject.toml
 plugins: cov-6.0.0, mock-3.14.0
-collected 349 items
+collected 17 items
 
-test\month_setup\test_dial_snapshotdate.py ............                                                                                                                                             [  3%]
-test\scripts\test_dial_check_delayed_files.py .....                                                                                                                                                 [  4%]
-test\scripts\test_dial_staging_process.py .................                                                                                                                                         [  9%]
-test\scripts\test_export_tine_tables.py ...                                                                                                                                                         [ 10%]
-test\scripts\test_new_month_catalog_setup.py ...                                                                                                                                                    [ 11%]
-test\scripts\test_nonssf_staging_process.py FFFFFFFFFFFFF                                                                                                                                           [ 15%]
-test\scripts\test_run_mapping.py ....................................                                                                                                                               [ 25%]
-test\scripts\test_ssf_staging_process.py ....................                                                                                                                                       [ 31%]
-test\staging\test_extract_dial_data.py .                                                                                                                                                            [ 31%]
-test\staging\test_extract_non_ssf_data.py ...                                                                                                                                                       [ 32%]
-test\staging\test_extract_ssf_data.py ..........                                                                                                                                                    [ 35%]
-test\test_dq\test_dq_validation.py ...................................                                                                                                                              [ 45%]
-test\test_extract\test_get_master_data.py ..............                                                                                                                                            [ 49%]
-test\test_transform\test_all_columns.py ....                                                                                                                                                        [ 50%]
-test\test_transform\test_expressions.py .....                                                                                                                                                       [ 51%]
-test\test_transform\test_pipeline_yaml_integrated_target.py ....                                                                                                                                    [ 53%]
-test\test_transform\test_transform_business_logic_sql.py ..........                                                                                                                                 [ 55%]
-test\test_transform\test_validate.py .........................................................                                                                                                      [ 72%]
-test\test_transform\test_write_and_comment.py ............................                                                                                                                          [ 80%]
-test\test_utils\test_export_parquet.py ..                                                                                                                                                           [ 80%]
-test\test_utils\test_get_catalog.py .....                                                                                                                                                           [ 82%]
-test\test_utils\test_metadata_log_tables.py ...                                                                                                                                                     [ 83%]
-test\test_utils\test_parameter_utils.py ...........................................                                                                                                                 [ 95%]
-test\test_utils\test_parse_yaml.py .                                                                                                                                                                [ 95%]
-test\test_utils\test_process_logging.py ........                                                                                                                                                    [ 97%]
-test\test_utils\test_sources_util.py ......                                                                                                                                                         [ 99%]
-test\test_utils\test_table_schema.py .                                                                                                                                                              [100%]
+test\scripts\test_nonssf_staging_process.py .............F..F                                                                                                                             [100%]
 
-================================================================================================ FAILURES ================================================================================================ 
-___________________________________________________________________________________ test_non_ssf_load_success[202402] ____________________________________________________________________________________ 
+=========================================================================================== FAILURES =========================================================================================== 
+___________________________________________________________________ test_non_ssf_load_missing_critical_files_after_deadline ____________________________________________________________________ 
 
-mock_spark = <MagicMock spec='SparkSession' id='2013277917520'>, mock_extraction = <MagicMock name='ExtractNonSSFData()' spec='ExtractNonSSFData' id='2013277963408'>
-mock_write_to_log = <MagicMock name='write_to_log' id='2013277978384'>, run_month = '202402'
+mock_spark = <MagicMock spec='SparkSession' id='1688710067872'>, mock_extraction = <MagicMock name='ExtractNonSSFData()' spec='ExtractNonSSFData' id='1688710030976'>
+mock_write_to_log = <MagicMock name='write_to_log' id='1688710069600'>
 
-    @pytest.mark.parametrize("run_month", ["202402", "202504"])
-    def test_non_ssf_load_success(
-        mock_spark, mock_extraction, mock_write_to_log, run_month
+    def test_non_ssf_load_missing_critical_files_after_deadline(
+        mock_spark, mock_extraction, mock_write_to_log
     ):
-        """Test successful execution of non_ssf_load."""
-        files, mock_nme_df, mock_finob_df = setup_mock_data(mock_extraction)
->       non_ssf_load(mock_spark, run_month=run_month, run_id=1)
+        """Test scenario where critical files (NME/FINOB) are missing after deadline."""
+        missing_files = [
+            {
+                "source_system": "NME",
+                "file_name": "critical_file1",
+                "deadline": "2024-01-01",
+            },
+            {
+                "source_system": "FINOB",
+                "file_name": "critical_file2",
+                "deadline": "2024-01-02",
+            },
+        ]
 
-test\scripts\test_nonssf_staging_process.py:67:
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _  
-src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py:81: in non_ssf_load
-    append_to_process_log(
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _  
-
-spark = <MagicMock spec='SparkSession' id='2013277917520'>, run_month = '202402'
-record = {'Comments': 'Critical files missing after deadline: ', 'Component': 'Non-SSF', 'Layer': 'Staging', 'RunID': 1, ...}, source_system = '', comments = 'Critical files missing after deadline: '    
-status = 'Failed', file_delivery_status = <NonSSFStepStatus.COMPLETED: 7>
-
-    def append_to_process_log(
-        spark: SparkSession,
-        run_month: str,
-        record: dict[str, int | datetime | str],
-        source_system: str,
-        comments: str,
-        status: Literal["Completed", "Started", "Failed"] = "Completed",
-        file_delivery_status: NonSSFStepStatus = NonSSFStepStatus.COMPLETED,
-    ) -> None:
-        """Append log entry to process log table.
-
-        Args:
-            spark (SparkSession): SparkSession
-            run_month (str): Run month ID
-            record (RecordConfig): Data record, incl all columns of process log table.
-            source_system (str): Source System
-            comment (str): Comment of step
-            status (Literal["Completed", "Started", "Failed"]): Status of the step.
-                Defaults to "Completed".
-
-        Raises:
-            NonSSFExtractionError: If status is "Failed".
-        """
-        record["Status"] = status
-        record["Comments"] = comments
-        record["SourceSystem"] = source_system
-        write_to_log(
-            spark=spark,
-            run_month=run_month,
-            record=dict(record),
-            log_table="process_log",
+        # Set up mock data with missing critical files
+        files, _, _ = setup_mock_data(
+            mock_extraction, missing_files=missing_files, has_critical_missing=True
         )
-        if status == "Failed":
-            # Overall process should be set to failed as well
-            record["SourceSystem"] = ""
-            write_to_log(
-                spark=spark,
-                run_month=run_month,
-                record=dict(record),
-                log_table="process_log",
-            )
->           raise NonSSFExtractionError(file_delivery_status, additional_info=comments)
-E           abnamro_bsrc_etl.config.exceptions.NonSSFExtractionError: Step 'Completed' failed. Critical files missing after deadline:
 
-src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py:238: NonSSFExtractionError
-___________________________________________________________________________________ test_non_ssf_load_success[202504] ____________________________________________________________________________________ 
+        # Process should fail when critical files are missing after deadline
+        with pytest.raises(NonSSFExtractionError) as exc_info:
+            non_ssf_load(mock_spark, run_month="202402", run_id=1)
 
-mock_spark = <MagicMock spec='SparkSession' id='2013276281856'>, mock_extraction = <MagicMock name='ExtractNonSSFData()' spec='ExtractNonSSFData' id='2013277526896'>
-mock_write_to_log = <MagicMock name='write_to_log' id='2013277031680'>, run_month = '202504'
+        # Verify the error message contains info about missing files
+        assert "Critical files missing after deadline" in str(exc_info.value)
 
-    @pytest.mark.parametrize("run_month", ["202402", "202504"])
-    def test_non_ssf_load_success(
-        mock_spark, mock_extraction, mock_write_to_log, run_month
+        # Verify deadline checking was performed
+        mock_extraction.check_missing_files_after_deadline.assert_called_once()
+        mock_extraction.log_missing_files_errors.assert_called_once_with(missing_files)
+
+        # Process should have started (+1) and then failed (+1) = 2 total
+>       assert_write_to_log_calls(mock_write_to_log, started=1, completed=0, failed=1)
+
+test\scripts\test_nonssf_staging_process.py:237:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _  
+
+mock_write_to_log = <MagicMock name='write_to_log' id='1688710069600'>, started = 1, failed = 1, completed = 0
+
+    def assert_write_to_log_calls(
+        mock_write_to_log, started: int, failed: int, completed: int
     ):
-        """Test successful execution of non_ssf_load."""
-        files, mock_nme_df, mock_finob_df = setup_mock_data(mock_extraction)
->       non_ssf_load(mock_spark, run_month=run_month, run_id=1)
+        appended_status = [
+            c[1]["record"]["Status"] for c in mock_write_to_log.call_args_list
+        ]
+        assert len([s for s in appended_status if s == "Started"]) == started
+>       assert len([s for s in appended_status if s == "Failed"]) == failed
+E       AssertionError
 
-test\scripts\test_nonssf_staging_process.py:67:
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _  
-src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py:81: in non_ssf_load
-    append_to_process_log(
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _  
+test\scripts\assert_utils.py:45: AssertionError
+_____________________________________________________________________ test_non_ssf_load_mixed_missing_files_after_deadline _____________________________________________________________________ 
 
-spark = <MagicMock spec='SparkSession' id='2013276281856'>, run_month = '202504'
-record = {'Comments': 'Critical files missing after deadline: ', 'Component': 'Non-SSF', 'Layer': 'Staging', 'RunID': 1, ...}, source_system = '', comments = 'Critical files missing after deadline: '    
-status = 'Failed', file_delivery_status = <NonSSFStepStatus.COMPLETED: 7>
+mock_spark = <MagicMock spec='SparkSession' id='1688709527584'>, mock_extraction = <MagicMock name='ExtractNonSSFData()' spec='ExtractNonSSFData' id='1688708262224'>
+mock_write_to_log = <MagicMock name='write_to_log' id='1688709607200'>
 
-    def append_to_process_log(
-        spark: SparkSession,
-        run_month: str,
-        record: dict[str, int | datetime | str],
-        source_system: str,
-        comments: str,
-        status: Literal["Completed", "Started", "Failed"] = "Completed",
-        file_delivery_status: NonSSFStepStatus = NonSSFStepStatus.COMPLETED,
-    ) -> None:
-        """Append log entry to process log table.
-
-        Args:
-            spark (SparkSession): SparkSession
-            run_month (str): Run month ID
-            record (RecordConfig): Data record, incl all columns of process log table.
-            source_system (str): Source System
-            comment (str): Comment of step
-            status (Literal["Completed", "Started", "Failed"]): Status of the step.
-                Defaults to "Completed".
-
-        Raises:
-            NonSSFExtractionError: If status is "Failed".
-        """
-        record["Status"] = status
-        record["Comments"] = comments
-        record["SourceSystem"] = source_system
-        write_to_log(
-            spark=spark,
-            run_month=run_month,
-            record=dict(record),
-            log_table="process_log",
-        )
-        if status == "Failed":
-            # Overall process should be set to failed as well
-            record["SourceSystem"] = ""
-            write_to_log(
-                spark=spark,
-                run_month=run_month,
-                record=dict(record),
-                log_table="process_log",
-            )
->           raise NonSSFExtractionError(file_delivery_status, additional_info=comments)
-E           abnamro_bsrc_etl.config.exceptions.NonSSFExtractionError: Step 'Completed' failed. Critical files missing after deadline:
-
-src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py:238: NonSSFExtractionError
-____________________________________________________________________________ test_non_ssf_load_failure[202402-initial_checks] ____________________________________________________________________________ 
-
-self = <MagicMock name='ExtractNonSSFData().get_all_files' id='2013278801968'>, args = (), kwargs = {}, msg = "Expected 'get_all_files' to be called once. Called 0 times."
-
-    def assert_called_once_with(self, /, *args, **kwargs):
-        """assert that the mock was called exactly once and that that call was
-        with the specified arguments."""
-        if not self.call_count == 1:
-            msg = ("Expected '%s' to be called once. Called %s times.%s"
-                   % (self._mock_name or 'mock',
-                      self.call_count,
-                      self._calls_repr()))
->           raise AssertionError(msg)
-E           AssertionError: Expected 'get_all_files' to be called once. Called 0 times.
-
-C:\Program Files\Python310\lib\unittest\mock.py:940: AssertionError
-
-During handling of the above exception, another exception occurred:
-
-mock_spark = <MagicMock spec='SparkSession' id='2013278728064'>, mock_extraction = <MagicMock name='ExtractNonSSFData()' spec='ExtractNonSSFData' id='2013278671952'>
-mock_write_to_log = <MagicMock name='write_to_log' id='2013278737440'>, run_month = '202402', failing_step = 'initial_checks'
-
-    @pytest.mark.parametrize(
-        "failing_step",
-        NONSSF_STEPS,
-    )
-    @pytest.mark.parametrize(
-        "run_month",
-        ["202402", "202505"],
-    )
-    def test_non_ssf_load_failure(
-        mock_spark,
-        mock_extraction,
-        mock_write_to_log,
-        run_month,
-        failing_step,
+    def test_non_ssf_load_mixed_missing_files_after_deadline(
+        mock_spark, mock_extraction, mock_write_to_log
     ):
-        """Test failure scenarios in non_ssf_load.
+        """Test scenario with both critical and non-critical files missing after
+        deadline."""
+        missing_files = [
+            {
+                "source_system": "LRD_STATIC",
+                "file_name": "static_file1",
+                "deadline": "2024-01-01",
+            },
+            {
+                "source_system": "NME",
+                "file_name": "critical_file1",
+                "deadline": "2024-01-02",
+            },
+        ]
 
-        This test verifies the behavior of the `non_ssf_load` function when one of the steps
-        fails. It ensures that the process raises a `NonSSFExtractionError`,
-        performs the correct assertions, and logs the appropriate status.
-
-        Scenarios:
-            - Each step in `NONSSF_STEPS` is tested as the failing step.
-            - The process raises a `NonSSFExtractionError` when failing step is executed.
-            - The process logs the appropriate status:
-                - Started: Logs the start of the process and individual file processing.
-                - Completed: Logs the completion of one file.
-                - Failed: Logs the failure of the second file and the overall process.
-            - Special handling for the failing step:
-                - The `assert_before_and_after_failing_step` function verifies the behavior
-                  of steps before, including, and after the failing step.
-                - The `fail_on_iteration` parameter is set to `1` to simulate the failure
-                  occurring during the second iteration.
-        """
-        step_args = get_step_args(failing_step=failing_step, steps=NONSSF_STEPS)
+        # Set up mock data with mixed missing files
         files, _, _ = setup_mock_data(
             mock_extraction,
-            **step_args,
+            missing_files=missing_files,
+            has_critical_missing=True,  # Because NME is critical
         )
-        with pytest.raises(NonSSFExtractionError):
-            non_ssf_load(mock_spark, run_month=run_month, run_id=1)
 
-        # Assertions with with correct parameters
-        generic_calls = get_assert_calls_args(files)
->       mock_extraction.get_all_files.assert_called_once_with()  # No parameters
-E       AssertionError: Expected 'get_all_files' to be called once. Called 0 times.
+        # Process should fail because NME (critical) is missing
+        with pytest.raises(NonSSFExtractionError) as exc_info:
+            non_ssf_load(mock_spark, run_month="202402", run_id=1)
+    
+        # Verify the error message
+        assert "Critical files missing after deadline" in str(exc_info.value)
 
-test\scripts\test_nonssf_staging_process.py:159: AssertionError
-__________________________________________________________________________ test_non_ssf_load_failure[202402-convert_to_parquet] __________________________________________________________________________ 
+        # Verify deadline checking was performed
+        mock_extraction.check_missing_files_after_deadline.assert_called_once()
+        mock_extraction.log_missing_files_errors.assert_called_once_with(missing_files)
 
-self = <MagicMock name='ExtractNonSSFData().get_all_files' id='2013275436320'>, args = (), kwargs = {}, msg = "Expected 'get_all_files' to be called once. Called 0 times."
+        # Process should have started and then failed immediately
+>       assert_write_to_log_calls(mock_write_to_log, started=1, completed=0, failed=1)
 
-    def assert_called_once_with(self, /, *args, **kwargs):
-        """assert that the mock was called exactly once and that that call was
-        with the specified arguments."""
-        if not self.call_count == 1:
-            msg = ("Expected '%s' to be called once. Called %s times.%s"
-                   % (self._mock_name or 'mock',
-                      self.call_count,
-                      self._calls_repr()))
->           raise AssertionError(msg)
-E           AssertionError: Expected 'get_all_files' to be called once. Called 0 times.
+test\scripts\test_nonssf_staging_process.py:327:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _  
 
-C:\Program Files\Python310\lib\unittest\mock.py:940: AssertionError
+mock_write_to_log = <MagicMock name='write_to_log' id='1688709607200'>, started = 1, failed = 1, completed = 0
 
-During handling of the above exception, another exception occurred:
-
-mock_spark = <MagicMock spec='SparkSession' id='2013275322640'>, mock_extraction = <MagicMock name='ExtractNonSSFData()' spec='ExtractNonSSFData' id='2013275348352'>
-mock_write_to_log = <MagicMock name='write_to_log' id='2013273486864'>, run_month = '202402', failing_step = 'convert_to_parquet'
-
-    @pytest.mark.parametrize(
-        "failing_step",
-        NONSSF_STEPS,
-    )
-    @pytest.mark.parametrize(
-        "run_month",
-        ["202402", "202505"],
-    )
-    def test_non_ssf_load_failure(
-        mock_spark,
-        mock_extraction,
-        mock_write_to_log,
-        run_month,
-        failing_step,
+    def assert_write_to_log_calls(
+        mock_write_to_log, started: int, failed: int, completed: int
     ):
-        """Test failure scenarios in non_ssf_load.
-
-        This test verifies the behavior of the `non_ssf_load` function when one of the steps
-        fails. It ensures that the process raises a `NonSSFExtractionError`,
-        performs the correct assertions, and logs the appropriate status.
-
-        Scenarios:
-            - Each step in `NONSSF_STEPS` is tested as the failing step.
-            - The process raises a `NonSSFExtractionError` when failing step is executed.
-            - The process logs the appropriate status:
-                - Started: Logs the start of the process and individual file processing.
-                - Completed: Logs the completion of one file.
-                - Failed: Logs the failure of the second file and the overall process.
-            - Special handling for the failing step:
-                - The `assert_before_and_after_failing_step` function verifies the behavior
-                  of steps before, including, and after the failing step.
-                - The `fail_on_iteration` parameter is set to `1` to simulate the failure
-                  occurring during the second iteration.
-        """
-        step_args = get_step_args(failing_step=failing_step, steps=NONSSF_STEPS)
-        files, _, _ = setup_mock_data(
-            mock_extraction,
-            **step_args,
-        )
-        with pytest.raises(NonSSFExtractionError):
-            non_ssf_load(mock_spark, run_month=run_month, run_id=1)
-
-        # Assertions with with correct parameters
-        generic_calls = get_assert_calls_args(files)
->       mock_extraction.get_all_files.assert_called_once_with()  # No parameters
-E       AssertionError: Expected 'get_all_files' to be called once. Called 0 times.
-
-test\scripts\test_nonssf_staging_process.py:159: AssertionError
-___________________________________________________________________________ test_non_ssf_load_failure[202402-move_source_file] ___________________________________________________________________________ 
-
-self = <MagicMock name='ExtractNonSSFData().get_all_files' id='2013277975456'>, args = (), kwargs = {}, msg = "Expected 'get_all_files' to be called once. Called 0 times."
-
-    def assert_called_once_with(self, /, *args, **kwargs):
-        """assert that the mock was called exactly once and that that call was
-        with the specified arguments."""
-        if not self.call_count == 1:
-            msg = ("Expected '%s' to be called once. Called %s times.%s"
-                   % (self._mock_name or 'mock',
-                      self.call_count,
-                      self._calls_repr()))
->           raise AssertionError(msg)
-E           AssertionError: Expected 'get_all_files' to be called once. Called 0 times.
-
-C:\Program Files\Python310\lib\unittest\mock.py:940: AssertionError
-
-During handling of the above exception, another exception occurred:
-
-mock_spark = <MagicMock spec='SparkSession' id='2013277981424'>, mock_extraction = <MagicMock name='ExtractNonSSFData()' spec='ExtractNonSSFData' id='2013277271568'>
-mock_write_to_log = <MagicMock name='write_to_log' id='2013277913248'>, run_month = '202402', failing_step = 'move_source_file'
-
-    @pytest.mark.parametrize(
-        "failing_step",
-        NONSSF_STEPS,
-    )
-    @pytest.mark.parametrize(
-        "run_month",
-        ["202402", "202505"],
-    )
-    def test_non_ssf_load_failure(
-        mock_spark,
-        mock_extraction,
-        mock_write_to_log,
-        run_month,
-        failing_step,
-    ):
-        """Test failure scenarios in non_ssf_load.
-
-        This test verifies the behavior of the `non_ssf_load` function when one of the steps
-        fails. It ensures that the process raises a `NonSSFExtractionError`,
-        performs the correct assertions, and logs the appropriate status.
-
-        Scenarios:
-            - Each step in `NONSSF_STEPS` is tested as the failing step.
-            - The process raises a `NonSSFExtractionError` when failing step is executed.
-            - The process logs the appropriate status:
-                - Started: Logs the start of the process and individual file processing.
-                - Completed: Logs the completion of one file.
-                - Failed: Logs the failure of the second file and the overall process.
-            - Special handling for the failing step:
-                - The `assert_before_and_after_failing_step` function verifies the behavior
-                  of steps before, including, and after the failing step.
-                - The `fail_on_iteration` parameter is set to `1` to simulate the failure
-                  occurring during the second iteration.
-        """
-        step_args = get_step_args(failing_step=failing_step, steps=NONSSF_STEPS)
-        files, _, _ = setup_mock_data(
-            mock_extraction,
-            **step_args,
-        )
-        with pytest.raises(NonSSFExtractionError):
-            non_ssf_load(mock_spark, run_month=run_month, run_id=1)
-
-        # Assertions with with correct parameters
-        generic_calls = get_assert_calls_args(files)
->       mock_extraction.get_all_files.assert_called_once_with()  # No parameters
-E       AssertionError: Expected 'get_all_files' to be called once. Called 0 times.
-
-test\scripts\test_nonssf_staging_process.py:159: AssertionError
-__________________________________________________________________________ test_non_ssf_load_failure[202402-save_to_stg_table] ___________________________________________________________________________ 
-
-self = <MagicMock name='ExtractNonSSFData().get_all_files' id='2013276360944'>, args = (), kwargs = {}, msg = "Expected 'get_all_files' to be called once. Called 0 times."
-
-    def assert_called_once_with(self, /, *args, **kwargs):
-        """assert that the mock was called exactly once and that that call was
-        with the specified arguments."""
-        if not self.call_count == 1:
-            msg = ("Expected '%s' to be called once. Called %s times.%s"
-                   % (self._mock_name or 'mock',
-                      self.call_count,
-                      self._calls_repr()))
->           raise AssertionError(msg)
-E           AssertionError: Expected 'get_all_files' to be called once. Called 0 times.
-
-C:\Program Files\Python310\lib\unittest\mock.py:940: AssertionError
-
-During handling of the above exception, another exception occurred:
-
-mock_spark = <MagicMock spec='SparkSession' id='2013275540544'>, mock_extraction = <MagicMock name='ExtractNonSSFData()' spec='ExtractNonSSFData' id='2013222115536'>
-mock_write_to_log = <MagicMock name='write_to_log' id='2013275766304'>, run_month = '202402', failing_step = 'save_to_stg_table'
-
-    @pytest.mark.parametrize(
-        "failing_step",
-        NONSSF_STEPS,
-    )
-    @pytest.mark.parametrize(
-        "run_month",
-        ["202402", "202505"],
-    )
-    def test_non_ssf_load_failure(
-        mock_spark,
-        mock_extraction,
-        mock_write_to_log,
-        run_month,
-        failing_step,
-    ):
-        """Test failure scenarios in non_ssf_load.
-
-        This test verifies the behavior of the `non_ssf_load` function when one of the steps
-        fails. It ensures that the process raises a `NonSSFExtractionError`,
-        performs the correct assertions, and logs the appropriate status.
-
-        Scenarios:
-            - Each step in `NONSSF_STEPS` is tested as the failing step.
-            - The process raises a `NonSSFExtractionError` when failing step is executed.
-            - The process logs the appropriate status:
-                - Started: Logs the start of the process and individual file processing.
-                - Completed: Logs the completion of one file.
-                - Failed: Logs the failure of the second file and the overall process.
-            - Special handling for the failing step:
-                - The `assert_before_and_after_failing_step` function verifies the behavior
-                  of steps before, including, and after the failing step.
-                - The `fail_on_iteration` parameter is set to `1` to simulate the failure
-                  occurring during the second iteration.
-        """
-        step_args = get_step_args(failing_step=failing_step, steps=NONSSF_STEPS)
-        files, _, _ = setup_mock_data(
-            mock_extraction,
-            **step_args,
-        )
-        with pytest.raises(NonSSFExtractionError):
-            non_ssf_load(mock_spark, run_month=run_month, run_id=1)
-
-        # Assertions with with correct parameters
-        generic_calls = get_assert_calls_args(files)
->       mock_extraction.get_all_files.assert_called_once_with()  # No parameters
-E       AssertionError: Expected 'get_all_files' to be called once. Called 0 times.
-
-test\scripts\test_nonssf_staging_process.py:159: AssertionError
-________________________________________________________________________ test_non_ssf_load_failure[202402-validate_data_quality] _________________________________________________________________________ 
-
-self = <MagicMock name='ExtractNonSSFData().get_all_files' id='2013276441472'>, args = (), kwargs = {}, msg = "Expected 'get_all_files' to be called once. Called 0 times."
-
-    def assert_called_once_with(self, /, *args, **kwargs):
-        """assert that the mock was called exactly once and that that call was
-        with the specified arguments."""
-        if not self.call_count == 1:
-            msg = ("Expected '%s' to be called once. Called %s times.%s"
-                   % (self._mock_name or 'mock',
-                      self.call_count,
-                      self._calls_repr()))
->           raise AssertionError(msg)
-E           AssertionError: Expected 'get_all_files' to be called once. Called 0 times.
-
-C:\Program Files\Python310\lib\unittest\mock.py:940: AssertionError
-
-During handling of the above exception, another exception occurred:
-
-mock_spark = <MagicMock spec='SparkSession' id='2013277118640'>, mock_extraction = <MagicMock name='ExtractNonSSFData()' spec='ExtractNonSSFData' id='2013276313520'>
-mock_write_to_log = <MagicMock name='write_to_log' id='2013276622416'>, run_month = '202402', failing_step = 'validate_data_quality'
-
-    @pytest.mark.parametrize(
-        "failing_step",
-        NONSSF_STEPS,
-    )
-    @pytest.mark.parametrize(
-        "run_month",
-        ["202402", "202505"],
-    )
-    def test_non_ssf_load_failure(
-        mock_spark,
-        mock_extraction,
-        mock_write_to_log,
-        run_month,
-        failing_step,
-    ):
-        """Test failure scenarios in non_ssf_load.
-
-        This test verifies the behavior of the `non_ssf_load` function when one of the steps
-        fails. It ensures that the process raises a `NonSSFExtractionError`,
-        performs the correct assertions, and logs the appropriate status.
-
-        Scenarios:
-            - Each step in `NONSSF_STEPS` is tested as the failing step.
-            - The process raises a `NonSSFExtractionError` when failing step is executed.
-            - The process logs the appropriate status:
-                - Started: Logs the start of the process and individual file processing.
-                - Completed: Logs the completion of one file.
-                - Failed: Logs the failure of the second file and the overall process.
-            - Special handling for the failing step:
-                - The `assert_before_and_after_failing_step` function verifies the behavior
-                  of steps before, including, and after the failing step.
-                - The `fail_on_iteration` parameter is set to `1` to simulate the failure
-                  occurring during the second iteration.
-        """
-        step_args = get_step_args(failing_step=failing_step, steps=NONSSF_STEPS)
-        files, _, _ = setup_mock_data(
-            mock_extraction,
-            **step_args,
-        )
-        with pytest.raises(NonSSFExtractionError):
-            non_ssf_load(mock_spark, run_month=run_month, run_id=1)
-
-        # Assertions with with correct parameters
-        generic_calls = get_assert_calls_args(files)
->       mock_extraction.get_all_files.assert_called_once_with()  # No parameters
-E       AssertionError: Expected 'get_all_files' to be called once. Called 0 times.
-
-test\scripts\test_nonssf_staging_process.py:159: AssertionError
-____________________________________________________________________________ test_non_ssf_load_failure[202505-initial_checks] ____________________________________________________________________________ 
-
-self = <MagicMock name='ExtractNonSSFData().get_all_files' id='2013274597472'>, args = (), kwargs = {}, msg = "Expected 'get_all_files' to be called once. Called 0 times."
-
-    def assert_called_once_with(self, /, *args, **kwargs):
-        """assert that the mock was called exactly once and that that call was
-        with the specified arguments."""
-        if not self.call_count == 1:
-            msg = ("Expected '%s' to be called once. Called %s times.%s"
-                   % (self._mock_name or 'mock',
-                      self.call_count,
-                      self._calls_repr()))
->           raise AssertionError(msg)
-E           AssertionError: Expected 'get_all_files' to be called once. Called 0 times.
-
-C:\Program Files\Python310\lib\unittest\mock.py:940: AssertionError
-
-During handling of the above exception, another exception occurred:
-
-mock_spark = <MagicMock spec='SparkSession' id='2013276350944'>, mock_extraction = <MagicMock name='ExtractNonSSFData()' spec='ExtractNonSSFData' id='2013278742144'>
-mock_write_to_log = <MagicMock name='write_to_log' id='2013277030864'>, run_month = '202505', failing_step = 'initial_checks'
-
-    @pytest.mark.parametrize(
-        "failing_step",
-        NONSSF_STEPS,
-    )
-    @pytest.mark.parametrize(
-        "run_month",
-        ["202402", "202505"],
-    )
-    def test_non_ssf_load_failure(
-        mock_spark,
-        mock_extraction,
-        mock_write_to_log,
-        run_month,
-        failing_step,
-    ):
-        """Test failure scenarios in non_ssf_load.
-
-        This test verifies the behavior of the `non_ssf_load` function when one of the steps
-        fails. It ensures that the process raises a `NonSSFExtractionError`,
-        performs the correct assertions, and logs the appropriate status.
-
-        Scenarios:
-            - Each step in `NONSSF_STEPS` is tested as the failing step.
-            - The process raises a `NonSSFExtractionError` when failing step is executed.
-            - The process logs the appropriate status:
-                - Started: Logs the start of the process and individual file processing.
-                - Completed: Logs the completion of one file.
-                - Failed: Logs the failure of the second file and the overall process.
-            - Special handling for the failing step:
-                - The `assert_before_and_after_failing_step` function verifies the behavior
-                  of steps before, including, and after the failing step.
-                - The `fail_on_iteration` parameter is set to `1` to simulate the failure
-                  occurring during the second iteration.
-        """
-        step_args = get_step_args(failing_step=failing_step, steps=NONSSF_STEPS)
-        files, _, _ = setup_mock_data(
-            mock_extraction,
-            **step_args,
-        )
-        with pytest.raises(NonSSFExtractionError):
-            non_ssf_load(mock_spark, run_month=run_month, run_id=1)
-
-        # Assertions with with correct parameters
-        generic_calls = get_assert_calls_args(files)
->       mock_extraction.get_all_files.assert_called_once_with()  # No parameters
-E       AssertionError: Expected 'get_all_files' to be called once. Called 0 times.
-
-test\scripts\test_nonssf_staging_process.py:159: AssertionError
-__________________________________________________________________________ test_non_ssf_load_failure[202505-convert_to_parquet] __________________________________________________________________________ 
-
-self = <MagicMock name='ExtractNonSSFData().get_all_files' id='2013277065360'>, args = (), kwargs = {}, msg = "Expected 'get_all_files' to be called once. Called 0 times."
-
-    def assert_called_once_with(self, /, *args, **kwargs):
-        """assert that the mock was called exactly once and that that call was
-        with the specified arguments."""
-        if not self.call_count == 1:
-            msg = ("Expected '%s' to be called once. Called %s times.%s"
-                   % (self._mock_name or 'mock',
-                      self.call_count,
-                      self._calls_repr()))
->           raise AssertionError(msg)
-E           AssertionError: Expected 'get_all_files' to be called once. Called 0 times.
-
-C:\Program Files\Python310\lib\unittest\mock.py:940: AssertionError
-
-During handling of the above exception, another exception occurred:
-
-mock_spark = <MagicMock spec='SparkSession' id='2013278728256'>, mock_extraction = <MagicMock name='ExtractNonSSFData()' spec='ExtractNonSSFData' id='2013275389376'>
-mock_write_to_log = <MagicMock name='write_to_log' id='2013277608096'>, run_month = '202505', failing_step = 'convert_to_parquet'
-
-    @pytest.mark.parametrize(
-        "failing_step",
-        NONSSF_STEPS,
-    )
-    @pytest.mark.parametrize(
-        "run_month",
-        ["202402", "202505"],
-    )
-    def test_non_ssf_load_failure(
-        mock_spark,
-        mock_extraction,
-        mock_write_to_log,
-        run_month,
-        failing_step,
-    ):
-        """Test failure scenarios in non_ssf_load.
-
-        This test verifies the behavior of the `non_ssf_load` function when one of the steps
-        fails. It ensures that the process raises a `NonSSFExtractionError`,
-        performs the correct assertions, and logs the appropriate status.
-
-        Scenarios:
-            - Each step in `NONSSF_STEPS` is tested as the failing step.
-            - The process raises a `NonSSFExtractionError` when failing step is executed.
-            - The process logs the appropriate status:
-                - Started: Logs the start of the process and individual file processing.
-                - Completed: Logs the completion of one file.
-                - Failed: Logs the failure of the second file and the overall process.
-            - Special handling for the failing step:
-                - The `assert_before_and_after_failing_step` function verifies the behavior
-                  of steps before, including, and after the failing step.
-                - The `fail_on_iteration` parameter is set to `1` to simulate the failure
-                  occurring during the second iteration.
-        """
-        step_args = get_step_args(failing_step=failing_step, steps=NONSSF_STEPS)
-        files, _, _ = setup_mock_data(
-            mock_extraction,
-            **step_args,
-        )
-        with pytest.raises(NonSSFExtractionError):
-            non_ssf_load(mock_spark, run_month=run_month, run_id=1)
-
-        # Assertions with with correct parameters
-        generic_calls = get_assert_calls_args(files)
->       mock_extraction.get_all_files.assert_called_once_with()  # No parameters
-E       AssertionError: Expected 'get_all_files' to be called once. Called 0 times.
-
-test\scripts\test_nonssf_staging_process.py:159: AssertionError
-___________________________________________________________________________ test_non_ssf_load_failure[202505-move_source_file] ___________________________________________________________________________ 
-
-self = <MagicMock name='ExtractNonSSFData().get_all_files' id='2013277239232'>, args = (), kwargs = {}, msg = "Expected 'get_all_files' to be called once. Called 0 times."
-
-    def assert_called_once_with(self, /, *args, **kwargs):
-        """assert that the mock was called exactly once and that that call was
-        with the specified arguments."""
-        if not self.call_count == 1:
-            msg = ("Expected '%s' to be called once. Called %s times.%s"
-                   % (self._mock_name or 'mock',
-                      self.call_count,
-                      self._calls_repr()))
->           raise AssertionError(msg)
-E           AssertionError: Expected 'get_all_files' to be called once. Called 0 times.
-
-C:\Program Files\Python310\lib\unittest\mock.py:940: AssertionError
-
-During handling of the above exception, another exception occurred:
-
-mock_spark = <MagicMock spec='SparkSession' id='2013278671088'>, mock_extraction = <MagicMock name='ExtractNonSSFData()' spec='ExtractNonSSFData' id='2013275902720'>
-mock_write_to_log = <MagicMock name='write_to_log' id='2013275773952'>, run_month = '202505', failing_step = 'move_source_file'
-
-    @pytest.mark.parametrize(
-        "failing_step",
-        NONSSF_STEPS,
-    )
-    @pytest.mark.parametrize(
-        "run_month",
-        ["202402", "202505"],
-    )
-    def test_non_ssf_load_failure(
-        mock_spark,
-        mock_extraction,
-        mock_write_to_log,
-        run_month,
-        failing_step,
-    ):
-        """Test failure scenarios in non_ssf_load.
-
-        This test verifies the behavior of the `non_ssf_load` function when one of the steps
-        fails. It ensures that the process raises a `NonSSFExtractionError`,
-        performs the correct assertions, and logs the appropriate status.
-
-        Scenarios:
-            - Each step in `NONSSF_STEPS` is tested as the failing step.
-            - The process raises a `NonSSFExtractionError` when failing step is executed.
-            - The process logs the appropriate status:
-                - Started: Logs the start of the process and individual file processing.
-                - Completed: Logs the completion of one file.
-                - Failed: Logs the failure of the second file and the overall process.
-            - Special handling for the failing step:
-                - The `assert_before_and_after_failing_step` function verifies the behavior
-                  of steps before, including, and after the failing step.
-                - The `fail_on_iteration` parameter is set to `1` to simulate the failure
-                  occurring during the second iteration.
-        """
-        step_args = get_step_args(failing_step=failing_step, steps=NONSSF_STEPS)
-        files, _, _ = setup_mock_data(
-            mock_extraction,
-            **step_args,
-        )
-        with pytest.raises(NonSSFExtractionError):
-            non_ssf_load(mock_spark, run_month=run_month, run_id=1)
-
-        # Assertions with with correct parameters
-        generic_calls = get_assert_calls_args(files)
->       mock_extraction.get_all_files.assert_called_once_with()  # No parameters
-E       AssertionError: Expected 'get_all_files' to be called once. Called 0 times.
-
-test\scripts\test_nonssf_staging_process.py:159: AssertionError
-__________________________________________________________________________ test_non_ssf_load_failure[202505-save_to_stg_table] ___________________________________________________________________________ 
-
-self = <MagicMock name='ExtractNonSSFData().get_all_files' id='2013276343744'>, args = (), kwargs = {}, msg = "Expected 'get_all_files' to be called once. Called 0 times."
-
-    def assert_called_once_with(self, /, *args, **kwargs):
-        """assert that the mock was called exactly once and that that call was
-        with the specified arguments."""
-        if not self.call_count == 1:
-            msg = ("Expected '%s' to be called once. Called %s times.%s"
-                   % (self._mock_name or 'mock',
-                      self.call_count,
-                      self._calls_repr()))
->           raise AssertionError(msg)
-E           AssertionError: Expected 'get_all_files' to be called once. Called 0 times.
-
-C:\Program Files\Python310\lib\unittest\mock.py:940: AssertionError
-
-During handling of the above exception, another exception occurred:
-
-mock_spark = <MagicMock spec='SparkSession' id='2013278734128'>, mock_extraction = <MagicMock name='ExtractNonSSFData()' spec='ExtractNonSSFData' id='2013275538144'>
-mock_write_to_log = <MagicMock name='write_to_log' id='2013222117312'>, run_month = '202505', failing_step = 'save_to_stg_table'
-
-    @pytest.mark.parametrize(
-        "failing_step",
-        NONSSF_STEPS,
-    )
-    @pytest.mark.parametrize(
-        "run_month",
-        ["202402", "202505"],
-    )
-    def test_non_ssf_load_failure(
-        mock_spark,
-        mock_extraction,
-        mock_write_to_log,
-        run_month,
-        failing_step,
-    ):
-        """Test failure scenarios in non_ssf_load.
-
-        This test verifies the behavior of the `non_ssf_load` function when one of the steps
-        fails. It ensures that the process raises a `NonSSFExtractionError`,
-        performs the correct assertions, and logs the appropriate status.
-
-        Scenarios:
-            - Each step in `NONSSF_STEPS` is tested as the failing step.
-            - The process raises a `NonSSFExtractionError` when failing step is executed.
-            - The process logs the appropriate status:
-                - Started: Logs the start of the process and individual file processing.
-                - Completed: Logs the completion of one file.
-                - Failed: Logs the failure of the second file and the overall process.
-            - Special handling for the failing step:
-                - The `assert_before_and_after_failing_step` function verifies the behavior
-                  of steps before, including, and after the failing step.
-                - The `fail_on_iteration` parameter is set to `1` to simulate the failure
-                  occurring during the second iteration.
-        """
-        step_args = get_step_args(failing_step=failing_step, steps=NONSSF_STEPS)
-        files, _, _ = setup_mock_data(
-            mock_extraction,
-            **step_args,
-        )
-        with pytest.raises(NonSSFExtractionError):
-            non_ssf_load(mock_spark, run_month=run_month, run_id=1)
-
-        # Assertions with with correct parameters
-        generic_calls = get_assert_calls_args(files)
->       mock_extraction.get_all_files.assert_called_once_with()  # No parameters
-E       AssertionError: Expected 'get_all_files' to be called once. Called 0 times.
-
-test\scripts\test_nonssf_staging_process.py:159: AssertionError
-________________________________________________________________________ test_non_ssf_load_failure[202505-validate_data_quality] _________________________________________________________________________ 
-
-self = <MagicMock name='ExtractNonSSFData().get_all_files' id='2013278727536'>, args = (), kwargs = {}, msg = "Expected 'get_all_files' to be called once. Called 0 times."
-
-    def assert_called_once_with(self, /, *args, **kwargs):
-        """assert that the mock was called exactly once and that that call was
-        with the specified arguments."""
-        if not self.call_count == 1:
-            msg = ("Expected '%s' to be called once. Called %s times.%s"
-                   % (self._mock_name or 'mock',
-                      self.call_count,
-                      self._calls_repr()))
->           raise AssertionError(msg)
-E           AssertionError: Expected 'get_all_files' to be called once. Called 0 times.
-
-C:\Program Files\Python310\lib\unittest\mock.py:940: AssertionError
-
-During handling of the above exception, another exception occurred:
-
-mock_spark = <MagicMock spec='SparkSession' id='2013275430896'>, mock_extraction = <MagicMock name='ExtractNonSSFData()' spec='ExtractNonSSFData' id='2013274722400'>
-mock_write_to_log = <MagicMock name='write_to_log' id='2013275783712'>, run_month = '202505', failing_step = 'validate_data_quality'
-
-    @pytest.mark.parametrize(
-        "failing_step",
-        NONSSF_STEPS,
-    )
-    @pytest.mark.parametrize(
-        "run_month",
-        ["202402", "202505"],
-    )
-    def test_non_ssf_load_failure(
-        mock_spark,
-        mock_extraction,
-        mock_write_to_log,
-        run_month,
-        failing_step,
-    ):
-        """Test failure scenarios in non_ssf_load.
-
-        This test verifies the behavior of the `non_ssf_load` function when one of the steps
-        fails. It ensures that the process raises a `NonSSFExtractionError`,
-        performs the correct assertions, and logs the appropriate status.
-
-        Scenarios:
-            - Each step in `NONSSF_STEPS` is tested as the failing step.
-            - The process raises a `NonSSFExtractionError` when failing step is executed.
-            - The process logs the appropriate status:
-                - Started: Logs the start of the process and individual file processing.
-                - Completed: Logs the completion of one file.
-                - Failed: Logs the failure of the second file and the overall process.
-            - Special handling for the failing step:
-                - The `assert_before_and_after_failing_step` function verifies the behavior
-                  of steps before, including, and after the failing step.
-                - The `fail_on_iteration` parameter is set to `1` to simulate the failure
-                  occurring during the second iteration.
-        """
-        step_args = get_step_args(failing_step=failing_step, steps=NONSSF_STEPS)
-        files, _, _ = setup_mock_data(
-            mock_extraction,
-            **step_args,
-        )
-        with pytest.raises(NonSSFExtractionError):
-            non_ssf_load(mock_spark, run_month=run_month, run_id=1)
-
-        # Assertions with with correct parameters
-        generic_calls = get_assert_calls_args(files)
->       mock_extraction.get_all_files.assert_called_once_with()  # No parameters
-E       AssertionError: Expected 'get_all_files' to be called once. Called 0 times.
-
-test\scripts\test_nonssf_staging_process.py:159: AssertionError
-_______________________________________________________________________________________ test_non_ssf_load_no_files _______________________________________________________________________________________ 
-
-mock_spark = <MagicMock spec='SparkSession' id='2013277431040'>, mock_extraction = <MagicMock name='ExtractNonSSFData()' spec='ExtractNonSSFData' id='2013275871152'>
-mock_write_to_log = <MagicMock name='write_to_log' id='2013277075728'>
-
-    def test_non_ssf_load_no_files(mock_spark, mock_extraction, mock_write_to_log):
-        """Test scenario where no files are found."""
-        mock_extraction.get_all_files.return_value = []  # No files found
->       non_ssf_load(mock_spark, run_month="202301", run_id=1)
-
-test\scripts\test_nonssf_staging_process.py:179:
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _  
-src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py:81: in non_ssf_load
-    append_to_process_log(
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _  
-
-spark = <MagicMock spec='SparkSession' id='2013277431040'>, run_month = '202301'
-record = {'Comments': 'Critical files missing after deadline: ', 'Component': 'Non-SSF', 'Layer': 'Staging', 'RunID': 1, ...}, source_system = '', comments = 'Critical files missing after deadline: '    
-status = 'Failed', file_delivery_status = <NonSSFStepStatus.COMPLETED: 7>
-
-    def append_to_process_log(
-        spark: SparkSession,
-        run_month: str,
-        record: dict[str, int | datetime | str],
-        source_system: str,
-        comments: str,
-        status: Literal["Completed", "Started", "Failed"] = "Completed",
-        file_delivery_status: NonSSFStepStatus = NonSSFStepStatus.COMPLETED,
-    ) -> None:
-        """Append log entry to process log table.
-
-        Args:
-            spark (SparkSession): SparkSession
-            run_month (str): Run month ID
-            record (RecordConfig): Data record, incl all columns of process log table.
-            source_system (str): Source System
-            comment (str): Comment of step
-            status (Literal["Completed", "Started", "Failed"]): Status of the step.
-                Defaults to "Completed".
-
-        Raises:
-            NonSSFExtractionError: If status is "Failed".
-        """
-        record["Status"] = status
-        record["Comments"] = comments
-        record["SourceSystem"] = source_system
-        write_to_log(
-            spark=spark,
-            run_month=run_month,
-            record=dict(record),
-            log_table="process_log",
-        )
-        if status == "Failed":
-            # Overall process should be set to failed as well
-            record["SourceSystem"] = ""
-            write_to_log(
-                spark=spark,
-                run_month=run_month,
-                record=dict(record),
-                log_table="process_log",
-            )
->           raise NonSSFExtractionError(file_delivery_status, additional_info=comments)
-E           abnamro_bsrc_etl.config.exceptions.NonSSFExtractionError: Step 'Completed' failed. Critical files missing after deadline:
-
-src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py:238: NonSSFExtractionError
-============================================================================================ warnings summary ============================================================================================ 
+        appended_status = [
+            c[1]["record"]["Status"] for c in mock_write_to_log.call_args_list
+        ]
+        assert len([s for s in appended_status if s == "Started"]) == started
+>       assert len([s for s in appended_status if s == "Failed"]) == failed
+E       AssertionError
+
+test\scripts\assert_utils.py:45: AssertionError
+======================================================================================= warnings summary ======================================================================================= 
 ..\bsrc-etl-venv\lib\site-packages\holidays\deprecations\v1_incompatibility.py:40
   C:\Users\B25712\bsrc-etl-venv\bsrc-etl-venv\lib\site-packages\holidays\deprecations\v1_incompatibility.py:40: FutureIncompatibilityWarning:
 
@@ -967,73 +157,59 @@ src\abnamro_bsrc_etl\__init__.py                                     0      0   
 src\abnamro_bsrc_etl\config\__init__.py                              0      0   100%
 src\abnamro_bsrc_etl\config\business_logic.py                       54      0   100%
 src\abnamro_bsrc_etl\config\constants.py                             2      0   100%
-src\abnamro_bsrc_etl\config\exceptions.py                           31      0   100%
+src\abnamro_bsrc_etl\config\exceptions.py                           31      2    94%   66-71
 src\abnamro_bsrc_etl\config\process.py                               7      0   100%
-src\abnamro_bsrc_etl\config\schema.py                                5      0   100%
+src\abnamro_bsrc_etl\config\schema.py                                5      5     0%   1-52
 src\abnamro_bsrc_etl\dq\__init__.py                                  0      0   100%
-src\abnamro_bsrc_etl\dq\dq_validation.py                           150      0   100%
+src\abnamro_bsrc_etl\dq\dq_validation.py                           150    132    12%   47-112, 166-181, 197-249, 265-286, 318-350, 372-392, 414-486
 src\abnamro_bsrc_etl\extract\__init__.py                             0      0   100%
-src\abnamro_bsrc_etl\extract\master_data_sql.py                     96      6    94%   122-136
+src\abnamro_bsrc_etl\extract\master_data_sql.py                     96     71    26%   31-33, 37-38, 42, 59-88, 109-137, 149-156, 162-164, 188, 222-231, 285-300, 329-356
 src\abnamro_bsrc_etl\month_setup\__init__.py                         0      0   100%
-src\abnamro_bsrc_etl\month_setup\dial_derive_snapshotdate.py        36      0   100%
-src\abnamro_bsrc_etl\month_setup\metadata_log_tables.py             40      9    78%   175-180, 187-191, 197-201
-src\abnamro_bsrc_etl\month_setup\setup_new_month.py                 29     11    62%   60-84
+src\abnamro_bsrc_etl\month_setup\dial_derive_snapshotdate.py        36     27    25%   12-18, 28-37, 47-50, 69-85
+src\abnamro_bsrc_etl\month_setup\metadata_log_tables.py             40     28    30%   23-84, 88-159, 166-203
+src\abnamro_bsrc_etl\month_setup\setup_new_month.py                 29     29     0%   1-94
 src\abnamro_bsrc_etl\scripts\__init__.py                             0      0   100%
-src\abnamro_bsrc_etl\scripts\dial_check_delayed_files.py            27      0   100%
-src\abnamro_bsrc_etl\scripts\dial_staging_process.py                65      0   100%
-src\abnamro_bsrc_etl\scripts\export_tine_tables.py                   6      0   100%
-src\abnamro_bsrc_etl\scripts\new_month_setup.py                      7      0   100%
-src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py              57     25    56%   86-192
-src\abnamro_bsrc_etl\scripts\run_mapping.py                         26      0   100%
-src\abnamro_bsrc_etl\scripts\ssf_staging_process.py                 58      0   100%
+src\abnamro_bsrc_etl\scripts\dial_check_delayed_files.py            27     27     0%   1-69
+src\abnamro_bsrc_etl\scripts\dial_staging_process.py                65     65     0%   1-280
+src\abnamro_bsrc_etl\scripts\export_tine_tables.py                   6      6     0%   1-9
+src\abnamro_bsrc_etl\scripts\new_month_setup.py                      7      7     0%   1-18
+src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py              63      0   100%
+src\abnamro_bsrc_etl\scripts\run_mapping.py                         26     26     0%   9-113
+src\abnamro_bsrc_etl\scripts\ssf_staging_process.py                 58     58     0%   1-234
 src\abnamro_bsrc_etl\staging\__init__.py                             0      0   100%
-src\abnamro_bsrc_etl\staging\extract_base.py                        77      3    96%   162-164
-src\abnamro_bsrc_etl\staging\extract_dial_data.py                   77      0   100%
-src\abnamro_bsrc_etl\staging\extract_nonssf_data.py                144      8    94%   183-188, 237, 263, 278-279, 388-392
-src\abnamro_bsrc_etl\staging\extract_ssf_data.py                   177     17    90%   269-273, 299-305, 320-321, 352, 459-460, 512-513, 516-519, 614-617
-src\abnamro_bsrc_etl\staging\status.py                              58      3    95%   18, 53-54
+src\abnamro_bsrc_etl\staging\extract_base.py                        77     45    42%   73-83, 97, 107-113, 155-176, 205-219, 275-321, 343-352, 387-404, 420
+src\abnamro_bsrc_etl\staging\extract_dial_data.py                   77     77     0%   1-360
+src\abnamro_bsrc_etl\staging\extract_nonssf_data.py                149    120    19%   27, 38-55, 68-87, 108-130, 146-222, 234-283, 294-317, 330-377, 397-431, 446, 462, 485-507
+src\abnamro_bsrc_etl\staging\extract_ssf_data.py                   177    177     0%   1-620
+src\abnamro_bsrc_etl\staging\status.py                              58      5    91%   18, 53-54, 107, 151
 src\abnamro_bsrc_etl\transform\__init__.py                           0      0   100%
-src\abnamro_bsrc_etl\transform\table_write_and_comment.py           79      0   100%
-src\abnamro_bsrc_etl\transform\transform_business_logic_sql.py       9      0   100%
+src\abnamro_bsrc_etl\transform\table_write_and_comment.py           79     79     0%   1-237
+src\abnamro_bsrc_etl\transform\transform_business_logic_sql.py       9      9     0%   1-25
 src\abnamro_bsrc_etl\utils\__init__.py                               0      0   100%
-src\abnamro_bsrc_etl\utils\alias_util.py                            18      0   100%
-src\abnamro_bsrc_etl\utils\export_parquet.py                        22      2    91%   67-68
-src\abnamro_bsrc_etl\utils\get_dbutils.py                            3      0   100%
-src\abnamro_bsrc_etl\utils\get_env.py                               12      0   100%
+src\abnamro_bsrc_etl\utils\alias_util.py                            18     18     0%   1-109
+src\abnamro_bsrc_etl\utils\export_parquet.py                        22     12    45%   38-57, 67-68
+src\abnamro_bsrc_etl\utils\get_dbutils.py                            3      1    67%   6
+src\abnamro_bsrc_etl\utils\get_env.py                               12      6    50%   22-32, 48, 64, 84
 src\abnamro_bsrc_etl\utils\logging_util.py                          10      0   100%
-src\abnamro_bsrc_etl\utils\parameter_utils.py                       25      0   100%
-src\abnamro_bsrc_etl\utils\parse_yaml.py                            28      0   100%
-src\abnamro_bsrc_etl\utils\sources_util.py                          56      6    89%   106-110, 149, 202
-src\abnamro_bsrc_etl\utils\table_logging.py                         19      0   100%
-src\abnamro_bsrc_etl\utils\table_schema.py                           6      0   100%
-src\abnamro_bsrc_etl\utils\transformations_util.py                  20      0   100%
+src\abnamro_bsrc_etl\utils\parameter_utils.py                       25     19    24%   33-53, 79-84, 105-116
+src\abnamro_bsrc_etl\utils\parse_yaml.py                            28     28     0%   1-127
+src\abnamro_bsrc_etl\utils\sources_util.py                          56     56     0%   1-218
+src\abnamro_bsrc_etl\utils\table_logging.py                         19     11    42%   25-37, 54-56
+src\abnamro_bsrc_etl\utils\table_schema.py                           6      6     0%   1-16
+src\abnamro_bsrc_etl\utils\transformations_util.py                  20     12    40%   20-25, 39, 51, 65-68
 src\abnamro_bsrc_etl\validate\__init__.py                            0      0   100%
-src\abnamro_bsrc_etl\validate\base.py                                5      0   100%
-src\abnamro_bsrc_etl\validate\expressions.py                        34      0   100%
-src\abnamro_bsrc_etl\validate\run_all.py                            15      0   100%
-src\abnamro_bsrc_etl\validate\sources.py                            33      0   100%
-src\abnamro_bsrc_etl\validate\transformations.py                   200     18    91%   71-72, 120, 135-136, 314-315, 338-344, 349-352, 477-478
-src\abnamro_bsrc_etl\validate\validate_sql.py                       63      0   100%
-src\abnamro_bsrc_etl\validate\yaml.py                               19      0   100%
+src\abnamro_bsrc_etl\validate\base.py                                5      5     0%   1-7
+src\abnamro_bsrc_etl\validate\expressions.py                        34     34     0%   1-75
+src\abnamro_bsrc_etl\validate\run_all.py                            15     15     0%   1-48
+src\abnamro_bsrc_etl\validate\sources.py                            33     33     0%   1-67
+src\abnamro_bsrc_etl\validate\transformations.py                   200    200     0%   1-593
+src\abnamro_bsrc_etl\validate\validate_sql.py                       63     63     0%   1-130
+src\abnamro_bsrc_etl\validate\yaml.py                               19     19     0%   1-34
 ----------------------------------------------------------------------------------------------
-TOTAL                                                             1905    108    94%
+TOTAL                                                             1916   1533    20%
 Coverage HTML written to dir htmlcov
 
-======================================================================================== short test summary info =========================================================================================
-FAILED test/scripts/test_nonssf_staging_process.py::test_non_ssf_load_success[202402] - abnamro_bsrc_etl.config.exceptions.NonSSFExtractionError: Step 'Completed' failed. Critical files missing after deadline:
-FAILED test/scripts/test_nonssf_staging_process.py::test_non_ssf_load_success[202504] - abnamro_bsrc_etl.config.exceptions.NonSSFExtractionError: Step 'Completed' failed. Critical files missing after deadline:
-FAILED test/scripts/test_nonssf_staging_process.py::test_non_ssf_load_failure[202402-initial_checks] - AssertionError: Expected 'get_all_files' to be called once. Called 0 times.
-FAILED test/scripts/test_nonssf_staging_process.py::test_non_ssf_load_failure[202402-convert_to_parquet] - AssertionError: Expected 'get_all_files' to be called once. Called 0 times.
-FAILED test/scripts/test_nonssf_staging_process.py::test_non_ssf_load_failure[202402-move_source_file] - AssertionError: Expected 'get_all_files' to be called once. Called 0 times.
-FAILED test/scripts/test_nonssf_staging_process.py::test_non_ssf_load_failure[202402-save_to_stg_table] - AssertionError: Expected 'get_all_files' to be called once. Called 0 times.
-FAILED test/scripts/test_nonssf_staging_process.py::test_non_ssf_load_failure[202402-validate_data_quality] - AssertionError: Expected 'get_all_files' to be called once. Called 0 times.
-FAILED test/scripts/test_nonssf_staging_process.py::test_non_ssf_load_failure[202505-initial_checks] - AssertionError: Expected 'get_all_files' to be called once. Called 0 times.
-FAILED test/scripts/test_nonssf_staging_process.py::test_non_ssf_load_failure[202505-convert_to_parquet] - AssertionError: Expected 'get_all_files' to be called once. Called 0 times.
-FAILED test/scripts/test_nonssf_staging_process.py::test_non_ssf_load_failure[202505-move_source_file] - AssertionError: Expected 'get_all_files' to be called once. Called 0 times.
-FAILED test/scripts/test_nonssf_staging_process.py::test_non_ssf_load_failure[202505-save_to_stg_table] - AssertionError: Expected 'get_all_files' to be called once. Called 0 times.
-FAILED test/scripts/test_nonssf_staging_process.py::test_non_ssf_load_failure[202505-validate_data_quality] - AssertionError: Expected 'get_all_files' to be called once. Called 0 times.
-FAILED test/scripts/test_nonssf_staging_process.py::test_non_ssf_load_no_files - abnamro_bsrc_etl.config.exceptions.NonSSFExtractionError: Step 'Completed' failed. Critical files missing after deadline: 
-========================================================================= 13 failed, 336 passed, 1 warning in 985.77s (0:16:25) ========================================================================== 
-SUCCESS: The process with PID 27024 (child process of PID 15708) has been terminated.
-SUCCESS: The process with PID 15708 (child process of PID 25828) has been terminated.
-SUCCESS: The process with PID 25828 (child process of PID 5204) has been terminated.
+=================================================================================== short test summary info ==================================================================================== 
+FAILED test/scripts/test_nonssf_staging_process.py::test_non_ssf_load_missing_critical_files_after_deadline - AssertionError
+FAILED test/scripts/test_nonssf_staging_process.py::test_non_ssf_load_mixed_missing_files_after_deadline - AssertionError
+=========================================================================== 2 failed, 15 passed, 1 warning in 6.83s ============================================================================ 
