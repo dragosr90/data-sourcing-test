@@ -19,40 +19,35 @@ def _check_and_fail_if_critical_files_missing(
     log_config: ProcessLogConfig,
 ) -> None:
     """Check for missing files and fail if critical files are missing.
-    
+
     Args:
         extraction: ExtractNonSSFData instance
         log_config: Process log configuration
-        
+
     Raises:
         NonSSFExtractionError: If critical files (NME/FINOB) are missing
     """
     missing_files = extraction.check_missing_files_after_deadline()
     if not missing_files:
         return
-        
+
     # Log errors for missing files
     has_critical_missing = extraction.log_missing_files_errors(missing_files)
 
     # Fail the process if critical files (NME/FINOB) are missing after deadline
     if has_critical_missing:
         nme_finob_missing = [
-            f for f in missing_files
-            if f['source_system'].upper() in ['NME', 'FINOB']
+            f for f in missing_files if f["source_system"].upper() in ["NME", "FINOB"]
         ]
         # Create error summary with proper f-string formatting
         file_details = [
-            f"{f['file_name']} (deadline: {f['deadline']})"
-            for f in nme_finob_missing
+            f"{f['file_name']} (deadline: {f['deadline']})" for f in nme_finob_missing
         ]
         error_summary = (
             f"Critical files missing after deadline: {', '.join(file_details)}"
         )
         append_to_process_log(
-            **log_config,
-            source_system="",
-            comments=error_summary,
-            status="Failed"
+            **log_config, source_system="", comments=error_summary, status="Failed"
         )
         # The append_to_process_log will raise NonSSFExtractionError when
         # status is "Failed"
@@ -64,19 +59,19 @@ def _process_single_file(
     log_config: ProcessLogConfig,
 ) -> None:
     """Process a single file through all stages.
-    
+
     Args:
         extraction: ExtractNonSSFData instance
         file: Dictionary with 'source_system' and 'file_name'
         log_config: Process log configuration
-        
+
     Raises:
         NonSSFExtractionError: If any processing step fails
     """
     source_system = file["source_system"]
     file_name = file["file_name"]
     file_comment = f"Processing {Path(file_name).stem}"
-    
+
     # Start the process for corresponding trigger file
     append_to_process_log(
         **log_config,
@@ -86,9 +81,7 @@ def _process_single_file(
     )
 
     # 1. Initial checks
-    if not extraction.initial_checks(
-        file_name=file_name, source_system=source_system
-    ):
+    if not extraction.initial_checks(file_name=file_name, source_system=source_system):
         append_to_process_log(
             **log_config,
             source_system=source_system,
