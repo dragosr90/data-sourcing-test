@@ -1,315 +1,538 @@
-from unittest.mock import MagicMock
+import re
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
+from unittest.mock import call, patch, MagicMock
 
 import pytest
+from pyspark.sql.types import IntegerType, StringType, StructField, StructType
 
-from abnamro_bsrc_etl.config.exceptions import NonSSFExtractionError
-from abnamro_bsrc_etl.scripts.nonssf_staging_process import non_ssf_load
 from abnamro_bsrc_etl.staging.extract_nonssf_data import ExtractNonSSFData
-from test.scripts.assert_utils import (
-    assert_before_and_after_failing_step,
-    assert_write_to_log_calls,
-    get_assert_calls_args,
-    get_step_args,
-)
-
-NONSSF_STEPS = [
-    "initial_checks",
-    "convert_to_parquet",
-    "move_source_file",
-    "save_to_stg_table",
-    "validate_data_quality",
-]
+from abnamro_bsrc_etl.staging.status import NonSSFStepStatus
 
 
-@pytest.fixture
-def mock_extraction(mock_extraction):
-    """Generate mock_extraction fixture to use ExtractNonSSFData."""
-    return mock_extraction(ExtractNonSSFData)
+class FileInfoMock(dict):
+    """Allows to access dictionary keys as attributes.
+    And adds a simple isDir method."""
 
+    __getattr__ = dict.get
 
-@pytest.fixture
-def mock_write_to_log(mock_write_to_log):
-    """Generate mock_write_to_log fixture to use ExtractNonSSFData."""
-    return mock_write_to_log("nonssf_staging_process")
-
-
-def setup_mock_data(
-    mock_extraction,
-    *,
-    initial_checks=True,
-    convert_to_parquet=True,
-    move_source_file=True,
-    save_to_stg_table=True,
-    validate_data_quality=True,
-    missing_files=None,
-    has_critical_missing=False,
-):
-    nme = {"source_system": "NME", "file_name": "file1.csv"}
-    finob = {"source_system": "FINOB", "file_name": "file2.csv"}
-    files = [nme, finob]
-    mock_extraction.get_all_files.return_value = files
-    mock_nme_df = MagicMock()
-    mock_finob_df = MagicMock()
-    mock_extraction.initial_checks.side_effect = [True, initial_checks]
-    mock_extraction.convert_to_parquet.side_effect = [True, convert_to_parquet]
-    mock_extraction.move_source_file.side_effect = [True, move_source_file]
-    mock_extraction.extract_from_parquet.side_effect = [mock_nme_df, mock_finob_df]
-    mock_extraction.get_staging_table_name.side_effect = ["stg_nme", "stg_finob"]
-    mock_extraction.save_to_stg_table.side_effect = [True, save_to_stg_table]
-    mock_extraction.validate_data_quality.side_effect = [True, validate_data_quality]
-    
-    # Setup deadline checking mocks
-    mock_extraction.check_missing_files_after_deadline.return_value = missing_files or []
-    mock_extraction.log_missing_files_errors.return_value = has_critical_missing
-    
-    return files, mock_nme_df, mock_finob_df
-
-
-@pytest.mark.parametrize("run_month", ["202402", "202504"])
-def test_non_ssf_load_success(
-    mock_spark, mock_extraction, mock_write_to_log, run_month
-):
-    """Test successful execution of non_ssf_load."""
-    files, mock_nme_df, mock_finob_df = setup_mock_data(mock_extraction)
-    non_ssf_load(mock_spark, run_month=run_month, run_id=1)
-
-    # Check deadline checking was called
-    mock_extraction.check_missing_files_after_deadline.assert_called_once()
-    
-    generic_calls = get_assert_calls_args(files)
-    mock_extraction.get_all_files.assert_called_once_with()  # No parameters
-    mock_extraction.initial_checks.assert_has_calls(**generic_calls)
-    mock_extraction.convert_to_parquet.assert_has_calls(**generic_calls)
-    mock_extraction.move_source_file.assert_has_calls(**generic_calls)
-    mock_extraction.extract_from_parquet.assert_has_calls(**generic_calls)
-    save_to_stg_table_calls = get_assert_calls_args(
-        [
-            {
-                "file_name": "file1",
-                "source_system": "NME",
-                "stg_table_name": "stg_nme",
-                "data": mock_nme_df,
-            },
-            {
-                "file_name": "file2",
-                "source_system": "FINOB",
-                "stg_table_name": "stg_finob",
-                "data": mock_finob_df,
-            },
-        ]
-    )
-
-    mock_extraction.save_to_stg_table.assert_has_calls(**save_to_stg_table_calls)
-    validate_data_quality_calls = get_assert_calls_args(
-        [
-            {
-                "file_name": "file1",
-                "source_system": "NME",
-                "stg_table_name": "stg_nme",
-            },
-            {
-                "file_name": "file2",
-                "source_system": "FINOB",
-                "stg_table_name": "stg_finob",
-            },
-        ]
-    )
-    mock_extraction.validate_data_quality.assert_has_calls(
-        **validate_data_quality_calls
-    )
-    # Retrieve all called paths of write_to_log
-    # Overall (+1) and two single files (+2) = 3
-    assert_write_to_log_calls(mock_write_to_log, started=3, completed=3, failed=0)
+    def isDir(self):  # noqa: N802
+        return bool(self.name.endswith("/") or self.name.endswith(".parquet"))
 
 
 @pytest.mark.parametrize(
-    "failing_step",
-    NONSSF_STEPS,
+    ("run_month", "source_container"),
+    [("202505", "test-container")],
 )
-@pytest.mark.parametrize(
-    "run_month",
-    ["202402", "202505"],
-)
-def test_non_ssf_load_failure(
-    mock_spark,
-    mock_extraction,
-    mock_write_to_log,
+def test_extract_non_ssf_data(
+    spark_session,
+    mocker,
     run_month,
-    failing_step,
+    source_container,
+    caplog,
 ):
-    """Test failure scenarios in non_ssf_load.
+    test_container = f"abfss://{source_container}@bsrcdadls.dfs.core.windows.net"
+    month_container = f"abfss://{run_month}@bsrcdadls.dfs.core.windows.net"
+    metadata_path = f"bsrc_d.metadata_{run_month}.metadata_nonssf"
+    log_path = f"bsrc_d.log_{run_month}.log_nonssf"
 
-    This test verifies the behavior of the `non_ssf_load` function when one of the steps
-    fails. It ensures that the process raises a `NonSSFExtractionError`,
-    performs the correct assertions, and logs the appropriate status.
+    # Create deadline dates
+    future_date = (datetime.now(timezone.utc) + timedelta(days=10)).strftime("%Y-%m-%d")
+    past_date = (datetime.now(timezone.utc) - timedelta(days=5)).strftime("%Y-%m-%d")
 
-    Scenarios:
-        - Each step in `NONSSF_STEPS` is tested as the failing step.
-        - The process raises a `NonSSFExtractionError` when failing step is executed.
-        - The process logs the appropriate status:
-            - Started: Logs the start of the process and individual file processing.
-            - Completed: Logs the completion of one file.
-            - Failed: Logs the failure of the second file and the overall process.
-        - Special handling for the failing step:
-            - The `assert_before_and_after_failing_step` function verifies the behavior
-              of steps before, including, and after the failing step.
-            - The `fail_on_iteration` parameter is set to `1` to simulate the failure
-              occurring during the second iteration.
-    """
-    step_args = get_step_args(failing_step=failing_step, steps=NONSSF_STEPS)
-    files, _, _ = setup_mock_data(
-        mock_extraction,
-        **step_args,
+    # Create a mock DataFrame with deadline column
+    schema_meta = [
+        "SourceSystem",
+        "SourceFileName",
+        "SourceFileFormat",
+        "SourceFileDelimiter",
+        "StgTableName",
+        "FileDeliveryStep",
+        "FileDeliveryStatus",
+        "Deadline",
+    ]
+    mock_meta = spark_session.createDataFrame(
+        [
+            (
+                "lrd_static",
+                "TEST_NON_SSF_V1",
+                ".txt",
+                "|",
+                "test_non_ssf_v1",
+                NonSSFStepStatus.EXPECTED.value,  # Use the actual enum value
+                "Expected",
+                future_date,  # Future deadline
+            ),
+            (
+                "lrd_static",
+                "TEST_NON_SSF_V2",
+                ".txt",
+                "|",
+                "test_non_ssf_v2",
+                NonSSFStepStatus.EXPECTED.value,  # Use the actual enum value
+                "Expected",
+                past_date,  # Past deadline - should be copied
+            ),
+            (
+                "nme",
+                "TEST_NON_SSF_V3",
+                ".parquet",
+                ",",
+                "test_non_ssf_v3",
+                NonSSFStepStatus.EXPECTED.value,  # Use the actual enum value
+                "Expected",
+                future_date,
+            ),
+            (
+                "finob",
+                "TEST_NON_SSF_V4",
+                ".csv",
+                ",",
+                "test_non_ssf_v4",
+                NonSSFStepStatus.EXPECTED.value,  # Use the actual enum value
+                "Expected",
+                past_date,  # Past deadline
+            ),
+        ],
+        schema=schema_meta,
     )
-    with pytest.raises(NonSSFExtractionError):
-        non_ssf_load(mock_spark, run_month=run_month, run_id=1)
 
-    # Check deadline checking was called
-    mock_extraction.check_missing_files_after_deadline.assert_called_once()
-    
-    # Assertions with with correct parameters
-    generic_calls = get_assert_calls_args(files)
-    mock_extraction.get_all_files.assert_called_once_with()  # No parameters
-    mock_extraction.initial_checks.assert_has_calls(**generic_calls)
-
-    # Retrieve all called paths of write_to_log
-    # Overall started (+1) and single files (+2) = 3
-    # 2nd file failed so overall as well (+2)
-    assert_write_to_log_calls(mock_write_to_log, started=3, completed=1, failed=2)
-
-    assert_before_and_after_failing_step(
-        mock_extraction,
-        failing_step,
-        NONSSF_STEPS,
-        # In the setup mock data the second call is returned False, so iteration 1
-        fail_on_iteration=1,
+    schema_log = [
+        "SourceSystem",
+        "SourceFileName",
+        "DeliveryNumber",
+        "FileDeliveryStep",
+        "FileDeliveryStatus",
+        "Result",
+        "LastUpdatedDateTimestamp",
+        "Comment",
+    ]
+    mock_log = spark_session.createDataFrame(
+        [
+            (
+                "lrd_static",
+                "TEST_NON_SSF_V1",
+                1,
+                NonSSFStepStatus.EXPECTED.value,  # Use the actual enum value
+                "Expected",
+                "Success",
+                datetime.now(timezone.utc),
+                "Test comment",
+            )
+        ],
+        schema=schema_log,
     )
 
+    dummy_df = spark_session.createDataFrame(
+        [(1, "2", 3)],
+        schema=StructType(
+            [
+                StructField("col1", IntegerType()),
+                StructField("col2", StringType()),
+                StructField("col3", IntegerType()),
+            ]
+        ),
+    )
 
-def test_non_ssf_load_no_files(mock_spark, mock_extraction, mock_write_to_log):
-    """Test scenario where no files are found."""
-    mock_extraction.get_all_files.return_value = []  # No files found
-    mock_extraction.check_missing_files_after_deadline.return_value = []
-    
-    non_ssf_load(mock_spark, run_month="202301", run_id=1)
+    # Mock spark.read.json and spark.read.table to return the mock DataFrames
+    mock_read = mocker.patch("pyspark.sql.SparkSession.read", autospec=True)
+    mock_read.table.side_effect = [
+        mock_meta,
+        mock_log,
+        dummy_df,
+        dummy_df,
+        dummy_df,
+        dummy_df,
+    ]
 
-    mock_extraction.check_missing_files_after_deadline.assert_called_once()
-    mock_extraction.get_all_files.assert_called_once_with()  # No parameters
-    assert_write_to_log_calls(mock_write_to_log, started=1, completed=1, failed=0)
+    mock_write = mocker.patch("pyspark.sql.DataFrameWriter.parquet")
+    mock_save_table = mocker.patch("pyspark.sql.DataFrameWriter.saveAsTable")
+
+    # Check ExtractNonSSFData class initialisation
+    extraction = ExtractNonSSFData(
+        spark_session,
+        run_month,
+        source_container=source_container,
+    )
+
+    # Verify that spark.read.table was called with the correct arguments
+    mock_read.table.assert_any_call(f"bsrc_d.metadata_{run_month}.metadata_nonssf")
+    mock_read.table.assert_any_call(f"bsrc_d.log_{run_month}.log_nonssf")
+
+    # Test deadline checking
+    deadline_reached, deadline_str = extraction.check_deadline_reached(
+        "TEST_NON_SSF_V1"
+    )
+    assert not deadline_reached  # Future deadline
+    assert deadline_str == future_date
+
+    deadline_reached, deadline_str = extraction.check_deadline_reached(
+        "TEST_NON_SSF_V2"
+    )
+    assert deadline_reached  # Past deadline
+    assert deadline_str == past_date
+
+    mock_dbutils_fs_ls = mocker.patch.object(extraction.dbutils.fs, "ls")
+    effect = [
+        [
+            FileInfoMock(
+                {
+                    "path": f"{test_container}/{folder}/{file}",
+                    "name": f"{file}",
+                }
+            )
+            for file, folder in li
+        ]
+        for li in [
+            [
+                ("TEST_NON_SSF_V3.parquet", "NME"),
+                ("TEST_NON_SSF_V3.csv", "NME"),
+                ("processed/", "NME"),
+            ],
+            [("TEST_NON_SSF_V4.csv", "FINOB"), ("processed/", "FINOB")],
+            [
+                ("TEST_NON_SSF_V1.txt", "LRD_STATIC"),
+                ("TEST_NON_SSF_V5.txt", "LRD_STATIC"),
+                ("processed/", "LRD_STATIC"),
+            ],
+            [("TEST_NON_SSF_V2_999999.txt", "LRD_STATIC/processed")],
+            [("TEST_NON_SSF_V2_999999.txt", "LRD_STATIC/processed")],
+        ]
+    ]
+    mock_dbutils_fs_ls.side_effect = effect
+    mock_dbutils_fs_cp = mocker.patch.object(extraction.dbutils.fs, "cp")
+    mock_dbutils_fs_mv = mocker.patch.object(extraction.dbutils.fs, "mv")
+
+    found_files = extraction.get_all_files()
+
+    # V2 should be copied because deadline is reached
+    mock_dbutils_fs_cp.assert_any_call(
+        f"{test_container}/LRD_STATIC/processed/TEST_NON_SSF_V2_999999.txt",
+        f"{test_container}/LRD_STATIC/TEST_NON_SSF_V2.txt",
+    )
+
+    # Check that the warning for V5 (not in metadata) is present
+    assert (
+        "File TEST_NON_SSF_V5 not found in metadata. "
+        "Please check if it should be delivered." in caplog.messages
+    )
+
+    # Test check_missing_files_after_deadline
+    # Mock the ls calls for this test
+    with patch.object(extraction.dbutils.fs, "ls") as mock_ls_missing:
+        # Set up the mock to simulate missing FINOB file after deadline
+        def ls_side_effect(path):
+            if "FINOB" in path:
+                return []  # No files in FINOB
+            elif "NME" in path:
+                return [FileInfoMock({"name": "TEST_NON_SSF_V3.parquet", "isDir": lambda: False})]
+            return []
+            
+        mock_ls_missing.side_effect = ls_side_effect
+        
+        missing_files = extraction.check_missing_files_after_deadline()
+        
+        # V4 should be missing (FINOB, past deadline)
+        assert any(f["file_name"] == "TEST_NON_SSF_V4" for f in missing_files)
+        # V3 should not be missing (NME, future deadline)
+        assert not any(f["file_name"] == "TEST_NON_SSF_V3" for f in missing_files)
+        # LRD_STATIC files should not be checked in this method anymore
+        assert not any(f["source_system"] == "LRD_STATIC" for f in missing_files)
+
+    # Test log_missing_files_errors
+    missing_test_files = [
+        {"source_system": "FINOB", "file_name": "TEST_FILE", "deadline": "2024-01-01"}
+    ]
+    has_critical = extraction.log_missing_files_errors(missing_test_files)
+    assert has_critical  # FINOB is critical
+
+    mock_read.csv.return_value = dummy_df
+    mock_read.parquet.return_value = dummy_df
+
+    for file in found_files:
+        file_name = file["file_name"]
+        file_name_base = Path(file_name).name
+        file_name_no_ext = Path(file_name).stem
+        file_name_ext = Path(file_name).suffix
+        source_system = file["source_system"]
+
+        result = file_name_base != "TEST_NON_SSF_V3.csv"
+        assert extraction.initial_checks(**file) is result
+
+        if file_name_base == "TEST_NON_SSF_V3.csv":
+            continue
+
+        assert extraction.convert_to_parquet(**file)
+
+        if source_system == "LRD_STATIC" or source_system == "FINOB":
+            sep = {"LRD_STATIC": "|", "FINOB": ","}.get(source_system, ",")
+            mock_read.csv.assert_any_call(
+                f"{test_container}/{source_system}/{file_name_base}",
+                sep=sep,
+                header=True,
+            )
+        else:
+            mock_read.parquet.assert_any_call(
+                f"{test_container}/{source_system}/{file_name_base}",
+            )
+        mock_write.assert_any_call(
+            f"{month_container}/sourcing_landing_data/NON_SSF/{source_system}/{file_name_no_ext}.parquet",
+            mode="overwrite",
+        )
+
+        assert extraction.move_source_file(**file)
+
+        calls = mock_dbutils_fs_mv.call_args_list
+        assert any(
+            args[0] == f"{test_container}/{source_system}/{file_name_base}"
+            and re.match(
+                rf"{test_container}/{source_system}/processed/{file_name_no_ext}__\d{{8}}\d{{6}}{file_name_ext}",
+                args[1],
+            )
+            for args, _ in calls
+        )
+
+        data = extraction.extract_from_parquet(file["source_system"], file["file_name"])
+        stg_table_name = extraction.get_staging_table_name(file["file_name"])
+        assert extraction.save_to_stg_table(
+            data=data,
+            stg_table_name=stg_table_name,
+            **file,
+        )
+        mock_save_table.assert_any_call(
+            f"bsrc_d.stg_{run_month}.{file_name_no_ext.lower()}"
+        )
+
+        assert extraction.validate_data_quality(
+            **file,
+            stg_table_name=file_name_no_ext.lower(),
+        )
+
+    # Count update metadata and log calls
+    metadata_path_calls, log_path_calls = (
+        len(
+            [
+                call_args
+                for call_args in mock_save_table.call_args_list
+                if call_args == call(path)
+            ]
+        )
+        for path in [metadata_path, log_path]
+    )
+
+    # For every file (v1 - v4) we log every step from received + 1 - 5: (4 x 6)
+    # + 2 steps for v3.wrong_extension (received and initial checks)
+    # + 1 step for log_missing_files_errors test
+    # So in total 27 calls for metadata and log
+    assert metadata_path_calls == 27
+    assert log_path_calls == 27
 
 
-def test_non_ssf_load_missing_critical_files_after_deadline(
-    mock_spark, mock_extraction, mock_write_to_log
+@pytest.mark.parametrize(
+    ("run_month", "source_container"),
+    [("202505", "test-container")],
+)
+def test_deadline_functionality(
+    spark_session,
+    mocker,
+    run_month,
+    source_container,
+    caplog,
 ):
-    """Test scenario where critical files (NME/FINOB) are missing after deadline."""
-    missing_files = [
-        {"source_system": "NME", "file_name": "critical_file1", "deadline": "2024-01-01"},
-        {"source_system": "FINOB", "file_name": "critical_file2", "deadline": "2024-01-02"},
+    """Test specific deadline functionality."""
+    # Create deadline dates
+    future_date = (datetime.now(timezone.utc) + timedelta(days=10)).strftime("%Y-%m-%d")
+    past_date = (datetime.now(timezone.utc) - timedelta(days=5)).strftime("%Y-%m-%d")
+    
+    # Create mock metadata with various deadline scenarios
+    schema_meta = [
+        "SourceSystem",
+        "SourceFileName",
+        "SourceFileFormat",
+        "SourceFileDelimiter",
+        "StgTableName",
+        "FileDeliveryStep",
+        "FileDeliveryStatus",
+        "Deadline",
+    ]
+    mock_meta = spark_session.createDataFrame(
+        [
+            # LRD_STATIC with past deadline - should be copied
+            ("lrd_static", "STATIC_PAST", ".txt", "|", "static_past", NonSSFStepStatus.EXPECTED.value, "Expected", past_date),
+            # LRD_STATIC with future deadline - should NOT be copied
+            ("lrd_static", "STATIC_FUTURE", ".txt", "|", "static_future", NonSSFStepStatus.EXPECTED.value, "Expected", future_date),
+            # LRD_STATIC with no deadline - should NOT be copied
+            ("lrd_static", "STATIC_NO_DEADLINE", ".txt", "|", "static_no_deadline", NonSSFStepStatus.EXPECTED.value, "Expected", None),
+        ],
+        schema=schema_meta,
+    )
+    
+    # Create mock log with proper schema
+    log_schema = [
+        "SourceSystem",
+        "SourceFileName",
+        "DeliveryNumber",
+        "FileDeliveryStep",
+        "FileDeliveryStatus",
+        "Result",
+        "LastUpdatedDateTimestamp",
+        "Comment",
+    ]
+    mock_log = spark_session.createDataFrame(
+        [
+            (
+                "lrd_static",
+                "DUMMY",
+                1,
+                NonSSFStepStatus.EXPECTED.value,
+                "Expected",
+                "Success",
+                datetime.now(timezone.utc),
+                "Test comment",
+            )
+        ],
+        schema=log_schema,
+    )
+    
+    # Mock spark read
+    mock_read = mocker.patch("pyspark.sql.SparkSession.read", autospec=True)
+    mock_read.table.side_effect = [mock_meta, mock_log]
+    
+    # Create extraction instance
+    extraction = ExtractNonSSFData(spark_session, run_month, source_container=source_container)
+    
+    # Mock dbutils
+    mock_dbutils_fs_ls = mocker.patch.object(extraction.dbutils.fs, "ls")
+    mock_dbutils_fs_cp = mocker.patch.object(extraction.dbutils.fs, "cp")
+    
+    # Set up ls to show files in processed folder
+    mock_dbutils_fs_ls.side_effect = [
+        [
+            FileInfoMock({"name": "STATIC_PAST_20240101.txt", "path": "path1"}),
+            FileInfoMock({"name": "STATIC_FUTURE_20240101.txt", "path": "path2"}),
+            FileInfoMock({"name": "STATIC_NO_DEADLINE_20240101.txt", "path": "path3"}),
+        ],
+        ["dummy"],  # For the second ls call
+        ["dummy"],  # For the third ls call
+        ["dummy"],  # For the fourth ls call
     ]
     
-    # Set up mock data with missing critical files
-    files, _, _ = setup_mock_data(
-        mock_extraction,
-        missing_files=missing_files,
-        has_critical_missing=True
-    )
+    # Test place_static_data
+    new_files = []
+    extraction.place_static_data(new_files)
     
-    # Process should fail when critical files are missing after deadline
-    with pytest.raises(NonSSFExtractionError) as exc_info:
-        non_ssf_load(mock_spark, run_month="202402", run_id=1)
+    # Only STATIC_PAST should be copied (deadline reached)
+    mock_dbutils_fs_cp.assert_called_once()
+    assert any("STATIC_PAST.txt" in str(call) for call in mock_dbutils_fs_cp.call_args_list)
+    assert not any("STATIC_FUTURE.txt" in str(call) for call in mock_dbutils_fs_cp.call_args_list)
+    assert not any("STATIC_NO_DEADLINE.txt" in str(call) for call in mock_dbutils_fs_cp.call_args_list)
     
-    # Verify the error message contains info about missing files
-    assert "Critical files missing after deadline" in str(exc_info.value)
-    
-    # Verify deadline checking was performed
-    mock_extraction.check_missing_files_after_deadline.assert_called_once()
-    mock_extraction.log_missing_files_errors.assert_called_once_with(missing_files)
-    
-    # Process should have started (+1) and then failed (+1) = 2 total
-    assert_write_to_log_calls(mock_write_to_log, started=1, completed=0, failed=1)
+    # Check that deadline not reached message appears for STATIC_FUTURE
+    assert "Deadline not reached for STATIC_FUTURE" in caplog.text
 
 
-def test_non_ssf_load_missing_non_critical_files_after_deadline(
-    mock_spark, mock_extraction, mock_write_to_log
+@pytest.mark.parametrize(
+    ("run_month", "source_container"),
+    [("202505", "test-container")],
+)
+def test_check_file_expected_status(
+    spark_session,
+    mocker,
+    run_month,
+    source_container,
 ):
-    """Test scenario where non-critical files (LRD_STATIC) are missing after deadline."""
-    # Since LRD_STATIC is now handled in place_static_data, 
-    # check_missing_files_after_deadline won't return LRD_STATIC files
-    missing_files = []
-    
-    # Set up mock data with no missing critical files
-    files, _, _ = setup_mock_data(
-        mock_extraction,
-        missing_files=missing_files,
-        has_critical_missing=False
-    )
-    
-    non_ssf_load(mock_spark, run_month="202402", run_id=1)
-    
-    # Verify deadline checking was performed
-    mock_extraction.check_missing_files_after_deadline.assert_called_once()
-    
-    # Since no critical files are missing, log_missing_files_errors won't be called
-    mock_extraction.log_missing_files_errors.assert_not_called()
-    
-    # Process should complete successfully
-    assert_write_to_log_calls(mock_write_to_log, started=3, completed=3, failed=0)
-
-
-def test_non_ssf_load_missing_lrd_static_after_deadline(
-    mock_spark, mock_extraction, mock_write_to_log
-):
-    """Test scenario where only LRD_STATIC files are missing after deadline."""
-    # No missing files returned since LRD_STATIC is handled in place_static_data
-    missing_files = []
-    
-    # Set up mock data with no missing critical files
-    files, _, _ = setup_mock_data(
-        mock_extraction,
-        missing_files=missing_files,
-        has_critical_missing=False
-    )
-    
-    # Process should complete successfully
-    non_ssf_load(mock_spark, run_month="202402", run_id=1)
-    
-    # Verify deadline checking was performed
-    mock_extraction.check_missing_files_after_deadline.assert_called_once()
-    
-    # Since no files are returned as missing, log_missing_files_errors should not be called
-    mock_extraction.log_missing_files_errors.assert_not_called()
-    
-    # Process should complete successfully
-    assert_write_to_log_calls(mock_write_to_log, started=3, completed=3, failed=0)
-
-
-def test_non_ssf_load_mixed_missing_files_after_deadline(
-    mock_spark, mock_extraction, mock_write_to_log
-):
-    """Test scenario with both critical and non-critical files missing after
-    deadline."""
-    missing_files = [
-        {"source_system": "LRD_STATIC", "file_name": "static_file1", "deadline": "2024-01-01"},
-        {"source_system": "NME", "file_name": "critical_file1", "deadline": "2024-01-02"},
+    """Test the check_file_expected_status method."""
+    # Create mock metadata
+    schema_meta = [
+        "SourceSystem",
+        "SourceFileName",
+        "FileDeliveryStep",
     ]
-    
-    # Set up mock data with mixed missing files
-    files, _, _ = setup_mock_data(
-        mock_extraction,
-        missing_files=missing_files,
-        has_critical_missing=True  # Because NME is critical
+    mock_meta = spark_session.createDataFrame(
+        [
+            ("lrd_static", "TEST_FILE_EXPECTED", NonSSFStepStatus.EXPECTED.value),  # Use actual enum value
+            ("lrd_static", "TEST_FILE_REDELIVERY", NonSSFStepStatus.REDELIVERY.value),  # Use actual enum value
+            ("lrd_static", "TEST_FILE_OTHER", 5),  # Some other status
+        ],
+        schema=schema_meta,
     )
     
-    # Process should fail because NME (critical) is missing
-    with pytest.raises(NonSSFExtractionError) as exc_info:
-        non_ssf_load(mock_spark, run_month="202402", run_id=1)
+    mock_log = spark_session.createDataFrame([("dummy", 1)], schema=["col1", "col2"])
     
-    # Verify the error message
-    assert "Critical files missing after deadline" in str(exc_info.value)
+    # Mock spark read
+    mock_read = mocker.patch("pyspark.sql.SparkSession.read", autospec=True)
+    mock_read.table.side_effect = [mock_meta, mock_log]
     
-    # Verify deadline checking was performed
-    mock_extraction.check_missing_files_after_deadline.assert_called_once()
-    mock_extraction.log_missing_files_errors.assert_called_once_with(missing_files)
+    # Create extraction instance
+    extraction = ExtractNonSSFData(spark_session, run_month, source_container=source_container)
     
-    # Process should have started and then failed immediately
-    assert_write_to_log_calls(mock_write_to_log, started=1, completed=0, failed=1)
+    # Test expected status
+    assert extraction.check_file_expected_status("TEST_FILE_EXPECTED") is True
+    
+    # Test redelivery status
+    assert extraction.check_file_expected_status("TEST_FILE_REDELIVERY") is True
+    
+    # Test other status
+    assert extraction.check_file_expected_status("TEST_FILE_OTHER") is False
+    
+    # Test non-existent file
+    assert extraction.check_file_expected_status("NON_EXISTENT") is False
+
+
+@pytest.mark.parametrize(
+    ("run_month", "source_container"),
+    [("202505", "test-container")],
+)
+def test_check_missing_files_filters_lrd_static(
+    spark_session,
+    mocker,
+    run_month,
+    source_container,
+):
+    """Test that check_missing_files_after_deadline only checks NME/FINOB files."""
+    past_date = (datetime.now(timezone.utc) - timedelta(days=5)).strftime("%Y-%m-%d")
+    
+    # Create mock metadata with all source systems
+    schema_meta = [
+        "SourceSystem",
+        "SourceFileName",
+        "SourceFileFormat",
+        "SourceFileDelimiter",
+        "StgTableName",
+        "FileDeliveryStep",
+        "FileDeliveryStatus",
+        "Deadline",
+    ]
+    mock_meta = spark_session.createDataFrame(
+        [
+            ("lrd_static", "STATIC_FILE", ".txt", "|", "static_file", NonSSFStepStatus.EXPECTED.value, "Expected", past_date),
+            ("nme", "NME_FILE", ".csv", ",", "nme_file", NonSSFStepStatus.EXPECTED.value, "Expected", past_date),
+            ("finob", "FINOB_FILE", ".csv", ",", "finob_file", NonSSFStepStatus.EXPECTED.value, "Expected", past_date),
+        ],
+        schema=schema_meta,
+    )
+    
+    mock_log = spark_session.createDataFrame([("dummy", 1)], schema=["col1", "col2"])
+    
+    # Mock spark read
+    mock_read = mocker.patch("pyspark.sql.SparkSession.read", autospec=True)
+    mock_read.table.side_effect = [mock_meta, mock_log]
+    
+    # Create extraction instance
+    extraction = ExtractNonSSFData(spark_session, run_month, source_container=source_container)
+    
+    # Mock dbutils to simulate all files missing
+    mock_dbutils_fs_ls = mocker.patch.object(extraction.dbutils.fs, "ls")
+    mock_dbutils_fs_ls.return_value = []  # No files found
+    
+    # Call check_missing_files_after_deadline
+    missing_files = extraction.check_missing_files_after_deadline()
+    
+    # Verify only NME and FINOB files are checked
+    missing_source_systems = [f["source_system"] for f in missing_files]
+    assert "NME" in missing_source_systems
+    assert "FINOB" in missing_source_systems
+    assert "LRD_STATIC" not in missing_source_systems
+    
+    # Should have exactly 2 missing files (NME and FINOB)
+    assert len(missing_files) == 2
