@@ -57,13 +57,11 @@ def setup_mock_data(
     mock_extraction.get_staging_table_name.side_effect = ["stg_nme", "stg_finob"]
     mock_extraction.save_to_stg_table.side_effect = [True, save_to_stg_table]
     mock_extraction.validate_data_quality.side_effect = [True, validate_data_quality]
-
+    
     # Setup deadline checking mocks
-    mock_extraction.check_missing_files_after_deadline.return_value = (
-        missing_files or []
-    )
+    mock_extraction.check_missing_files_after_deadline.return_value = missing_files or []
     mock_extraction.log_missing_files_errors.return_value = has_critical_missing
-
+    
     return files, mock_nme_df, mock_finob_df
 
 
@@ -77,7 +75,7 @@ def test_non_ssf_load_success(
 
     # Check deadline checking was called
     mock_extraction.check_missing_files_after_deadline.assert_called_once()
-
+    
     generic_calls = get_assert_calls_args(files)
     mock_extraction.get_all_files.assert_called_once_with()  # No parameters
     mock_extraction.initial_checks.assert_has_calls(**generic_calls)
@@ -168,7 +166,7 @@ def test_non_ssf_load_failure(
 
     # Check deadline checking was called
     mock_extraction.check_missing_files_after_deadline.assert_called_once()
-
+    
     # Assertions with with correct parameters
     generic_calls = get_assert_calls_args(files)
     mock_extraction.get_all_files.assert_called_once_with()  # No parameters
@@ -192,7 +190,7 @@ def test_non_ssf_load_no_files(mock_spark, mock_extraction, mock_write_to_log):
     """Test scenario where no files are found."""
     mock_extraction.get_all_files.return_value = []  # No files found
     mock_extraction.check_missing_files_after_deadline.return_value = []
-
+    
     non_ssf_load(mock_spark, run_month="202301", run_id=1)
 
     mock_extraction.check_missing_files_after_deadline.assert_called_once()
@@ -205,34 +203,28 @@ def test_non_ssf_load_missing_critical_files_after_deadline(
 ):
     """Test scenario where critical files (NME/FINOB) are missing after deadline."""
     missing_files = [
-        {
-            "source_system": "NME",
-            "file_name": "critical_file1",
-            "deadline": "2024-01-01",
-        },
-        {
-            "source_system": "FINOB",
-            "file_name": "critical_file2",
-            "deadline": "2024-01-02",
-        },
+        {"source_system": "NME", "file_name": "critical_file1", "deadline": "2024-01-01"},
+        {"source_system": "FINOB", "file_name": "critical_file2", "deadline": "2024-01-02"},
     ]
-
+    
     # Set up mock data with missing critical files
     files, _, _ = setup_mock_data(
-        mock_extraction, missing_files=missing_files, has_critical_missing=True
+        mock_extraction,
+        missing_files=missing_files,
+        has_critical_missing=True
     )
-
+    
     # Process should fail when critical files are missing after deadline
     with pytest.raises(NonSSFExtractionError) as exc_info:
         non_ssf_load(mock_spark, run_month="202402", run_id=1)
-
+    
     # Verify the error message contains info about missing files
     assert "Critical files missing after deadline" in str(exc_info.value)
-
+    
     # Verify deadline checking was performed
     mock_extraction.check_missing_files_after_deadline.assert_called_once()
     mock_extraction.log_missing_files_errors.assert_called_once_with(missing_files)
-
+    
     # Process should have started (+1) and then failed (+1) = 2 total
     assert_write_to_log_calls(mock_write_to_log, started=1, completed=0, failed=1)
 
@@ -240,24 +232,26 @@ def test_non_ssf_load_missing_critical_files_after_deadline(
 def test_non_ssf_load_missing_non_critical_files_after_deadline(
     mock_spark, mock_extraction, mock_write_to_log
 ):
-    """Test scenario where non-critical files (LRD_STATIC) are missing after deadline."""  # noqa: E501
-    # Since LRD_STATIC is now handled in place_static_data,
+    """Test scenario where non-critical files (LRD_STATIC) are missing after deadline."""
+    # Since LRD_STATIC is now handled in place_static_data, 
     # check_missing_files_after_deadline won't return LRD_STATIC files
     missing_files = []
-
+    
     # Set up mock data with no missing critical files
     files, _, _ = setup_mock_data(
-        mock_extraction, missing_files=missing_files, has_critical_missing=False
+        mock_extraction,
+        missing_files=missing_files,
+        has_critical_missing=False
     )
-
+    
     non_ssf_load(mock_spark, run_month="202402", run_id=1)
-
+    
     # Verify deadline checking was performed
     mock_extraction.check_missing_files_after_deadline.assert_called_once()
-
+    
     # Since no critical files are missing, log_missing_files_errors won't be called
     mock_extraction.log_missing_files_errors.assert_not_called()
-
+    
     # Process should complete successfully
     assert_write_to_log_calls(mock_write_to_log, started=3, completed=3, failed=0)
 
@@ -268,21 +262,23 @@ def test_non_ssf_load_missing_lrd_static_after_deadline(
     """Test scenario where only LRD_STATIC files are missing after deadline."""
     # No missing files returned since LRD_STATIC is handled in place_static_data
     missing_files = []
-
+    
     # Set up mock data with no missing critical files
     files, _, _ = setup_mock_data(
-        mock_extraction, missing_files=missing_files, has_critical_missing=False
+        mock_extraction,
+        missing_files=missing_files,
+        has_critical_missing=False
     )
-
+    
     # Process should complete successfully
     non_ssf_load(mock_spark, run_month="202402", run_id=1)
-
+    
     # Verify deadline checking was performed
     mock_extraction.check_missing_files_after_deadline.assert_called_once()
-
-    # Since no files are returned as missing, log_missing_files_errors should not be called  # noqa: E501
+    
+    # Since no files are returned as missing, log_missing_files_errors should not be called
     mock_extraction.log_missing_files_errors.assert_not_called()
-
+    
     # Process should complete successfully
     assert_write_to_log_calls(mock_write_to_log, started=3, completed=3, failed=0)
 
@@ -293,35 +289,27 @@ def test_non_ssf_load_mixed_missing_files_after_deadline(
     """Test scenario with both critical and non-critical files missing after
     deadline."""
     missing_files = [
-        {
-            "source_system": "LRD_STATIC",
-            "file_name": "static_file1",
-            "deadline": "2024-01-01",
-        },
-        {
-            "source_system": "NME",
-            "file_name": "critical_file1",
-            "deadline": "2024-01-02",
-        },
+        {"source_system": "LRD_STATIC", "file_name": "static_file1", "deadline": "2024-01-01"},
+        {"source_system": "NME", "file_name": "critical_file1", "deadline": "2024-01-02"},
     ]
-
+    
     # Set up mock data with mixed missing files
     files, _, _ = setup_mock_data(
         mock_extraction,
         missing_files=missing_files,
-        has_critical_missing=True,  # Because NME is critical
+        has_critical_missing=True  # Because NME is critical
     )
-
+    
     # Process should fail because NME (critical) is missing
     with pytest.raises(NonSSFExtractionError) as exc_info:
         non_ssf_load(mock_spark, run_month="202402", run_id=1)
-
+    
     # Verify the error message
     assert "Critical files missing after deadline" in str(exc_info.value)
-
+    
     # Verify deadline checking was performed
     mock_extraction.check_missing_files_after_deadline.assert_called_once()
     mock_extraction.log_missing_files_errors.assert_called_once_with(missing_files)
-
+    
     # Process should have started and then failed immediately
     assert_write_to_log_calls(mock_write_to_log, started=1, completed=0, failed=1)
