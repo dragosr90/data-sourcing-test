@@ -3,7 +3,7 @@ description: This YAML is designed to derive UCR based on counterparty's own cha
 target: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_pd_ucr_step1
 
 sources:
-  - alias: SSF_CP
+  - alias: INT_CP
     columns:
       - DeliveryEntity
       - ReportingDate
@@ -23,7 +23,7 @@ sources:
       - UniquePDRatingId
       - UniformCounterpartyRatingDate
       - ApprovedUniformCounterpartyRatingExpirationDate
-    source: stg_{{ RUN_MONTH }}.ssf_{{ DELIVERY_ENTITY }}_cp
+    source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_integrated_counterparty
   - alias: CP_SCOPING
     columns:
       - CounterpartyID
@@ -137,37 +137,37 @@ transformations:
       conditions:
         - rank_num = 1
   - join:
-      left_source: SSF_CP
+      left_source: INT_CP
       right_source: CP_SCOPING
       condition:
-        - SSF_CP.LocalId = CP_SCOPING.CounterpartyID
-        - SSF_CP.SourceSystemIdentifier = CP_SCOPING.CounterpartySourceSystemIdentifier
+        - INT_CP.LocalId = CP_SCOPING.CounterpartyID
+        - INT_CP.SourceSystemIdentifier = CP_SCOPING.CounterpartySourceSystemIdentifier
       how: inner
   - join:
       right_source: FAIR_BCDB
       condition:
-        - SSF_CP.BcdbId = FAIR_BCDB.lbcdb_id
+        - INT_CP.BcdbId = FAIR_BCDB.lbcdb_id
       how: left
   - join:
       right_source: FAIR_RAPID
       condition:
-        - SSF_CP.AacAlphaCode = FAIR_RAPID.rapid_id
+        - INT_CP.AacAlphaCode = FAIR_RAPID.rapid_id
       how: left
   - join:
       right_source: IC
       condition:
-        - SSF_CP.LocalId = IC.CounterpartyID
+        - INT_CP.LocalId = IC.CounterpartyID
       how: left
   - join:
       right_source: FAIR_GBC
       condition:
-        - SSF_CP.GlobalCounterpartyIdentifier = FAIR_GBC.global_id
+        - ltrim('0',INT_CP.GlobalCounterpartyIdentifier) = ltrim('0', FAIR_GBC.global_id)
       how: left
   - join:
       right_source: MDM_1094
       condition:
-        - SSF_CP.CountryOfIncorporation = MDM_1094.abn_amro_country_code
-        - SSF_CP.BaselIICounterpartyType in ('CB','ECA_SOV','GOV','PSE','RG/LA_SOV')
+        - INT_CP.CountryOfIncorporation = MDM_1094.abn_amro_country_code
+        - INT_CP.BaselIICounterpartyType in ('CB','ECA_SOV','GOV','PSE','RG/LA_SOV')
       how: left
   - join:
       right_source: MDM_1010
@@ -183,18 +183,18 @@ transformations:
               when IC.InterCompanyFlag = 'Y' then 'InterCompany'
               when FAIR_GBC.rating_id is not null then 'FAIR_GBC'
               when MDM_1094.sovereign_local_currency_ucr is not null then 'Sovereign_UCR'
-              when SSF_CP.DeliveryEntity in ('AACF', 'LEASE') and SSF_CP.UniformCounterpartyRating is not null then 'SSF'
+              when INT_CP.DeliveryEntity in ('AACF', 'LEASE') and INT_CP.UniformCounterpartyRating is not null then 'SSF'
             end
  
 # Expressions for derived columns
 expressions:
-  DeliveryEntity: SSF_CP.DeliveryEntity
-  ReportingDate: SSF_CP.ReportingDate
-  CounterpartyID: SSF_CP.LocalId
-  CounterpartySourceSystemIdentifier: SSF_CP.SourceSystemIdentifier
-  BcdbId: SSF_CP.BcdbId
-  AacAlphaCode: SSF_CP.AacAlphaCode
-  GlobalCounterpartyIdentifier: SSF_CP.GlobalCounterpartyIdentifier
+  DeliveryEntity: INT_CP.DeliveryEntity
+  ReportingDate: INT_CP.ReportingDate
+  CounterpartyID: INT_CP.LocalId
+  CounterpartySourceSystemIdentifier: INT_CP.SourceSystemIdentifier
+  BcdbId: INT_CP.BcdbId
+  AacAlphaCode: INT_CP.AacAlphaCode
+  GlobalCounterpartyIdentifier: INT_CP.GlobalCounterpartyIdentifier
   InterCompanyIndicator: >
     case
       when IC.InterCompanyFlag = 'Y' then IC.InterCompanyFlag
@@ -207,7 +207,7 @@ expressions:
       when var_UCRStep = 'InterCompany' then 'PICOWW01'
       when var_UCRStep = 'FAIR_GBC' then FAIR_GBC.pd_model_version
       when var_UCRStep = 'Sovereign_UCR' then MDM_1094.pd_model_code
-      when var_UCRStep = 'SSF' then SSF_CP.PDModelCode
+      when var_UCRStep = 'SSF' then INT_CP.PDModelCode
     end
 
   LastPerformingPDModelCode: >
@@ -227,7 +227,7 @@ expressions:
       when var_UCRStep = 'InterCompany' then '0'
       when var_UCRStep = 'FAIR_GBC' then FAIR_GBC.approved_ucr
       when var_UCRStep = 'Sovereign_UCR' then MDM_1094.sovereign_local_currency_ucr
-      when var_UCRStep = 'SSF' then SSF_CP.UniformCounterpartyRating
+      when var_UCRStep = 'SSF' then INT_CP.UniformCounterpartyRating
     end
 
   UCRStep1: >
@@ -237,29 +237,29 @@ expressions:
       when var_UCRStep = 'InterCompany' then '0'
       when var_UCRStep = 'FAIR_GBC' then coalesce(FAIR_GBC.ucr_including_conservatism,FAIR_GBC.approved_ucr)
       when var_UCRStep = 'Sovereign_UCR' then MDM_1094.sovereign_local_currency_ucr
-      when var_UCRStep = 'SSF' then SSF_CP.UniformCounterpartyRating
+      when var_UCRStep = 'SSF' then INT_CP.UniformCounterpartyRating
     end
 
   ProbabilityOfDefaultBeforeConservatism: >
     round(case
-      when SSF_CP.Default = 'Y' then 1
+      when INT_CP.Default = 'Y' then 1
       when var_UCRStep = 'FAIR_BCDB' then FAIR_BCDB.approved_pd/100
       when var_UCRStep = 'FAIR_RAPID' then FAIR_RAPID.approved_pd/100
       when var_UCRStep = 'InterCompany' then 0
       when var_UCRStep = 'FAIR_GBC' then FAIR_GBC.approved_pd/100
       when var_UCRStep = 'Sovereign_UCR' then MDM_1010.approved_pd/100
-      when var_UCRStep = 'SSF' then SSF_CP.ProbabilityOfDefault/SSF_CP.PDMarginOfConservatism
+      when var_UCRStep = 'SSF' then INT_CP.ProbabilityOfDefault/INT_CP.PDMarginOfConservatism
     end,6)
 
   ProbabilityOfDefault: >
     round(case
-      when SSF_CP.Default = 'Y' then 1
+      when INT_CP.Default = 'Y' then 1
       when var_UCRStep = 'FAIR_BCDB' then FAIR_BCDB.pd_including_conservatism/100
       when var_UCRStep = 'FAIR_RAPID' then FAIR_RAPID.pd_including_conservatism/100
       when var_UCRStep = 'InterCompany' then 0
       when var_UCRStep = 'FAIR_GBC' then FAIR_GBC.pd_including_conservatism/100
       when var_UCRStep = 'Sovereign_UCR' then MDM_1010.approved_pd/100
-      when var_UCRStep = 'SSF' then SSF_CP.ProbabilityOfDefault
+      when var_UCRStep = 'SSF' then INT_CP.ProbabilityOfDefault
     end,6)
 
   UniformCounterpartyRatingDate: >
@@ -269,7 +269,7 @@ expressions:
       when var_UCRStep = 'InterCompany' then null
       when var_UCRStep = 'FAIR_GBC' then FAIR_GBC.pd_approval_date
       when var_UCRStep = 'Sovereign_UCR' then MDM_1094.APPROVAL_DATE
-      when var_UCRStep = 'SSF' then SSF_CP.UniformCounterpartyRatingDate
+      when var_UCRStep = 'SSF' then INT_CP.UniformCounterpartyRatingDate
     end as date)
 
   UniformCounterpartyRatingExpiryDate: >
@@ -279,7 +279,7 @@ expressions:
       when var_UCRStep = 'InterCompany' then null
       when var_UCRStep = 'FAIR_GBC' then FAIR_GBC.pd_expiry_date
       when var_UCRStep = 'Sovereign_UCR' then add_months(APPROVAL_DATE, 12)
-      when var_UCRStep = 'SSF' then SSF_CP.ApprovedUniformCounterpartyRatingExpirationDate
+      when var_UCRStep = 'SSF' then INT_CP.ApprovedUniformCounterpartyRatingExpirationDate
     end as date)
 
   PDMarginOfConservatism: >
@@ -289,7 +289,7 @@ expressions:
       when IC.InterCompanyFlag = 'Y' then null
       when FAIR_GBC.ucr_including_conservatism is not null then FAIR_GBC.margin_of_conservatism
       when MDM_1094.sovereign_local_currency_ucr is not null then null
-      when SSF_CP.DeliveryEntity in ('AACF', 'LEASE') and SSF_CP.UniformCounterpartyRating is not null then SSF_CP.PDMarginOfConservatism
+      when INT_CP.DeliveryEntity in ('AACF', 'LEASE') and INT_CP.UniformCounterpartyRating is not null then INT_CP.PDMarginOfConservatism
     end
 
   UCRCase: var_UCRStep
@@ -314,6 +314,6 @@ expressions:
       when FAIR_GBC.ucr_including_conservatism is not null then FAIR_GBC.rating_id
       when FAIR_GBC.approved_ucr in ('6', '7', '8') then FAIR_GBC.rating_id
       when MDM_1094.sovereign_local_currency_ucr is not null then null
-      when SSF_CP.DeliveryEntity in ('AACF', 'LEASE') and SSF_CP.UniformCounterpartyRating is not null then SSF_CP.UniquePDRatingId
-      when SSF_CP.Default = 'Y' then null
+      when INT_CP.DeliveryEntity in ('AACF', 'LEASE') and INT_CP.UniformCounterpartyRating is not null then INT_CP.UniquePDRatingId
+      when INT_CP.Default = 'Y' then null
     end
