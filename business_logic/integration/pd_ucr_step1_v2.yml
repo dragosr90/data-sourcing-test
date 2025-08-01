@@ -183,7 +183,7 @@ transformations:
               when FAIR_RAPID.rating_id is not null then 'FAIR_RAPID'
               when IC.InterCompanyFlag = 'Y' then 'InterCompany'
               when FAIR_GBC.rating_id is not null then 'FAIR_GBC'
-              when MDM_1094.sovereign_local_currency_ucr is not null then 'Sovereign_UCR'   
+              when MDM_1094.sovereign_local_currency_ucr is not null then 'Sovereign_UCR'
             end
  
 # Expressions for derived columns
@@ -237,7 +237,13 @@ expressions:
       when var_UCRStep = 'InterCompany' then '0'
       when var_UCRStep = 'FAIR_GBC' then coalesce(FAIR_GBC.ucr_including_conservatism,FAIR_GBC.approved_ucr)
       when var_UCRStep = 'Sovereign_UCR' then MDM_1094.sovereign_local_currency_ucr
-      when var_UCRStep = 'SSF' then (case when INT_CP.UniformCounterpartyRatingDate + 12 months < INT_CP.ReportingDate or INT_CP.ApprovedUniformCounterpartyRatingExpirationDate < INT_CP.ReportingDate then '6+' else INT_CP.UniformCounterpartyRating end)
+      when var_UCRStep = 'SSF' then 
+        case 
+          when DATEADD(month, 12, INT_CP.UniformCounterpartyRatingDate) < INT_CP.ReportingDate 
+               or INT_CP.ApprovedUniformCounterpartyRatingExpirationDate < INT_CP.ReportingDate 
+          then '6+' 
+          else INT_CP.UniformCounterpartyRating 
+        end
     end
 
   ProbabilityOfDefaultBeforeConservatism: >
@@ -259,7 +265,13 @@ expressions:
       when var_UCRStep = 'InterCompany' then 0
       when var_UCRStep = 'FAIR_GBC' then FAIR_GBC.pd_including_conservatism/100
       when var_UCRStep = 'Sovereign_UCR' then MDM_1010.approved_pd/100
-      when var_UCRStep = 'SSF' then (case when INT_CP.UniformCounterpartyRatingDate + 12 months < INT_CP.ReportingDate or INT_CP.ApprovedUniformCounterpartyRatingExpirationDate < INT_CP.ReportingDate then 0.264 else INT_CP.ProbabilityOfDefault end) 
+      when var_UCRStep = 'SSF' then 
+        case 
+          when DATEADD(month, 12, INT_CP.UniformCounterpartyRatingDate) < INT_CP.ReportingDate 
+               or INT_CP.ApprovedUniformCounterpartyRatingExpirationDate < INT_CP.ReportingDate 
+          then 0.264 
+          else INT_CP.ProbabilityOfDefault 
+        end
     end,6)
 
   UniformCounterpartyRatingDate: >
