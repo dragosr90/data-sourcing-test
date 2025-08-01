@@ -1,0 +1,319 @@
+description: This YAML is designed to derive UCR based on counterparty's own characteristic like based on BCDBID, AACAlphaCode, GlobalID. This would be further used for Step-2 of PD-UCR yml.
+
+target: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_pd_ucr_step1
+
+sources:
+  - alias: INT_CP
+    columns:
+      - DeliveryEntity
+      - ReportingDate
+      - LocalId
+      - SourceSystemIdentifier
+      - BaselIICounterpartyType
+      - AacAlphaCode
+      - BcdbId
+      - GlobalCounterpartyIdentifier
+      - CountryOfIncorporation
+      - PDModelCode
+      - UniformCounterpartyRating
+      - ProbabilityOfDefault
+      - PDMarginOfConservatism 
+      - InsighterId
+      - Default
+      - UniquePDRatingId
+      - UniformCounterpartyRatingDate
+      - ApprovedUniformCounterpartyRatingExpirationDate
+    source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_integrated_counterparty
+  - alias: CP_SCOPING
+    columns:
+      - CounterpartyID
+      - CounterpartySourceSystemIdentifier
+      - CollateralProviderFlag
+      - GuarantorFlag
+      - InterCompanyFlag
+      - IssuerFlag
+      - ObligorNPLFlag
+    filter: CollateralProviderFlag = 'Y' OR GuarantorFlag = 'Y' OR InterCompanyFlag = 'Y' OR IssuerFlag = 'Y' OR ObligorNPLFlag = 'Y'
+    source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_counterparty_scoping_local
+  - alias: FAIR
+    columns:
+      - fair_id
+      - rating_id
+      - lbcdb_id
+      - gbcdb_id
+      - rapid_id
+      - pd_model_version
+      - pd_approval_date
+      - pd_expiry_date
+      - approved_ucr
+      - ucr_including_conservatism
+      - approved_pd
+      - pd_including_conservatism
+      - margin_of_conservatism
+      - type_of_conservatism
+      - LastPerformingModel
+    source: int_{{ RUN_MONTH }}.dial_fair_pd_ucr_actual
+  - alias: FAIR_BCDB
+    columns:
+      - fair_id
+      - rating_id
+      - lbcdb_id
+      - gbcdb_id
+      - rapid_id
+      - pd_model_version
+      - pd_approval_date
+      - pd_expiry_date
+      - approved_ucr
+      - ucr_including_conservatism
+      - approved_pd
+      - pd_including_conservatism
+      - margin_of_conservatism
+      - type_of_conservatism
+      - LastPerformingModel
+    source: int_{{ RUN_MONTH }}.dial_fair_pd_ucr_actual
+  - alias: FAIR_RAPID
+    columns:
+      - fair_id
+      - rating_id
+      - lbcdb_id
+      - gbcdb_id
+      - rapid_id
+      - pd_model_version
+      - pd_approval_date
+      - pd_expiry_date
+      - approved_ucr
+      - ucr_including_conservatism
+      - approved_pd
+      - pd_including_conservatism
+      - margin_of_conservatism
+      - type_of_conservatism
+      - LastPerformingModel
+    source: int_{{ RUN_MONTH }}.dial_fair_pd_ucr_actual
+  - alias: EPR
+    columns:
+      - locl_id
+      - global_id
+      - last_update_date
+    filter: locl_src_systm = 'BCDB'
+    source: stg_{{ RUN_MONTH }}.dial_epr_party_local_identifier
+  - alias: MDM_1094
+    columns:
+      - ABN_AMRO_COUNTRY_CODE
+      - SOVEREIGN_LOCAL_CURRENCY_UCR
+      - PD_MODEL_CODE
+      - APPROVAL_DATE
+    source: stg_{{ RUN_MONTH }}.bsl_andes_1094_sovrgn_cty_cur_rtg
+  - alias: MDM_1010
+    columns:
+      - Rating_Grade_Code
+      - Approved_PD
+      - Rating_Scale_Code
+    filter: Rating_Scale_Code = 'GS'
+    source: stg_{{ RUN_MONTH }}.bsl_andes_1010_rating_grade
+  - alias: IC
+    columns:
+      - CounterpartyID
+      - InterCompanyFlag
+      - InsighterId
+    filter: InterCompanyFlag = 'Y'
+    source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_intercompany
+
+transformations:
+  - join:
+      left_source: FAIR
+      right_source: EPR
+      condition:
+        - LPAD(FAIR.lbcdb_id, 12, '0') = EPR.locl_id
+        - FAIR.type_of_conservatism <> 'RATING_OUTDATED'
+      how: inner
+  - add_variables:
+      column_mapping:
+        rank_num: ROW_NUMBER() OVER (
+            PARTITION BY EPR.global_id
+            ORDER BY FAIR.pd_approval_date DESC
+          )
+  - filter:
+      alias: FAIR_GBC
+      conditions:
+        - rank_num = 1
+  - join:
+      left_source: INT_CP
+      right_source: CP_SCOPING
+      condition:
+        - INT_CP.LocalId = CP_SCOPING.CounterpartyID
+        - INT_CP.SourceSystemIdentifier = CP_SCOPING.CounterpartySourceSystemIdentifier
+      how: inner
+  - join:
+      right_source: FAIR_BCDB
+      condition:
+        - INT_CP.BcdbId = FAIR_BCDB.lbcdb_id
+      how: left
+  - join:
+      right_source: FAIR_RAPID
+      condition:
+        - INT_CP.AacAlphaCode = FAIR_RAPID.rapid_id
+      how: left
+  - join:
+      right_source: IC
+      condition:
+        - INT_CP.LocalId = IC.CounterpartyID
+      how: left
+  - join:
+      right_source: FAIR_GBC
+      condition:
+        - ltrim('0',INT_CP.GlobalCounterpartyIdentifier) = ltrim('0', FAIR_GBC.global_id)
+      how: left
+  - join:
+      right_source: MDM_1094
+      condition:
+        - INT_CP.CountryOfIncorporation = MDM_1094.abn_amro_country_code
+        - INT_CP.BaselIICounterpartyType in ('CB','ECA_SOV','GOV','PSE','RG/LA_SOV')
+      how: left
+  - join:
+      right_source: MDM_1010
+      condition:
+        - MDM_1094.SOVEREIGN_LOCAL_CURRENCY_UCR = MDM_1010.Rating_Grade_Code
+      how: left
+  - add_variables:
+      column_mapping:
+        var_UCRStep: >
+            case
+              when INT_CP.DeliveryEntity in ('LEASE') then 'SSF'
+              when FAIR_BCDB.rating_id is not null then 'FAIR_BCDB'
+              when FAIR_RAPID.rating_id is not null then 'FAIR_RAPID'
+              when IC.InterCompanyFlag = 'Y' then 'InterCompany'
+              when FAIR_GBC.rating_id is not null then 'FAIR_GBC'
+              when MDM_1094.sovereign_local_currency_ucr is not null then 'Sovereign_UCR'   
+            end
+ 
+# Expressions for derived columns
+expressions:
+  DeliveryEntity: INT_CP.DeliveryEntity
+  ReportingDate: INT_CP.ReportingDate
+  CounterpartyID: INT_CP.LocalId
+  CounterpartySourceSystemIdentifier: INT_CP.SourceSystemIdentifier
+  BcdbId: INT_CP.BcdbId
+  AacAlphaCode: INT_CP.AacAlphaCode
+  GlobalCounterpartyIdentifier: INT_CP.GlobalCounterpartyIdentifier
+  InterCompanyIndicator: >
+    case
+      when IC.InterCompanyFlag = 'Y' then IC.InterCompanyFlag
+      else 'N'
+    end
+  PDModelCode: >
+    case
+      when var_UCRStep = 'FAIR_BCDB' then FAIR_BCDB.pd_model_version
+      when var_UCRStep = 'FAIR_RAPID' then FAIR_RAPID.pd_model_version
+      when var_UCRStep = 'InterCompany' then 'PICOWW01'
+      when var_UCRStep = 'FAIR_GBC' then FAIR_GBC.pd_model_version
+      when var_UCRStep = 'Sovereign_UCR' then MDM_1094.pd_model_code
+      when var_UCRStep = 'SSF' then INT_CP.PDModelCode
+    end
+
+  LastPerformingPDModelCode: >
+    case
+      when var_UCRStep = 'FAIR_BCDB' then FAIR_BCDB.LastPerformingModel
+      when var_UCRStep = 'FAIR_RAPID' then FAIR_RAPID.LastPerformingModel
+      when var_UCRStep = 'InterCompany' then null
+      when var_UCRStep = 'FAIR_GBC' then FAIR_GBC.LastPerformingModel
+      when var_UCRStep = 'Sovereign_UCR' then null
+      when var_UCRStep = 'SSF' then null
+    end
+  
+  ApprovedUniformCounterpartyRating: >
+    case
+      when var_UCRStep = 'FAIR_BCDB' then FAIR_BCDB.approved_ucr
+      when var_UCRStep = 'FAIR_RAPID' then FAIR_RAPID.approved_ucr
+      when var_UCRStep = 'InterCompany' then '0'
+      when var_UCRStep = 'FAIR_GBC' then FAIR_GBC.approved_ucr
+      when var_UCRStep = 'Sovereign_UCR' then MDM_1094.sovereign_local_currency_ucr
+      when var_UCRStep = 'SSF' then INT_CP.UniformCounterpartyRating
+    end
+
+  UCRStep1: >
+    case
+      when var_UCRStep = 'FAIR_BCDB' then coalesce(FAIR_BCDB.ucr_including_conservatism,FAIR_BCDB.approved_ucr)
+      when var_UCRStep = 'FAIR_RAPID' then coalesce(FAIR_RAPID.ucr_including_conservatism,FAIR_RAPID.approved_ucr)
+      when var_UCRStep = 'InterCompany' then '0'
+      when var_UCRStep = 'FAIR_GBC' then coalesce(FAIR_GBC.ucr_including_conservatism,FAIR_GBC.approved_ucr)
+      when var_UCRStep = 'Sovereign_UCR' then MDM_1094.sovereign_local_currency_ucr
+      when var_UCRStep = 'SSF' then (case when INT_CP.UniformCounterpartyRatingDate + 12 months < INT_CP.ReportingDate or INT_CP.ApprovedUniformCounterpartyRatingExpirationDate < INT_CP.ReportingDate then '6+' else INT_CP.UniformCounterpartyRating end)
+    end
+
+  ProbabilityOfDefaultBeforeConservatism: >
+    round(case
+      when INT_CP.Default = 'Y' then 1
+      when var_UCRStep = 'FAIR_BCDB' then FAIR_BCDB.approved_pd/100
+      when var_UCRStep = 'FAIR_RAPID' then FAIR_RAPID.approved_pd/100
+      when var_UCRStep = 'InterCompany' then 0
+      when var_UCRStep = 'FAIR_GBC' then FAIR_GBC.approved_pd/100
+      when var_UCRStep = 'Sovereign_UCR' then MDM_1010.approved_pd/100
+      when var_UCRStep = 'SSF' then INT_CP.ProbabilityOfDefault/coalesce(INT_CP.PDMarginOfConservatism, 1)
+    end,6)
+
+  ProbabilityOfDefault: >
+    round(case
+      when INT_CP.Default = 'Y' then 1
+      when var_UCRStep = 'FAIR_BCDB' then FAIR_BCDB.pd_including_conservatism/100
+      when var_UCRStep = 'FAIR_RAPID' then FAIR_RAPID.pd_including_conservatism/100
+      when var_UCRStep = 'InterCompany' then 0
+      when var_UCRStep = 'FAIR_GBC' then FAIR_GBC.pd_including_conservatism/100
+      when var_UCRStep = 'Sovereign_UCR' then MDM_1010.approved_pd/100
+      when var_UCRStep = 'SSF' then (case when INT_CP.UniformCounterpartyRatingDate + 12 months < INT_CP.ReportingDate or INT_CP.ApprovedUniformCounterpartyRatingExpirationDate < INT_CP.ReportingDate then 0.264 else INT_CP.ProbabilityOfDefault end) 
+    end,6)
+
+  UniformCounterpartyRatingDate: >
+    cast(case
+      when var_UCRStep = 'FAIR_BCDB' then FAIR_BCDB.pd_approval_date
+      when var_UCRStep = 'FAIR_RAPID' then FAIR_RAPID.pd_approval_date
+      when var_UCRStep = 'InterCompany' then null
+      when var_UCRStep = 'FAIR_GBC' then FAIR_GBC.pd_approval_date
+      when var_UCRStep = 'Sovereign_UCR' then MDM_1094.APPROVAL_DATE
+      when var_UCRStep = 'SSF' then INT_CP.UniformCounterpartyRatingDate
+    end as date)
+
+  UniformCounterpartyRatingExpiryDate: >
+    cast(case
+      when var_UCRStep = 'FAIR_BCDB' then FAIR_BCDB.pd_expiry_date
+      when var_UCRStep = 'FAIR_RAPID' then FAIR_RAPID.pd_expiry_date
+      when var_UCRStep = 'InterCompany' then null
+      when var_UCRStep = 'FAIR_GBC' then FAIR_GBC.pd_expiry_date
+      when var_UCRStep = 'Sovereign_UCR' then add_months(APPROVAL_DATE, 12)
+      when var_UCRStep = 'SSF' then INT_CP.ApprovedUniformCounterpartyRatingExpirationDate
+    end as date)
+
+  PDMarginOfConservatism: >
+    case
+      when FAIR_BCDB.ucr_including_conservatism is not null then FAIR_BCDB.margin_of_conservatism
+      when FAIR_RAPID.ucr_including_conservatism is not null then FAIR_RAPID.margin_of_conservatism
+      when IC.InterCompanyFlag = 'Y' then null
+      when FAIR_GBC.ucr_including_conservatism is not null then FAIR_GBC.margin_of_conservatism
+      when MDM_1094.sovereign_local_currency_ucr is not null then null
+      when var_UCRStep = 'SSF' then INT_CP.PDMarginOfConservatism
+    end
+
+  UCRCase: var_UCRStep
+
+  fairid: >
+    case
+      when var_UCRStep = 'FAIR_BCDB' then FAIR_BCDB.fair_id
+      when var_UCRStep = 'FAIR_RAPID' then FAIR_RAPID.fair_id
+      when var_UCRStep = 'InterCompany' then null
+      when var_UCRStep = 'FAIR_GBC' then FAIR_GBC.fair_id
+      when var_UCRStep = 'Sovereign_UCR' then null
+      when var_UCRStep = 'SSF' then null
+    end
+
+  UniquePDRatingId: >
+    case
+      when FAIR_BCDB.ucr_including_conservatism is not null then FAIR_BCDB.rating_id
+      when FAIR_BCDB.approved_ucr in ('6', '7', '8') then FAIR_BCDB.rating_id
+      when FAIR_RAPID.ucr_including_conservatism is not null then FAIR_RAPID.rating_id
+      when FAIR_RAPID.approved_ucr in ('6', '7', '8') then FAIR_RAPID.rating_id
+      when IC.InterCompanyFlag = 'Y' then null
+      when FAIR_GBC.ucr_including_conservatism is not null then FAIR_GBC.rating_id
+      when FAIR_GBC.approved_ucr in ('6', '7', '8') then FAIR_GBC.rating_id
+      when MDM_1094.sovereign_local_currency_ucr is not null then null
+      when var_UCRStep = 'SSF' then INT_CP.UniquePDRatingId
+      when INT_CP.Default = 'Y' then null
+    end
