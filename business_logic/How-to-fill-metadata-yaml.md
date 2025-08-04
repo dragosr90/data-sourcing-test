@@ -57,8 +57,9 @@ transformations:
       how: left
   ...
   - add_variables:
-      var_expiry_date: dateadd(year, 1, to_date(EPR_ENT_PARTY.o_SNAPSHOTDATE, "yyyymmdd"))
-      var_expired: case when var_expiry_date < getdate() then TRUE else FALSE end
+      column_mapping:
+        var_expiry_date: dateadd(year, 1, to_date(EPR_ENT_PARTY.o_SNAPSHOTDATE, "yyyymmdd"))
+        var_expired: case when var_expiry_date < getdate() then TRUE else FALSE end
   ...
   - aggregation:
       alias: EPR_ENT_PARTY_AGG
@@ -92,6 +93,10 @@ filter_target:
 In the `sources` section you have to specify the source table, the new alias
 and the selection of columns. The `source` should not contain the catalog name.
 
+If no column list is specified, all columns are selected from the source.
+
+Any filters directly on source data can already be applied here.
+
 ```yaml
 sources:
   - alias: <alias of intermediate table A>
@@ -101,57 +106,94 @@ sources:
     ...
     - <column name aN>
     source: <name of source table in unity catalog (schema.table)>
+    filter: <optional filter on source data in SQL syntax>
   - alias: <alias of intermediate table B>
-    columns:
-    - <column name b1>
-    - <column name b2>
-    ...
-    - <column name bN>
     source: <name of source table in unity catalog (schema.table)>
+    filter: <optional filter on source data in SQL syntax>
 ```
 
 ## Transformations
 
 In the `transformations` section you have to specify the sequential transformation steps.
-This can be a join, or an aggregation step
+The following transformation types are supported:
+- Join
+- Add variables
+- Aggregation
+- Pivot
+- Union
+- Filter
+
+The transformations section is optional, for one-to-one mappings it can be skipped.
+
+### Generic transformation information
+#### Alias
+For all transformations you have the option to specify an `alias` key. If specified, the resulting dataset will be saved in the list of sources under that alias. This means that you can use it by that name in any later steps.
+For pivot and aggregation the alias is mandatory.
+
+If you do not specify an alias, you can only use the data directly as source for the next step. This is still possible when you specify an alias.
+
+Note: when specifying an alias, all prefixes in the column names change to that alias. E.g. if you join TBLA and TBLB without alias, the columns in the resulting dataframe will be called `TBLA.column` and `TBLB.column`. But if you specify `alias: TBLC` then all columns will be called `TBLC.column`.
+
+#### Source
+For all transformations it is possible to specify a source by its alias. This can be a source from your original sources list, or an alias you specified in an earlier transformation step. If no source is specified, the output from the previous step is used.
+
+The first transformation always requires a source, because there is no previous transformation output.
+
+Note: in joins this is called `left_source` instead of `source`.
+
 
 ### Joins
+The most common transformation step is a join of two datasets.
+
+This step contains:
+- `alias`: Optional alias to save resulting dataset in the list of sources
+- `left_source`: Alias of source used on left side of join, Optional unless it's the first transformation
+- `right_source`: Alias of source used on right side of join
+- `condition`: List of conditions in SQL syntax
+- `how`: Join type, e.g. inner, Optional, default=left
+
 ```yaml
 transformations:
   - join:
-      left_source: <alias of intermediate table A, Optional>
-      right_source: <alias of intermediate table B>
-      condition:
-      - <alias of intermediate table A>.<column name a1> = <alias of intermediate table B>.<column name b1>
-      how: <join option, like left or inner>
-  - join:
-      right_source: <alias of intermediate table C>
-      condition:
-      - <alias of intermediate table A>.<column name a1> = <alias of intermediate table B>.<column name c1>
-      how: <join option, like left or inner>
+      left_source: TBL_A
+      right_source: TBL_B
+      condition: 
+        - TBL_A.col01 = TBL_B.col01
+        - TBL_A.col02 = TBL_B.col02 or TBL_B.col02 = '*'
+      how: inner
 ```
 
-The result fo these two joins will be a table, containing the columns from
-table A, table B, and table C with `a1`, `b1` and `c1` as the primary key.
+The result of these two joins will be a dataframe with the fields `TBL_A.col01`, `TBL_A.col02`, ..., `TBL_A.col..`, `TBL_B.col01`, `TBL_B.col02`, ..., `TBL_B.col..`.
 
 **Note**
 
 The `left_source` in the join mapping is mandatory if it is the first transformation step.
 For later transformation steps: If `left_source` is not specified the join will use the transformed dataset, the result of all previous transformation steps, as left source. If specified, it will take the source from the list of sources.
 
-### Add (temporary) variables
+### Add variables
+It can be useful to save logic into a variable. For example when it is used in multiple expressions, or required in a next transformation. A variable is essentially an extra column, derived based on the specified logic.
+
+This step contains:
+- `alias`: Optional alias
+- `source`: Optional source
+- `column_mapping`: Mapping of the variable names with the SQL expressions to derive them
+
  ```yaml
  transformations:
     - add_variables:
-       column_mapping:
-          <var_name_1>: <expression>
-          <var_name_2>: case when <var_name_1>0 then TRUE else FALSE end
+        column_mapping:
+          var_minimum: min(TBL_A.col01) over (partition by TBL_A.ID)
+          var_threshold: case when var_minimum>0 then TRUE else FALSE end
  ```
  
- So we can use SQL expressions to derive intermediate variables during the transformation steps. Note that you can also derive variables based on other (previously derived) variables. 
+Note that variables are derived one by one, so you can use a previous variable in the expression for the next one.
+Unless you specify an alias, variable columns do not have a prefix. 
 
 ### Pivot
-After loading a or multiple source table(s) you can use them to pivot them (transpose row values to columns). You can use them within the transformations section. It requires
+You can pivot data, for example when you have key value pairs (with a key/type column and a value column) and you want to transpose those into a column per key containing the value. 
+
+
+This step contains:
 
 - `group_cols`: Columns to group data before pivoting
 - `pivot_col`: Name of the column to pivot
@@ -207,17 +249,17 @@ This step contains
 
 - `alias`: Alias of the aggregated dataset. This dataset is added to the original sources, and can be used in any join condition or data transformation.  
 - `group`: List of columns to group the data
-- `agg`: mapping of columns and the aggregation function. Use column aliases as keys and SQL expressions as values.
+- `column_mappings`: mapping of columns and the aggregation function. Use column aliases as keys and SQL expressions as values.
 - `source`: Source alias, mandatory if it is the first transformation step.
 
 
 ```yaml
 transformations:
   - join:
-      left_column: col01
       left_source: TBLA
-      right_column: col01
       right_source: TBLB
+      condition: 
+        - TBLA.col01 = TBLB.col01
       how: left
   - aggregation:
       alias: TBL_AGG
@@ -241,7 +283,7 @@ aggregated datasets at the beginning of the transformation steps.
 - For a comprehensive list of supported aggregation functions, refer to the [Spark documentation](https://spark.apache.org/docs/3.5.3/sql-ref-functions-builtin.html#aggregate-functions). 
 
 ### Union
-This step contain.
+This step contains
 
 - `alias`: Name of union dataset
 - `column_mapping`: list of input tables for the union or a list of mappings with underlying column mappings
@@ -311,18 +353,39 @@ Note that the `col05` does not exist in `TABLE_B`, so these values are filled wi
 
 If `allow_missing_columns` parameter is set to `false` the pipeline will fail in this example.
 
+### Filter
+This step contains
+- `alias`: Alias of filtered dataset
+- `conditions`: List of conditions to filter data
+
+It can be used to filter in between transformations.
+
+```yaml
+transformations:
+  - join:
+      right_source: TBLB
+      condition: 
+        - TBLA.col01 = TBLB.col01
+      how: left
+  - filter:
+      alias: FILTERED_TBL
+      conditions:
+        - TBLA.col02 <> TBLB.col02
+  - join: ...
+```
 
 ## Expressions
 
-After the transformations a list of expressions in SQL should be provided to derive the target columns
+After the transformations a list of expressions in SQL syntax should be provided to derive the target columns.
 
 ```yaml
 expressions:
   OutputColumnName1: TBLA.col1
-  OutputColumnName1: TBLC.col5
-  ...
+  OutputColumnName2: 0
   OutputColumnName3: case when TBLC.col3 = 'YES' then TBLB.col02 end
 ```
+Note: expressions are evaluated all at once, so it is not possible to use one column in the expression of a next one.
+Use variables for this instead.
 
 ## Drop duplicates
 
@@ -331,16 +394,16 @@ After the expressions there is an option drop the duplicate records of the outpu
 ```yaml
 drop_duplicates: true
 ```
+This key is optional, by default the duplicates are not dropped.
 
 ## Filter target
 
-After the expressions there is an option to specify a list of filters to apply
-on the target columns. These filters should be written as SQL expressions.
+After the expressions there is an option to specify a list of filters to apply on the target columns. These filters should be written as SQL expressions.
 
 ```yaml
 filter_target:
-- TBLA.col1 IN (1,3,4)
-- TBLC.col5 = 5
+- OutputColumnName1 IN (1,3,4)
+- OutputColumnName3 = 5
 ```
 
 
