@@ -1,4 +1,4 @@
-Create integrated dataset as per the logic defined in excel mapping sheet at location 
+
 Create delta table in staging layer as : stg_202505.bsl_ctrl_1286_b2_exmp_cond
 
 Structure (columns) -
