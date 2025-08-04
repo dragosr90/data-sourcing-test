@@ -1,0 +1,78 @@
+description: Create BSL ANDES 1286 B2 exemption conditions table by joining exemption condition and exemption ID tables
+
+target: bsrc_d.stg_{{ RUN_MONTH }}.bsl_andes_1286_b2_exmp_cond
+
+sources:
+  - alias: EXMPTN_CNDTN
+    columns:
+    - EXMPTN_CNDTN_ID
+    - EXMPTN_ID
+    - SRCE_SSTM_CMPNNT_ID
+    - PD_RTNG_MDL
+    - RPRTNG_ENTTY_CD
+    - BSL_II_PRDCT_TYP_CD
+    - RPRTNG_CRTSS_ACCNT_CD
+    - BSL_II_CNTRPRTY_TYP_CD
+    - RTL_CRDT_EXPSR_PRTFL_CD
+    - CSTMR_MRKT_SGMNT_ID
+    - LGD_RTNG_MDL
+    - LGL_ENTTY
+    - EX_FBN_FLG
+    - INTRCMPNY_FLG
+    - CNTRPRTY_ID
+    - DL_SRC_SSTM_CMPNNT_CD
+    - BSL_APPRCH
+    - EC_MDL_INPT_INDCTR
+    - EC_PRXD_INDCTR
+    - MIN_TURNOVER
+    - SOURCED_EXEMPTION_ID
+    - PL_NPL_INDICATOR
+    - SPECIALISED_LENDING_TYPE
+    source: bsrc_d.stg_{{ RUN_MONTH }}.dial_andes_bsl_exmptn_cndtn
+    filter: EFFCTV_STATUS = 'Active'
+  
+  - alias: EXMPTN_ID_TBL
+    columns:
+    - EXMPTN_ID
+    - EXMPTN_NM
+    - EFFCTV_END_DT
+    source: bsrc_d.stg_{{ RUN_MONTH }}.dial_andes_bsl_exmptn_id
+
+transformations:
+  - join:
+      left_source: EXMPTN_CNDTN
+      right_source: EXMPTN_ID_TBL
+      condition:
+      - EXMPTN_CNDTN.EXMPTN_ID = EXMPTN_ID_TBL.EXMPTN_ID
+      how: left
+
+expressions:
+  REPORTING_DATE: "'{{ RUN_MONTH }}'"
+  DELIVERY_ENTITY: "'{{ DELIVERY_ENTITY }}'"
+  EXEMPTION_CONDITION_ID: EXMPTN_CNDTN.EXMPTN_CNDTN_ID
+  EXEMPTION_ID: case when EXMPTN_CNDTN.EXMPTN_ID is null then '*' else EXMPTN_CNDTN.EXMPTN_ID end
+  EXEMPTION_NAME: case when EXMPTN_ID_TBL.EXMPTN_NM is null then '*' else EXMPTN_ID_TBL.EXMPTN_NM end
+  EXEMPTION_END_DATE: case when EXMPTN_ID_TBL.EFFCTV_END_DT is null then '*' else EXMPTN_ID_TBL.EFFCTV_END_DT end
+  SOURCE_SYS_COMP_ID: case when EXMPTN_CNDTN.SRCE_SSTM_CMPNNT_ID is null then '*' else EXMPTN_CNDTN.SRCE_SSTM_CMPNNT_ID end
+  PD_RTG_MODEL: case when EXMPTN_CNDTN.PD_RTNG_MDL is null then '*' else EXMPTN_CNDTN.PD_RTNG_MDL end
+  REPORTING_ENTITY_ID: case when EXMPTN_CNDTN.RPRTNG_ENTTY_CD is null then '*' else EXMPTN_CNDTN.RPRTNG_ENTTY_CD end
+  B2_PD_TYPE_ID: case when EXMPTN_CNDTN.BSL_II_PRDCT_TYP_CD is null then '*' else EXMPTN_CNDTN.BSL_II_PRDCT_TYP_CD end
+  RPRT_CAR_ACCCODE_ID: case when EXMPTN_CNDTN.RPRTNG_CRTSS_ACCNT_CD is null then '*' else EXMPTN_CNDTN.RPRTNG_CRTSS_ACCNT_CD end
+  B2_CPTY_TYPE_ID: case when EXMPTN_CNDTN.BSL_II_CNTRPRTY_TYP_CD is null then '*' else EXMPTN_CNDTN.BSL_II_CNTRPRTY_TYP_CD end
+  CR_PD_PROGRAM: case when EXMPTN_CNDTN.RTL_CRDT_EXPSR_PRTFL_CD is null then '*' else EXMPTN_CNDTN.RTL_CRDT_EXPSR_PRTFL_CD end
+  CUSTOMER_MARKET_SEGMENT_ID: case when EXMPTN_CNDTN.CSTMR_MRKT_SGMNT_ID is null then '*' else EXMPTN_CNDTN.CSTMR_MRKT_SGMNT_ID end
+  LGD_RTG_MODEL: case when EXMPTN_CNDTN.LGD_RTNG_MDL is null then '*' else EXMPTN_CNDTN.LGD_RTNG_MDL end
+  LEGAL_ENTITY: case when EXMPTN_CNDTN.LGL_ENTTY is null then '*' else EXMPTN_CNDTN.LGL_ENTTY end
+  EX_FBN_FLAG: case when EXMPTN_CNDTN.EX_FBN_FLG is null then '*' else EXMPTN_CNDTN.EX_FBN_FLG end
+  INTERCOMPANY_FLAG: case when EXMPTN_CNDTN.INTRCMPNY_FLG is null then '*' else EXMPTN_CNDTN.INTRCMPNY_FLG end
+  CTPTY_UID: case when EXMPTN_CNDTN.CNTRPRTY_ID is null then '*' else EXMPTN_CNDTN.CNTRPRTY_ID end
+  CTPTY_SSC: case when EXMPTN_CNDTN.DL_SRC_SSTM_CMPNNT_CD is null then '*' else EXMPTN_CNDTN.DL_SRC_SSTM_CMPNNT_CD end
+  BASEL_APPROACH: case when EXMPTN_CNDTN.BSL_APPRCH is null then '*' else EXMPTN_CNDTN.BSL_APPRCH end
+  EC_MODEL_INPUT_INDICATOR: case when EXMPTN_CNDTN.EC_MDL_INPT_INDCTR is null then '*' else EXMPTN_CNDTN.EC_MDL_INPT_INDCTR end
+  EC_PROXIED_INDICATOR: case when EXMPTN_CNDTN.EC_PRXD_INDCTR is null then '*' else EXMPTN_CNDTN.EC_PRXD_INDCTR end
+  TIME_STAMP: cast(null as string)
+  MIN_TURNOVER: case when EXMPTN_CNDTN.MIN_TURNOVER is null then '*' else EXMPTN_CNDTN.MIN_TURNOVER end
+  SOURCED_EXEMPTION_ID: case when EXMPTN_CNDTN.SOURCED_EXEMPTION_ID is null then '*' else EXMPTN_CNDTN.SOURCED_EXEMPTION_ID end
+  PL_NPL_INDICATOR: case when EXMPTN_CNDTN.PL_NPL_INDICATOR is null then '*' else EXMPTN_CNDTN.PL_NPL_INDICATOR end
+  SPECIALISED_LENDING_TYPE: EXMPTN_CNDTN.SPECIALISED_LENDING_TYPE
+  PPU_FLAG: "'PPU6'"
