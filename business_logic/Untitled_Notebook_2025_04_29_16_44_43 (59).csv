@@ -1,0 +1,1067 @@
+EXMPTN_CNDTN_ID,EXMPTN_ID,SRCE_SSTM_CMPNNT_ID,PD_RTNG_MDL,RPRTNG_ENTTY_CD,BSL_II_PRDCT_TYP_CD,RPRTNG_CRTSS_ACCNT_CD,BSL_II_CNTRPRTY_TYP_CD,RTL_CRDT_EXPSR_PRTFL_CD,CSTMR_MRKT_SGMNT_ID,LGD_RTNG_MDL,LGL_ENTTY,EX_FBN_FLG,INTRCMPNY_FLG,CNTRPRTY_ID,DL_SRC_SSTM_CMPNNT_CD,EFFCTV_STATUS,EFFCTV_STRT_DT,EFFCTV_END_DT,BSL_APPRCH,EC_MDL_INPT_INDCTR,EC_PRXD_INDCTR,GLBL_CNTRPRTY_IDNTFR,MIN_TURNOVER,SOURCED_EXEMPTION_ID,PL_NPL_INDICATOR,SPECIALISED_LENDING_TYPE
+100,ICO,null,null,null,null,null,null,null,null,null,null,null,Y,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+1001,Article_151_8_ECFOU,null,PBNEWW01,null,null,null,IB_PD_INST,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1002,Article_151_8_ECFOU,null,PBNDWW01,null,null,null,IB_PD_INST,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1003,Article_151_8_ECFOU,null,PBNKWW09,null,null,null,IB_PD_INST,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1004,Article_151_8_ECFOU,null,PIBKWW08,null,null,null,IB_PD_INST,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1005,Article_151_8_ECFOU,null,PFSIWW05,null,null,null,IB_PD_INST,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1006,Article_151_8_ECFOU,null,PFSHWW05,null,null,null,IB_PD_INST,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1007,Article_151_8_ECFOU,null,PFSLWW05,null,null,null,IB_PD_INST,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1008,Article_151_8_ECFOU,null,PFSUWW05,null,null,null,IB_PD_INST,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1009,Article_151_8_ECFOU,null,PFSPWW05,null,null,null,IB_PD_INST,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+101,CCP,null,null,null,null,null,QCCP,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+1010,Article_151_8_ECFOU,null,PINLWW05,null,null,null,IB_PD_INST,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1011,Article_151_8_ECFOU,null,PINNWW05,null,null,null,IB_PD_INST,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1012,Article_151_8_ECFOU,null,PINCWW05,null,null,null,IB_PD_INST,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1013,Article_151_8_ECFOU,null,PICOWW01,null,null,null,IB_PD_INST,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1014,Article_151_8_ECFOU,null,PBNEWW01,null,null,null,IB_PD_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1015,Article_151_8_ECFOU,null,PBNDWW01,null,null,null,IB_PD_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1016,Article_151_8_ECFOU,null,PBNKWW09,null,null,null,IB_PD_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1017,Article_151_8_ECFOU,null,PIBKWW08,null,null,null,IB_PD_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1018,Article_151_8_ECFOU,null,PFSIWW05,null,null,null,IB_PD_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1019,Article_151_8_ECFOU,null,PFSHWW05,null,null,null,IB_PD_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+102,CCP,null,null,null,null,null,NQCCP,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+1020,Article_151_8_ECFOU,null,PFSLWW05,null,null,null,IB_PD_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1021,Article_151_8_ECFOU,null,PFSUWW05,null,null,null,IB_PD_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1022,Article_151_8_ECFOU,null,PFSPWW05,null,null,null,IB_PD_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1023,Article_151_8_ECFOU,null,PINLWW05,null,null,null,IB_PD_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1024,Article_151_8_ECFOU,null,PINNWW05,null,null,null,IB_PD_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1025,Article_151_8_ECFOU,null,PINCWW05,null,null,null,IB_PD_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1026,Article_151_8_ECFOU,null,PICOWW01,null,null,null,IB_PD_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1027,Article_151_8_ECFOU,null,PBNEWW01,null,null,null,IB_PD_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1028,Article_151_8_ECFOU,null,PBNDWW01,null,null,null,IB_PD_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1029,Article_151_8_ECFOU,null,PBNKWW09,null,null,null,IB_PD_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+103,Ex_Non_Material,null,null,220100,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+1030,Article_151_8_ECFOU,null,PIBKWW08,null,null,null,IB_PD_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1031,Article_151_8_ECFOU,null,PFSIWW05,null,null,null,IB_PD_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1032,Article_151_8_ECFOU,null,PFSHWW05,null,null,null,IB_PD_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1033,Article_151_8_ECFOU,null,PFSLWW05,null,null,null,IB_PD_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1034,Article_151_8_ECFOU,null,PFSUWW05,null,null,null,IB_PD_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1035,Article_151_8_ECFOU,null,PFSPWW05,null,null,null,IB_PD_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1036,Article_151_8_ECFOU,null,PINLWW05,null,null,null,IB_PD_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1037,Article_151_8_ECFOU,null,PINNWW05,null,null,null,IB_PD_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1038,Article_151_8_ECFOU,null,PINCWW05,null,null,null,IB_PD_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1039,Article_151_8_ECFOU,null,PICOWW01,null,null,null,IB_PD_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+104,Ex_Non_Material,null,null,425055,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+1040,Article_151_8_ECFOU,null,PBNEWW01,null,null,null,IFEU,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1041,Article_151_8_ECFOU,null,PBNDWW01,null,null,null,IFEU,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1042,Article_151_8_ECFOU,null,PBNKWW09,null,null,null,IFEU,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1043,Article_151_8_ECFOU,null,PIBKWW08,null,null,null,IFEU,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1044,Article_151_8_ECFOU,null,PFSIWW05,null,null,null,IFEU,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1045,Article_151_8_ECFOU,null,PFSHWW05,null,null,null,IFEU,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1046,Article_151_8_ECFOU,null,PFSLWW05,null,null,null,IFEU,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1047,Article_151_8_ECFOU,null,PFSUWW05,null,null,null,IFEU,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1048,Article_151_8_ECFOU,null,PFSPWW05,null,null,null,IFEU,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1049,Article_151_8_ECFOU,null,PINLWW05,null,null,null,IFEU,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+105,Ex_Non_Material,null,null,425057,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+1050,Article_151_8_ECFOU,null,PINNWW05,null,null,null,IFEU,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1051,Article_151_8_ECFOU,null,PINCWW05,null,null,null,IFEU,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1052,Article_151_8_ECFOU,null,PICOWW01,null,null,null,IFEU,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1053,Article_151_8_ECFOU,null,PBNEWW01,null,null,null,IFEU_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1054,Article_151_8_ECFOU,null,PBNDWW01,null,null,null,IFEU_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1055,Article_151_8_ECFOU,null,PBNKWW09,null,null,null,IFEU_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1056,Article_151_8_ECFOU,null,PIBKWW08,null,null,null,IFEU_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1057,Article_151_8_ECFOU,null,PFSIWW05,null,null,null,IFEU_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1058,Article_151_8_ECFOU,null,PFSHWW05,null,null,null,IFEU_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1059,Article_151_8_ECFOU,null,PFSLWW05,null,null,null,IFEU_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+106,Ex_Non_Material,null,null,208239,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+1060,Article_151_8_ECFOU,null,PFSUWW05,null,null,null,IFEU_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1061,Article_151_8_ECFOU,null,PFSPWW05,null,null,null,IFEU_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1062,Article_151_8_ECFOU,null,PINLWW05,null,null,null,IFEU_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1063,Article_151_8_ECFOU,null,PINNWW05,null,null,null,IFEU_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1064,Article_151_8_ECFOU,null,PINCWW05,null,null,null,IFEU_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1065,Article_151_8_ECFOU,null,PICOWW01,null,null,null,IFEU_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1066,Article_151_8_ECFOU,null,PBNEWW01,null,null,null,IFEU_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1067,Article_151_8_ECFOU,null,PBNDWW01,null,null,null,IFEU_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1068,Article_151_8_ECFOU,null,PBNKWW09,null,null,null,IFEU_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1069,Article_151_8_ECFOU,null,PIBKWW08,null,null,null,IFEU_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+107,Ex_Non_Material,null,null,202970,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+1070,Article_151_8_ECFOU,null,PFSIWW05,null,null,null,IFEU_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1071,Article_151_8_ECFOU,null,PFSHWW05,null,null,null,IFEU_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1072,Article_151_8_ECFOU,null,PFSLWW05,null,null,null,IFEU_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1073,Article_151_8_ECFOU,null,PFSUWW05,null,null,null,IFEU_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1074,Article_151_8_ECFOU,null,PFSPWW05,null,null,null,IFEU_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1075,Article_151_8_ECFOU,null,PINLWW05,null,null,null,IFEU_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1076,Article_151_8_ECFOU,null,PINNWW05,null,null,null,IFEU_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1077,Article_151_8_ECFOU,null,PINCWW05,null,null,null,IFEU_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1078,Article_151_8_ECFOU,null,PICOWW01,null,null,null,IFEU_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1079,Article_151_8_ECFOU,null,PBNEWW01,null,null,null,IFNEU,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+108,Ex_Non_Material,null,null,208289,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+1080,Article_151_8_ECFOU,null,PBNDWW01,null,null,null,IFNEU,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1081,Article_151_8_ECFOU,null,PBNKWW09,null,null,null,IFNEU,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1082,Article_151_8_ECFOU,null,PIBKWW08,null,null,null,IFNEU,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1083,Article_151_8_ECFOU,null,PFSIWW05,null,null,null,IFNEU,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1084,Article_151_8_ECFOU,null,PFSHWW05,null,null,null,IFNEU,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1085,Article_151_8_ECFOU,null,PFSLWW05,null,null,null,IFNEU,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1086,Article_151_8_ECFOU,null,PFSUWW05,null,null,null,IFNEU,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1087,Article_151_8_ECFOU,null,PFSPWW05,null,null,null,IFNEU,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1088,Article_151_8_ECFOU,null,PINLWW05,null,null,null,IFNEU,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1089,Article_151_8_ECFOU,null,PINNWW05,null,null,null,IFNEU,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+109,Ex_Non_Material,null,null,220069,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+1090,Article_151_8_ECFOU,null,PINCWW05,null,null,null,IFNEU,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1091,Article_151_8_ECFOU,null,PICOWW01,null,null,null,IFNEU,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1092,Article_151_8_ECFOU,null,PBNEWW01,null,null,null,IFNEU_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1093,Article_151_8_ECFOU,null,PBNDWW01,null,null,null,IFNEU_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1094,Article_151_8_ECFOU,null,PBNKWW09,null,null,null,IFNEU_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1095,Article_151_8_ECFOU,null,PIBKWW08,null,null,null,IFNEU_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1096,Article_151_8_ECFOU,null,PFSIWW05,null,null,null,IFNEU_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1097,Article_151_8_ECFOU,null,PFSHWW05,null,null,null,IFNEU_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1098,Article_151_8_ECFOU,null,PFSLWW05,null,null,null,IFNEU_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1099,Article_151_8_ECFOU,null,PFSUWW05,null,null,null,IFNEU_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+110,Ex_Non_Material,null,null,230050,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+1100,Article_151_8_ECFOU,null,PFSPWW05,null,null,null,IFNEU_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1101,Article_151_8_ECFOU,null,PINLWW05,null,null,null,IFNEU_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1102,Article_151_8_ECFOU,null,PINNWW05,null,null,null,IFNEU_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1103,Article_151_8_ECFOU,null,PINCWW05,null,null,null,IFNEU_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1104,Article_151_8_ECFOU,null,PICOWW01,null,null,null,IFNEU_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1105,Article_151_8_ECFOU,null,PBNEWW01,null,null,null,IFNEU_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1106,Article_151_8_ECFOU,null,PBNDWW01,null,null,null,IFNEU_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1107,Article_151_8_ECFOU,null,PBNKWW09,null,null,null,IFNEU_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1108,Article_151_8_ECFOU,null,PIBKWW08,null,null,null,IFNEU_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1109,Article_151_8_ECFOU,null,PFSIWW05,null,null,null,IFNEU_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+111,Ex_Non_Material,null,null,208514,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+1110,Article_151_8_ECFOU,null,PFSHWW05,null,null,null,IFNEU_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1111,Article_151_8_ECFOU,null,PFSLWW05,null,null,null,IFNEU_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1112,Article_151_8_ECFOU,null,PFSUWW05,null,null,null,IFNEU_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1113,Article_151_8_ECFOU,null,PFSPWW05,null,null,null,IFNEU_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1114,Article_151_8_ECFOU,null,PINLWW05,null,null,null,IFNEU_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1115,Article_151_8_ECFOU,null,PINNWW05,null,null,null,IFNEU_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1116,Article_151_8_ECFOU,null,PINCWW05,null,null,null,IFNEU_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1117,Article_151_8_ECFOU,null,PICOWW01,null,null,null,IFNEU_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1118,Article_151_8_ECFOU,null,PBNEWW01,null,null,null,MDB_B_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1119,Article_151_8_ECFOU,null,PBNDWW01,null,null,null,MDB_B_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+112,Ex_Non_Material,null,null,208543,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+1120,Article_151_8_ECFOU,null,PBNKWW09,null,null,null,MDB_B_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1121,Article_151_8_ECFOU,null,PIBKWW08,null,null,null,MDB_B_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1122,Article_151_8_ECFOU,null,PFSIWW05,null,null,null,MDB_B_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1123,Article_151_8_ECFOU,null,PFSHWW05,null,null,null,MDB_B_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1124,Article_151_8_ECFOU,null,PFSLWW05,null,null,null,MDB_B_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1125,Article_151_8_ECFOU,null,PFSUWW05,null,null,null,MDB_B_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1126,Article_151_8_ECFOU,null,PFSPWW05,null,null,null,MDB_B_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1127,Article_151_8_ECFOU,null,PINLWW05,null,null,null,MDB_B_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1128,Article_151_8_ECFOU,null,PINNWW05,null,null,null,MDB_B_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1129,Article_151_8_ECFOU,null,PINCWW05,null,null,null,MDB_B_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+113,Franx B.V.,null,null,208595,null,null,null,null,null,null,null,null,null,null,null,Active,30-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+1130,Article_151_8_ECFOU,null,PICOWW01,null,null,null,MDB_B_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1131,Article_151_8_ECFOU,null,PBNEWW01,null,null,null,MDB_B_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1132,Article_151_8_ECFOU,null,PBNDWW01,null,null,null,MDB_B_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1133,Article_151_8_ECFOU,null,PBNKWW09,null,null,null,MDB_B_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1134,Article_151_8_ECFOU,null,PIBKWW08,null,null,null,MDB_B_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1135,Article_151_8_ECFOU,null,PFSIWW05,null,null,null,MDB_B_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1136,Article_151_8_ECFOU,null,PFSHWW05,null,null,null,MDB_B_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1137,Article_151_8_ECFOU,null,PFSLWW05,null,null,null,MDB_B_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1138,Article_151_8_ECFOU,null,PFSUWW05,null,null,null,MDB_B_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1139,Article_151_8_ECFOU,null,PFSPWW05,null,null,null,MDB_B_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+114,Ex_Non_Material,null,null,220116,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+1140,Article_151_8_ECFOU,null,PINLWW05,null,null,null,MDB_B_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1141,Article_151_8_ECFOU,null,PINNWW05,null,null,null,MDB_B_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1142,Article_151_8_ECFOU,null,PINCWW05,null,null,null,MDB_B_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1143,Article_151_8_ECFOU,null,PICOWW01,null,null,null,MDB_B_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1144,Article_151_8_ECFOU,null,PBNEWW01,null,null,null,CI,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1145,Article_151_8_ECFOU,null,PBNDWW01,null,null,null,CI,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1146,Article_151_8_ECFOU,null,PBNKWW09,null,null,null,CI,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1147,Article_151_8_ECFOU,null,PIBKWW08,null,null,null,CI,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1148,Article_151_8_ECFOU,null,PFSIWW05,null,null,null,CI,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1149,Article_151_8_ECFOU,null,PFSHWW05,null,null,null,CI,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+115,Ex_Non_Material,null,null,425021,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+1150,Article_151_8_ECFOU,null,PFSLWW05,null,null,null,CI,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1151,Article_151_8_ECFOU,null,PFSUWW05,null,null,null,CI,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1152,Article_151_8_ECFOU,null,PFSPWW05,null,null,null,CI,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1153,Article_151_8_ECFOU,null,PINLWW05,null,null,null,CI,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1154,Article_151_8_ECFOU,null,PINNWW05,null,null,null,CI,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1155,Article_151_8_ECFOU,null,PINCWW05,null,null,null,CI,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1156,Article_151_8_ECFOU,null,PICOWW01,null,null,null,CI,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1157,Article_151_8_ECFOU,null,PBNEWW01,null,null,null,CI_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1158,Article_151_8_ECFOU,null,PBNDWW01,null,null,null,CI_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1159,Article_151_8_ECFOU,null,PBNKWW09,null,null,null,CI_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+116,Ex_Non_Material,null,null,425024,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+1160,Article_151_8_ECFOU,null,PIBKWW08,null,null,null,CI_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1161,Article_151_8_ECFOU,null,PFSIWW05,null,null,null,CI_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1162,Article_151_8_ECFOU,null,PFSHWW05,null,null,null,CI_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1163,Article_151_8_ECFOU,null,PFSLWW05,null,null,null,CI_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1164,Article_151_8_ECFOU,null,PFSUWW05,null,null,null,CI_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1165,Article_151_8_ECFOU,null,PFSPWW05,null,null,null,CI_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1166,Article_151_8_ECFOU,null,PINLWW05,null,null,null,CI_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1167,Article_151_8_ECFOU,null,PINNWW05,null,null,null,CI_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1168,Article_151_8_ECFOU,null,PINCWW05,null,null,null,CI_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1169,Article_151_8_ECFOU,null,PICOWW01,null,null,null,CI_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+117,Ex_Non_Material,null,null,228338,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+1170,Article_151_8_ECFOU,null,PBNEWW01,null,null,null,CI_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1171,Article_151_8_ECFOU,null,PBNDWW01,null,null,null,CI_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1172,Article_151_8_ECFOU,null,PBNKWW09,null,null,null,CI_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1173,Article_151_8_ECFOU,null,PIBKWW08,null,null,null,CI_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1174,Article_151_8_ECFOU,null,PFSIWW05,null,null,null,CI_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1175,Article_151_8_ECFOU,null,PFSHWW05,null,null,null,CI_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1176,Article_151_8_ECFOU,null,PFSLWW05,null,null,null,CI_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1177,Article_151_8_ECFOU,null,PFSUWW05,null,null,null,CI_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1178,Article_151_8_ECFOU,null,PFSPWW05,null,null,null,CI_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1179,Article_151_8_ECFOU,null,PINLWW05,null,null,null,CI_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+118,Ex_Non_Material,null,null,425053,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+1180,Article_151_8_ECFOU,null,PINNWW05,null,null,null,CI_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1181,Article_151_8_ECFOU,null,PINCWW05,null,null,null,CI_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1182,Article_151_8_ECFOU,null,PICOWW01,null,null,null,CI_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1183,Article_151_8_ECFOU,null,PBNEWW01,null,null,null,CIU_NONREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1184,Article_151_8_ECFOU,null,PBNDWW01,null,null,null,CIU_NONREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1185,Article_151_8_ECFOU,null,PBNKWW09,null,null,null,CIU_NONREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1186,Article_151_8_ECFOU,null,PIBKWW08,null,null,null,CIU_NONREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1187,Article_151_8_ECFOU,null,PFSIWW05,null,null,null,CIU_NONREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1188,Article_151_8_ECFOU,null,PFSHWW05,null,null,null,CIU_NONREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1189,Article_151_8_ECFOU,null,PFSLWW05,null,null,null,CIU_NONREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+119,Ex_Non_Material,null,null,425054,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+1190,Article_151_8_ECFOU,null,PFSUWW05,null,null,null,CIU_NONREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1191,Article_151_8_ECFOU,null,PFSPWW05,null,null,null,CIU_NONREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1192,Article_151_8_ECFOU,null,PINLWW05,null,null,null,CIU_NONREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1193,Article_151_8_ECFOU,null,PINNWW05,null,null,null,CIU_NONREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1194,Article_151_8_ECFOU,null,PINCWW05,null,null,null,CIU_NONREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1195,Article_151_8_ECFOU,null,PICOWW01,null,null,null,CIU_NONREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1196,Article_151_8_ECFOU,null,PBNEWW01,null,null,null,CIU_REG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1197,Article_151_8_ECFOU,null,PBNDWW01,null,null,null,CIU_REG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1198,Article_151_8_ECFOU,null,PBNKWW09,null,null,null,CIU_REG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1199,Article_151_8_ECFOU,null,PIBKWW08,null,null,null,CIU_REG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+120,Ex_Non_Material,null,null,425062,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+1200,Article_151_8_ECFOU,null,PFSIWW05,null,null,null,CIU_REG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1201,Article_151_8_ECFOU,null,PFSHWW05,null,null,null,CIU_REG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1202,Article_151_8_ECFOU,null,PFSLWW05,null,null,null,CIU_REG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1203,Article_151_8_ECFOU,null,PFSUWW05,null,null,null,CIU_REG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1204,Article_151_8_ECFOU,null,PFSPWW05,null,null,null,CIU_REG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1205,Article_151_8_ECFOU,null,PINLWW05,null,null,null,CIU_REG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1206,Article_151_8_ECFOU,null,PINNWW05,null,null,null,CIU_REG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1207,Article_151_8_ECFOU,null,PINCWW05,null,null,null,CIU_REG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1208,Article_151_8_ECFOU,null,PICOWW01,null,null,null,CIU_REG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1209,Article_151_8_ECFOU,null,PBNEWW01,null,null,null,EXCHANGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+121,Ex_Non_Material,null,null,425142,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+1210,Article_151_8_ECFOU,null,PBNDWW01,null,null,null,EXCHANGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1211,Article_151_8_ECFOU,null,PBNKWW09,null,null,null,EXCHANGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1212,Article_151_8_ECFOU,null,PIBKWW08,null,null,null,EXCHANGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1213,Article_151_8_ECFOU,null,PFSIWW05,null,null,null,EXCHANGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1214,Article_151_8_ECFOU,null,PFSHWW05,null,null,null,EXCHANGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1215,Article_151_8_ECFOU,null,PFSLWW05,null,null,null,EXCHANGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1216,Article_151_8_ECFOU,null,PFSUWW05,null,null,null,EXCHANGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1217,Article_151_8_ECFOU,null,PFSPWW05,null,null,null,EXCHANGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1218,Article_151_8_ECFOU,null,PINLWW05,null,null,null,EXCHANGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1219,Article_151_8_ECFOU,null,PINNWW05,null,null,null,EXCHANGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+122,Ex_Non_Material,null,null,202943,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+1220,Article_151_8_ECFOU,null,PINCWW05,null,null,null,EXCHANGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1221,Article_151_8_ECFOU,null,PICOWW01,null,null,null,EXCHANGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1222,Article_151_8_ECFOU,null,PBNEWW01,null,null,null,FI_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1223,Article_151_8_ECFOU,null,PBNDWW01,null,null,null,FI_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1224,Article_151_8_ECFOU,null,PBNKWW09,null,null,null,FI_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1225,Article_151_8_ECFOU,null,PIBKWW08,null,null,null,FI_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1226,Article_151_8_ECFOU,null,PFSIWW05,null,null,null,FI_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1227,Article_151_8_ECFOU,null,PFSHWW05,null,null,null,FI_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1228,Article_151_8_ECFOU,null,PFSLWW05,null,null,null,FI_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1229,Article_151_8_ECFOU,null,PFSUWW05,null,null,null,FI_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+123,Ex_Non_Material,null,null,808554,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+1230,Article_151_8_ECFOU,null,PFSPWW05,null,null,null,FI_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1231,Article_151_8_ECFOU,null,PINLWW05,null,null,null,FI_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1232,Article_151_8_ECFOU,null,PINNWW05,null,null,null,FI_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1233,Article_151_8_ECFOU,null,PINCWW05,null,null,null,FI_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1234,Article_151_8_ECFOU,null,PICOWW01,null,null,null,FI_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1235,Article_151_8_ECFOU,null,PBNEWW01,null,null,null,IF,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1236,Article_151_8_ECFOU,null,PBNDWW01,null,null,null,IF,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1237,Article_151_8_ECFOU,null,PBNKWW09,null,null,null,IF,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1238,Article_151_8_ECFOU,null,PIBKWW08,null,null,null,IF,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1239,Article_151_8_ECFOU,null,PFSIWW05,null,null,null,IF,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+124,Ex_Non_Material,null,null,808578,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+1240,Article_151_8_ECFOU,null,PFSHWW05,null,null,null,IF,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1241,Article_151_8_ECFOU,null,PFSLWW05,null,null,null,IF,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1242,Article_151_8_ECFOU,null,PFSUWW05,null,null,null,IF,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1243,Article_151_8_ECFOU,null,PFSPWW05,null,null,null,IF,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1244,Article_151_8_ECFOU,null,PINLWW05,null,null,null,IF,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1245,Article_151_8_ECFOU,null,PINNWW05,null,null,null,IF,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1246,Article_151_8_ECFOU,null,PINCWW05,null,null,null,IF,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1247,Article_151_8_ECFOU,null,PICOWW01,null,null,null,IF,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1248,Article_151_8_ECFOU,null,PBNEWW01,null,null,null,IF_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1249,Article_151_8_ECFOU,null,PBNDWW01,null,null,null,IF_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1250,Article_151_8_ECFOU,null,PBNKWW09,null,null,null,IF_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1251,Article_151_8_ECFOU,null,PIBKWW08,null,null,null,IF_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1252,Article_151_8_ECFOU,null,PFSIWW05,null,null,null,IF_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1253,Article_151_8_ECFOU,null,PFSHWW05,null,null,null,IF_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1254,Article_151_8_ECFOU,null,PFSLWW05,null,null,null,IF_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1255,Article_151_8_ECFOU,null,PFSUWW05,null,null,null,IF_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1256,Article_151_8_ECFOU,null,PFSPWW05,null,null,null,IF_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1257,Article_151_8_ECFOU,null,PINLWW05,null,null,null,IF_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1258,Article_151_8_ECFOU,null,PINNWW05,null,null,null,IF_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1259,Article_151_8_ECFOU,null,PINCWW05,null,null,null,IF_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+126,Ex_Non_Material,null,null,808362,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+1260,Article_151_8_ECFOU,null,PICOWW01,null,null,null,IF_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1261,Article_151_8_ECFOU,null,PBNEWW01,null,null,null,IF_REG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1262,Article_151_8_ECFOU,null,PBNDWW01,null,null,null,IF_REG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1263,Article_151_8_ECFOU,null,PBNKWW09,null,null,null,IF_REG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1264,Article_151_8_ECFOU,null,PIBKWW08,null,null,null,IF_REG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1265,Article_151_8_ECFOU,null,PFSIWW05,null,null,null,IF_REG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1266,Article_151_8_ECFOU,null,PFSHWW05,null,null,null,IF_REG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1267,Article_151_8_ECFOU,null,PFSLWW05,null,null,null,IF_REG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1268,Article_151_8_ECFOU,null,PFSUWW05,null,null,null,IF_REG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1269,Article_151_8_ECFOU,null,PFSPWW05,null,null,null,IF_REG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+127,Ex_Non_Material,null,null,809768,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+1270,Article_151_8_ECFOU,null,PINLWW05,null,null,null,IF_REG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1271,Article_151_8_ECFOU,null,PINNWW05,null,null,null,IF_REG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1272,Article_151_8_ECFOU,null,PINCWW05,null,null,null,IF_REG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1273,Article_151_8_ECFOU,null,PICOWW01,null,null,null,IF_REG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1274,Article_151_8_ECFOU,null,PBNEWW01,null,null,null,IF_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1275,Article_151_8_ECFOU,null,PBNDWW01,null,null,null,IF_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1276,Article_151_8_ECFOU,null,PBNKWW09,null,null,null,IF_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1277,Article_151_8_ECFOU,null,PIBKWW08,null,null,null,IF_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1278,Article_151_8_ECFOU,null,PFSIWW05,null,null,null,IF_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1279,Article_151_8_ECFOU,null,PFSHWW05,null,null,null,IF_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+128,Ex_Non_Material,null,null,608032,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+1280,Article_151_8_ECFOU,null,PFSLWW05,null,null,null,IF_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1281,Article_151_8_ECFOU,null,PFSUWW05,null,null,null,IF_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1282,Article_151_8_ECFOU,null,PFSPWW05,null,null,null,IF_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1283,Article_151_8_ECFOU,null,PINLWW05,null,null,null,IF_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1284,Article_151_8_ECFOU,null,PINNWW05,null,null,null,IF_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1285,Article_151_8_ECFOU,null,PINCWW05,null,null,null,IF_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1286,Article_151_8_ECFOU,null,PICOWW01,null,null,null,IF_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1287,Article_151_8_ECFOU,null,PBNEWW01,null,null,null,MDB_BANK,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1288,Article_151_8_ECFOU,null,PBNDWW01,null,null,null,MDB_BANK,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1289,Article_151_8_ECFOU,null,PBNKWW09,null,null,null,MDB_BANK,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+129,Ex_Non_Material,null,null,208517,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+1290,Article_151_8_ECFOU,null,PIBKWW08,null,null,null,MDB_BANK,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1291,Article_151_8_ECFOU,null,PFSIWW05,null,null,null,MDB_BANK,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1292,Article_151_8_ECFOU,null,PFSHWW05,null,null,null,MDB_BANK,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1293,Article_151_8_ECFOU,null,PFSLWW05,null,null,null,MDB_BANK,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1294,Article_151_8_ECFOU,null,PFSUWW05,null,null,null,MDB_BANK,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1295,Article_151_8_ECFOU,null,PFSPWW05,null,null,null,MDB_BANK,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1296,Article_151_8_ECFOU,null,PINLWW05,null,null,null,MDB_BANK,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1297,Article_151_8_ECFOU,null,PINNWW05,null,null,null,MDB_BANK,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1298,Article_151_8_ECFOU,null,PINCWW05,null,null,null,MDB_BANK,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1299,Article_151_8_ECFOU,null,PICOWW01,null,null,null,MDB_BANK,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+130,Ex_Non_Material,null,null,202853,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+1300,Article_151_8_ECFOU,null,PBNEWW01,null,null,null,NQCCP,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1301,Article_151_8_ECFOU,null,PBNDWW01,null,null,null,NQCCP,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1302,Article_151_8_ECFOU,null,PBNKWW09,null,null,null,NQCCP,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1303,Article_151_8_ECFOU,null,PIBKWW08,null,null,null,NQCCP,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1304,Article_151_8_ECFOU,null,PFSIWW05,null,null,null,NQCCP,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1305,Article_151_8_ECFOU,null,PFSHWW05,null,null,null,NQCCP,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1306,Article_151_8_ECFOU,null,PFSLWW05,null,null,null,NQCCP,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1307,Article_151_8_ECFOU,null,PFSUWW05,null,null,null,NQCCP,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1308,Article_151_8_ECFOU,null,PFSPWW05,null,null,null,NQCCP,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1309,Article_151_8_ECFOU,null,PINLWW05,null,null,null,NQCCP,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+131,Ex_Non_Material,null,null,202979,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+1310,Article_151_8_ECFOU,null,PINNWW05,null,null,null,NQCCP,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1311,Article_151_8_ECFOU,null,PINCWW05,null,null,null,NQCCP,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1312,Article_151_8_ECFOU,null,PICOWW01,null,null,null,NQCCP,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1313,Article_151_8_ECFOU,null,PBNEWW01,null,null,null,PF_NONREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1314,Article_151_8_ECFOU,null,PBNDWW01,null,null,null,PF_NONREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1315,Article_151_8_ECFOU,null,PBNKWW09,null,null,null,PF_NONREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1316,Article_151_8_ECFOU,null,PIBKWW08,null,null,null,PF_NONREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1317,Article_151_8_ECFOU,null,PFSIWW05,null,null,null,PF_NONREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1318,Article_151_8_ECFOU,null,PFSHWW05,null,null,null,PF_NONREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1319,Article_151_8_ECFOU,null,PFSLWW05,null,null,null,PF_NONREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+132,Ex_Non_Material,null,null,208603,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+1320,Article_151_8_ECFOU,null,PFSUWW05,null,null,null,PF_NONREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1321,Article_151_8_ECFOU,null,PFSPWW05,null,null,null,PF_NONREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1322,Article_151_8_ECFOU,null,PINLWW05,null,null,null,PF_NONREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1323,Article_151_8_ECFOU,null,PINNWW05,null,null,null,PF_NONREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1324,Article_151_8_ECFOU,null,PINCWW05,null,null,null,PF_NONREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1325,Article_151_8_ECFOU,null,PICOWW01,null,null,null,PF_NONREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1326,Article_151_8_ECFOU,null,PBNEWW01,null,null,null,PF_REG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1327,Article_151_8_ECFOU,null,PBNDWW01,null,null,null,PF_REG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1328,Article_151_8_ECFOU,null,PBNKWW09,null,null,null,PF_REG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1329,Article_151_8_ECFOU,null,PIBKWW08,null,null,null,PF_REG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+133,Ex_Non_Material,null,null,525160,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+1330,Article_151_8_ECFOU,null,PFSIWW05,null,null,null,PF_REG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1331,Article_151_8_ECFOU,null,PFSHWW05,null,null,null,PF_REG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1332,Article_151_8_ECFOU,null,PFSLWW05,null,null,null,PF_REG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1333,Article_151_8_ECFOU,null,PFSUWW05,null,null,null,PF_REG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1334,Article_151_8_ECFOU,null,PFSPWW05,null,null,null,PF_REG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1335,Article_151_8_ECFOU,null,PINLWW05,null,null,null,PF_REG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1336,Article_151_8_ECFOU,null,PINNWW05,null,null,null,PF_REG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1337,Article_151_8_ECFOU,null,PINCWW05,null,null,null,PF_REG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1338,Article_151_8_ECFOU,null,PICOWW01,null,null,null,PF_REG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1339,Article_151_8_ECFOU,null,PBNEWW01,null,null,null,QCCP,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+134,Ex_Non_Material,null,null,803224,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+1340,Article_151_8_ECFOU,null,PBNDWW01,null,null,null,QCCP,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1341,Article_151_8_ECFOU,null,PBNKWW09,null,null,null,QCCP,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1342,Article_151_8_ECFOU,null,PIBKWW08,null,null,null,QCCP,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1343,Article_151_8_ECFOU,null,PFSIWW05,null,null,null,QCCP,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1344,Article_151_8_ECFOU,null,PFSHWW05,null,null,null,QCCP,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1345,Article_151_8_ECFOU,null,PFSLWW05,null,null,null,QCCP,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1346,Article_151_8_ECFOU,null,PFSUWW05,null,null,null,QCCP,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1347,Article_151_8_ECFOU,null,PFSPWW05,null,null,null,QCCP,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1348,Article_151_8_ECFOU,null,PINLWW05,null,null,null,QCCP,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1349,Article_151_8_ECFOU,null,PINNWW05,null,null,null,QCCP,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+135,Ex_Non_Material,null,null,803243,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+1350,Article_151_8_ECFOU,null,PINCWW05,null,null,null,QCCP,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1351,Article_151_8_ECFOU,null,PICOWW01,null,null,null,QCCP,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1352,Article_151_8_ECFOU,null,PBNEWW01,null,null,null,ASS,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1353,Article_151_8_ECFOU,null,PBNDWW01,null,null,null,ASS,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1354,Article_151_8_ECFOU,null,PBNKWW09,null,null,null,ASS,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1355,Article_151_8_ECFOU,null,PIBKWW08,null,null,null,ASS,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1356,Article_151_8_ECFOU,null,PFSIWW05,null,null,null,ASS,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1357,Article_151_8_ECFOU,null,PFSHWW05,null,null,null,ASS,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1358,Article_151_8_ECFOU,null,PFSLWW05,null,null,null,ASS,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1359,Article_151_8_ECFOU,null,PFSUWW05,null,null,null,ASS,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+136,Ex_Non_Material,null,null,803296,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+1360,Article_151_8_ECFOU,null,PFSPWW05,null,null,null,ASS,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1361,Article_151_8_ECFOU,null,PINLWW05,null,null,null,ASS,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1362,Article_151_8_ECFOU,null,PINNWW05,null,null,null,ASS,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1363,Article_151_8_ECFOU,null,PINCWW05,null,null,null,ASS,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1364,Article_151_8_ECFOU,null,PICOWW01,null,null,null,ASS,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1365,Article_151_8_ECFOU,null,PBNEWW01,null,null,null,ASS_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1366,Article_151_8_ECFOU,null,PBNDWW01,null,null,null,ASS_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1367,Article_151_8_ECFOU,null,PBNKWW09,null,null,null,ASS_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1368,Article_151_8_ECFOU,null,PIBKWW08,null,null,null,ASS_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1369,Article_151_8_ECFOU,null,PFSIWW05,null,null,null,ASS_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+137,Ex_Non_Material,null,null,803304,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+1370,Article_151_8_ECFOU,null,PFSHWW05,null,null,null,ASS_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1371,Article_151_8_ECFOU,null,PFSLWW05,null,null,null,ASS_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1372,Article_151_8_ECFOU,null,PFSUWW05,null,null,null,ASS_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1373,Article_151_8_ECFOU,null,PFSPWW05,null,null,null,ASS_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1374,Article_151_8_ECFOU,null,PINLWW05,null,null,null,ASS_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1375,Article_151_8_ECFOU,null,PINNWW05,null,null,null,ASS_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1376,Article_151_8_ECFOU,null,PINCWW05,null,null,null,ASS_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1377,Article_151_8_ECFOU,null,PICOWW01,null,null,null,ASS_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1378,Article_151_8_ECFOU,null,PBNEWW01,null,null,null,OTH_CORP,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1379,Article_151_8_ECFOU,null,PBNDWW01,null,null,null,OTH_CORP,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+138,Ex_Non_Material,null,null,805000,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+1380,Article_151_8_ECFOU,null,PBNKWW09,null,null,null,OTH_CORP,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1381,Article_151_8_ECFOU,null,PIBKWW08,null,null,null,OTH_CORP,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1382,Article_151_8_ECFOU,null,PFSIWW05,null,null,null,OTH_CORP,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1383,Article_151_8_ECFOU,null,PFSHWW05,null,null,null,OTH_CORP,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1384,Article_151_8_ECFOU,null,PFSLWW05,null,null,null,OTH_CORP,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1385,Article_151_8_ECFOU,null,PFSUWW05,null,null,null,OTH_CORP,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1386,Article_151_8_ECFOU,null,PFSPWW05,null,null,null,OTH_CORP,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1387,Article_151_8_ECFOU,null,PINLWW05,null,null,null,OTH_CORP,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1388,Article_151_8_ECFOU,null,PINNWW05,null,null,null,OTH_CORP,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1389,Article_151_8_ECFOU,null,PINCWW05,null,null,null,OTH_CORP,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+139,Ex_Non_Material,null,null,805243,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+1390,Article_151_8_ECFOU,null,PICOWW01,null,null,null,OTH_CORP,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1391,Article_151_8_ECFOU,null,PBNEWW01,null,null,null,AAB_BRANCH,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1392,Article_151_8_ECFOU,null,PBNDWW01,null,null,null,AAB_BRANCH,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1393,Article_151_8_ECFOU,null,PBNKWW09,null,null,null,AAB_BRANCH,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1394,Article_151_8_ECFOU,null,PIBKWW08,null,null,null,AAB_BRANCH,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1395,Article_151_8_ECFOU,null,PFSIWW05,null,null,null,AAB_BRANCH,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1396,Article_151_8_ECFOU,null,PFSHWW05,null,null,null,AAB_BRANCH,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1397,Article_151_8_ECFOU,null,PFSLWW05,null,null,null,AAB_BRANCH,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1398,Article_151_8_ECFOU,null,PFSUWW05,null,null,null,AAB_BRANCH,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1399,Article_151_8_ECFOU,null,PFSPWW05,null,null,null,AAB_BRANCH,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+140,Ex_Non_Material,null,null,208058,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+1400,Article_151_8_ECFOU,null,PINLWW05,null,null,null,AAB_BRANCH,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1401,Article_151_8_ECFOU,null,PINNWW05,null,null,null,AAB_BRANCH,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1402,Article_151_8_ECFOU,null,PINCWW05,null,null,null,AAB_BRANCH,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1403,Article_151_8_ECFOU,null,PICOWW01,null,null,null,AAB_BRANCH,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1404,Article_151_8_ECFOU,null,PBNEWW01,null,null,null,AAB_SUBSID,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1405,Article_151_8_ECFOU,null,PBNDWW01,null,null,null,AAB_SUBSID,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1406,Article_151_8_ECFOU,null,PBNKWW09,null,null,null,AAB_SUBSID,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1407,Article_151_8_ECFOU,null,PIBKWW08,null,null,null,AAB_SUBSID,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1408,Article_151_8_ECFOU,null,PFSIWW05,null,null,null,AAB_SUBSID,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1409,Article_151_8_ECFOU,null,PFSHWW05,null,null,null,AAB_SUBSID,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+141,Ex_Non_Material,null,null,809132,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+1410,Article_151_8_ECFOU,null,PFSLWW05,null,null,null,AAB_SUBSID,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1411,Article_151_8_ECFOU,null,PFSUWW05,null,null,null,AAB_SUBSID,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1412,Article_151_8_ECFOU,null,PFSPWW05,null,null,null,AAB_SUBSID,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1413,Article_151_8_ECFOU,null,PINLWW05,null,null,null,AAB_SUBSID,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1414,Article_151_8_ECFOU,null,PINNWW05,null,null,null,AAB_SUBSID,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1415,Article_151_8_ECFOU,null,PINCWW05,null,null,null,AAB_SUBSID,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1416,Article_151_8_ECFOU,null,PICOWW01,null,null,null,AAB_SUBSID,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1417,Article_151_8_ECFOU,null,PBNEWW01,null,null,null,IB_PD_INST,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1418,Article_151_8_ECFOU,null,PBNDWW01,null,null,null,IB_PD_INST,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1419,Article_151_8_ECFOU,null,PBNKWW09,null,null,null,IB_PD_INST,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+142,Ex_Non_Material,null,null,609467,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+1420,Article_151_8_ECFOU,null,PIBKWW08,null,null,null,IB_PD_INST,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1421,Article_151_8_ECFOU,null,PFSIWW05,null,null,null,IB_PD_INST,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1422,Article_151_8_ECFOU,null,PFSHWW05,null,null,null,IB_PD_INST,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1423,Article_151_8_ECFOU,null,PFSLWW05,null,null,null,IB_PD_INST,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1424,Article_151_8_ECFOU,null,PFSUWW05,null,null,null,IB_PD_INST,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1425,Article_151_8_ECFOU,null,PFSPWW05,null,null,null,IB_PD_INST,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1426,Article_151_8_ECFOU,null,PINLWW05,null,null,null,IB_PD_INST,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1427,Article_151_8_ECFOU,null,PINNWW05,null,null,null,IB_PD_INST,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1428,Article_151_8_ECFOU,null,PINCWW05,null,null,null,IB_PD_INST,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1429,Article_151_8_ECFOU,null,PICOWW01,null,null,null,IB_PD_INST,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+143,Ex_Non_Material,null,null,809693,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+1430,Article_151_8_ECFOU,null,PCFPWW04,null,null,null,IB_PD_INST,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1431,Article_151_8_ECFOU,null,PCFPWW04,null,null,null,IB_PD_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1432,Article_151_8_ECFOU,null,PCFPWW04,null,null,null,IB_PD_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1433,Article_151_8_ECFOU,null,PCFPWW04,null,null,null,IFEU,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1434,Article_151_8_ECFOU,null,PCFPWW04,null,null,null,IFEU_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1435,Article_151_8_ECFOU,null,PCFPWW04,null,null,null,IFEU_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1436,Article_151_8_ECFOU,null,PCFPWW04,null,null,null,IFNEU,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1437,Article_151_8_ECFOU,null,PCFPWW04,null,null,null,IFNEU_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1438,Article_151_8_ECFOU,null,PCFPWW04,null,null,null,IFNEU_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1439,Article_151_8_ECFOU,null,PCFPWW04,null,null,null,MDB_B_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+144,Ex_Non_Material,null,null,609710,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+1440,Article_151_8_ECFOU,null,PCFPWW04,null,null,null,MDB_B_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1441,Article_151_8_ECFOU,null,PCFPWW04,null,null,null,CI,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1442,Article_151_8_ECFOU,null,PCFPWW04,null,null,null,CI_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1443,Article_151_8_ECFOU,null,PCFPWW04,null,null,null,CI_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1444,Article_151_8_ECFOU,null,PCFPWW04,null,null,null,CIU_NONREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1445,Article_151_8_ECFOU,null,PCFPWW04,null,null,null,CIU_REG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1446,Article_151_8_ECFOU,null,PCFPWW04,null,null,null,EXCHANGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1447,Article_151_8_ECFOU,null,PCFPWW04,null,null,null,FI_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1448,Article_151_8_ECFOU,null,PCFPWW04,null,null,null,IF,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1449,Article_151_8_ECFOU,null,PCFPWW04,null,null,null,IF_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+145,Ex_Non_Material,null,null,609797,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+1450,Article_151_8_ECFOU,null,PCFPWW04,null,null,null,IF_REG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1451,Article_151_8_ECFOU,null,PCFPWW04,null,null,null,IF_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1452,Article_151_8_ECFOU,null,PCFPWW04,null,null,null,MDB_BANK,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1453,Article_151_8_ECFOU,null,PCFPWW04,null,null,null,NQCCP,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1454,Article_151_8_ECFOU,null,PCFPWW04,null,null,null,PF_NONREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1455,Article_151_8_ECFOU,null,PCFPWW04,null,null,null,PF_REG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1456,Article_151_8_ECFOU,null,PCFPWW04,null,null,null,QCCP,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1457,Article_151_8_ECFOU,null,PCFPWW04,null,null,null,ASS,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1458,Article_151_8_ECFOU,null,PCFPWW04,null,null,null,ASS_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1459,Article_151_8_ECFOU,null,PCFPWW04,null,null,null,OTH_CORP,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+146,Ex_Non_Material,null,null,690133,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+1460,Article_151_8_ECFOU,null,PCFPWW04,null,null,null,AAB_BRANCH,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1461,Article_151_8_ECFOU,null,PCFPWW04,null,null,null,AAB_SUBSID,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+147,Ex_Non_Material,null,null,810321,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+148,Functions Head Office NL Regrouping,null,null,525170,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+149,Ex_Non_Material,null,null,208172,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+150,Ex_Non_Material,null,null,208329,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+1500,Article_151_8,null,null,null,null,null,IB_PD_INST,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1501,Article_151_8,null,null,null,null,null,IB_PD_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1502,Article_151_8,null,null,null,null,null,IB_PD_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1503,Article_151_8,null,null,null,null,null,IFEU,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1504,Article_151_8,null,null,null,null,null,IFEU_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1505,Article_151_8,null,null,null,null,null,IFEU_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1506,Article_151_8,null,null,null,null,null,IFNEU,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1507,Article_151_8,null,null,null,null,null,IFNEU_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1508,Article_151_8,null,null,null,null,null,IFNEU_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1509,Article_151_8,null,null,null,null,null,MDB_B_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+151,Ex_Non_Material,null,null,202990,null,null,null,null,null,null,null,null,null,null,null,Active,30-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+1510,Article_151_8,null,null,null,null,null,MDB_B_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1511,Article_151_8,null,null,null,null,null,CI,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1512,Article_151_8,null,null,null,null,null,CI_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1513,Article_151_8,null,null,null,null,null,CI_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1514,Article_151_8,null,null,null,null,null,CIU_NONREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1515,Article_151_8,null,null,null,null,null,CIU_REG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1516,Article_151_8,null,null,null,null,null,EXCHANGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1517,Article_151_8,null,null,null,null,null,FI_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1518,Article_151_8,null,null,null,null,null,IF,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1519,Article_151_8,null,null,null,null,null,IF_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+152,Ex_Non_Material,null,null,205164,null,null,null,null,null,null,null,null,null,null,null,Active,30-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+1520,Article_151_8,null,null,null,null,null,IF_REG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1521,Article_151_8,null,null,null,null,null,IF_UNREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1522,Article_151_8,null,null,null,null,null,MDB_BANK,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1523,Article_151_8,null,null,null,null,null,NQCCP,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1524,Article_151_8,null,null,null,null,null,PF_NONREG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1525,Article_151_8,null,null,null,null,null,PF_REG,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1526,Article_151_8,null,null,null,null,null,QCCP,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1527,Article_151_8,null,null,null,null,null,ASS,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1528,Article_151_8,null,null,null,null,null,ASS_LARGE,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1529,Article_151_8,null,null,null,null,null,OTH_CORP,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+153,Ex_Non_Material,null,null,208140,null,null,null,null,null,null,null,null,null,null,null,Active,30-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+1530,Article_151_8,null,null,null,null,null,AAB_BRANCH,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1531,Article_151_8,null,null,null,null,null,AAB_SUBSID,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1532,Article_151_8,null,PINLWW05,null,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1533,Article_151_8,null,PINNWW05,null,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1534,Article_151_8,null,PINCWW05,null,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+154,Ex_Non_Material,null,null,208152,null,null,null,null,null,null,null,null,null,null,null,Active,30-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+155,Ex_Non_Material,null,null,208173,null,null,null,null,null,null,null,null,null,null,null,Active,30-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+1550,PCFPWW04_ECFOU,null,PCFPWW04,null,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1551,AIRB_SL_Commodities_Finance,null,null,null,null,null,null,null,null,null,null,null,null,null,null,Active,30-04-2025,31-12-9999,IRB,Y,N,null,null,null,null,CF
+1552,AIRB_SL_CRE,null,null,null,null,null,null,null,null,null,null,null,null,null,null,Active,30-04-2025,31-12-9999,IRB,Y,N,null,null,null,null,IPREF-CRE
+1553,AIRB_SL_RRE,null,null,null,null,null,null,null,null,null,null,null,null,null,null,Active,30-04-2025,31-12-9999,IRB,Y,N,null,null,null,null,IPREF-RRE
+1554,AIRB_SL_Object_Finance,null,null,null,null,null,null,null,null,null,null,null,null,null,null,Active,30-04-2025,31-12-9999,IRB,Y,N,null,null,null,null,OF
+1555,AIRB_SL_Project_Finance,null,null,null,null,null,null,null,null,null,null,null,null,null,null,Active,30-04-2025,31-12-9999,IRB,Y,N,null,null,null,null,PF
+1556,LC_above_500mln_ECIRB,null,null,null,null,null,CIU_NONREG,null,null,null,null,null,null,null,null,Active,01-05-2025,31-12-9999,FOU,Y,N,null,null,LC_above_500mln,null,*
+1557,LC_above_500mln_ECIRB,null,null,null,null,null,CIU_REG,null,null,null,null,null,null,null,null,Active,30-04-2025,31-12-9999,FOU,Y,N,null,null,LC_above_500mln,null,*
+1558,LC_above_500mln_ECIRB,null,null,null,null,null,CI_UNREG,null,null,null,null,null,null,null,null,Active,30-04-2025,31-12-9999,FOU,Y,N,null,null,LC_above_500mln,null,*
+1559,LC_above_500mln_ECIRB,null,null,null,null,null,CLEAR_CORP,null,null,null,null,null,null,null,null,Active,30-04-2025,31-12-9999,FOU,Y,N,null,null,LC_above_500mln,null,*
+156,Ex_Non_Material,null,null,208291,null,null,null,null,null,null,null,null,null,null,null,Active,30-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+1560,LC_above_500mln_ECIRB,null,null,null,null,null,CORP,null,null,null,null,null,null,null,null,Active,30-04-2025,31-12-9999,FOU,Y,N,null,null,LC_above_500mln,null,*
+1561,LC_above_500mln_ECIRB,null,null,null,null,null,CORP_PSE,null,null,null,null,null,null,null,null,Active,30-04-2025,31-12-9999,FOU,Y,N,null,null,LC_above_500mln,null,*
+1562,LC_above_500mln_ECIRB,null,null,null,null,null,ECA_CORP,null,null,null,null,null,null,null,null,Active,30-04-2025,31-12-9999,FOU,Y,N,null,null,LC_above_500mln,null,*
+1563,LC_above_500mln_ECIRB,null,null,null,null,null,EXCHANGE,null,null,null,null,null,null,null,null,Active,30-04-2025,31-12-9999,FOU,Y,N,null,null,LC_above_500mln,null,*
+1564,LC_above_500mln_ECIRB,null,null,null,null,null,FI_UNREG,null,null,null,null,null,null,null,null,Active,30-04-2025,31-12-9999,FOU,Y,N,null,null,LC_above_500mln,null,*
+1565,LC_above_500mln_ECIRB,null,null,null,null,null,IB_PD_UNREG,null,null,null,null,null,null,null,null,Active,30-04-2025,31-12-9999,FOU,Y,N,null,null,LC_above_500mln,null,*
+1566,LC_above_500mln_ECIRB,null,null,null,null,null,IF,null,null,null,null,null,null,null,null,Active,30-04-2025,31-12-9999,FOU,Y,N,null,null,LC_above_500mln,null,*
+1567,LC_above_500mln_ECIRB,null,null,null,null,null,INTORG_C,null,null,null,null,null,null,null,null,Active,30-04-2025,31-12-9999,FOU,Y,N,null,null,LC_above_500mln,null,*
+1568,LC_above_500mln_ECIRB,null,null,null,null,null,MDB_B_UNREG,null,null,null,null,null,null,null,null,Active,30-04-2025,31-12-9999,FOU,Y,N,null,null,LC_above_500mln,null,*
+1569,LC_above_500mln_ECIRB,null,null,null,null,null,OTH_CORP,null,null,null,null,null,null,null,null,Active,30-04-2025,31-12-9999,FOU,Y,N,null,null,LC_above_500mln,null,*
+157,Ex_Non_Material,null,null,208556,null,null,null,null,null,null,null,null,null,null,null,Active,30-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+1570,LC_above_500mln_ECIRB,null,null,null,null,null,PF_NONREG,null,null,null,null,null,null,null,null,Active,30-04-2025,31-12-9999,FOU,Y,N,null,null,LC_above_500mln,null,*
+1571,LC_above_500mln_ECIRB,null,null,null,null,null,PF_REG,null,null,null,null,null,null,null,null,Active,30-04-2025,31-12-9999,FOU,Y,N,null,null,LC_above_500mln,null,*
+1572,LC_above_500mln_ECIRB,null,null,null,null,null,SME,null,null,null,null,null,null,null,null,Active,30-04-2025,31-12-9999,FOU,Y,N,null,null,LC_above_500mln,null,*
+1573,LC_above_500mln_ECIRB,null,null,null,null,null,SPESEC,null,null,null,null,null,null,null,null,Active,30-04-2025,31-12-9999,FOU,Y,N,null,null,LC_above_500mln,null,*
+158,Ex_Non_Material,null,null,208564,null,null,null,null,null,null,null,null,null,null,null,Active,30-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+159,Ex_Non_Material,null,null,208598,null,null,null,null,null,null,null,null,null,null,null,Active,30-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+160,Ex_Non_Material,null,null,208613,null,null,null,null,null,null,null,null,null,null,null,Active,30-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+1600,NMB Corps_ECIRB,null,null,200399,null,null,null,null,null,LCROWW05,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1601,NMB Corps_ECIRB,null,null,201136,null,null,null,null,null,LCROWW05,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1602,NMB Corps_ECIRB,null,null,201138,null,null,null,null,null,LCROWW05,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1603,NMB Corps_ECIRB,null,null,201193,null,null,null,null,null,LCROWW05,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1604,NMB Corps_ECIRB,null,null,202865,null,null,null,null,null,LCROWW05,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1605,NMB Corps_ECIRB,null,null,202969,null,null,null,null,null,LCROWW05,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1606,NMB Corps_ECIRB,null,null,202998,null,null,null,null,null,LCROWW05,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1607,NMB Corps_ECIRB,null,null,202999,null,null,null,null,null,LCROWW05,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1608,NMB Corps_ECIRB,null,null,203689,null,null,null,null,null,LCROWW05,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1609,NMB Corps_ECIRB,null,null,203694,null,null,null,null,null,LCROWW05,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+161,Ex_Non_Material,null,null,209186,null,null,null,null,null,null,null,null,null,null,null,Active,30-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+1610,NMB Corps_ECIRB,null,null,203714,null,null,null,null,null,LCROWW05,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1611,NMB Corps_ECIRB,null,null,208219,null,null,null,null,null,LCROWW05,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1612,NMB Corps_ECIRB,null,null,208231,null,null,null,null,null,LCROWW05,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1613,NMB Corps_ECIRB,null,null,208292,null,null,null,null,null,LCROWW05,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1614,NMB Corps_ECIRB,null,null,208564,null,null,null,null,null,LCROWW05,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1615,NMB Corps_ECIRB,null,null,208586,null,null,null,null,null,LCROWW05,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1616,NMB Corps_ECIRB,null,null,208598,null,null,null,null,null,LCROWW05,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1617,NMB Corps_ECIRB,null,null,209606,null,null,null,null,null,LCROWW05,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1618,NMB Corps_ECIRB,null,null,425041,null,null,null,null,null,LCROWW05,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1619,NMB Corps_ECIRB,null,null,524749,null,null,null,null,null,LCROWW05,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+162,Ex_Non_Material,null,null,804726,null,null,null,null,null,null,null,null,null,null,null,Active,30-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+1620,NMB Corps_ECIRB,null,null,524753,null,null,null,null,null,LCROWW05,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1621,NMB Corps_ECIRB,null,null,525131,null,null,null,null,null,LCROWW05,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1622,NMB Corps_ECIRB,null,null,525607,null,null,null,null,null,LCROWW05,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1623,NMB Corps_ECIRB,null,null,528078,null,null,null,null,null,LCROWW05,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1624,NMB Corps_ECIRB,null,null,529692,null,null,null,null,null,LCROWW05,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1625,NMB Corps_ECIRB,null,null,609707,null,null,null,null,null,LCROWW05,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1626,NMB Corps_ECIRB,null,null,803323,null,null,null,null,null,LCROWW05,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1627,NMB Corps_ECIRB,null,null,803404,null,null,null,null,null,LCROWW05,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1628,NMB Corps_ECIRB,null,null,803557,null,null,null,null,null,LCROWW05,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1629,NMB Corps_ECIRB,null,null,805721,null,null,null,null,null,LCROWW05,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+163,Ex_Non_Material,null,null,804999,null,null,null,null,null,null,null,null,null,null,null,Active,30-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+1630,NMB Corps_ECIRB,null,null,806659,null,null,null,null,null,LCROWW05,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1631,NMB Corps_ECIRB,null,null,808154,null,null,null,null,null,LCROWW05,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1632,NMB Corps_ECIRB,null,null,808203,null,null,null,null,null,LCROWW05,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1633,NMB Corps_ECIRB,null,null,808216,null,null,null,null,null,LCROWW05,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1634,NMB Corps_ECIRB,null,null,808286,null,null,null,null,null,LCROWW05,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1635,NMB Corps_ECIRB,null,null,808343,null,null,null,null,null,LCROWW05,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1636,NMB Corps_ECIRB,null,null,808389,null,null,null,null,null,LCROWW05,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1637,NMB Corps_ECIRB,null,null,809133,null,null,null,null,null,LCROWW05,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1638,NMB Corps_ECIRB,null,null,809489,null,null,null,null,null,LCROWW05,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1639,NMB Corps_ECIRB,null,null,809505,null,null,null,null,null,LCROWW05,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+164,Ex_Non_Material,null,null,805694,null,null,null,null,null,null,null,null,null,null,null,Active,30-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+1640,NMB Corps_ECIRB,null,null,810219,null,null,null,null,null,LCROWW05,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1641,NMB Corps_ECIRB,null,null,810327,null,null,null,null,null,LCROWW05,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1642,NMB Corps_ECIRB,null,null,200399,null,null,null,null,null,LCLCWW02,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1643,NMB Corps_ECIRB,null,null,201136,null,null,null,null,null,LCLCWW02,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1644,NMB Corps_ECIRB,null,null,201138,null,null,null,null,null,LCLCWW02,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1645,NMB Corps_ECIRB,null,null,201193,null,null,null,null,null,LCLCWW02,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1646,NMB Corps_ECIRB,null,null,202865,null,null,null,null,null,LCLCWW02,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1647,NMB Corps_ECIRB,null,null,202969,null,null,null,null,null,LCLCWW02,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1648,NMB Corps_ECIRB,null,null,202998,null,null,null,null,null,LCLCWW02,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1649,NMB Corps_ECIRB,null,null,202999,null,null,null,null,null,LCLCWW02,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+165,Ex_Non_Material,null,null,808153,null,null,null,null,null,null,null,null,null,null,null,Active,30-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+1650,NMB Corps_ECIRB,null,null,203689,null,null,null,null,null,LCLCWW02,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1651,NMB Corps_ECIRB,null,null,203694,null,null,null,null,null,LCLCWW02,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1652,NMB Corps_ECIRB,null,null,203714,null,null,null,null,null,LCLCWW02,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1653,NMB Corps_ECIRB,null,null,208219,null,null,null,null,null,LCLCWW02,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1654,NMB Corps_ECIRB,null,null,208231,null,null,null,null,null,LCLCWW02,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1655,NMB Corps_ECIRB,null,null,208292,null,null,null,null,null,LCLCWW02,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1656,NMB Corps_ECIRB,null,null,208564,null,null,null,null,null,LCLCWW02,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1657,NMB Corps_ECIRB,null,null,208586,null,null,null,null,null,LCLCWW02,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1658,NMB Corps_ECIRB,null,null,208598,null,null,null,null,null,LCLCWW02,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1659,NMB Corps_ECIRB,null,null,209606,null,null,null,null,null,LCLCWW02,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+166,Ex_Non_Material,null,null,808189,null,null,null,null,null,null,null,null,null,null,null,Active,30-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+1660,NMB Corps_ECIRB,null,null,425041,null,null,null,null,null,LCLCWW02,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1661,NMB Corps_ECIRB,null,null,524749,null,null,null,null,null,LCLCWW02,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1662,NMB Corps_ECIRB,null,null,524753,null,null,null,null,null,LCLCWW02,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1663,NMB Corps_ECIRB,null,null,525131,null,null,null,null,null,LCLCWW02,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1664,NMB Corps_ECIRB,null,null,525607,null,null,null,null,null,LCLCWW02,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1665,NMB Corps_ECIRB,null,null,528078,null,null,null,null,null,LCLCWW02,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1666,NMB Corps_ECIRB,null,null,529692,null,null,null,null,null,LCLCWW02,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1667,NMB Corps_ECIRB,null,null,609707,null,null,null,null,null,LCLCWW02,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1668,NMB Corps_ECIRB,null,null,803323,null,null,null,null,null,LCLCWW02,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1669,NMB Corps_ECIRB,null,null,803404,null,null,null,null,null,LCLCWW02,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+167,Ex_Non_Material,null,null,808516,null,null,null,null,null,null,null,null,null,null,null,Active,30-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+1670,NMB Corps_ECIRB,null,null,803557,null,null,null,null,null,LCLCWW02,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1671,NMB Corps_ECIRB,null,null,805721,null,null,null,null,null,LCLCWW02,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1672,NMB Corps_ECIRB,null,null,806659,null,null,null,null,null,LCLCWW02,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1673,NMB Corps_ECIRB,null,null,808154,null,null,null,null,null,LCLCWW02,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1674,NMB Corps_ECIRB,null,null,808203,null,null,null,null,null,LCLCWW02,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1675,NMB Corps_ECIRB,null,null,808216,null,null,null,null,null,LCLCWW02,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1676,NMB Corps_ECIRB,null,null,808286,null,null,null,null,null,LCLCWW02,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1677,NMB Corps_ECIRB,null,null,808343,null,null,null,null,null,LCLCWW02,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1678,NMB Corps_ECIRB,null,null,808389,null,null,null,null,null,LCLCWW02,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1679,NMB Corps_ECIRB,null,null,809133,null,null,null,null,null,LCLCWW02,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+168,Ex_Non_Material,null,null,808610,null,null,null,null,null,null,null,null,null,null,null,Active,30-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+1680,NMB Corps_ECIRB,null,null,809489,null,null,null,null,null,LCLCWW02,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1681,NMB Corps_ECIRB,null,null,809505,null,null,null,null,null,LCLCWW02,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1682,NMB Corps_ECIRB,null,null,810219,null,null,null,null,null,LCLCWW02,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1683,NMB Corps_ECIRB,null,null,810327,null,null,null,null,null,LCLCWW02,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1684,NMB Corps FR cor,null,null,810219,null,null,CORP,null,null,LCRMNL05,null,null,null,null,null,Active,27-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1685,NMB Corps BE cor,null,null,609707,null,null,CORP,null,null,LCRMNL05,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1686,NMB Corps DE cor,null,null,810327,null,null,CORP,null,null,LCRMNL05,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1800,PM_Krediet,null,null,null,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,IRB,Y,N,null,null,PM_Krediet,null,*
+1850,PBNKWW09_ECFOU,null,PBNKWW09,null,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1851,PICOWW01_ECFOU,null,PICOWW01,null,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1852,PIBKWW08_ECFOU,null,PIBKWW08,null,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1853,PBNDWW_ECFOU,null,PBNDWW01,null,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1854,PBNEWW_ECFOU,null,PBNEWW01,null,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1855,PFSIWW05_ECFOU,null,PFSIWW05,null,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1856,PFSHWW05_ECFOU,null,PFSHWW05,null,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1857,PFSLWW05_ECFOU,null,PFSLWW05,null,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1858,PFSUWW05_ECFOU,null,PFSUWW05,null,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1859,PFSPWW05_ECFOU,null,PFSPWW05,null,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,FOU,Y,N,null,null,null,null,*
+1900,SPESEC_RW,null,null,null,null,null,SPESEC,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+200,ALFAM_C3C,null,null,203714,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,ALFAM_SA_C3C,null,*
+201,ALFAM_A3A,null,null,203714,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,ALFAM_SA_A3A,null,*
+203,ALFAM_C1A,null,null,203714,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,ALFAM_SA_C1A,null,*
+204,ALFAM_C3B,null,null,203714,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,ALFAM_SA_C3B,null,*
+205,ALFAM_C8B,null,null,203714,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,ALFAM_SA_C8B,null,*
+206,ALFAM_FK,null,null,203714,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,ALFAM_SA_FK,null,*
+207,ALFAM_HK,null,null,203714,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,ALFAM_SA_HK,null,*
+208,ALFAM_DK,null,null,203714,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,ALFAM_SA_DK,null,*
+209,ALFAM_ZZP,null,null,203714,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,ALFAM_SA_ZZP,null,*
+300,PL,null,null,null,null,null,null,B3A,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+301,PL,null,null,null,null,null,null,B3B,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+302,PL,null,null,null,null,null,null,B3C,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+303,PL,null,null,null,null,null,null,C3A,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+304,PL,null,null,null,null,null,null,C3B,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+305,PL,null,null,null,null,null,null,C3C,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+306,PL,null,null,null,null,null,null,C9A,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+307,PL,null,null,null,null,null,null,D01,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+308,PL,null,null,null,null,null,null,C4A,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+350,ACF Germany NR,null,null,808216,25,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+351,ACF France NR,null,null,808343,25,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+352,GOV,null,null,null,null,null,INTORG_0,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+353,GOV,null,null,null,null,null,MDB_0,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+354,MBO/MBI,null,PMBOWW03,null,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+355,ACF Germany R,null,null,808216,155,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+356,ACF France R,null,null,808343,155,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+357,ACF NL (BV) NR,null,null,200399,25,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+358,ACF UK NR,null,null,808203,25,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+359,Start_Ups Non-NL,null,PSURWW05,810219,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+400,PL_MCB,null,null,null,null,null,null,B1A,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+401,PL_MCB,null,null,null,null,null,null,B1B,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+402,PL_MCB,null,null,null,null,null,null,B1C,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+403,PL_MCB,null,null,null,null,null,null,B2A,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+404,PL_MCB,null,null,null,null,null,null,B2B,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+405,PL_MCB,null,null,null,null,null,null,B2C,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+406,PL_MCB,null,null,null,null,null,null,B2D,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+407,PL_MCB,null,null,null,null,null,null,B2E,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+408,PL_MCB,null,null,null,null,null,null,C1A,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+409,PL_MCB,null,null,null,null,null,null,C1B,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+410,PL_MCB,null,null,null,null,null,null,C1C,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+411,PL_MCB,null,null,null,null,null,null,C5A,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+412,PL_MCB,null,null,null,null,null,null,C5B,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+413,PL_MCB,null,null,null,null,null,null,C5C,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+414,PL_MCB,null,null,null,null,null,null,C6A,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+415,PL_MCB,null,null,null,null,null,null,C6B,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+416,PL_MCB,null,null,null,null,null,null,C6C,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+417,PL_MCB,null,null,null,null,null,null,C6D,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+418,PL_MCB,null,null,null,null,null,null,C6E,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+419,PL_MCB,null,null,null,null,null,null,C6F,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+420,PL_MCB,null,null,null,null,null,null,C6H,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+421,PL_MCB,null,null,null,null,null,null,C7A,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+422,PL_MCB,null,null,null,null,null,null,C7B,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+423,PL_MCB,null,null,null,null,null,null,C7C,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+424,PL_MCB,null,null,null,null,null,null,C7D,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+425,PL_MCB,null,null,null,null,null,null,C7E,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+426,PL_MCB,null,null,null,null,null,null,C7F,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+427,PL_MCB,null,null,null,null,null,null,C7G,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+428,PL_MCB,null,null,null,null,null,null,C7H,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+429,PL_MCB,null,null,null,null,null,null,C7I,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+430,PL_MCB,null,null,null,null,null,null,C7J,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+431,PL_MCB,null,null,null,null,null,null,C8A,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+432,PL_MCB,null,null,null,null,null,null,C8B,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+433,PL_MCB,null,null,null,null,null,null,C8C,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+434,PL_MCB,null,null,null,null,null,null,C8D,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+435,PL_MCB,null,null,null,null,null,null,C8E,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+450,MORTG_VZH,null,null,null,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,MORTG_VZH,null,*
+451,MORTG_BtL,null,null,null,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,MORTG_BtL,null,*
+452,MORTG_OWH,null,null,null,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,MORTG_OWH,null,*
+453,MORTG_FA,null,null,null,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,MORTG_FA,null,*
+454,MORTG_NRRE,null,null,null,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,MORTG_NRRE,null,*
+455,MORTG_UDPV,null,null,null,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,MORTG_UDPV,null,*
+456,MORTG_5m,null,null,null,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,MORTG_5m,null,*
+470,NPL_PPU_SOV,null,null,null,null,null,CB,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+471,NPL_PPU_SOV,null,null,null,null,null,ECA_SOV,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+472,NPL_PPU_SOV,null,null,null,null,null,GOV,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+473,NPL_PPU_SOV_NHG,null,null,null,null,null,null,null,null,null,null,null,null,FINHG001,VN1,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+474,NPL_PPU_COM,null,PGCGWW05,null,null,null,null,null,null,null,null,null,null,null,null,Active,30-04-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+475,NPL_PPU_COM,null,null,null,null,null,null,null,null,LGCGWW05,null,null,null,null,null,Active,30-04-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+476,NPL_PPU_COM,null,null,null,null,null,null,null,null,null,null,null,null,10007000,CKK,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+477,NPL_PPU_COM,null,null,null,null,null,null,null,null,null,null,null,null,2049296185,BCA,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+480,NPL_PPU_DIA,null,PDIAWW04,null,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+481,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140804700,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+482,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140803144,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+483,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,1400017608,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+484,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800216,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+485,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800526,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+486,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800761,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+487,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800199,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+488,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800248,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+489,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140804229,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+490,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,1400000073,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+491,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,1400000080,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+492,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,1400001322,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+493,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,1400001351,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+494,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,1400001393,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+495,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,1400001399,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+496,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,1400001462,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+497,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,1400001635,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+498,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,1400001645,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+499,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,1400001764,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+500,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,1400001784,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+501,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,1400001800,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+502,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,1400001825,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+503,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,1400007166,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+504,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,1400015980,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+505,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,1400019432,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+506,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800003,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+507,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800025,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+508,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800032,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+509,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800033,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+510,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800042,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+511,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800066,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+512,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800070,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+513,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800073,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+514,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800084,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+515,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800093,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+516,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800105,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+517,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800106,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+518,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800108,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+519,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800110,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+520,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800117,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+521,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800118,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+522,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800119,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+523,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800133,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+524,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800135,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+525,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800160,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+526,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800167,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+527,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800169,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+528,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800181,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+529,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800183,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+530,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800185,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+531,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800195,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+532,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800223,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+533,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800226,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+534,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800231,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+535,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800256,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+536,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800262,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+537,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800268,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+538,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800279,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+539,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800280,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+540,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800291,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+541,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800299,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+542,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800329,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+543,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800330,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+544,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800331,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+545,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800332,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+546,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800342,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+547,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800345,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+548,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800367,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+549,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800419,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+550,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800437,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+551,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800462,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+552,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800472,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+553,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800511,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+554,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800528,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+555,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800547,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+556,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800558,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+557,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800559,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+558,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800564,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+559,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800589,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+560,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800620,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+561,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800624,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+562,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800632,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+563,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800653,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+564,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800658,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+565,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800696,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+566,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800703,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+567,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800725,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+568,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800777,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+569,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800784,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+570,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800799,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+571,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140802769,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+572,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140803189,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+573,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140803460,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+574,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140803501,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+575,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140803543,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+576,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140803648,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+577,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140803877,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+578,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140803935,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+579,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140804030,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+580,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140804038,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+581,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140804132,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+582,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140804193,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+583,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140804300,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+584,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140804483,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+585,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140804625,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+586,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140804779,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+587,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140804875,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+588,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140804876,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+589,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140804926,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+590,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140804975,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+591,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140804992,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+592,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,1400000055,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+593,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,1400000086,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+594,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,1400000091,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+595,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800043,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+596,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800076,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+597,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800145,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+598,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800146,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+599,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800244,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+600,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800288,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+601,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800325,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+602,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800328,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+603,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800353,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+604,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800692,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+605,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800802,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+606,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140802028,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+607,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140804021,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+608,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140804112,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+609,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140804827,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+610,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140804994,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+611,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800785,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+612,NPL_PPU_DIA,null,null,null,null,null,null,null,null,null,null,null,null,140800537,YDV,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+700,NPL_PPU_OTHER_SOV_Model,null,PSOVWW06,null,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+701,NPL_PPU_OTHER_SOV_Model,null,PGSSWW06,null,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+702,NPL_PPU_OTHER_SOV_Model,null,null,null,null,null,null,null,null,LSOUWW07,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+703,NPL_PPU_OTHER_SOV_Model,null,null,null,null,null,null,null,null,LSOVWW07,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+710,Beleggingspand Financiering,null,null,null,null,null,null,BPF,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+711,Franx B.V.,null,null,208319,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+712,Participaties NPE Fund ,null,null,204448,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+750,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,13381229,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+751,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,2042101060,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+752,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,11909994,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+753,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,12769053,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+754,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,20763638,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+755,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,7082940,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+756,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,195923316,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+757,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,2025581556,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+758,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,205353029,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+759,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,15636453,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+760,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,61164208,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+761,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,172288940,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+762,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,10619151,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+763,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,29158540,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+764,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,2038316201,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+765,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,2012628117,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+766,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,2000381669,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+767,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,502470534,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+768,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,502470658,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+769,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,502486953,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+770,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,502487097,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+771,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,502487240,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+772,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,502487828,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+773,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,195423631,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+774,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,204284139,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+775,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,502403616,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+776,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,2003497072,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+777,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,195836529,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+778,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,197168922,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+779,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,201901099,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+780,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,201443996,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+781,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,135112516,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+782,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,502847077,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+783,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,15073564,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+784,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,143374923,EPR,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+785,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,143114999,EPR,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+786,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,354713396,EPR,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+787,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,374346984,EPR,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+788,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,143212974,EPR,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+789,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,374347425,EPR,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+790,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,143117246,EPR,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+791,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,143017292,EPR,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+792,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,143373137,EPR,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+793,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,143154273,EPR,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+794,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,143116290,EPR,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+795,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,143099191,EPR,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+796,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,143789937,EPR,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+797,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,143020331,EPR,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+798,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,742167682,EPR,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+799,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,353220302,EPR,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+800,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,350767610,EPR,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+801,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,346048729,EPR,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+802,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,245073736,EPR,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+803,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,246361689,EPR,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+804,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,747117845,EPR,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+805,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,147563119,EPR,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+806,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,358824214,EPR,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+807,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,347443192,EPR,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+808,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,343103516,EPR,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+809,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,747117799,EPR,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+810,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,347455670,EPR,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+811,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,348275870,EPR,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+812,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,634092545,EPR,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+813,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,245569324,EPR,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+814,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,143789821,EPR,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+815,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,143142496,EPR,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+816,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,143270796,EPR,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+817,RGLA list,null,null,null,null,null,null,null,null,null,null,null,null,2000271405,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+818,RGLA list,null,null,null,null,null,null,null,null,null,null,null,null,2000271782,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+819,RGLA list,null,null,null,null,null,null,null,null,null,null,null,null,2027367411,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+820,RGLA list,null,null,null,null,null,null,null,null,null,null,null,null,209455403,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+821,RGLA list,null,null,null,null,null,null,null,null,null,null,null,null,20763336,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+822,RGLA list,null,null,null,null,null,null,null,null,null,null,null,null,747117861,EPR,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+823,RGLA list,null,null,null,null,null,null,null,null,null,null,null,null,350753342,EPR,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+824,RGLA list,null,null,null,null,null,null,null,null,null,null,null,null,346665159,EPR,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+825,RGLA list,null,null,null,null,null,null,null,null,null,null,null,null,360811434,EPR,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+826,RGLA list,null,null,null,null,null,null,null,null,null,null,null,null,143336037,EPR,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+827,Count Guarantee list,null,null,null,null,null,null,null,null,null,null,null,null,200249053,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+828,Count Guarantee list,null,null,null,null,null,null,null,null,null,null,null,null,10100180,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+829,Count Guarantee list,null,null,null,null,null,null,null,null,null,null,null,null,140261516,EPR,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+830,Count Guarantee list,null,null,null,null,null,null,null,null,null,null,null,null,142896616,EPR,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+831,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,65074567 n AMSTELNL,SBC,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+832,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,65062057 n AMSTELNL,SBC,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+833,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,65073746 n AMSTELNL,SBC,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+834,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,65060286 n AMSTELNL,SBC,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+835,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,65071375 n AMSTELNL,SBC,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+836,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,65080830 n AMSTELNL,SBC,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+837,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,143285653,EPR,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+838,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,143256696,EPR,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+839,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,370631803,EPR,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+840,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,352981369,EPR,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+841,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,143110993,EPR,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+842,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,146153707,EPR,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+843,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,206209193,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+844,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,118957945,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+845,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,12020273,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+846,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,14726726,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+847,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,168316358,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+848,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,18462073,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+849,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,18556825,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+850,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,19110596,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+851,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,19128053,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+852,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,19169981,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+853,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,19566565,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+854,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,2004925329,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+855,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,207108897,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+856,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,21273413,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+857,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,21847800,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+858,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,27281035,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+859,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,38469561,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+860,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,40058085,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+861,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,59599413,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+862,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,59685247,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+863,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,66595819,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+864,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,7198515,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+865,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,8361649,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+866,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,97289930,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+867,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,12780499,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+868,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,194653161,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+869,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,22869743,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+870,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,209456264,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+871,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,245173692,EPR,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+872,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,65032092 n AMSTELNL,SBC,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+873,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,65109346 n AMSTELNL,SBC,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+874,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,159084695,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+875,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,342210041,EPR,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+876,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,2020734060,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+877,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,360212190,EPR,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+878,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,2035636744,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+879,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,350768080,EPR,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+880,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,2068129116,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+881,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,342833006,EPR,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+882,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,22325522,BCA,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+883,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,143884824,EPR,Active,25-01-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+884,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,209518391,BCA,Active,01-02-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+885,EBA list,null,null,null,null,null,null,null,null,null,null,null,null,342833006,EPR,Active,01-02-2025,31-12-9999,STD,Y,N,null,null,null,null,*
+950,Oil and Gas,null,PONGWW03,null,null,null,null,null,null,null,null,null,null,null,null,Active,30-04-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+951,Oil and Gas,null,null,null,null,null,null,null,null,LONGWW03,null,null,null,null,null,Active,30-04-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+952,Retail Lease PL,null,PAALWW04,null,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,PL,*
+953,Retail Lease PL,null,null,null,null,null,null,null,null,LAALWW03,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,PL,*
+954,PK_and_BK_CRE,null,null,null,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,IRB,Y,N,null,null,PK_and_BK_CRE,null,*
+955,PK non CRE,null,null,null,null,null,null,P33,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+956,PK non CRE,null,null,null,null,null,null,P34,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+957,PK non CRE,null,null,null,null,null,null,P35,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+958,PK non CRE,null,null,null,null,null,null,P36,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+959,PK non CRE,null,null,null,null,null,null,P37,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+960,PK non CRE,null,null,null,null,null,null,P38,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+961,PK non CRE,null,null,null,null,null,null,P39,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+962,PK non CRE,null,null,null,null,null,null,P40,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+963,PK non CRE,null,null,null,null,null,null,P43,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+964,PK non CRE,null,null,null,null,null,null,P44,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+965,PK non CRE,null,null,null,null,null,null,P45,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+966,PK non CRE,null,null,null,null,null,null,P46,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+967,PK non CRE,null,null,null,null,null,null,P47,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+968,PK non CRE,null,null,null,null,null,null,P48,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+969,PK non CRE,null,null,null,null,null,null,P49,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+970,PK non CRE,null,null,null,null,null,null,P50,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*
+971,ICS_DLK,null,null,203689,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,ICS_DLK,null,*
+972,ICS_DLK,null,null,806168,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,ICS_DLK,null,*
+973,Ex_Non_Material,null,null,806168,null,null,null,null,null,null,null,null,null,null,null,Active,25-01-2025,31-12-9999,STD,N,Y,null,null,null,null,*

@@ -1,0 +1,109 @@
+EXMPTN_ID,EXMPTN_NM,EFFCTV_STATUS,EFFCTV_STRT_DT,EFFCTV_END_DT
+AAB_Sydney_Branch,AAB Sydney Branch,Active,20-JUL-19,31-DEC-99
+ACF France NR,ACF FR (Non Recourse),Active,20-JUL-19,31-DEC-99
+ACF France R,ACF FR (Recourse),Active,20-JUL-19,31-DEC-99
+ACF Germany NR,ACF DE (Non Recourse),Active,20-JUL-19,31-DEC-99
+ACF Germany R,ACF DE (Recourse),Active,20-JUL-19,31-DEC-99
+ACF NL (BV) NR,ACF NL BV (Non Recourse),Active,20-JUL-19,31-DEC-99
+ACF NL (NV) NR,ACF NL NV (Non Recourse),Active,20-JUL-19,31-DEC-99
+ACF UK NR,ACF UK (Non Recourse),Active,20-JUL-19,31-DEC-99
+ACQ Finance,Acquisition Finance,Active,20-JUL-19,31-DEC-99
+AIRB_SL_Commodities_Finance,Specialised Lending Commodities Finance,Active,17-JAN-25,31-DEC-99
+AIRB_SL_CRE,Specialised Lending Commercial Real Estate,Active,17-JAN-25,31-DEC-99
+AIRB_SL_Object_Finance,Specialised Lending Object Finance,Active,17-JAN-25,31-DEC-99
+AIRB_SL_Project_Finance,Specialised Lending Profect Finance,Active,17-JAN-25,31-DEC-99
+AIRB_SL_RRE,Specialised Lending Residential Real Estate,Active,17-JAN-25,31-DEC-99
+ALFAM_A3A,ALFAM_A3A,Active,24-NOV-23,31-DEC-99
+ALFAM_C1A,ALFAM_C1A,Active,24-NOV-23,31-DEC-99
+ALFAM_C3B,ALFAM_C3B,Active,24-NOV-23,31-DEC-99
+ALFAM_C3C,ALFAM_C3C,Active,24-NOV-23,31-DEC-99
+ALFAM_C8B,ALFAM_C8B,Active,24-NOV-23,31-DEC-99
+ALFAM_DK,ALFAM_DK,Active,24-NOV-23,31-DEC-99
+ALFAM_FK,ALFAM_FK,Active,24-NOV-23,31-DEC-99
+ALFAM_FL,ALFAM_FL,Active,24-NOV-23,31-DEC-99
+ALFAM_HK,ALFAM_HK,Active,24-NOV-23,31-DEC-99
+ALFAM_ZZP,ALFAM_ZZP,Active,01-DEC-24,31-DEC-99
+Article_151_8,Article_151_8,Active,17-JAN-25,31-DEC-99
+Article_151_8_ECFOU,Article_151_8_EC Foundation,Active,17-JAN-25,31-DEC-99
+BANK,Banks,Active,20-JUL-19,31-DEC-99
+BANK (C S&P),Commercial Banks (S&P) PD,Active,20-JUL-19,31-DEC-99
+BANK (HL),Regulated Investment Funds PD (Highly Leveraged),Active,20-JUL-19,31-DEC-99
+BANK (I S&P),Investment Banks (S&P) PD,Active,20-JUL-19,31-DEC-99
+BANK (L),Regulated Investment Funds PD (leveraged),Active,20-JUL-19,31-DEC-99
+BANK (UL),Regulated Investment Funds PD (Unleveraged),Active,20-JUL-19,31-DEC-99
+Beleggingspand Financiering,Beleggingspand Financiering,Active,03-FEB-22,31-DEC-99
+CCP,Central Counterparties,Active,20-JUL-19,31-DEC-99
+Corp SL,PPU4_Corporates Specialised Lending,Active,10-MAY-23,31-DEC-99
+Count Guarantee list,Count Guarantee ,Active,28-SEP-22,31-DEC-99
+EBA list,EBA list exemption,Active,24-MAY-22,31-DEC-99
+Energy,Energy utilities PD,Active,20-JUL-19,31-DEC-99
+Ex Credit Suisse,Ex Credit Suisse,Active,20-JUL-19,31-DEC-99
+Ex_CS_Bethmann,Ex Credit Suisse Portfolio Bethmann Bank,Active,20-JUL-19,31-DEC-99
+Ex_Non_Material,Non Material Entity,Active,20-JUL-19,31-DEC-99
+Ex-A CCC,Ex-A Commercial Credit Cards (DVH Portfolio),Active,20-JUL-19,31-DEC-99
+Ex-A Credit Cards,Ex-A Credit Cards,Active,20-JUL-19,31-DEC-99
+Florius Verzilver Hypotheek,Florius Verzilver Hypotheek,Active,20-JUL-19,31-DEC-99
+Franx B.V.,Franx B.V.,Active,24-MAY-22,31-DEC-99
+Functions Head Office NL Regrouping,Functions Head Office NL Regrouping,Active,26-NOV-24,31-DEC-99
+GOV,Multilateral Development Bank,Active,20-JUL-19,31-DEC-99
+Hypotheken_Germany,Hypotheken Germany,Active,20-JUL-19,31-DEC-99
+ICO,Intercompany,Active,20-JUL-19,31-DEC-99
+ICS_DK,PPU4_ICS doorlopendkrediet,Active,10-MAY-23,31-DEC-99
+ICS_DLK,PPU4_ICS doorlopendkrediet,Active,20-APR-24,31-DEC-99
+Insurance,PPU4_Insurance Companies,Active,10-MAY-23,31-DEC-99
+LBCBWW05_ECFOU,PPU3_Banks LGD Commercial Banks F-IRB,Active,25-MAY-23,31-DEC-99
+LBIBWW05_ECFOU,PPU3_Banks LGD Investment Banks F-IRB,Active,25-MAY-23,31-DEC-99
+LBNBWW05_ECFOU,PPU3_Banks LGD F-IRB,Active,25-MAY-23,31-DEC-99
+LBUFWW05_ECFOU,PPU3_Banks LGD Unleveraged Funds F-IRB,Active,25-MAY-23,31-DEC-99
+LC_above_500mln_ECIRB,PPU4_Large Corporates above 500 mln,Active,25-MAY-23,31-DEC-99
+LCFPWW04_ECFOU,PPU3_Cash Flow LGD F-IRB,Active,25-MAY-23,31-DEC-99
+MainBank AIRB,PPU4_MainBank AIRB,Active,10-MAY-23,31-DEC-99
+MBO/MBI,Mangement Buy out / Buy In deal,Active,20-JUL-19,31-DEC-99
+MORTG_5m,PPU Mortgage Loans SEC RRE >5,Active,17-JAN-25,31-DEC-99
+MORTG_BtL,PPU Mortgages buy to let,Active,17-JAN-25,31-DEC-99
+MORTG_FA,PPU Mortgages Financial Active,Active,17-JAN-25,31-DEC-99
+MORTG_FC,PPU Mortgages Financial Collateral,Active,22-MAY-25,31-DEC-99
+MORTG_HB,PPU Mortgages House Boats,Active,22-MAY-25,31-DEC-99
+MORTG_IRB,Mortgages IRB,Active,22-MAY-25,31-DEC-99
+MORTG_NRRE,PPU Mortgages Non RRE,Active,17-JAN-25,31-DEC-99
+MORTG_OWH,PPU Mortgages Overwaarde Hypotheek,Active,17-JAN-25,31-DEC-99
+MORTG_UDPV,PPU Mortgages Uncollaterised DPV,Active,17-JAN-25,31-DEC-99
+MORTG_VZH,PPU Mortgages Florius Verzilver Hypotheek,Active,17-JAN-25,31-DEC-99
+NMB Corps BE cor,PPU4_NMB Corps LGD proxy cor BE,Active,23-MAR-24,31-DEC-99
+NMB Corps DE cor,PPU4_NMB Corps LGD proxy cor DE,Active,23-MAR-24,31-DEC-99
+NMB Corps FR cor,PPU4_NMB Corps LGD proxy cor,Active,23-MAR-24,31-DEC-99
+NMB Corps_ECIRB,PPU4_Non-Mainbank Corporates,Active,25-MAY-23,31-DEC-99
+No model,No model available,Active,20-JUL-19,31-DEC-99
+Notary Mortages,Imperfect Payments,Active,20-JUL-19,31-DEC-99
+NPL_PPU_COM,PPU3_Commodities ,Active,10-MAY-23,31-DEC-99
+NPL_PPU_DIA,PPU3_Diamonds ,Active,10-MAY-23,31-DEC-99
+NPL_PPU_OTHER_SOV_Model,PPU3_Other Sov Exposures ,Active,10-MAY-23,31-DEC-99
+NPL_PPU_SOV,PPU3_Sovereign,Active,10-MAY-23,31-DEC-99
+NPL_PPU_SOV_NHG,NPL PPU SOV Nationale Hypotheek Garantie,Active,17-JAN-25,31-DEC-99
+Oil and Gas,PPU4_Oil and Gas,Active,10-MAY-23,31-DEC-99
+Oil_Gas,Oil & Gas,Active,20-JUL-19,31-DEC-99
+Participaties NPE Fund ,ABN AMRO Participaties NPE Fund B.V.,Active,24-MAY-22,31-DEC-99
+PBNDWW_ECFOU,PPU3_Banks PD PBND F-IRB,Active,22-MAY-24,31-DEC-99
+PBNEWW_ECFOU,PPU3_Banks PD PBNE F-IRB,Active,22-MAY-24,31-DEC-99
+PBNKWW09_ECFOU,PPU3_Commercial Banks PD F-IRB,Active,22-MAY-24,31-DEC-99
+PCFPWW04_ECFOU,PPU3_Cash Flow PD F-IRB,Active,22-MAY-24,31-DEC-99
+PFSHWW05_ECFOU,PPU3_Fundscore Investment Funds PD PFSH F-IRB,Active,22-MAY-24,31-DEC-99
+PFSIWW05_ECFOU,PPU3_Fundscore Investment Funds PD  PFSI F-IRB,Active,21-JUN-24,31-DEC-99
+PFSLWW05_ECFOU,PPU3_Fundscore Investment Funds PD PFSL F-IRB,Active,22-MAY-24,31-DEC-99
+PFSPWW05_ECFOU,PPU3_Fundscore Pension Funds PD F-IRB,Active,22-MAY-24,31-DEC-99
+PFSUWW05_ECFOU,PPU3_Fundscore Investment Funds PD PFSU F-IRB,Active,22-MAY-24,31-DEC-99
+PIBKWW08_ECFOU,PPU3_Investment Banks PD F-IRB,Active,22-MAY-24,31-DEC-99
+PICOWW01_ECFOU,PPU3_Commercial Banks PD PICO F-IRB,Active,22-MAY-24,31-DEC-99
+PK non CRE,PPU4_PK non CRE,Active,23-MAR-24,31-DEC-99
+PK_and_BK_CRE,PPU4_PK and BK CRE,Active,10-MAY-23,31-DEC-99
+PL,Ex A PL,Active,20-JUL-19,31-DEC-99
+PL_MCB,MC&B,Active,27-JAN-21,31-DEC-99
+PM_Krediet,PPU4_PM Kredieten,Active,10-MAY-23,31-DEC-99
+Project Finance,Project Finance,Active,20-JUL-19,31-DEC-99
+Retail Lease PL,PPU4_Retail Lease PL,Active,10-MAY-23,31-DEC-99
+RGLA list,RGLA list exemption,Active,25-AUG-22,31-DEC-99
+SCF_ExF,Ex F Structured Commodity Finance,Active,20-JUL-19,31-DEC-99
+Soc_Gen_PBB,Soc Gen Private Banking Belgium,Active,20-JUL-19,31-DEC-99
+SPESEC_RW,SPESEC SA,Active,24-JAN-25,31-DEC-99
+Start_Ups,Starting companies NEUFLIZE,Active,20-JUL-19,31-DEC-99
+Start_Ups Non-NL,Starting companies Non-NL,Active,20-JUL-19,31-DEC-99
