@@ -1,23 +1,264 @@
-(bsrc-etl-venv) PS C:\Users\B25712\bsrc-etl-venv\bsrc-etl> pre-commit run --all-files
-ruff lint................................................................Failed
-- hook id: ruff
-- exit code: 1
+(bsrc-etl-venv) PS C:\Users\B25712\bsrc-etl-venv\bsrc-etl> pytest test/staging/test_extract_non_ssf_data.py                                      
+===================================================================================== test session starts ======================================================================================
+platform win32 -- Python 3.10.11, pytest-8.3.3, pluggy-1.5.0
+rootdir: C:\Users\B25712\bsrc-etl-venv\bsrc-etl
+configfile: pyproject.toml
+plugins: cov-6.0.0, mock-3.14.0
+collected 4 items
 
-All checks passed!
-All checks passed!
-All checks passed!
-src\abnamro_bsrc_etl\staging\extract_nonssf_data.py:83:29: DTZ007 Naive datetime constructed using `datetime.datetime.strptime()` without %z
-   |
-81 |         if isinstance(deadline_date, str):
-82 |             # Parse string to date if needed
-83 |             deadline_date = datetime.strptime(deadline_date, "%Y-%m-%d").date()
-   |                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ DTZ007
-84 |         elif hasattr(deadline_date, "date"):
-85 |             # If it's a datetime object, get the date part
-   |
-   = help: Call `.replace(tzinfo=<timezone>)` or `.astimezone()` to convert to an aware datetime
+test\staging\test_extract_non_ssf_data.py F...                                                                                                                                            [100%]
 
-Found 1 error.
+=========================================================================================== FAILURES =========================================================================================== 
+_______________________________________________________________________ test_extract_non_ssf_data[202505-test-container] _______________________________________________________________________ 
 
-ruff format..............................................................Passed
-mypy.....................................................................Passed
+spark_session = <pyspark.sql.session.SparkSession object at 0x000002124BFAB2B0>, mocker = <pytest_mock.plugin.MockerFixture object at 0x000002124BFA8C70>, run_month = '202505'
+source_container = 'test-container', caplog = <_pytest.logging.LogCaptureFixture object at 0x000002124BFAAE60>
+
+    @pytest.mark.parametrize(
+        ("run_month", "source_container"),
+        [("202505", "test-container")],
+    )
+    def test_extract_non_ssf_data(
+        spark_session,
+        mocker,
+        run_month,
+        source_container,
+        caplog,
+    ):
+        test_container = f"abfss://{source_container}@bsrcdadls.dfs.core.windows.net"
+        month_container = f"abfss://{run_month}@bsrcdadls.dfs.core.windows.net"
+        metadata_path = f"bsrc_d.metadata_{run_month}.metadata_nonssf"
+        log_path = f"bsrc_d.log_{run_month}.log_nonssf"
+
+        # Create deadline dates
+        future_date = (datetime.now(timezone.utc) + timedelta(days=10)).date()
+        past_date = (datetime.now(timezone.utc) - timedelta(days=5)).date()
+
+        # Create a mock DataFrame with deadline column
+        schema_meta = [
+            "SourceSystem",
+            "SourceFileName",
+            "SourceFileFormat",
+            "SourceFileDelimiter",
+            "StgTableName",
+            "FileDeliveryStep",
+            "FileDeliveryStatus",
+            "Deadline",
+        ]
+        mock_meta = spark_session.createDataFrame(
+            [
+                (
+                    "lrd_static",
+                    "TEST_NON_SSF_V1",
+                    ".txt",
+                    "|",
+                    "test_non_ssf_v1",
+                    NonSSFStepStatus.EXPECTED.value,  # Use the actual enum value
+                    "Expected",
+                    future_date,  # Future deadline
+                ),
+                (
+                    "lrd_static",
+                    "TEST_NON_SSF_V2",
+                    ".txt",
+                    "|",
+                    "test_non_ssf_v2",
+                    NonSSFStepStatus.EXPECTED.value,  # Use the actual enum value
+                    "Expected",
+                    past_date,  # Past deadline - should be copied
+                ),
+                (
+                    "nme",
+                    "TEST_NON_SSF_V3",
+                    ".parquet",
+                    ",",
+                    "test_non_ssf_v3",
+                    NonSSFStepStatus.EXPECTED.value,  # Use the actual enum value
+                    "Expected",
+                    future_date,
+                ),
+                (
+                    "finob",
+                    "TEST_NON_SSF_V4",
+                    ".csv",
+                    ",",
+                    "test_non_ssf_v4",
+                    NonSSFStepStatus.EXPECTED.value,  # Use the actual enum value
+                    "Expected",
+                    past_date,  # Past deadline
+                ),
+            ],
+            schema=schema_meta,
+        )
+
+        schema_log = [
+            "SourceSystem",
+            "SourceFileName",
+            "DeliveryNumber",
+            "FileDeliveryStep",
+            "FileDeliveryStatus",
+            "Result",
+            "LastUpdatedDateTimestamp",
+            "Comment",
+        ]
+        mock_log = spark_session.createDataFrame(
+            [
+                (
+                    "lrd_static",
+                    "TEST_NON_SSF_V1",
+                    1,
+                    NonSSFStepStatus.EXPECTED.value,  # Use the actual enum value
+                    "Expected",
+                    "Success",
+                    datetime.now(timezone.utc),
+                    "Test comment",
+                )
+            ],
+            schema=schema_log,
+        )
+
+        dummy_df = spark_session.createDataFrame(
+            [(1, "2", 3)],
+            schema=StructType(
+                [
+                    StructField("col1", IntegerType()),
+                    StructField("col2", StringType()),
+                    StructField("col3", IntegerType()),
+                ]
+            ),
+        )
+
+        # Mock spark.read.json and spark.read.table to return the mock DataFrames
+        mock_read = mocker.patch("pyspark.sql.SparkSession.read", autospec=True)
+        mock_read.table.side_effect = [
+            mock_meta,
+            mock_log,
+            dummy_df,
+            dummy_df,
+            dummy_df,
+            dummy_df,
+        ]
+
+        mock_write = mocker.patch("pyspark.sql.DataFrameWriter.parquet")
+        mock_save_table = mocker.patch("pyspark.sql.DataFrameWriter.saveAsTable")
+
+        # Check ExtractNonSSFData class initialisation
+        extraction = ExtractNonSSFData(
+            spark_session,
+            run_month,
+            source_container=source_container,
+        )
+
+        # Verify that spark.read.table was called with the correct arguments
+        mock_read.table.assert_any_call(f"bsrc_d.metadata_{run_month}.metadata_nonssf")
+        mock_read.table.assert_any_call(f"bsrc_d.log_{run_month}.log_nonssf")
+
+        # Test deadline checking
+        deadline_reached, deadline_str = extraction.check_deadline_reached(
+            "TEST_NON_SSF_V1"
+        )
+        assert not deadline_reached  # Future deadline
+        assert deadline_str == str(future_date)
+
+        deadline_reached, deadline_str = extraction.check_deadline_reached(
+            "TEST_NON_SSF_V2"
+        )
+        assert deadline_reached  # Past deadline
+>       assert deadline_str == past_date
+E       AssertionError: assert '2025-07-31' == datetime.date(2025, 7, 31)
+
+test\staging\test_extract_non_ssf_data.py:173: AssertionError
+------------------------------------------------------------------------------------ Captured stderr setup ------------------------------------------------------------------------------------- 
+Setting default log level to "WARN".
+To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
+------------------------------------------------------------------------------------- Captured stderr call ------------------------------------------------------------------------------------- 
+
+======================================================================================= warnings summary ======================================================================================= 
+..\bsrc-etl-venv\lib\site-packages\holidays\deprecations\v1_incompatibility.py:40
+  C:\Users\B25712\bsrc-etl-venv\bsrc-etl-venv\lib\site-packages\holidays\deprecations\v1_incompatibility.py:40: FutureIncompatibilityWarning:
+
+  This is a future version incompatibility warning from Holidays v0.62
+  to inform you about an upcoming change in our API versioning strategy that may affect your
+  project's dependencies. Starting from version 1.0 onwards, we will be following a loose form of
+  Semantic Versioning (SemVer, https://semver.org) to provide clearer communication regarding any
+  potential breaking changes.
+
+  This means that while we strive to maintain backward compatibility, there might be occasional
+  updates that introduce breaking changes to our API. To ensure the stability of your projects,
+  we highly recommend pinning the version of our API that you rely on. You can pin your current
+  holidays v0.x dependency (e.g., holidays==0.62) or limit it (e.g., holidays<1.0) in order to
+  avoid potentially unwanted upgrade to the version 1.0 when it's released (ETA 2025Q1-Q2).
+
+  If you have any questions or concerns regarding this change, please don't hesitate to reach out
+  to us via https://github.com/vacanza/holidays/discussions/1800.
+
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+
+---------- coverage: platform win32, python 3.10.11-final-0 ----------
+Name                                                             Stmts   Miss  Cover   Missing
+----------------------------------------------------------------------------------------------
+src\__init__.py                                                      0      0   100%
+src\abnamro_bsrc_etl\__init__.py                                     0      0   100%
+src\abnamro_bsrc_etl\config\__init__.py                              0      0   100%
+src\abnamro_bsrc_etl\config\business_logic.py                       54      0   100%
+src\abnamro_bsrc_etl\config\constants.py                             2      0   100%
+src\abnamro_bsrc_etl\config\exceptions.py                           31     31     0%   1-71
+src\abnamro_bsrc_etl\config\process.py                               7      7     0%   1-10
+src\abnamro_bsrc_etl\config\schema.py                                5      5     0%   1-52
+src\abnamro_bsrc_etl\dq\__init__.py                                  0      0   100%
+src\abnamro_bsrc_etl\dq\dq_validation.py                           150    132    12%   47-112, 166-181, 197-249, 265-286, 318-350, 372-392, 414-486
+src\abnamro_bsrc_etl\extract\__init__.py                             0      0   100%
+src\abnamro_bsrc_etl\extract\master_data_sql.py                     96     71    26%   31-33, 37-38, 42, 59-88, 109-137, 149-156, 162-164, 188, 222-231, 285-300, 329-356
+src\abnamro_bsrc_etl\month_setup\__init__.py                         0      0   100%
+src\abnamro_bsrc_etl\month_setup\dial_derive_snapshotdate.py        36     27    25%   12-18, 28-37, 47-50, 69-85
+src\abnamro_bsrc_etl\month_setup\metadata_log_tables.py             40     25    38%   23-84, 159, 166-203
+src\abnamro_bsrc_etl\month_setup\setup_new_month.py                 29     29     0%   1-94
+src\abnamro_bsrc_etl\scripts\__init__.py                             0      0   100%
+src\abnamro_bsrc_etl\scripts\dial_check_delayed_files.py            27     27     0%   1-69
+src\abnamro_bsrc_etl\scripts\dial_staging_process.py                65     65     0%   1-280
+src\abnamro_bsrc_etl\scripts\export_tine_tables.py                   6      6     0%   1-9
+src\abnamro_bsrc_etl\scripts\new_month_setup.py                      7      7     0%   1-18
+src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py              63     63     0%   1-279
+src\abnamro_bsrc_etl\scripts\run_mapping.py                         26     26     0%   9-113
+src\abnamro_bsrc_etl\scripts\ssf_staging_process.py                 58     58     0%   1-234
+src\abnamro_bsrc_etl\staging\__init__.py                             0      0   100%
+src\abnamro_bsrc_etl\staging\extract_base.py                        77     17    78%   156, 162-164, 304-312, 343-352, 387-404, 420
+src\abnamro_bsrc_etl\staging\extract_dial_data.py                   77     77     0%   1-360
+src\abnamro_bsrc_etl\staging\extract_nonssf_data.py                153     69    55%   90, 115-137, 188-192, 195-200, 224-225, 263-265, 274, 301-324, 337-384, 404-438, 453, 469, 492-514        
+src\abnamro_bsrc_etl\staging\extract_ssf_data.py                   177    177     0%   1-620
+src\abnamro_bsrc_etl\staging\status.py                              58      5    91%   18, 53-54, 107, 151
+src\abnamro_bsrc_etl\transform\__init__.py                           0      0   100%
+src\abnamro_bsrc_etl\transform\table_write_and_comment.py           79     79     0%   1-237
+src\abnamro_bsrc_etl\transform\transform_business_logic_sql.py       9      9     0%   1-25
+src\abnamro_bsrc_etl\utils\__init__.py                               0      0   100%
+src\abnamro_bsrc_etl\utils\alias_util.py                            18     18     0%   1-109
+src\abnamro_bsrc_etl\utils\export_parquet.py                        22     12    45%   38-57, 67-68
+src\abnamro_bsrc_etl\utils\get_dbutils.py                            3      0   100%
+src\abnamro_bsrc_etl\utils\get_env.py                               12      0   100%
+src\abnamro_bsrc_etl\utils\logging_util.py                          10      0   100%
+src\abnamro_bsrc_etl\utils\parameter_utils.py                       25     19    24%   33-53, 79-84, 105-116
+src\abnamro_bsrc_etl\utils\parse_yaml.py                            28     28     0%   1-127
+src\abnamro_bsrc_etl\utils\sources_util.py                          56     56     0%   1-218
+src\abnamro_bsrc_etl\utils\table_logging.py                         19      3    84%   54-56
+src\abnamro_bsrc_etl\utils\table_schema.py                           6      6     0%   1-16
+src\abnamro_bsrc_etl\utils\transformations_util.py                  20     12    40%   20-25, 39, 51, 65-68
+src\abnamro_bsrc_etl\validate\__init__.py                            0      0   100%
+src\abnamro_bsrc_etl\validate\base.py                                5      5     0%   1-7
+src\abnamro_bsrc_etl\validate\expressions.py                        34     34     0%   1-75
+src\abnamro_bsrc_etl\validate\run_all.py                            15     15     0%   1-48
+src\abnamro_bsrc_etl\validate\sources.py                            33     33     0%   1-67
+src\abnamro_bsrc_etl\validate\transformations.py                   200    200     0%   1-593
+src\abnamro_bsrc_etl\validate\validate_sql.py                       63     63     0%   1-130
+src\abnamro_bsrc_etl\validate\yaml.py                               19     19     0%   1-34
+----------------------------------------------------------------------------------------------
+TOTAL                                                             1920   1535    20%
+Coverage HTML written to dir htmlcov
+
+=================================================================================== short test summary info ==================================================================================== 
+FAILED test/staging/test_extract_non_ssf_data.py::test_extract_non_ssf_data[202505-test-container] - AssertionError: assert '2025-07-31' == datetime.date(2025, 7, 31)
+=========================================================================== 1 failed, 3 passed, 1 warning in 52.06s ============================================================================ 
+SUCCESS: The process with PID 22504 (child process of PID 20360) has been terminated.
+SUCCESS: The process with PID 20360 (child process of PID 1200) has been terminated.
+SUCCESS: The process with PID 1200 (child process of PID 23916) has been terminated.
