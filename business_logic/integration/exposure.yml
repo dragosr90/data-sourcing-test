@@ -1,0 +1,231 @@
+description: This is created for enrichment of Exposures. 
+
+target: enrich_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_exposure
+
+sources:
+  - alias: SSF_PR
+    source: stg_{{ RUN_MONTH }}.ssf_{{ DELIVERY_ENTITY }}_pr
+  - alias: SSF_FP
+    source: stg_{{ RUN_MONTH }}.ssf_{{ DELIVERY_ENTITY }}_fp
+  - alias: SSF_CA
+    source: stg_{{ RUN_MONTH }}.ssf_{{ DELIVERY_ENTITY }}_ca
+  - alias: SSF_PR_X_CP
+    source: stg_{{ RUN_MONTH }}.ssf_{{ DELIVERY_ENTITY }}_prxcp
+  - alias: INT_CF
+    source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_integrated_creditfacility
+  - alias: LGD
+    source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_lgd
+  - alias: MDM_FX_REPORTING
+    source: stg_{{ RUN_MONTH }}.bsl_pvs_113_fx_eom_rates
+  - alias: MDM_FX_TRANSACTION
+    source: stg_{{ RUN_MONTH }}.bsl_pvs_113_fx_eom_rates
+  - alias: MDM_1001
+    source: stg_{{ RUN_MONTH }}.bsl_andes_1001_b2_prd_type
+  - alias: MDM_1027
+    source: stg_{{ RUN_MONTH }}.bsl_ggop_1027_aab_rptg_entity
+  - alias: MDM_1265
+    source: stg_{{ RUN_MONTH }}.frrd_mdm_1265_ast_scrztn_cpty  
+  - alias: SSC
+    source: stg_{{ RUN_MONTH }}.bsl_ctrl_ssc_ssf_basel
+  # Enrich Exemption claim
+  - alias: EXMP_PR_EC
+    source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_exemptionclaim_product_ec
+  - alias: EXMP_FAC_EC
+    source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_exemptionclaim_creditfacility_ec
+  - alias: EXMP_CP_EC
+    source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_exemptionclaim_counterparty_ec
+
+transformations:
+  - join:
+      left_source: SSF_PR
+      right_source: SSF_FP
+      condition:
+        - SSF_PR.ArrangementIdentifier  = SSF_FP.ArrangementIdentifier
+        - SSF_PR.SourceSystemIdentifier = SSF_FP.SourceSystemIdentifier
+      how: left
+  - join:
+      right_source: SSF_CA
+      condition:
+        - SSF_PR.ArrangementIdentifier  = SSF_CA.ArrangementIdentifier
+        - SSF_PR.SourceSystemIdentifier = SSF_CA.SourceSystemIdentifier
+      how: left
+  - join:
+      right_source: SSF_PR_X_CP
+      condition:
+        - SSF_PR.ArrangementIdentifier  = SSF_PR_X_CP.Product
+        - SSF_PR.SourceSystemIdentifier = SSF_PR_X_CP.ProductSourceSystemIdentifier
+      how: left
+  - add_variables:
+      column_mapping:
+        var_facility_id: coalesce(SSF_FP.CreditFacility,SSF_CA.CreditFacility, concat('CF/', SSF_CA.ArrangementIdentifier))
+  - join:
+      right_source: INT_CF
+      condition:
+        - var_facility_id = INT_CF.LocalFacilityIdentifier
+        - SSF_PR.SourceSystemIdentifier = INT_CF.SourceSystemIdentifier
+      how: inner
+  - add_variables:
+      column_mapping:
+        var_counterparty_id: coalesce(SSF_PR_X_CP.Counterparty,INT_CF.CounterpartyID)
+  - join:
+      right_source: LGD
+      condition:
+        - INT_CF.HighestExistingFacility = LGD.CreditFacilityID
+        - INT_CF.SourceSystemIdentifier = LGD.CreditFacilitySourceSystemIdentifier
+      how: left 
+  - join: 
+      right_source: MDM_1027
+      how: left
+      condition:
+        - SSF_PR.ReportingEntity = MDM_1027.Reporting_Entity_ID
+  - join: 
+      right_source: MDM_FX_REPORTING
+      how: left
+      condition:
+        - MDM_1027.Currency_Code = MDM_FX_REPORTING.quoted_ccy
+  - add_variables:
+      column_mapping:
+        var_reporting_exchange_rate: case when MDM_1027.Currency_Code = 'EUR' then 1
+                                  else MDM_FX_REPORTING.exchange_rate
+                           end
+        var_outstanding_amount: (case when SSF_PR.CarryingAmountDebitCreditIndicator='C' 
+                                          then SSF_PR.CarryingAmountReportingAmount * -1
+                                      when SSF_PR.BaselIIProductType='7' 
+                                          then SSF_PR.NominalAmountTransactionAmount - SSF_FP.ResidualValueOperationalLeaseReportingAmount
+                                      else SSF_PR.CarryingAmountReportingAmount  
+                                 end ) / var_reporting_exchange_rate
+  - join:
+      right_source: MDM_FX_TRANSACTION
+      condition:
+        - SSF_PR.CarryingAmountTransactionCurrency = MDM_FX_TRANSACTION.quoted_ccy
+      how: left
+  - join:
+      right_source: MDM_1001
+      condition:
+        - SSF_PR.BaselIIProductType = cast(MDM_1001.code as string)
+      how: left
+  - join:
+      right_source: MDM_1265
+      condition:
+        - concat_ws('','NL_' || var_counterparty_id) = MDM_1265.CPTY_ID
+      how: left
+  - join:
+      right_source: SSC
+      condition:
+        - INT_CF.DeliveryEntity= SSC.delivery_entity
+        - INT_CF.SourceSystemIdentifier= SSC.SourceSystemIdentifier
+      how: left
+    # join for exemption claim attributes
+  - join:
+      right_source: EXMP_PR_EC
+      condition:
+        - SSF_PR.ArrangementIdentifier= EXMP_PR_EC.ExposureID
+        - SSF_PR.SourceSystemIdentifier= EXMP_PR_EC.ExposureSourceSystemIdentifier
+      how: left
+  - join:
+      right_source: EXMP_FAC_EC
+      condition:
+        - INT_CF.LocalFacilityIdentifier= EXMP_FAC_EC.CreditFacilityID
+        - INT_CF.SourceSystemIdentifier= EXMP_FAC_EC.CreditFacilitySourceSystemIdentifier
+      how: left
+  - join:
+      right_source: EXMP_CP_EC
+      condition:
+        - var_counterparty_id= EXMP_CP_EC.CounterpartyID
+        - INT_CF.CounterpartySourceSystemIdentifier= EXMP_CP_EC.CounterpartySourceSystemIdentifier
+      how: left
+
+expressions:
+  DeliveryEntity: SSF_PR.DeliveryEntity
+  ReportingDate: SSF_PR.ReportingDate
+  ExposureID: SSF_PR.ArrangementIdentifier
+  ExposureSourceSystemIdentifier: SSF_PR.SourceSystemIdentifier
+  BaselSSC: SSC.basel_ssc
+  AccruedFeesAmountReportingAmount: SSF_PR.AccruedFeesAmountReportingAmount / var_reporting_exchange_rate
+  AccruedInterestAmountReportingAmount: SSF_PR.AccruedInterestAmountReportingAmount / var_reporting_exchange_rate
+  AccumulatedTechnicalWriteoffReportingAmount: coalesce(SSF_CA.AccumulatedTechnicalWriteoffReportingAmount,SSF_FP.AccumulatedTechnicalWriteoffReportingAmount)
+  BaselProcessFilterCode: cast(NULL as integer) # To be updated later
+  BaselProductType: SSF_PR.BaselIIProductType
+  BusinessSegmentLevel3: cast(NULL as string) # To be updated later
+  ContractStatus: SSF_PR.ContractStatus
+  ContractStatusDate: SSF_PR.ContractStatusDate
+  CounterpartyID: var_counterparty_id
+  CounterpartySourceSystemIdentifier: coalesce(SSF_PR_X_CP.CounterpartySourceSystemIdentifier, INT_CF.CounterpartySourceSystemIdentifier)
+  CreditFacilityID: INT_CF.HighestExistingFacility
+  CreditFacilitySourceSystemIdentifier: INT_CF.SourceSystemIdentifier
+  CurrencyExchangeRate: MDM_FX_TRANSACTION.exchange_rate
+  DateOfSecuritisation: SSF_FP.DateOfSecuritisation
+  DebitCreditIndicator: SSF_PR.CarryingAmountDebitCreditIndicator 
+  EffectiveMaturity: cast(NULL as string) # To be updated once it is available in Custom fields
+  EffectiveMaturityDateCRR: SSF_FP.EffectiveMaturityDateCRR
+  ExemptionClaimConditionIDEC: case when EXMP_PR_EC.ExemptionConditionId is not null then EXMP_PR_EC.ExemptionConditionId
+                                    when EXMP_PR_EC.ExemptionConditionId is null and EXMP_FAC_EC.ExemptionConditionId is null and EXMP_CP_EC.ExemptionConditionId is null then null
+                                    when EXMP_FAC_EC.ExemptionConditionId>EXMP_CP_EC.ExemptionConditionId then EXMP_CP_EC.ExemptionConditionId 
+                                    else coalesce(EXMP_FAC_EC.ExemptionConditionId,EXMP_CP_EC.ExemptionConditionId)
+                                  end
+  ExemptionClaimConditionIDRC: case when EXMP_PR_EC.ExemptionConditionId is not null then EXMP_PR_EC.ExemptionConditionId
+                                    when EXMP_PR_EC.ExemptionConditionId is null and EXMP_FAC_EC.ExemptionConditionId is null and EXMP_CP_EC.ExemptionConditionId is null then null
+                                    when EXMP_FAC_EC.ExemptionConditionId>EXMP_CP_EC.ExemptionConditionId then EXMP_CP_EC.ExemptionConditionId 
+                                    else coalesce(EXMP_FAC_EC.ExemptionConditionId,EXMP_CP_EC.ExemptionConditionId)
+                                  end # To be updated later
+  ExemptionType: case when EXMP_PR_EC.ExemptionConditionId is not null then EXMP_PR_EC.ExemptionType
+                                    when EXMP_PR_EC.ExemptionConditionId is null and EXMP_FAC_EC.ExemptionConditionId is null and EXMP_CP_EC.ExemptionConditionId is null then null
+                                    when EXMP_FAC_EC.ExemptionConditionId>EXMP_CP_EC.ExemptionConditionId then EXMP_CP_EC.ExemptionType 
+                                    else coalesce(EXMP_FAC_EC.ExemptionType,EXMP_CP_EC.ExemptionType)
+                                  end
+  ForbearanceMeasure: coalesce(SSF_FP.ForbearanceMeasure,SSF_CA.ForbearanceMeasure)
+  ForbearanceMeasureApprovalDate: cast(NULL as date) # To be updated later
+  Ifrs9RiskStage: coalesce(SSF_CA.Ifrs9RiskStage, INT_CF.ifrs9riskstage,'X')
+  LeaseProductFlag: case when MDM_1001.Leasing is True then 'Y'
+                              when MDM_1001.Leasing is False then 'N'
+                         end
+  LoanLossAllowanceRcoa: coalesce(SSF_FP.LoanLossAllowanceRcoa,SSF_CA.LoanLossAllowanceRcoa)
+  LoanLossAllowanceReportingAmount: coalesce(SSF_FP.LoanLossAllowanceReportingAmount,SSF_CA.LoanLossAllowanceReportingAmount) / MDM_FX_REPORTING.exchange_rate
+  MagnitudeKey: SSF_PR.BusinessSegment
+  MaturityDate: SSF_FP.MaturityDate
+  NonPerformingStartDate: coalesce(SSF_CA.NonPerformingStartDate,INT_CF.NonPerformingStartDate)
+  OffBalanceProductFlag: case when MDM_1001.off_balance is True then 'Y'
+                              when MDM_1001.off_balance is False then 'N'
+                         end
+  OutstandingAmount: var_outstanding_amount
+  PlNplIndicator: INT_CF.PlNplIndicator
+  QRRETransactor: coalesce(SSF_FP.QRRETransactor,SSF_CA.QRRETransactor,'N') 
+  ReportingCOA: SSF_PR.CarryingAmountRcoa
+  ReportingEntity: SSF_PR.ReportingEntity
+  ResidualValueOperationalLeaseReportingAmount: SSF_FP.ResidualValueOperationalLeaseReportingAmount / MDM_FX_REPORTING.exchange_rate
+  RevolvingFlag: coalesce( INT_CF.Revolving, 'N')
+  RevolvingProductFlag: case when MDM_1001.REVOLVING is True then 'Y'
+                              when MDM_1001.REVOLVING is False then 'N'
+                         end
+  RiskWeightedExposureApproachEC: coalesce ( 
+                                  case when EXMP_PR_EC.ExemptionConditionId is not null then EXMP_PR_EC.BaselCreditRiskApproach
+                                       when EXMP_PR_EC.ExemptionConditionId is null and EXMP_FAC_EC.ExemptionConditionId is null and EXMP_CP_EC.ExemptionConditionId is null then null
+                                       when EXMP_FAC_EC.ExemptionConditionId > EXMP_CP_EC.ExemptionConditionId then EXMP_CP_EC.BaselCreditRiskApproach
+                                        else coalesce(EXMP_FAC_EC.BaselCreditRiskApproach, EXMP_CP_EC.BaselCreditRiskApproach)
+                                    end, 'AIRB')
+  RiskWeightedExposureApproachRC: coalesce ( 
+                                  case when EXMP_PR_EC.ExemptionConditionId is not null then EXMP_PR_EC.BaselCreditRiskApproach
+                                       when EXMP_PR_EC.ExemptionConditionId is null and EXMP_FAC_EC.ExemptionConditionId is null and EXMP_CP_EC.ExemptionConditionId is null then null
+                                       when EXMP_FAC_EC.ExemptionConditionId > EXMP_CP_EC.ExemptionConditionId then EXMP_CP_EC.BaselCreditRiskApproach
+                                        else coalesce(EXMP_FAC_EC.BaselCreditRiskApproach, EXMP_CP_EC.BaselCreditRiskApproach)
+                                    end, 'AIRB') # To be updated later
+  SecuritisationIdentifier: SSF_FP.SecuritisationIdentifier
+  SecuritisationRoleType: case when INT_CF.BaselIIProductType in ('9', '43','44','46','47', '131') or MDM_1265.CPTY_ID is not null then 'Securitization Position' end # Check if this can be part of Proxy logic or not
+  SecuritisationType: SSF_FP.SecuritisationType
+  SettlementDate: SSF_PR.SettlementDate
+  SourcedExemptionID: SSF_PR.ExemptionFromAdvancedInternalRatingBasedApproach
+  SSFProductCategory: case when SSF_CA.ArrangementIdentifier is not null then 'CA' 
+                           when SSF_FP.ArrangementIdentifier is not null then 'FP' 
+                      end
+  SubordinationType: case when substr(LGD.LGDClass, 1,1) in ('M','N','Z') then 'Subordinated Lien'
+                          when SSF_FP.Subordinated ='Y' then 'Subordinated Lien' 
+                          else 'Unsubordinated Lien' 
+                     end
+  TechnicalWriteoffReportingAmount: coalesce(SSF_FP.TechnicalWriteoffReportingAmount,SSF_CA.TechnicalWriteoffReportingAmount) / var_reporting_exchange_rate
+  TradeDate: SSF_PR.TradeDate
+  TransactionCurrency: SSF_PR.CarryingAmountTransactionCurrency
+
+drop_duplicates: true
+filter_target:
+- SSFProductCategory in ('CA','FP')
+- PlNplIndicator = 'NPL' 
