@@ -1,0 +1,78 @@
+description: The exemption claim is used to identify the regulatory approach that applies to an exposure. There are "exemptions" that are prescribed by the regulation in the CRR Article 150, however, institutions can also ask permission to move specific portfolios to less sophisticated approaches (both SA and FIRB). The reference table 1286 contains a set of exemption conditions which rely on different sourced attributes that are used to define the portfolios eligible for the application of both i) the prescribed regulatory PPUs portfolios and ii) the additional requested portfolios. This exemption claim will first be checked at Counterparty level and then at facility level and product level. This YAML is to determine exemption at product level.
+
+target: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_exemptionclaim_product_ec
+
+sources:
+  - alias: PR
+    filter: ExemptionFromAdvancedInternalRatingBasedApproach is not null
+    source: stg_{{ RUN_MONTH }}.ssf_{{ DELIVERY_ENTITY }}_pr
+
+  - alias: PRxCP
+    source: stg_{{ RUN_MONTH }}.ssf_{{ DELIVERY_ENTITY }}_prxcp
+
+  - alias: INT_CP
+    columns:
+    - DeliveryEntity
+    - ReportingDate
+    - LocalId
+    - SourceSystemIdentifier
+    - GlobalCounterpartyIdentifier
+    - BaselIICounterpartyType
+    - ExemptionFromAdvancedInternalRatingBasedApproach
+    source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_integrated_counterparty
+
+  - alias: 1286EXMP
+    filter: sourced_exemption_id <> '*' and sourced_exemption_id is not null
+    source: stg_{{ RUN_MONTH }}.bsl_andes_1286_b2_exmp_cond
+
+transformations:
+  - join:
+      left_source: PR
+      right_source: PRxCP
+      condition:
+        - PR.ArrangementIdentifier = PRxCP.Product
+        - PR.SourceSystemIdentifier = PRxCP.ProductSourceSystemIdentifier
+      how: left
+
+  - join:
+      right_source: INT_CP
+      condition:
+        - INT_CP.LocalId = PRxCP.Counterparty
+        - INT_CP.SourceSystemIdentifier = PRxCP.CounterpartySourceSystemIdentifier
+      how: left
+
+  - join:
+      right_source: 1286EXMP
+      condition:
+        - 1286EXMP.reporting_entity_id = PR.ReportingEntity or 1286EXMP.reporting_entity_id = '*'
+        - 1286EXMP.b2_cpty_type_id = INT_CP.BaselIICounterpartyType or 1286EXMP.b2_cpty_type_id = '*'
+        - 1286EXMP.b2_pd_type_id = PR.BaselIIProductType or 1286EXMP.b2_pd_type_id = '*'
+        - upper(1286EXMP.sourced_exemption_id) = upper(PR.ExemptionFromAdvancedInternalRatingBasedApproach) or 1286EXMP.sourced_exemption_id = '*'
+      how: left
+  - add_variables:
+      column_mapping:
+        var_lowest_ExemptionClaimConditonID: min(1286EXMP.exemption_condition_id) OVER (PARTITION BY PR.ArrangementIdentifier)
+
+expressions:
+  DeliveryEntity: PR.DeliveryEntity
+  ReportingDate: PR.ReportingDate
+  ReportingEntity: PR.ReportingEntity
+  ExposureID: PR.ArrangementIdentifier
+  ExposureSourceSystemIdentifier: PR.SourceSystemIdentifier
+  BaselProductType: PR.BaselIIProductType
+  SourcedExemptionId: PR.ExemptionFromAdvancedInternalRatingBasedApproach
+  BaselCreditRiskApproach: case when 1286EXMP.basel_approach='STD' then 'SA'
+                                when 1286EXMP.basel_approach='FOU' then 'FIRB'
+                                when 1286EXMP.basel_approach='IRB' then 'AIRB'
+                                else 1286EXMP.basel_approach
+                            end
+  ExemptionConditionId: 1286EXMP.exemption_condition_id
+  ExemptionId: 1286EXMP.exemption_id
+  ExemptionName: 1286EXMP.exemption_name
+  ExemptionType: case when 1286EXMP.exemption_end_date= '9999-12-31' then 'P' else 'T' end 
+        
+filter_target:
+- 1286EXMP.exemption_condition_id is not null
+- ExemptionConditionId = var_lowest_ExemptionClaimConditonID
+
+drop_duplicates: true
