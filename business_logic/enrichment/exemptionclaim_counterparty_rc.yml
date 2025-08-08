@@ -1,0 +1,113 @@
+description: The exemption claim is used to identify the regulatory approach that applies to an exposure. There are "exemptions" that are prescribed by the regulation in the CRR Article 150, however, institutions can also ask permission to move specific portfolios to less sophisticated approaches (both SA and FIRB). The reference table 1286 contains a set of exemption conditions which rely on different sourced attributes that are used to define the portfolios eligible for the application of both i) the prescribed regulatory PPUs portfolios and ii) the additional requested portfolios. This exemption claim will first be checked at Counterparty level and then at facility level and product level. This YAML is to determine exemption at counterparty level for RC.
+
+target: enrich_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_exemptionclaim_counterparty_rc
+
+sources:
+  # SSF Counterparty data for Basel calculations
+  - alias: INT_CP
+    columns:
+    - DeliveryEntity
+    - ReportingDate
+    - LocalId
+    - SourceSystemIdentifier
+    - GlobalCounterpartyIdentifier   
+    - BaselIICounterpartyType #use generic later
+    - ExemptionFromAdvancedInternalRatingBasedApproach
+    source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_integrated_counterparty
+
+  # Exemption mapping table (1286) for RC
+  - alias: 1286EXMP_RC
+    source: stg_{{ RUN_MONTH }}.bsl_andes_1286_b2_exmp_cond_rc #TODO: confirm RC table name
+
+  # PD UCR step3 integration data
+  - alias: PD_UCR
+    columns:
+    - CounterpartyID
+    - CounterpartySourceSystemIdentifier
+    - LastPerformingPDModelCode
+    - PDModelCode
+    source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_pd_ucr_step3
+
+  # Intercompany flag data
+  - alias: IC
+    columns:
+    - CounterpartyID
+    - CounterpartySourceSystemIdentifier
+    - IntercompanyFlag
+    source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_intercompany
+
+transformations:
+  - join:
+      left_source: INT_CP
+      right_source: PD_UCR
+      how: inner
+      condition:
+        - INT_CP.LocalId = PD_UCR.CounterpartyID
+        - INT_CP.SourceSystemIdentifier = PD_UCR.CounterpartySourceSystemIdentifier
+  - join:
+      right_source: IC
+      how: left
+      condition:
+        - INT_CP.LocalId = IC.CounterpartyID
+        - INT_CP.SourceSystemIdentifier = IC.CounterpartySourceSystemIdentifier
+  - join:
+      right_source: 1286EXMP_RC
+      condition:
+        - 1286EXMP_RC.reporting_entity_id = '*'
+        - 1286EXMP_RC.b2_pd_type_id = '*'
+        - 1286EXMP_RC.lgd_rtg_model = '*'
+        - 1286EXMP_RC.pl_npl_indicator = '*'
+        - 1286EXMP_RC.specialised_lending_type = '*'
+        - 1286EXMP_RC.cr_pd_program = '*'
+        - 1286EXMP_RC.pd_rtg_model IN (
+            PD_UCR.PDModelCode,
+            PD_UCR.LastPerformingPDModelCode,
+            '*'
+          )
+        - 1286EXMP_RC.b2_cpty_type_id IN (
+            INT_CP.BaselIICounterpartyType,
+            '*'
+          )
+        - 1286EXMP_RC.intercompany_flag = 
+            CASE WHEN IC.IntercompanyFlag = 'Y' THEN IC.IntercompanyFlag ELSE '*' END
+        - UPPER(1286EXMP_RC.sourced_exemption_id) IN (
+            UPPER(INT_CP.ExemptionFromAdvancedInternalRatingBasedApproach),
+            '*'
+          )
+        # - 1286EXMP_RC.ctpty_ssc IN (
+        #     'BCA',
+        #     '*'
+        #   )
+        - (1286EXMP_RC.ctpty_ssc || 1286EXMP_RC.ctpty_uid = INT_CP.LocalId) OR
+          (1286EXMP_RC.ctpty_ssc = 'EPR' and ltrim('0', 1286EXMP_RC.ctpty_uid) = ltrim('0', INT_CP.GlobalCounterpartyIdentifier)) OR  
+          (1286EXMP_RC.ctpty_uid = '*')
+      how: left
+  - add_variables:
+      column_mapping:
+        var_lowest_ExemptionClaimConditonID_RC: min(1286EXMP_RC.exemption_condition_id) OVER (PARTITION BY INT_CP.LocalId)
+
+expressions:
+  DeliveryEntity: INT_CP.DeliveryEntity
+  ReportingDate: INT_CP.ReportingDate
+  CounterpartyID: INT_CP.LocalId
+  CounterpartySourceSystemIdentifier: INT_CP.SourceSystemIdentifier
+  GlobalCounterpartyIdentifier: INT_CP.GlobalCounterpartyIdentifier
+  SourcedExemptionId: INT_CP.ExemptionFromAdvancedInternalRatingBasedApproach
+  PDModelCode: PD_UCR.PDModelCode
+  LastPerformingPDModelCode: PD_UCR.LastPerformingPDModelCode
+  IntercompanyFlag: IC.IntercompanyFlag
+  BaselCreditRiskApproach: case when 1286EXMP_RC.basel_approach='STD' then 'SA'
+                                when 1286EXMP_RC.basel_approach='FOU' then 'FIRB'
+                                when 1286EXMP_RC.basel_approach='IRB' then 'AIRB'
+                                else 1286EXMP_RC.basel_approach
+                            end
+  ExemptionConditionIdRC: 1286EXMP_RC.exemption_condition_id
+  ExemptionIdRC: 1286EXMP_RC.exemption_id
+  ExemptionNameRC: 1286EXMP_RC.exemption_name
+  ExemptionTypeRC: case when 1286EXMP_RC.exemption_end_date= '9999-12-31' then 'P' else 'T' end
+
+filter_target:
+- 1286EXMP_RC.exemption_condition_id IS NOT NULL
+- ExemptionConditionIdRC = var_lowest_ExemptionClaimConditonID_RC
+
+drop_duplicates: true
