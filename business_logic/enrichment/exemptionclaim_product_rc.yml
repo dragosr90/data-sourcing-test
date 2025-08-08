@@ -21,9 +21,9 @@ sources:
     - ExemptionFromAdvancedInternalRatingBasedApproach
     source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_integrated_counterparty
 
-  - alias: 1286EXMP_RC
+  - alias: 1286EXMP
     filter: sourced_exemption_id <> '*' and sourced_exemption_id is not null
-    source: stg_{{ RUN_MONTH }}.bsl_andes_1286_b2_exmp_cond_rc #TODO: confirm RC table name
+    source: stg_{{ RUN_MONTH }}.bsl_andes_1286_b2_exmp_cond_2
 
 transformations:
   - join:
@@ -42,12 +42,12 @@ transformations:
       how: left
 
   - join:
-      right_source: 1286EXMP_RC
+      right_source: 1286EXMP
       condition:
-        - 1286EXMP_RC.reporting_entity_id = PR.ReportingEntity or 1286EXMP_RC.reporting_entity_id = '*'
-        - 1286EXMP_RC.b2_cpty_type_id = INT_CP.BaselIICounterpartyType or 1286EXMP_RC.b2_cpty_type_id = '*'
-        - 1286EXMP_RC.b2_pd_type_id = PR.BaselIIProductType or 1286EXMP_RC.b2_pd_type_id = '*'
-        - upper(1286EXMP_RC.sourced_exemption_id) = upper(PR.ExemptionFromAdvancedInternalRatingBasedApproach) or 1286EXMP_RC.sourced_exemption_id = '*'
+        - 1286EXMP.reporting_entity_id = PR.ReportingEntity or 1286EXMP.reporting_entity_id = '*'
+        - 1286EXMP.b2_cpty_type_id = INT_CP.BaselIICounterpartyType or 1286EXMP.b2_cpty_type_id = '*'
+        - 1286EXMP.b2_pd_type_id = PR.BaselIIProductType or 1286EXMP.b2_pd_type_id = '*'
+        - upper(1286EXMP.sourced_exemption_id) = upper(PR.ExemptionFromAdvancedInternalRatingBasedApproach) or 1286EXMP.sourced_exemption_id = '*'
       how: left
   - add_variables:
       column_mapping:
@@ -61,18 +61,18 @@ expressions:
   ExposureSourceSystemIdentifier: PR.SourceSystemIdentifier
   BaselProductType: PR.BaselIIProductType
   SourcedExemptionId: PR.ExemptionFromAdvancedInternalRatingBasedApproach
-  BaselCreditRiskApproach: case when 1286EXMP_RC.basel_approach='STD' then 'SA'
-                                when 1286EXMP_RC.basel_approach='FOU' then 'FIRB'
-                                when 1286EXMP_RC.basel_approach='IRB' then 'AIRB'
-                                else 1286EXMP_RC.basel_approach
+  BaselCreditRiskApproach: case when 1286EXMP.basel_approach='STD' then 'SA'
+                                when 1286EXMP.basel_approach='FOU' then 'FIRB'
+                                when 1286EXMP.basel_approach='IRB' then 'AIRB'
+                                else 1286EXMP.basel_approach
                             end
-  ExemptionConditionIdRC: 1286EXMP_RC.exemption_condition_id
-  ExemptionIdRC: 1286EXMP_RC.exemption_id
-  ExemptionNameRC: 1286EXMP_RC.exemption_name
-  ExemptionTypeRC: case when 1286EXMP_RC.exemption_end_date= '9999-12-31' then 'P' else 'T' end 
+  ExemptionConditionIdRC: 1286EXMP.exemption_condition_id
+  ExemptionIdRC: 1286EXMP.exemption_id
+  ExemptionNameRC: 1286EXMP.exemption_name
+  ExemptionTypeRC: case when 1286EXMP.exemption_end_date= '9999-12-31' then 'P' else 'T' end 
         
 filter_target:
-- 1286EXMP_RC.exemption_condition_id is not null
+- 1286EXMP.exemption_condition_id is not null
 - ExemptionConditionIdRC = var_lowest_ExemptionClaimConditonID_RC
 
 drop_duplicates: true
