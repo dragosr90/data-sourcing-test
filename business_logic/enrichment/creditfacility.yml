@@ -1,0 +1,266 @@
+description: This is created for enrichment of Credit Facility. 
+
+target: enrich_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_creditfacility
+
+sources:
+  - alias: INT_CF
+    filter: SubFacilityFlag = 'N' and coalesce(CreditAgreement,'N') = 'N'
+    source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_integrated_creditfacility
+  - alias: CRE_AGMT
+    filter: SubFacilityFlag = 'N' and CreditAgreement = 'Y'
+    source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_integrated_creditfacility
+  - alias: INT_CP
+    source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_integrated_counterparty
+  - alias: LGD 
+    source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_lgd
+  - alias: DEFAULT
+    source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_default_creditfacility
+  - alias: EXP
+    filter: OutstandingAmount > 0
+    source: enrich_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_exposure
+  - alias: MDM_2114
+    source: stg_{{ RUN_MONTH }}.frrd_mdm_2114_fac_to_gfid_map
+  - alias: MDM_1265
+    source: stg_{{ RUN_MONTH }}.frrd_mdm_1265_ast_scrztn_cpty  
+  - alias: MDM_FX_REPORTING
+    source: stg_{{ RUN_MONTH }}.bsl_pvs_113_fx_eom_rates
+  - alias: MDM_FX_TRANSACTION
+    source: stg_{{ RUN_MONTH }}.bsl_pvs_113_fx_eom_rates
+  - alias: MDM_1027
+    source: stg_{{ RUN_MONTH }}.bsl_ggop_1027_aab_rptg_entity
+  - alias: MDM_1282
+    source: stg_{{ RUN_MONTH }}.frrd_mdm_1282_mapp_ru_to_bsl
+  - alias: MDM_1001
+    source: stg_{{ RUN_MONTH }}.bsl_andes_1001_b2_prd_type
+  - alias: SSC
+    source: stg_{{ RUN_MONTH }}.bsl_ctrl_ssc_ssf_basel
+  # Enrich Exemption claim
+  - alias: EXMP_FAC_EC
+    source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_exemptionclaim_creditfacility_ec
+  - alias: EXMP_CP_EC
+    source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_exemptionclaim_counterparty_ec
+  - alias: INT_CF_LINKS
+    source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_integrated_creditfacility_links
+
+transformations:
+# Aggregation to get attributes from Lending Exposures
+  - aggregation:
+      source: EXP
+      alias: LENDING
+      group: 
+        - EXP.CreditFacilityID
+        - EXP.CreditFacilitySourceSystemIdentifier
+      column_mapping:
+          DrawnAmount: SUM(EXP.OutstandingAmount)
+          NumberOfExposures: COUNT(EXP.ExposureID)
+          AccruedInterestExposure: SUM(AccruedInterestAmountReportingAmount)
+
+# To get Lowest Exemption Condition ID on Counterparty level
+  - join:
+      left_source: INT_CF_LINKS
+      right_source: EXMP_CP_EC
+      condition:
+        - INT_CF_LINKS.ParticipatingCounterparty = EXMP_CP_EC.CounterpartyID
+        - INT_CF_LINKS.ParticipatingCounterpartySourceSystemIdentifier = EXMP_CP_EC.CounterpartySourceSystemIdentifier
+      how: inner
+  - add_variables:
+      column_mapping:
+        rank_num_Processid: ROW_NUMBER() OVER (
+            PARTITION BY INT_CF_LINKS.CreditFacility, INT_CF_LINKS.CreditFacilitySourceSystemIdentifier
+            ORDER BY EXMP_CP_EC.ExemptionConditionId
+          )
+  - filter:
+      alias: EXMP_CP_EC_LOWEST
+      conditions:
+        - rank_num_Processid = 1
+
+  - join:
+      left_source: INT_CF
+      right_source: LENDING
+      condition:
+        - INT_CF.LocalFacilityIdentifier = LENDING.CreditFacilityID
+        - INT_CF.SourceSystemIdentifier = LENDING.CreditFacilitySourceSystemIdentifier
+      how: left
+  - join:
+      right_source: INT_CP
+      condition:
+        - INT_CF.CounterpartyID = INT_CP.LocalId
+        - INT_CF.CounterpartySourceSystemIdentifier = INT_CP.SourceSystemIdentifier
+      how: left
+  - join:
+      right_source: LGD
+      condition:
+        - INT_CF.LocalFacilityIdentifier = LGD.CreditFacilityID
+        - INT_CF.SourceSystemIdentifier = LGD.CreditFacilitySourceSystemIdentifier
+      how: left
+  - join:
+      right_source: CRE_AGMT
+      condition:
+        - concat_ws('',INT_CF.ParentCreditFacility) = CRE_AGMT.LocalFacilityIdentifier
+        - concat_ws('',INT_CF.ParentCreditFacilitySourceSystemIdentifier) = CRE_AGMT.SourceSystemIdentifier
+      how: left
+  - join:
+      right_source: DEFAULT
+      condition:
+        - INT_CF.LocalFacilityIdentifier = DEFAULT.CreditFacilityID
+        - INT_CF.SourceSystemIdentifier = DEFAULT.CreditFacilitySourceSystemIdentifier
+      how: left
+  - join: 
+      right_source: MDM_1027
+      how: left
+      condition:
+        - INT_CF.ReportingEntity = MDM_1027.Reporting_Entity_ID
+  - join: 
+      right_source: MDM_FX_REPORTING
+      how: left
+      condition:
+        - MDM_1027.Currency_Code = MDM_FX_REPORTING.quoted_ccy
+  - add_variables:
+      column_mapping:
+        var_reporting_exchange_rate: case when MDM_1027.Currency_Code = 'EUR' then 1
+                                  else MDM_FX_REPORTING.exchange_rate
+                           end
+  - join:
+      right_source: MDM_FX_TRANSACTION
+      condition:
+        - INT_CF.CreditLimitTransactionCurrency = MDM_FX_TRANSACTION.quoted_ccy
+      how: left
+  - join:
+      right_source: MDM_2114
+      condition:
+        - substr(INT_CF.LocalFacilityIdentifier,4) = MDM_2114.Facility_ID
+      how: left
+  - add_variables:
+      column_mapping:
+        var_GlobalFacilityID: ltrim('0', coalesce(INT_CF.GlobalFacilityIdentifier, MDM_2114.GFID))
+  - join:
+      right_source: MDM_1265
+      condition:
+        - concat_ws('','NL_' || INT_CF.CounterpartyID) = MDM_1265.CPTY_ID
+      how: left
+  - join: 
+      right_source: MDM_1282
+      how: left
+      condition:
+        - INT_CF.ReportingEntity = MDM_1282.REPORTING_UNIT_ID
+  - join:
+      right_source: MDM_1001
+      condition:
+        - INT_CF.BaselIIProductType = cast(MDM_1001.code as string)
+      how: left
+  - join:
+      right_source: SSC
+      condition:
+        - INT_CF.DeliveryEntity = SSC.delivery_entity
+        - INT_CF.SourceSystemIdentifier = SSC.SourceSystemIdentifier
+      how: left
+  # joins for exemption claim attributes
+  - join:
+      right_source: EXMP_FAC_EC
+      condition:
+        - INT_CF.LocalFacilityIdentifier = EXMP_FAC_EC.CreditFacilityID
+        - INT_CF.SourceSystemIdentifier = EXMP_FAC_EC.CreditFacilitySourceSystemIdentifier
+      how: left
+  - join:
+      right_source: EXMP_CP_EC_LOWEST
+      condition:
+        - INT_CF.LocalFacilityIdentifier = EXMP_CP_EC_LOWEST.CreditFacility
+        - INT_CF.SourceSystemIdentifier = EXMP_CP_EC_LOWEST.CreditFacilitySourceSystemIdentifier
+      how: left
+
+expressions:
+  DeliveryEntity: INT_CF.DeliveryEntity
+  ReportingDate: INT_CF.ReportingDate
+  CreditFacilityID: INT_CF.LocalFacilityIdentifier
+  CreditFacilitySourceSystemIdentifier: INT_CF.SourceSystemIdentifier
+  BaselSSC: SSC.basel_ssc
+  AccruedFeesAmountReportingAmount: INT_CF.AccruedFeesAmountReportingAmount / var_reporting_exchange_rate
+  ArrangementParticipationType: INT_CF.ArrangementParticipationType
+  BaselProcessFilterCode: cast(NULL as string) # To be updated later
+  BaselProductType: INT_CF.BaselIIProductType
+  BookType: INT_CF.BookType
+  BorrowingBaseReportingAmount: INT_CF.BorrowingBaseReportingAmount /var_reporting_exchange_rate
+  BusinessSegmentLevel3: MDM_1282.BUSINESS_SEGMENT_LEVEL3_CODE # To be updated later
+  ContractStatus: INT_CF.ContractStatus
+  ContractStatusDate: INT_CF.ContractStatusDate
+  CounterpartyID: INT_CF.CounterpartyID
+  CounterpartySourceSystemIdentifier: INT_CF.CounterpartySourceSystemIdentifier
+  CreditAgreementID: case when CRE_AGMT.CreditAgreement = 'Y' then INT_CF.ParentCreditFacility end #Lookup for Credit Agreement
+  CreditLimitReportingAmount: INT_CF.CreditLimitReportingAmount / var_reporting_exchange_rate
+  CreditLimitReportingAmountBasel: INT_CF.CreditLimitReportingAmount / var_reporting_exchange_rate + coalesce(LENDING.AccruedInterestExposure,0)
+  CurrencyExchangeRate: MDM_FX_TRANSACTION.exchange_rate
+  Default: DEFAULT.Default
+  DefaultDate: DEFAULT.DefaultDate
+  DefaultEndDate: DEFAULT.DefaultEndDate
+  DownturnLossGivenDefault: LGD.DownturnLossGivenDefault
+  DrawnAmountReportingAmount: coalesce(INT_CF.DrawnAmountReportingAmount,LENDING.DrawnAmount,0)
+  DummyFacilityFlag: case when substr(INT_CF.FacilityType,1,5) = 'Dummy' then 'Y' else 'N' end
+  EADModelCode: INT_CF.EADModelCode
+  EffectiveMaturity: cast(NULL as string) # To be updated once it is available in Custom fields
+  EffectiveMaturityDateCRR: INT_CF.EffectiveMaturityDateCRR
+  ExemptionClaimConditionIDEC: least (EXMP_FAC_EC.ExemptionConditionId, EXMP_CP_EC_LOWEST.ExemptionConditionId)
+  ExemptionClaimConditionIDRC: least (EXMP_FAC_EC.ExemptionConditionId, EXMP_CP_EC_LOWEST.ExemptionConditionId) # To be updated later
+  ExemptionType: coalesce( case when least (EXMP_FAC_EC.ExemptionConditionId, EXMP_CP_EC_LOWEST.ExemptionConditionId) = EXMP_CP_EC_LOWEST.ExemptionConditionId then EXMP_CP_EC_LOWEST.ExemptionType end, EXMP_FAC_EC.ExemptionType) 
+  FacilityType: INT_CF.FacilityType
+  Forborne: INT_CF.Forborne
+  ForborneDate: INT_CF.ForborneDate
+  GlobalFacilityID: var_GlobalFacilityID
+  HighQualityIndicator: INT_CF.HighQualityIndicator
+  Ifrs9RiskStage: INT_CF.Ifrs9RiskStage
+  IncomeProducingRealEstateFinance: coalesce(INT_CF.IncomeProducingRealEstateFinance,'N')
+  InfrastructuralSupportingFactor: INT_CF.InfrastructuralSupportingFactor
+  InsuredFlag: INT_CF.InsuredFlag
+  LandAcquisitionDevelopmentAndConstructionExposureFinance: INT_CF.LandAcquisitionDevelopmentAndConstructionExposureFinance
+  LeaseProductFlag: case when MDM_1001.Leasing is True then 'Y'
+                              when MDM_1001.Leasing is False then 'N'
+                         end
+  LGDClass: LGD.LGDClass
+  LGDMarginOfConservatism: LGD.LGDMarginOfConservatism
+  LGDModelCode: LGD.LGDModelCode
+  LGDSubModelCode: LGD.LGDSubModelCode
+  LoanLossAllowanceRcoa: INT_CF.LoanLossAllowanceRcoa
+  LoanLossAllowanceReportingAmount: INT_CF.LoanLossAllowanceReportingAmount / var_reporting_exchange_rate
+  LossGivenDefaultRatingApprovalDate: LGD.LossGivenDefaultRatingApprovalDate
+  MagnitudeKey: INT_CF.BusinessSegment
+  MaturityDate: case when INT_CF.MaturityDate is not null then INT_CF.MaturityDate
+                      when INT_CF.BaselIIProductType ='134' then INT_CF.ReportingDate +1
+                      when INT_CF.TypeOfCommitment='N' then cast (dateadd(month,12,INT_CF.ReportingDate) as Date)
+                      else cast (dateadd(month,8,INT_CF.ReportingDate) as Date)
+                  end
+  NonPerformingEndDate: DEFAULT.NonPerformingEndDate
+  NonPerformingStartDate: DEFAULT.NonPerformingStartDate
+  NumberOfExposures: coalesce(INT_CF.NumberOfExposures,LENDING.NumberOfExposures)
+  OffBalanceProductFlag: case when MDM_1001.off_balance is True then 'Y'
+                              when MDM_1001.off_balance is False then 'N'
+                         end
+  PerformingIndicator: DEFAULT.PerformingIndicator
+  PlNplIndicator: INT_CF.PlNplIndicator
+  ProjectFinancePhaseIndicator: INT_CF.ProjectFinancePhaseIndicator
+  ReportingCOA: INT_CF.UndrawnRcoa # To be updated once CreditLimitRcoa is available - coalesce (INT_CF.CreditLimitRcoa,INT_CF.UndrawnRcoa)
+  ReportingEntity: INT_CF.ReportingEntity
+  RevolvingFlag: coalesce( INT_CF.Revolving, 'N')
+  RevolvingProductFlag: case when MDM_1001.REVOLVING is True then 'Y'
+                              when MDM_1001.REVOLVING is False then 'N'
+                         end
+  RiskWeightedExposureApproachEC: coalesce( case when least (EXMP_FAC_EC.ExemptionConditionId, EXMP_CP_EC_LOWEST.ExemptionConditionId) = EXMP_CP_EC_LOWEST.ExemptionConditionId then EXMP_CP_EC_LOWEST.BaselCreditRiskApproach end,  EXMP_FAC_EC.BaselCreditRiskApproach, 'AIRB')
+  RiskWeightedExposureApproachRC: coalesce( case when least (EXMP_FAC_EC.ExemptionConditionId, EXMP_CP_EC_LOWEST.ExemptionConditionId) = EXMP_CP_EC_LOWEST.ExemptionConditionId then EXMP_CP_EC_LOWEST.BaselCreditRiskApproach end,  EXMP_FAC_EC.BaselCreditRiskApproach, 'AIRB') # To be updated later
+  SecuritisationProductFlag: case when INT_CF.BaselIIProductType in ('9', '43','44','46','47', '131') or MDM_1265.CPTY_ID is not null then 'Securitization Position' end
+  SourcedExemptionID: coalesce(INT_CF.ExemptionFromAdvancedInternalRatingBasedApproach,INT_CP.ExemptionFromAdvancedInternalRatingBasedApproach)
+  SpecialisedLendingType: INT_CF.SpecialisedLendingType
+  SubordinationType: case when INT_CF.SubordinationType = 'Y' THEN 'Subordinated Lien'
+                          when INT_CF.SubordinationType = 'N' THEN 'Unsubordinated Lien' 
+                          when substr(LGD.LGDClass, 1,1) in ('M','N','Z') then 'Subordinated Lien'
+                          else 'Unsubordinated Lien'
+                      end
+  ThroughTheCycleLossGivenDefault: LGD.ThroughTheCycleLossGivenDefault
+  TradeDate: INT_CF.TradeDate
+  TransactionCurrency: coalesce(INT_CF.UndrawnTransactionCurrency, INT_CF.CreditLimitTransactionCurrency)
+  TypeOfCommitment: INT_CF.TypeOfCommitment
+  UnadvisedCreditLimitReportingAmount: INT_CF.UnadvisedCreditLimitReportingAmount / var_reporting_exchange_rate
+  UndrawnRcoa: INT_CF.UndrawnRcoa
+  UndrawnReportingAmount: INT_CF.UndrawnReportingAmount / var_reporting_exchange_rate
+
+drop_duplicates: true
+
+filter_target:
+- PlNplIndicator = 'NPL' 
