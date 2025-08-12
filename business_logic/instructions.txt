@@ -1,4 +1,4 @@
-[UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `INT_CF_LINKS`.`CreditFacility` cannot be resolved. Did you mean one of the following? [`JOINED_WITH_CP_RC`.`CreditFacility`, `JOINED_WITH_CP_RC`.`CreditFacilityID`, `JOINED_WITH_CP_RC`.`LocalId`, `JOINED_WITH_CP_RC`.`SubFacilityFlag`, `JOINED_WITH_CP_RC`.`DeliveryEntity`]. SQLSTATE: 42703
+[UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `CF`.`DeliveryEntity` cannot be resolved. Did you mean one of the following? [`JOINED_WITH_CP_RC`.`DeliveryEntity`, `JOINED_WITH_CP_RC`.`DeliveryEntity`, `JOINED_WITH_CP_RC`.`DeliveryEntity`, `JOINED_WITH_CP_RC`.`LocalId`, `JOINED_WITH_CP_RC`.`ReportingEntity`]. SQLSTATE: 42703
 File <command-8220669334324123>, line 1
 ----> 1 write_and_comment(
       2     spark,
