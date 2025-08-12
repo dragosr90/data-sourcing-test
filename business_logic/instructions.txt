@@ -1,4 +1,4 @@
-[AMBIGUOUS_REFERENCE] Reference `FAC_WITH_PD`.`CounterpartyID` is ambiguous, could be: [`FAC_WITH_PD`.`CounterpartyID`, `FAC_WITH_PD`.`CounterpartyID`]. SQLSTATE: 42704
+[UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `INT_CF_LINKS`.`CreditFacility` cannot be resolved. Did you mean one of the following? [`JOINED_WITH_CP_RC`.`CreditFacility`, `JOINED_WITH_CP_RC`.`CreditFacilityID`, `JOINED_WITH_CP_RC`.`LocalId`, `JOINED_WITH_CP_RC`.`SubFacilityFlag`, `JOINED_WITH_CP_RC`.`DeliveryEntity`]. SQLSTATE: 42703
 File <command-8220669334324123>, line 1
 ----> 1 write_and_comment(
       2     spark,
