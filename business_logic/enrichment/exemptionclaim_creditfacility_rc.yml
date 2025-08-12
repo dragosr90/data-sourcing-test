@@ -107,10 +107,9 @@ transformations:
         - CF.SourceSystemIdentifier = LGD.CreditFacilitySourceSystemIdentifier
       how: left
 
-  # Join with exemption mapping table RC for facility level
+  # Join with exemption mapping table RC for facility level (without alias to avoid ambiguity)
   - join:
       right_source: 1286EXMP
-      alias: EXMP_FAC_RC
       condition:
         - 1286EXMP.reporting_entity_id = CF.ReportingEntity or 1286EXMP.reporting_entity_id = '*'
         - 1286EXMP.b2_pd_type_id = CF.BaselIIProductType or 1286EXMP.b2_pd_type_id = '*'
@@ -129,14 +128,14 @@ transformations:
   
   - add_variables:
       column_mapping:
-        var_lowest_ExemptionClaimConditonID_FAC_RC: min(EXMP_FAC_RC.exemption_condition_id) OVER (PARTITION BY EXMP_FAC_RC.LocalFacilityIdentifier)
+        var_lowest_ExemptionClaimConditonID_FAC_RC: min(1286EXMP.exemption_condition_id) OVER (PARTITION BY CF.LocalFacilityIdentifier)
 
   # To get Lowest Exemption Condition ID on Counterparty level RC
   - join:
       right_source: INT_CF_LINKS
       condition:
-        - EXMP_FAC_RC.LocalFacilityIdentifier = INT_CF_LINKS.CreditFacility
-        - EXMP_FAC_RC.SourceSystemIdentifier = INT_CF_LINKS.CreditFacilitySourceSystemIdentifier
+        - CF.LocalFacilityIdentifier = INT_CF_LINKS.CreditFacility
+        - CF.SourceSystemIdentifier = INT_CF_LINKS.CreditFacilitySourceSystemIdentifier
       how: left
   
   - join:
@@ -152,53 +151,53 @@ transformations:
         var_lowest_ExemptionClaimConditonID_CP_RC: min(EXMP_CP_RC_JOINED.ExemptionConditionIdRC) OVER (PARTITION BY INT_CF_LINKS.CreditFacility)
 
 expressions:
-  DeliveryEntity: EXMP_FAC_RC.DeliveryEntity
-  ReportingDate: EXMP_FAC_RC.ReportingDate
-  ReportingEntity: EXMP_FAC_RC.ReportingEntity
-  CreditFacilityID: EXMP_FAC_RC.LocalFacilityIdentifier
-  CreditFacilitySourceSystemIdentifier: EXMP_FAC_RC.SourceSystemIdentifier
-  CounterpartyID: EXMP_FAC_RC.CounterpartyID
-  CounterpartySourceSystemIdentifier: EXMP_FAC_RC.CounterpartySourceSystemIdentifier
-  BaselProductType: EXMP_FAC_RC.BaselIIProductType
-  PlNplIndicator: EXMP_FAC_RC.PlNplIndicator
-  SpecialisedLendingType: EXMP_FAC_RC.SpecialisedLendingType
-  SourcedExemptionId: EXMP_FAC_RC.ExemptionFromAdvancedInternalRatingBasedApproach
-  PDModelCode: EXMP_FAC_RC.PDModelCode
-  LastPerformingPDModelCode: EXMP_FAC_RC.LastPerformingPDModelCode
-  InterCompanyFlag: EXMP_FAC_RC.InterCompanyFlag
-  LGDModelCode: EXMP_FAC_RC.LGDModelCode
+  DeliveryEntity: CF.DeliveryEntity
+  ReportingDate: CF.ReportingDate
+  ReportingEntity: CF.ReportingEntity
+  CreditFacilityID: CF.LocalFacilityIdentifier
+  CreditFacilitySourceSystemIdentifier: CF.SourceSystemIdentifier
+  CounterpartyID: CF.CounterpartyID
+  CounterpartySourceSystemIdentifier: CF.CounterpartySourceSystemIdentifier
+  BaselProductType: CF.BaselIIProductType
+  PlNplIndicator: CF.PlNplIndicator
+  SpecialisedLendingType: CF.SpecialisedLendingType
+  SourcedExemptionId: CF.ExemptionFromAdvancedInternalRatingBasedApproach
+  PDModelCode: PD_UCR.PDModelCode
+  LastPerformingPDModelCode: PD_UCR.LastPerformingPDModelCode
+  InterCompanyFlag: IC.InterCompanyFlag
+  LGDModelCode: LGD.LGDModelCode
   BaselCreditRiskApproach: coalesce( 
-    case when least(EXMP_FAC_RC.exemption_condition_id, var_lowest_ExemptionClaimConditonID_CP_RC) = var_lowest_ExemptionClaimConditonID_CP_RC 
+    case when least(1286EXMP.exemption_condition_id, var_lowest_ExemptionClaimConditonID_CP_RC) = var_lowest_ExemptionClaimConditonID_CP_RC 
          then EXMP_CP_RC_JOINED.BaselCreditRiskApproach 
     end,
-    case when EXMP_FAC_RC.basel_approach='STD' then 'SA'
-         when EXMP_FAC_RC.basel_approach='FOU' then 'FIRB'
-         when EXMP_FAC_RC.basel_approach='IRB' then 'AIRB'
-         else EXMP_FAC_RC.basel_approach
+    case when 1286EXMP.basel_approach='STD' then 'SA'
+         when 1286EXMP.basel_approach='FOU' then 'FIRB'
+         when 1286EXMP.basel_approach='IRB' then 'AIRB'
+         else 1286EXMP.basel_approach
     end
     )
-  ExemptionConditionIdRC: least(EXMP_FAC_RC.exemption_condition_id, var_lowest_ExemptionClaimConditonID_CP_RC)
+  ExemptionConditionIdRC: least(1286EXMP.exemption_condition_id, var_lowest_ExemptionClaimConditonID_CP_RC)
   ExemptionIdRC: coalesce(
-    case when least(EXMP_FAC_RC.exemption_condition_id, var_lowest_ExemptionClaimConditonID_CP_RC) = var_lowest_ExemptionClaimConditonID_CP_RC 
+    case when least(1286EXMP.exemption_condition_id, var_lowest_ExemptionClaimConditonID_CP_RC) = var_lowest_ExemptionClaimConditonID_CP_RC 
          then EXMP_CP_RC_JOINED.ExemptionIdRC 
     end,
-    EXMP_FAC_RC.exemption_id
+    1286EXMP.exemption_id
     )
   ExemptionNameRC: coalesce(
-    case when least(EXMP_FAC_RC.exemption_condition_id, var_lowest_ExemptionClaimConditonID_CP_RC) = var_lowest_ExemptionClaimConditonID_CP_RC 
+    case when least(1286EXMP.exemption_condition_id, var_lowest_ExemptionClaimConditonID_CP_RC) = var_lowest_ExemptionClaimConditonID_CP_RC 
          then EXMP_CP_RC_JOINED.ExemptionNameRC 
     end,
-    EXMP_FAC_RC.exemption_name
+    1286EXMP.exemption_name
     )
   ExemptionTypeRC: coalesce(
-    case when least(EXMP_FAC_RC.exemption_condition_id, var_lowest_ExemptionClaimConditonID_CP_RC) = var_lowest_ExemptionClaimConditonID_CP_RC 
+    case when least(1286EXMP.exemption_condition_id, var_lowest_ExemptionClaimConditonID_CP_RC) = var_lowest_ExemptionClaimConditonID_CP_RC 
          then EXMP_CP_RC_JOINED.ExemptionTypeRC 
     end,
-    case when EXMP_FAC_RC.exemption_end_date= '9999-12-31' then 'P' else 'T' end
+    case when 1286EXMP.exemption_end_date= '9999-12-31' then 'P' else 'T' end
     )
 
 filter_target:
-- EXMP_FAC_RC.exemption_condition_id is not null or var_lowest_ExemptionClaimConditonID_CP_RC is not null
+- 1286EXMP.exemption_condition_id is not null or var_lowest_ExemptionClaimConditonID_CP_RC is not null
 - ExemptionConditionIdRC = var_lowest_ExemptionClaimConditonID_FAC_RC or ExemptionConditionIdRC = var_lowest_ExemptionClaimConditonID_CP_RC
 
 drop_duplicates: true
