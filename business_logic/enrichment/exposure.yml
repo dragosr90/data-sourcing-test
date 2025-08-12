@@ -27,39 +27,53 @@ sources:
     source: stg_{{ RUN_MONTH }}.frrd_mdm_1265_ast_scrztn_cpty  
   - alias: SSC
     source: stg_{{ RUN_MONTH }}.bsl_ctrl_ssc_ssf_basel
-  # Enrich Exemption claim EC
+  # Enrich Exemption claim
   - alias: EXMP_PR_EC
     source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_exemptionclaim_product_ec
   - alias: EXMP_FAC_EC
     source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_exemptionclaim_creditfacility_ec
   - alias: EXMP_CP_EC
     source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_exemptionclaim_counterparty_ec
-  # Enrich Exemption claim RC
-  - alias: EXMP_PR_RC
-    source: enrich_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_exemptionclaim_product_rc
-  - alias: EXMP_FAC_RC
-    source: enrich_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_exemptionclaim_creditfacility_rc
-  - alias: EXMP_CP_RC
-    source: enrich_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_exemptionclaim_counterparty_rc
+  - alias: INT_CF_LINKS
+    source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_integrated_creditfacility_links
 
 transformations:
+# To get Lowest Exemption Condition ID on Counterparty level
+  - join:
+      left_source: INT_CF_LINKS
+      right_source: EXMP_CP_EC
+      condition:
+        - INT_CF_LINKS.ParticipatingCounterparty = EXMP_CP_EC.CounterpartyID
+        - INT_CF_LINKS.ParticipatingCounterpartySourceSystemIdentifier = EXMP_CP_EC.CounterpartySourceSystemIdentifier
+      how: inner
+  - add_variables:
+      column_mapping:
+        rank_num_Processid: ROW_NUMBER() OVER (
+            PARTITION BY INT_CF_LINKS.CreditFacility, INT_CF_LINKS.CreditFacilitySourceSystemIdentifier
+            ORDER BY EXMP_CP_EC.ExemptionConditionId
+          )
+  - filter:
+      alias: EXMP_CP_EC_LOWEST
+      conditions:
+        - rank_num_Processid = 1
+
   - join:
       left_source: SSF_PR
       right_source: SSF_FP
       condition:
-        - SSF_PR.ArrangementIdentifier  = SSF_FP.ArrangementIdentifier
+        - SSF_PR.ArrangementIdentifier = SSF_FP.ArrangementIdentifier
         - SSF_PR.SourceSystemIdentifier = SSF_FP.SourceSystemIdentifier
       how: left
   - join:
       right_source: SSF_CA
       condition:
-        - SSF_PR.ArrangementIdentifier  = SSF_CA.ArrangementIdentifier
+        - SSF_PR.ArrangementIdentifier = SSF_CA.ArrangementIdentifier
         - SSF_PR.SourceSystemIdentifier = SSF_CA.SourceSystemIdentifier
       how: left
   - join:
       right_source: SSF_PR_X_CP
       condition:
-        - SSF_PR.ArrangementIdentifier  = SSF_PR_X_CP.Product
+        - SSF_PR.ArrangementIdentifier = SSF_PR_X_CP.Product
         - SSF_PR.SourceSystemIdentifier = SSF_PR_X_CP.ProductSourceSystemIdentifier
       how: left
   - add_variables:
@@ -119,46 +133,27 @@ transformations:
   - join:
       right_source: SSC
       condition:
-        - INT_CF.DeliveryEntity= SSC.delivery_entity
-        - INT_CF.SourceSystemIdentifier= SSC.SourceSystemIdentifier
+        - INT_CF.DeliveryEntity = SSC.delivery_entity
+        - INT_CF.SourceSystemIdentifier = SSC.SourceSystemIdentifier
       how: left
-    # join for exemption claim EC attributes
+    # join for exemption claim attributes
   - join:
       right_source: EXMP_PR_EC
       condition:
-        - SSF_PR.ArrangementIdentifier= EXMP_PR_EC.ExposureID
-        - SSF_PR.SourceSystemIdentifier= EXMP_PR_EC.ExposureSourceSystemIdentifier
+        - SSF_PR.ArrangementIdentifier = EXMP_PR_EC.ExposureID
+        - SSF_PR.SourceSystemIdentifier = EXMP_PR_EC.ExposureSourceSystemIdentifier
       how: left
   - join:
       right_source: EXMP_FAC_EC
       condition:
-        - INT_CF.LocalFacilityIdentifier= EXMP_FAC_EC.CreditFacilityID
-        - INT_CF.SourceSystemIdentifier= EXMP_FAC_EC.CreditFacilitySourceSystemIdentifier
+        - INT_CF.LocalFacilityIdentifier = EXMP_FAC_EC.CreditFacilityID
+        - INT_CF.SourceSystemIdentifier = EXMP_FAC_EC.CreditFacilitySourceSystemIdentifier
       how: left
   - join:
-      right_source: EXMP_CP_EC
+      right_source: EXMP_CP_EC_LOWEST
       condition:
-        - var_counterparty_id= EXMP_CP_EC.CounterpartyID
-        - INT_CF.CounterpartySourceSystemIdentifier= EXMP_CP_EC.CounterpartySourceSystemIdentifier
-      how: left
-    # join for exemption claim RC attributes
-  - join:
-      right_source: EXMP_PR_RC
-      condition:
-        - SSF_PR.ArrangementIdentifier= EXMP_PR_RC.ExposureID
-        - SSF_PR.SourceSystemIdentifier= EXMP_PR_RC.ExposureSourceSystemIdentifier
-      how: left
-  - join:
-      right_source: EXMP_FAC_RC
-      condition:
-        - INT_CF.LocalFacilityIdentifier= EXMP_FAC_RC.CreditFacilityID
-        - INT_CF.SourceSystemIdentifier= EXMP_FAC_RC.CreditFacilitySourceSystemIdentifier
-      how: left
-  - join:
-      right_source: EXMP_CP_RC
-      condition:
-        - var_counterparty_id= EXMP_CP_RC.CounterpartyID
-        - INT_CF.CounterpartySourceSystemIdentifier= EXMP_CP_RC.CounterpartySourceSystemIdentifier
+        - INT_CF.LocalFacilityIdentifier = EXMP_CP_EC_LOWEST.CreditFacility
+        - INT_CF.SourceSystemIdentifier = EXMP_CP_EC_LOWEST.CreditFacilitySourceSystemIdentifier
       how: left
 
 expressions:
@@ -177,6 +172,7 @@ expressions:
   ContractStatusDate: SSF_PR.ContractStatusDate
   CounterpartyID: var_counterparty_id
   CounterpartySourceSystemIdentifier: coalesce(SSF_PR_X_CP.CounterpartySourceSystemIdentifier, INT_CF.CounterpartySourceSystemIdentifier)
+  CounterpartyProductPurpose: SSF_FP.CounterpartyProductPurpose #It will be available for CA in 2025Q4 version.
   CreditFacilityID: INT_CF.HighestExistingFacility
   CreditFacilitySourceSystemIdentifier: INT_CF.SourceSystemIdentifier
   CurrencyExchangeRate: MDM_FX_TRANSACTION.exchange_rate
@@ -184,26 +180,9 @@ expressions:
   DebitCreditIndicator: SSF_PR.CarryingAmountDebitCreditIndicator 
   EffectiveMaturity: cast(NULL as string) # To be updated once it is available in Custom fields
   EffectiveMaturityDateCRR: SSF_FP.EffectiveMaturityDateCRR
-  ExemptionClaimConditionIDEC: case when EXMP_PR_EC.ExemptionConditionId is not null then EXMP_PR_EC.ExemptionConditionId
-                                    when EXMP_PR_EC.ExemptionConditionId is null and EXMP_FAC_EC.ExemptionConditionId is null and EXMP_CP_EC.ExemptionConditionId is null then null
-                                    when EXMP_FAC_EC.ExemptionConditionId>EXMP_CP_EC.ExemptionConditionId then EXMP_CP_EC.ExemptionConditionId 
-                                    else coalesce(EXMP_FAC_EC.ExemptionConditionId,EXMP_CP_EC.ExemptionConditionId)
-                                  end
-  ExemptionClaimConditionIDRC: case when EXMP_PR_RC.ExemptionConditionIdRC is not null then EXMP_PR_RC.ExemptionConditionIdRC
-                                    when EXMP_PR_RC.ExemptionConditionIdRC is null and EXMP_FAC_RC.ExemptionConditionIdRC is null and EXMP_CP_RC.ExemptionConditionIdRC is null then null
-                                    when EXMP_FAC_RC.ExemptionConditionIdRC>EXMP_CP_RC.ExemptionConditionIdRC then EXMP_CP_RC.ExemptionConditionIdRC 
-                                    else coalesce(EXMP_FAC_RC.ExemptionConditionIdRC,EXMP_CP_RC.ExemptionConditionIdRC)
-                                  end
-  ExemptionTypeEC: case when EXMP_PR_EC.ExemptionConditionId is not null then EXMP_PR_EC.ExemptionType
-                                    when EXMP_PR_EC.ExemptionConditionId is null and EXMP_FAC_EC.ExemptionConditionId is null and EXMP_CP_EC.ExemptionConditionId is null then null
-                                    when EXMP_FAC_EC.ExemptionConditionId>EXMP_CP_EC.ExemptionConditionId then EXMP_CP_EC.ExemptionType 
-                                    else coalesce(EXMP_FAC_EC.ExemptionType,EXMP_CP_EC.ExemptionType)
-                                  end
-  ExemptionTypeRC: case when EXMP_PR_RC.ExemptionConditionIdRC is not null then EXMP_PR_RC.ExemptionTypeRC
-                                    when EXMP_PR_RC.ExemptionConditionIdRC is null and EXMP_FAC_RC.ExemptionConditionIdRC is null and EXMP_CP_RC.ExemptionConditionIdRC is null then null
-                                    when EXMP_FAC_RC.ExemptionConditionIdRC>EXMP_CP_RC.ExemptionConditionIdRC then EXMP_CP_RC.ExemptionTypeRC 
-                                    else coalesce(EXMP_FAC_RC.ExemptionTypeRC,EXMP_CP_RC.ExemptionTypeRC)
-                                  end
+  ExemptionClaimConditionIDEC: coalesce(EXMP_PR_EC.ExemptionConditionId, least (EXMP_FAC_EC.ExemptionConditionId, EXMP_CP_EC_LOWEST.ExemptionConditionId))
+  ExemptionClaimConditionIDRC: coalesce(EXMP_PR_EC.ExemptionConditionId, least (EXMP_FAC_EC.ExemptionConditionId, EXMP_CP_EC_LOWEST.ExemptionConditionId)) # To be updated later
+  ExemptionType: coalesce (EXMP_PR_EC.ExemptionType, case when least (EXMP_FAC_EC.ExemptionConditionId, EXMP_CP_EC_LOWEST.ExemptionConditionId) = EXMP_CP_EC_LOWEST.ExemptionConditionId then EXMP_CP_EC_LOWEST.ExemptionType end, EXMP_FAC_EC.ExemptionType)  
   ForbearanceMeasure: coalesce(SSF_FP.ForbearanceMeasure,SSF_CA.ForbearanceMeasure)
   ForbearanceMeasureApprovalDate: cast(NULL as date) # To be updated later
   Ifrs9RiskStage: coalesce(SSF_CA.Ifrs9RiskStage, INT_CF.ifrs9riskstage,'X')
@@ -228,18 +207,8 @@ expressions:
   RevolvingProductFlag: case when MDM_1001.REVOLVING is True then 'Y'
                               when MDM_1001.REVOLVING is False then 'N'
                          end
-  RiskWeightedExposureApproachEC: coalesce ( 
-                                  case when EXMP_PR_EC.ExemptionConditionId is not null then EXMP_PR_EC.BaselCreditRiskApproach
-                                       when EXMP_PR_EC.ExemptionConditionId is null and EXMP_FAC_EC.ExemptionConditionId is null and EXMP_CP_EC.ExemptionConditionId is null then null
-                                       when EXMP_FAC_EC.ExemptionConditionId > EXMP_CP_EC.ExemptionConditionId then EXMP_CP_EC.BaselCreditRiskApproach
-                                        else coalesce(EXMP_FAC_EC.BaselCreditRiskApproach, EXMP_CP_EC.BaselCreditRiskApproach)
-                                    end, 'AIRB')
-  RiskWeightedExposureApproachRC: coalesce ( 
-                                  case when EXMP_PR_RC.ExemptionConditionIdRC is not null then EXMP_PR_RC.BaselCreditRiskApproach
-                                       when EXMP_PR_RC.ExemptionConditionIdRC is null and EXMP_FAC_RC.ExemptionConditionIdRC is null and EXMP_CP_RC.ExemptionConditionIdRC is null then null
-                                       when EXMP_FAC_RC.ExemptionConditionIdRC > EXMP_CP_RC.ExemptionConditionIdRC then EXMP_CP_RC.BaselCreditRiskApproach
-                                        else coalesce(EXMP_FAC_RC.BaselCreditRiskApproach, EXMP_CP_RC.BaselCreditRiskApproach)
-                                    end, 'AIRB')
+  RiskWeightedExposureApproachEC: coalesce (EXMP_PR_EC.BaselCreditRiskApproach, case when least (EXMP_FAC_EC.ExemptionConditionId, EXMP_CP_EC_LOWEST.ExemptionConditionId) = EXMP_CP_EC_LOWEST.ExemptionConditionId then EXMP_CP_EC_LOWEST.BaselCreditRiskApproach end, EXMP_FAC_EC.BaselCreditRiskApproach, 'AIRB')
+  RiskWeightedExposureApproachRC: coalesce (EXMP_PR_EC.BaselCreditRiskApproach, case when least (EXMP_FAC_EC.ExemptionConditionId, EXMP_CP_EC_LOWEST.ExemptionConditionId) = EXMP_CP_EC_LOWEST.ExemptionConditionId then EXMP_CP_EC_LOWEST.BaselCreditRiskApproach end, EXMP_FAC_EC.BaselCreditRiskApproach, 'AIRB') # To be updated later
   SecuritisationIdentifier: SSF_FP.SecuritisationIdentifier
   SecuritisationRoleType: case when INT_CF.BaselIIProductType in ('9', '43','44','46','47', '131') or MDM_1265.CPTY_ID is not null then 'Securitization Position' end # Check if this can be part of Proxy logic or not
   SecuritisationType: SSF_FP.SecuritisationType
@@ -259,4 +228,4 @@ expressions:
 drop_duplicates: true
 filter_target:
 - SSFProductCategory in ('CA','FP')
-- PlNplIndicator = 'NPL'
+- PlNplIndicator = 'NPL' 
