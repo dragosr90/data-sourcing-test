@@ -39,8 +39,8 @@ sources:
     source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_integrated_counterparty
 
   # Exemption mapping table (1286) for RC
-  - alias: 1286EXMP_RC
-    source: stg_{{ RUN_MONTH }}.bsl_andes_1286_b2_exmp_cond_rc #TODO: confirm RC table name
+  - alias: 1286EXMP
+    source: stg_{{ RUN_MONTH }}.bsl_andes_1286_b2_exmp_cond #TODO: confirm RC table name
 
   # PD UCR integration data
   - alias: PD_UCR
@@ -109,22 +109,22 @@ transformations:
 
   # Join with exemption mapping table RC for facility level
   - join:
-      right_source: 1286EXMP_RC
+      right_source: 1286EXMP
       alias: EXMP_FAC_RC
       condition:
-        - 1286EXMP_RC.reporting_entity_id = CF.ReportingEntity or 1286EXMP_RC.reporting_entity_id = '*'
-        - 1286EXMP_RC.b2_pd_type_id = CF.BaselIIProductType or 1286EXMP_RC.b2_pd_type_id = '*'
-        - 1286EXMP_RC.lgd_rtg_model = LGD.LGDModelCode or 1286EXMP_RC.lgd_rtg_model = '*'
-        - 1286EXMP_RC.pl_npl_indicator = CF.PlNplIndicator or 1286EXMP_RC.pl_npl_indicator = '*'
-        - 1286EXMP_RC.specialised_lending_type = CF.SpecialisedLendingType or 1286EXMP_RC.specialised_lending_type = '*'
-        - 1286EXMP_RC.cr_pd_program = CF.ProductProgram or 1286EXMP_RC.cr_pd_program = '*'
-        - 1286EXMP_RC.pd_rtg_model = PD_UCR.PDModelCode or 1286EXMP_RC.pd_rtg_model = PD_UCR.LastPerformingPDModelCode or 1286EXMP_RC.pd_rtg_model = '*'
-        - 1286EXMP_RC.b2_cpty_type_id = INT_CP.BaselIICounterpartyType or 1286EXMP_RC.b2_cpty_type_id = '*'
-        - 1286EXMP_RC.intercompany_flag = IC.InterCompanyFlag = 'Y' or 1286EXMP_RC.intercompany_flag = '*'
-        - upper(1286EXMP_RC.sourced_exemption_id) = upper(coalesce(CF.ExemptionFromAdvancedInternalRatingBasedApproach, INT_CP.ExemptionFromAdvancedInternalRatingBasedApproach)) or 1286EXMP_RC.sourced_exemption_id = '*'
-        - (1286EXMP_RC.ctpty_ssc || 1286EXMP_RC.ctpty_uid = INT_CP.LocalId) OR
-          (1286EXMP_RC.ctpty_ssc = 'EPR' and ltrim('0', 1286EXMP_RC.ctpty_uid) = ltrim('0', INT_CP.GlobalCounterpartyIdentifier)) OR  
-          (1286EXMP_RC.ctpty_uid = '*')
+        - 1286EXMP.reporting_entity_id = CF.ReportingEntity or 1286EXMP.reporting_entity_id = '*'
+        - 1286EXMP.b2_pd_type_id = CF.BaselIIProductType or 1286EXMP.b2_pd_type_id = '*'
+        - 1286EXMP.lgd_rtg_model = LGD.LGDModelCode or 1286EXMP.lgd_rtg_model = '*'
+        - 1286EXMP.pl_npl_indicator = CF.PlNplIndicator or 1286EXMP.pl_npl_indicator = '*'
+        - 1286EXMP.specialised_lending_type = CF.SpecialisedLendingType or 1286EXMP.specialised_lending_type = '*'
+        - 1286EXMP.cr_pd_program = CF.ProductProgram or 1286EXMP.cr_pd_program = '*'
+        - 1286EXMP.pd_rtg_model = PD_UCR.PDModelCode or 1286EXMP.pd_rtg_model = PD_UCR.LastPerformingPDModelCode or 1286EXMP.pd_rtg_model = '*'
+        - 1286EXMP.b2_cpty_type_id = INT_CP.BaselIICounterpartyType or 1286EXMP.b2_cpty_type_id = '*'
+        - 1286EXMP.intercompany_flag = IC.InterCompanyFlag = 'Y' or 1286EXMP.intercompany_flag = '*'
+        - upper(1286EXMP.sourced_exemption_id) = upper(coalesce(CF.ExemptionFromAdvancedInternalRatingBasedApproach, INT_CP.ExemptionFromAdvancedInternalRatingBasedApproach)) or 1286EXMP.sourced_exemption_id = '*'
+        - (1286EXMP.ctpty_ssc || 1286EXMP.ctpty_uid = INT_CP.LocalId) OR
+          (1286EXMP.ctpty_ssc = 'EPR' and ltrim('0', 1286EXMP.ctpty_uid) = ltrim('0', INT_CP.GlobalCounterpartyIdentifier)) OR  
+          (1286EXMP.ctpty_uid = '*')
       how: left
   
   - add_variables:
@@ -149,7 +149,7 @@ transformations:
   
   - add_variables:
       column_mapping:
-        var_lowest_ExemptionClaimConditonID_CP_RC: min(EXMP_CP_RC_JOINED.ExemptionConditionIdRC) OVER (PARTITION BY LocalFacilityIdentifier)
+        var_lowest_ExemptionClaimConditonID_CP_RC: min(EXMP_CP_RC_JOINED.ExemptionConditionIdRC) OVER (PARTITION BY INT_CF_LINKS.CreditFacility)
 
 expressions:
   DeliveryEntity: CF.DeliveryEntity
@@ -176,26 +176,26 @@ expressions:
          when EXMP_FAC_RC.basel_approach='IRB' then 'AIRB'
          else EXMP_FAC_RC.basel_approach
     end
-  )
+    )
   ExemptionConditionIdRC: least(EXMP_FAC_RC.exemption_condition_id, var_lowest_ExemptionClaimConditonID_CP_RC)
   ExemptionIdRC: coalesce(
     case when least(EXMP_FAC_RC.exemption_condition_id, var_lowest_ExemptionClaimConditonID_CP_RC) = var_lowest_ExemptionClaimConditonID_CP_RC 
          then EXMP_CP_RC_JOINED.ExemptionIdRC 
     end,
     EXMP_FAC_RC.exemption_id
-  )
+    )
   ExemptionNameRC: coalesce(
     case when least(EXMP_FAC_RC.exemption_condition_id, var_lowest_ExemptionClaimConditonID_CP_RC) = var_lowest_ExemptionClaimConditonID_CP_RC 
          then EXMP_CP_RC_JOINED.ExemptionNameRC 
     end,
     EXMP_FAC_RC.exemption_name
-  )
+    )
   ExemptionTypeRC: coalesce(
     case when least(EXMP_FAC_RC.exemption_condition_id, var_lowest_ExemptionClaimConditonID_CP_RC) = var_lowest_ExemptionClaimConditonID_CP_RC 
          then EXMP_CP_RC_JOINED.ExemptionTypeRC 
     end,
     case when EXMP_FAC_RC.exemption_end_date= '9999-12-31' then 'P' else 'T' end
-  )
+    )
 
 filter_target:
 - EXMP_FAC_RC.exemption_condition_id is not null or var_lowest_ExemptionClaimConditonID_CP_RC is not null
