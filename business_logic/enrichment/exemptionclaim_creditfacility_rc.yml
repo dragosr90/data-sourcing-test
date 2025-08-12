@@ -149,7 +149,7 @@ transformations:
   
   - add_variables:
       column_mapping:
-        var_lowest_ExemptionClaimConditonID_CP_RC: min(EXMP_CP_RC_JOINED.ExemptionConditionIdRC) OVER (PARTITION BY EXMP_FAC_RC.LocalFacilityIdentifier)
+        var_lowest_ExemptionClaimConditonID_CP_RC: min(EXMP_CP_RC_JOINED.ExemptionConditionIdRC) OVER (PARTITION BY LocalFacilityIdentifier)
 
 expressions:
   DeliveryEntity: CF.DeliveryEntity
