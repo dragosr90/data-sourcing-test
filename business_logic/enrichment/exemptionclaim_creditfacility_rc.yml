@@ -129,14 +129,14 @@ transformations:
   
   - add_variables:
       column_mapping:
-        var_lowest_ExemptionClaimConditonID_FAC_RC: min(EXMP_FAC_RC.exemption_condition_id) OVER (PARTITION BY CF.LocalFacilityIdentifier)
+        var_lowest_ExemptionClaimConditonID_FAC_RC: min(EXMP_FAC_RC.exemption_condition_id) OVER (PARTITION BY EXMP_FAC_RC.LocalFacilityIdentifier)
 
   # To get Lowest Exemption Condition ID on Counterparty level RC
   - join:
       right_source: INT_CF_LINKS
       condition:
-        - CF.LocalFacilityIdentifier = INT_CF_LINKS.CreditFacility
-        - CF.SourceSystemIdentifier = INT_CF_LINKS.CreditFacilitySourceSystemIdentifier
+        - EXMP_FAC_RC.LocalFacilityIdentifier = INT_CF_LINKS.CreditFacility
+        - EXMP_FAC_RC.SourceSystemIdentifier = INT_CF_LINKS.CreditFacilitySourceSystemIdentifier
       how: left
   
   - join:
@@ -152,21 +152,21 @@ transformations:
         var_lowest_ExemptionClaimConditonID_CP_RC: min(EXMP_CP_RC_JOINED.ExemptionConditionIdRC) OVER (PARTITION BY INT_CF_LINKS.CreditFacility)
 
 expressions:
-  DeliveryEntity: CF.DeliveryEntity
-  ReportingDate: CF.ReportingDate
-  ReportingEntity: CF.ReportingEntity
-  CreditFacilityID: CF.LocalFacilityIdentifier
-  CreditFacilitySourceSystemIdentifier: CF.SourceSystemIdentifier
-  CounterpartyID: CF.CounterpartyID
-  CounterpartySourceSystemIdentifier: CF.CounterpartySourceSystemIdentifier
-  BaselProductType: CF.BaselIIProductType
-  PlNplIndicator: CF.PlNplIndicator
-  SpecialisedLendingType: CF.SpecialisedLendingType
-  SourcedExemptionId: CF.ExemptionFromAdvancedInternalRatingBasedApproach
-  PDModelCode: PD_UCR.PDModelCode
-  LastPerformingPDModelCode: PD_UCR.LastPerformingPDModelCode
-  InterCompanyFlag: IC.InterCompanyFlag
-  LGDModelCode: LGD.LGDModelCode
+  DeliveryEntity: EXMP_FAC_RC.DeliveryEntity
+  ReportingDate: EXMP_FAC_RC.ReportingDate
+  ReportingEntity: EXMP_FAC_RC.ReportingEntity
+  CreditFacilityID: EXMP_FAC_RC.LocalFacilityIdentifier
+  CreditFacilitySourceSystemIdentifier: EXMP_FAC_RC.SourceSystemIdentifier
+  CounterpartyID: EXMP_FAC_RC.CounterpartyID
+  CounterpartySourceSystemIdentifier: EXMP_FAC_RC.CounterpartySourceSystemIdentifier
+  BaselProductType: EXMP_FAC_RC.BaselIIProductType
+  PlNplIndicator: EXMP_FAC_RC.PlNplIndicator
+  SpecialisedLendingType: EXMP_FAC_RC.SpecialisedLendingType
+  SourcedExemptionId: EXMP_FAC_RC.ExemptionFromAdvancedInternalRatingBasedApproach
+  PDModelCode: EXMP_FAC_RC.PDModelCode
+  LastPerformingPDModelCode: EXMP_FAC_RC.LastPerformingPDModelCode
+  InterCompanyFlag: EXMP_FAC_RC.InterCompanyFlag
+  LGDModelCode: EXMP_FAC_RC.LGDModelCode
   BaselCreditRiskApproach: coalesce( 
     case when least(EXMP_FAC_RC.exemption_condition_id, var_lowest_ExemptionClaimConditonID_CP_RC) = var_lowest_ExemptionClaimConditonID_CP_RC 
          then EXMP_CP_RC_JOINED.BaselCreditRiskApproach 
