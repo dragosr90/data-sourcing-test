@@ -1,0 +1,79 @@
+For credit facility:
+- alias: INT_CF_LINKS
+    source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_integrated_creditfacility_links
+
+# To get Lowest Exemption Condition ID on Counterparty level
+  - join:
+      left_source: INT_CF_LINKS
+      right_source: EXMP_CP_EC
+      condition:
+        - INT_CF_LINKS.ParticipatingCounterparty = EXMP_CP_EC.CounterpartyID
+        - INT_CF_LINKS.ParticipatingCounterpartySourceSystemIdentifier = EXMP_CP_EC.CounterpartySourceSystemIdentifier
+      how: inner
+  - add_variables:
+      column_mapping:
+        rank_num_Processid: ROW_NUMBER() OVER (
+            PARTITION BY INT_CF_LINKS.CreditFacility, INT_CF_LINKS.CreditFacilitySourceSystemIdentifier
+            ORDER BY EXMP_CP_EC.ExemptionConditionId
+          )
+  - filter:
+      alias: EXMP_CP_EC_LOWEST
+      conditions:
+        - rank_num_Processid = 1
+
+  - join:
+      right_source: EXMP_CP_EC_LOWEST
+      condition:
+        - INT_CF.LocalFacilityIdentifier = EXMP_CP_EC_LOWEST.CreditFacility
+        - INT_CF.SourceSystemIdentifier = EXMP_CP_EC_LOWEST.CreditFacilitySourceSystemIdentifier
+      how: left
+
+  ExemptionClaimConditionIDEC: least (EXMP_FAC_EC.ExemptionConditionId, EXMP_CP_EC_LOWEST.ExemptionConditionId)
+  ExemptionClaimConditionIDRC: least (EXMP_FAC_EC.ExemptionConditionId, EXMP_CP_EC_LOWEST.ExemptionConditionId) # To be updated later
+  ExemptionType: coalesce( case when least (EXMP_FAC_EC.ExemptionConditionId, EXMP_CP_EC_LOWEST.ExemptionConditionId) = EXMP_CP_EC_LOWEST.ExemptionConditionId then EXMP_CP_EC_LOWEST.ExemptionType end, EXMP_FAC_EC.ExemptionType)
+
+  RiskWeightedExposureApproachEC: coalesce( case when least (EXMP_FAC_EC.ExemptionConditionId, EXMP_CP_EC_LOWEST.ExemptionConditionId) = EXMP_CP_EC_LOWEST.ExemptionConditionId then EXMP_CP_EC_LOWEST.BaselCreditRiskApproach end,  EXMP_FAC_EC.BaselCreditRiskApproach, 'AIRB')
+  RiskWeightedExposureApproachRC: coalesce( case when least (EXMP_FAC_EC.ExemptionConditionId, EXMP_CP_EC_LOWEST.ExemptionConditionId) = EXMP_CP_EC_LOWEST.ExemptionConditionId then EXMP_CP_EC_LOWEST.BaselCreditRiskApproach end,  EXMP_FAC_EC.BaselCreditRiskApproach, 'AIRB') # To be updated later
+
+  For exposure:
+  - alias: INT_CF_LINKS
+    source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_integrated_creditfacility_links
+
+transformations:
+# To get Lowest Exemption Condition ID on Counterparty level
+  - join:
+      left_source: INT_CF_LINKS
+      right_source: EXMP_CP_EC
+      condition:
+        - INT_CF_LINKS.ParticipatingCounterparty = EXMP_CP_EC.CounterpartyID
+        - INT_CF_LINKS.ParticipatingCounterpartySourceSystemIdentifier = EXMP_CP_EC.CounterpartySourceSystemIdentifier
+      how: inner
+  - add_variables:
+      column_mapping:
+        rank_num_Processid: ROW_NUMBER() OVER (
+            PARTITION BY INT_CF_LINKS.CreditFacility, INT_CF_LINKS.CreditFacilitySourceSystemIdentifier
+            ORDER BY EXMP_CP_EC.ExemptionConditionId
+          )
+  - filter:
+      alias: EXMP_CP_EC_LOWEST
+      conditions:
+        - rank_num_Processid = 1
+
+  - join:
+      right_source: EXMP_FAC_EC
+      condition:
+        - INT_CF.LocalFacilityIdentifier = EXMP_FAC_EC.CreditFacilityID
+        - INT_CF.SourceSystemIdentifier = EXMP_FAC_EC.CreditFacilitySourceSystemIdentifier
+      how: left
+  - join:
+      right_source: EXMP_CP_EC_LOWEST
+      condition:
+        - INT_CF.LocalFacilityIdentifier = EXMP_CP_EC_LOWEST.CreditFacility
+        - INT_CF.SourceSystemIdentifier = EXMP_CP_EC_LOWEST.CreditFacilitySourceSystemIdentifier
+      how: left
+
+  ExemptionClaimConditionIDEC: coalesce(EXMP_PR_EC.ExemptionConditionId, least (EXMP_FAC_EC.ExemptionConditionId, EXMP_CP_EC_LOWEST.ExemptionConditionId))
+  ExemptionClaimConditionIDRC: coalesce(EXMP_PR_EC.ExemptionConditionId, least (EXMP_FAC_EC.ExemptionConditionId, EXMP_CP_EC_LOWEST.ExemptionConditionId)) # To be updated later
+  ExemptionType: coalesce (EXMP_PR_EC.ExemptionType, case when least (EXMP_FAC_EC.ExemptionConditionId, EXMP_CP_EC_LOWEST.ExemptionConditionId) = EXMP_CP_EC_LOWEST.ExemptionConditionId then EXMP_CP_EC_LOWEST.ExemptionType end, EXMP_FAC_EC.ExemptionType)
+  RiskWeightedExposureApproachEC: coalesce (EXMP_PR_EC.BaselCreditRiskApproach, case when least (EXMP_FAC_EC.ExemptionConditionId, EXMP_CP_EC_LOWEST.ExemptionConditionId) = EXMP_CP_EC_LOWEST.ExemptionConditionId then EXMP_CP_EC_LOWEST.BaselCreditRiskApproach end, EXMP_FAC_EC.BaselCreditRiskApproach, 'AIRB')
+  RiskWeightedExposureApproachRC: coalesce (EXMP_PR_EC.BaselCreditRiskApproach, case when least (EXMP_FAC_EC.ExemptionConditionId, EXMP_CP_EC_LOWEST.ExemptionConditionId) = EXMP_CP_EC_LOWEST.ExemptionConditionId then EXMP_CP_EC_LOWEST.BaselCreditRiskApproach end, EXMP_FAC_EC.BaselCreditRiskApproach, 'AIRB') # To be updated later
