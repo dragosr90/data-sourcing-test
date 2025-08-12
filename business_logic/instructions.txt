@@ -1,204 +1,25 @@
-{"ts": "2025-08-12 13:36:41.474", "level": "ERROR", "logger": "SQLQueryContextLogger", "msg": "[AMBIGUOUS_REFERENCE] Reference `EXMP_CP_RC_JOINED`.`DeliveryEntity` is ambiguous, could be: [`EXMP_CP_RC_JOINED`.`DeliveryEntity`, `EXMP_CP_RC_JOINED`.`DeliveryEntity`, `EXMP_CP_RC_JOINED`.`DeliveryEntity`, `EXMP_CP_RC_JOINED`.`DeliveryEntity`]. SQLSTATE: 42704; line 1 pos 0\n\nJVM stacktrace:\norg.apache.spark.sql.AnalysisException\n\tat org.apache.spark.sql.errors.QueryCompilationErrors$.ambiguousReferenceError(QueryCompilationErrors.scala:2921)\n\tat org.apache.spark.sql.catalyst.expressions.package$AttributeSeq.resolve(package.scala:372)\n\tat org.apache.spark.sql.catalyst.plans.logical.LogicalPlan.resolveChildren(LogicalPlan.scala:196)\n\tat org.apache.spark.sql.catalyst.analysis.ColumnResolutionHelper.$anonfun$resolveExpressionByPlanChildren$1(ColumnResolutionHelper.scala:544)\n\tat org.apache.spark.sql.catalyst.analysis.ColumnResolutionHelper.$anonfun$resolveExpression$3(ColumnResolutionHelper.scala:153)\n\tat org.apache.spark.sql.catalyst.analysis.package$.withPosition(package.scala:107)\n\tat org.apache.spark.sql.catalyst.analysis.ColumnResolutionHelper.$anonfun$resolveExpression$1(ColumnResolutionHelper.scala:163)\n\tat org.apache.spark.sql.catalyst.trees.CurrentOrigin$.withOrigin(origin.scala:85)\n\tat org.apache.spark.sql.catalyst.analysis.ColumnResolutionHelper.innerResolve$1(ColumnResolutionHelper.scala:123)\n\tat org.apache.spark.sql.catalyst.analysis.ColumnResolutionHelper.$anonfun$resolveExpression$9(ColumnResolutionHelper.scala:186)\n\tat org.apache.spark.sql.catalyst.trees.UnaryLike.mapChildren(TreeNode.scala:1330)\n\tat org.apache.spark.sql.catalyst.trees.UnaryLike.mapChildren$(TreeNode.scala:1329)\n\tat org.apache.spark.sql.catalyst.expressions.UnaryExpression.mapChildren(Expression.scala:712)\n\tat org.apache.spark.sql.catalyst.analysis.ColumnResolutionHelper.$anonfun$resolveExpression$1(ColumnResolutionHelper.scala:186)\n\tat org.apache.spark.sql.catalyst.trees.CurrentOrigin$.withOrigin(origin.scala:85)\n\tat org.apache.spark.sql.catalyst.analysis.ColumnResolutionHelper.innerResolve$1(ColumnResolutionHelper.scala:123)\n\tat org.apache.spark.sql.catalyst.analysis.ColumnResolutionHelper.resolveExpression(ColumnResolutionHelper.scala:193)\n\tat org.apache.spark.sql.catalyst.analysis.ColumnResolutionHelper.resolveExpressionByPlanChildren(ColumnResolutionHelper.scala:551)\n\tat org.apache.spark.sql.catalyst.analysis.ColumnResolutionHelper.resolveExpressionByPlanChildren$(ColumnResolutionHelper.scala:537)\n\tat org.apache.spark.sql.catalyst.analysis.Analyzer$ResolveReferences.resolveExpressionByPlanChildren(Analyzer.scala:2033)\n\tat org.apache.spark.sql.catalyst.analysis.Analyzer$ResolveReferences$$anonfun$apply$15.$anonfun$applyOrElse$124(Analyzer.scala:2195)\n\tat scala.collection.immutable.List.map(List.scala:246)\n\tat scala.collection.immutable.List.map(List.scala:79)\n\tat org.apache.spark.sql.catalyst.analysis.Analyzer$ResolveReferences$$anonfun$apply$15.applyOrElse(Analyzer.scala:2195)\n\tat org.apache.spark.sql.catalyst.analysis.Analyzer$ResolveReferences$$anonfun$apply$15.applyOrElse(Analyzer.scala:2070)\n\tat org.apache.spark.sql.catalyst.plans.logical.AnalysisHelper.$anonfun$resolveOperatorsUpWithPruning$3(AnalysisHelper.scala:141)\n\tat org.apache.spark.sql.catalyst.trees.CurrentOrigin$.withOrigin(origin.scala:85)\n\tat org.apache.spark.sql.catalyst.plans.logical.AnalysisHelper.$anonfun$resolveOperatorsUpWithPruning$1(AnalysisHelper.scala:141)\n\tat org.apache.spark.sql.catalyst.plans.logical.AnalysisHelper$.allowInvokingTransformsInAnalyzer(AnalysisHelper.scala:418)\n\tat org.apache.spark.sql.catalyst.plans.logical.AnalysisHelper.resolveOperatorsUpWithPruning(AnalysisHelper.scala:137)\n\tat org.apache.spark.sql.catalyst.plans.logical.AnalysisHelper.resolveOperatorsUpWithPruning$(AnalysisHelper.scala:133)\n\tat org.apache.spark.sql.catalyst.plans.logical.LogicalPlan.resolveOperatorsUpWithPruning(LogicalPlan.scala:42)\n\tat org.apache.spark.sql.catalyst.plans.logical.AnalysisHelper.$anonfun$resolveOperatorsUpWithPruning$2(AnalysisHelper.scala:138)\n\tat org.apache.spark.sql.catalyst.trees.UnaryLike.mapChildren(TreeNode.scala:1330)\n\tat org.apache.spark.sql.catalyst.trees.UnaryLike.mapChildren$(TreeNode.scala:1329)\n\tat org.apache.spark.sql.catalyst.plans.logical.Filter.mapChildren(basicLogicalOperators.scala:379)\n\tat org.apache.spark.sql.catalyst.plans.logical.AnalysisHelper.$anonfun$resolveOperatorsUpWithPruning$1(AnalysisHelper.scala:138)\n\tat org.apache.spark.sql.catalyst.plans.logical.AnalysisHelper$.allowInvokingTransformsInAnalyzer(AnalysisHelper.scala:418)\n\tat org.apache.spark.sql.catalyst.plans.logical.AnalysisHelper.resolveOperatorsUpWithPruning(AnalysisHelper.scala:137)\n\tat org.apache.spark.sql.catalyst.plans.logical.AnalysisHelper.resolveOperatorsUpWithPruning$(AnalysisHelper.scala:133)\n\tat org.apache.spark.sql.catalyst.plans.logical.LogicalPlan.resolveOperatorsUpWithPruning(LogicalPlan.scala:42)\n\tat org.apache.spark.sql.catalyst.plans.logical.AnalysisHelper.resolveOperatorsUp(AnalysisHelper.scala:114)\n\tat org.apache.spark.sql.catalyst.plans.logical.AnalysisHelper.resolveOperatorsUp$(AnalysisHelper.scala:113)\n\tat org.apache.spark.sql.catalyst.plans.logical.LogicalPlan.resolveOperatorsUp(LogicalPlan.scala:42)\n\tat org.apache.spark.sql.catalyst.analysis.Analyzer$ResolveReferences.apply(Analyzer.scala:2070)\n\tat org.apache.spark.sql.catalyst.analysis.Analyzer$ResolveReferences.apply(Analyzer.scala:2033)\n\tat org.apache.spark.sql.catalyst.rules.RuleExecutor.$anonfun$execute$16(RuleExecutor.scala:480)\n\tat org.apache.spark.sql.catalyst.rules.RecoverableRuleExecutionHelper.processRule(RuleExecutor.scala:629)\n\tat org.apache.spark.sql.catalyst.rules.RecoverableRuleExecutionHelper.processRule$(RuleExecutor.scala:613)\n\tat org.apache.spark.sql.catalyst.rules.RuleExecutor.processRule(RuleExecutor.scala:131)\n\tat org.apache.spark.sql.catalyst.rules.RuleExecutor.$anonfun$execute$15(RuleExecutor.scala:480)\n\tat com.databricks.spark.util.FrameProfiler$.record(FrameProfiler.scala:94)\n\tat org.apache.spark.sql.catalyst.rules.RuleExecutor.$anonfun$execute$14(RuleExecutor.scala:479)\n\tat scala.collection.LinearSeqOps.foldLeft(LinearSeq.scala:183)\n\tat scala.collection.LinearSeqOps.foldLeft$(LinearSeq.scala:179)\n\tat scala.collection.immutable.List.foldLeft(List.scala:79)\n\tat org.apache.spark.sql.catalyst.rules.RuleExecutor.$anonfun$execute$13(RuleExecutor.scala:475)\n\tat scala.runtime.java8.JFunction0$mcV$sp.apply(JFunction0$mcV$sp.scala:18)\n\tat com.databricks.spark.util.FrameProfiler$.record(FrameProfiler.scala:94)\n\tat org.apache.spark.sql.catalyst.rules.RuleExecutor.executeBatch$1(RuleExecutor.scala:452)\n\tat org.apache.spark.sql.catalyst.rules.RuleExecutor.$anonfun$execute$22(RuleExecutor.scala:585)\n\tat org.apache.spark.sql.catalyst.rules.RuleExecutor.$anonfun$execute$22$adapted(RuleExecutor.scala:585)\n\tat scala.collection.immutable.List.foreach(List.scala:333)\n\tat org.apache.spark.sql.catalyst.rules.RuleExecutor.$anonfun$execute$1(RuleExecutor.scala:585)\n\tat com.databricks.spark.util.FrameProfiler$.record(FrameProfiler.scala:94)\n\tat org.apache.spark.sql.catalyst.rules.RuleExecutor.execute(RuleExecutor.scala:349)\n\tat org.apache.spark.sql.catalyst.analysis.Analyzer.executeSameContext(Analyzer.scala:498)\n\tat org.apache.spark.sql.catalyst.analysis.Analyzer.$anonfun$execute$1(Analyzer.scala:491)\n\tat org.apache.spark.sql.catalyst.analysis.AnalysisContext$.withNewAnalysisContext(Analyzer.scala:397)\n\tat org.apache.spark.sql.catalyst.analysis.Analyzer.execute(Analyzer.scala:491)\n\tat org.apache.spark.sql.catalyst.analysis.Analyzer.execute(Analyzer.scala:416)\n\tat org.apache.spark.sql.catalyst.rules.RuleExecutor.$anonfun$executeAndTrack$1(RuleExecutor.scala:341)\n\tat org.apache.spark.sql.catalyst.QueryPlanningTracker$.withTracker(QueryPlanningTracker.scala:219)\n\tat org.apache.spark.sql.catalyst.rules.RuleExecutor.executeAndTrack(RuleExecutor.scala:341)\n\tat org.apache.spark.sql.catalyst.analysis.resolver.HybridAnalyzer.resolveInFixedPoint(HybridAnalyzer.scala:252)\n\tat org.apache.spark.sql.catalyst.analysis.resolver.HybridAnalyzer.$anonfun$apply$1(HybridAnalyzer.scala:96)\n\tat org.apache.spark.sql.catalyst.analysis.resolver.HybridAnalyzer.withTrackedAnalyzerBridgeState(HybridAnalyzer.scala:131)\n\tat org.apache.spark.sql.catalyst.analysis.resolver.HybridAnalyzer.apply(HybridAnalyzer.scala:87)\n\tat org.apache.spark.sql.catalyst.analysis.Analyzer.$anonfun$executeAndCheck$1(Analyzer.scala:478)\n\tat org.apache.spark.sql.catalyst.plans.logical.AnalysisHelper$.markInAnalyzer(AnalysisHelper.scala:425)\n\tat org.apache.spark.sql.catalyst.analysis.Analyzer.executeAndCheck(Analyzer.scala:478)\n\tat org.apache.spark.sql.execution.QueryExecution.$anonfun$lazyAnalyzed$3(QueryExecution.scala:294)\n\tat com.databricks.spark.util.FrameProfiler$.record(FrameProfiler.scala:94)\n\tat org.apache.spark.sql.catalyst.QueryPlanningTracker.measurePhase(QueryPlanningTracker.scala:548)\n\tat org.apache.spark.sql.execution.QueryExecution.$anonfun$executePhase$5(QueryExecution.scala:668)\n\tat org.apache.spark.sql.execution.SQLExecution$.withExecutionPhase(SQLExecution.scala:151)\n\tat org.apache.spark.sql.execution.QueryExecution.$anonfun$executePhase$4(QueryExecution.scala:668)\n\tat org.apache.spark.sql.execution.QueryExecution$.withInternalError(QueryExecution.scala:1307)\n\tat org.apache.spark.sql.execution.QueryExecution.$anonfun$executePhase$2(QueryExecution.scala:661)\n\tat com.databricks.util.LexicalThreadLocal$Handle.runWith(LexicalThreadLocal.scala:63)\n\tat org.apache.spark.sql.execution.QueryExecution.$anonfun$executePhase$1(QueryExecution.scala:658)\n\tat org.apache.spark.sql.SparkSession.withActive(SparkSession.scala:1462)\n\tat org.apache.spark.sql.execution.QueryExecution.executePhase(QueryExecution.scala:658)\n\tat org.apache.spark.sql.execution.QueryExecution.$anonfun$lazyAnalyzed$2(QueryExecution.scala:288)\n\tat com.databricks.sql.util.MemoryTrackerHelper.withMemoryTracking(MemoryTrackerHelper.scala:80)\n\tat org.apache.spark.sql.execution.QueryExecution.$anonfun$lazyAnalyzed$1(QueryExecution.scala:287)\n\tat scala.util.Try$.apply(Try.scala:210)\n\tat org.apache.spark.util.Utils$.doTryWithCallerStacktrace(Utils.scala:1684)\n\tat org.apache.spark.util.Utils$.getTryWithCallerStacktrace(Utils.scala:1745)\n\tat org.apache.spark.util.LazyTry.get(LazyTry.scala:58)\n\tat org.apache.spark.sql.execution.QueryExecution.analyzed(QueryExecution.scala:321)\n\tat org.apache.spark.sql.connect.planner.SparkConnectPlanner.transformDeduplicate(SparkConnectPlanner.scala:1643)\n\tat org.apache.spark.sql.connect.planner.SparkConnectPlanner.$anonfun$transformRelation$1(SparkConnectPlanner.scala:198)\n\tat org.apache.spark.sql.connect.service.SessionHolder.$anonfun$usePlanCache$7(SessionHolder.scala:614)\n\tat org.apache.spark.sql.connect.service.SessionHolder.measureSubtreeRelationNodes(SessionHolder.scala:630)\n\tat org.apache.spark.sql.connect.service.SessionHolder.$anonfun$usePlanCache$5(SessionHolder.scala:613)\n\tat scala.Option.getOrElse(Option.scala:201)\n\tat org.apache.spark.sql.connect.service.SessionHolder.usePlanCache(SessionHolder.scala:611)\n\tat org.apache.spark.sql.connect.planner.SparkConnectPlanner.transformRelation(SparkConnectPlanner.scala:185)\n\tat org.apache.spark.sql.connect.service.SparkConnectAnalyzeHandler.transformRelation$1(SparkConnectAnalyzeHandler.scala:119)\n\tat org.apache.spark.sql.connect.service.SparkConnectAnalyzeHandler.process(SparkConnectAnalyzeHandler.scala:130)\n\tat org.apache.spark.sql.connect.service.SparkConnectAnalyzeHandler.$anonfun$handle$3(SparkConnectAnalyzeHandler.scala:104)\n\tat org.apache.spark.sql.connect.service.SparkConnectAnalyzeHandler.$anonfun$handle$3$adapted(SparkConnectAnalyzeHandler.scala:66)\n\tat org.apache.spark.sql.connect.service.SessionHolder.$anonfun$withSession$2(SessionHolder.scala:464)\n\tat org.apache.spark.sql.SparkSession.withActive(SparkSession.scala:1462)\n\tat org.apache.spark.sql.connect.service.SessionHolder.$anonfun$withSession$1(SessionHolder.scala:464)\n\tat org.apache.spark.JobArtifactSet$.withActiveJobArtifactState(JobArtifactSet.scala:97)\n\tat org.apache.spark.sql.artifact.ArtifactManager.$anonfun$withResources$1(ArtifactManager.scala:90)\n\tat org.apache.spark.util.Utils$.withContextClassLoader(Utils.scala:241)\n\tat org.apache.spark.sql.artifact.ArtifactManager.withResources(ArtifactManager.scala:89)\n\tat org.apache.spark.sql.connect.service.SessionHolder.withSession(SessionHolder.scala:463)\n\tat org.apache.spark.sql.connect.service.SparkConnectAnalyzeHandler.$anonfun$handle$1(SparkConnectAnalyzeHandler.scala:66)\n\tat org.apache.spark.sql.connect.service.SparkConnectAnalyzeHandler.$anonfun$handle$1$adapted(SparkConnectAnalyzeHandler.scala:51)\n\tat com.databricks.spark.connect.logging.rpc.SparkConnectRpcMetricsCollectorUtils$.collectMetrics(SparkConnectRpcMetricsCollector.scala:258)\n\tat org.apache.spark.sql.connect.service.SparkConnectAnalyzeHandler.handle(SparkConnectAnalyzeHandler.scala:50)\n\tat org.apache.spark.sql.connect.service.SparkConnectService.analyzePlan(SparkConnectService.scala:109)\n\tat org.apache.spark.connect.proto.SparkConnectServiceGrpc$MethodHandlers.invoke(SparkConnectServiceGrpc.java:801)\n\tat grpc_shaded.io.grpc.stub.ServerCalls$UnaryServerCallHandler$UnaryServerCallListener.onHalfClose(ServerCalls.java:182)\n\tat grpc_shaded.io.grpc.PartialForwardingServerCallListener.onHalfClose(PartialForwardingServerCallListener.java:35)\n\tat grpc_shaded.io.grpc.ForwardingServerCallListener.onHalfClose(ForwardingServerCallListener.java:23)\n\tat grpc_shaded.io.grpc.ForwardingServerCallListener$SimpleForwardingServerCallListener.onHalfClose(ForwardingServerCallListener.java:40)\n\tat grpc_shaded.io.grpc.PartialForwardingServerCallListener.onHalfClose(PartialForwardingServerCallListener.java:35)\n\tat grpc_shaded.io.grpc.ForwardingServerCallListener.onHalfClose(ForwardingServerCallListener.java:23)\n\tat grpc_shaded.io.grpc.ForwardingServerCallListener$SimpleForwardingServerCallListener.onHalfClose(ForwardingServerCallListener.java:40)\n\tat com.databricks.spark.connect.service.AuthenticationInterceptor$AuthenticatedServerCallListener.$anonfun$onHalfClose$1(AuthenticationInterceptor.scala:381)\n\tat scala.runtime.java8.JFunction0$mcV$sp.apply(JFunction0$mcV$sp.scala:18)\n\tat com.databricks.unity.UCSEphemeralState$Handle.runWith(UCSEphemeralState.scala:51)\n\tat com.databricks.unity.HandleImpl.runWith(UCSHandle.scala:104)\n\tat com.databricks.spark.connect.service.RequestContext.$anonfun$runWith$3(RequestContext.scala:337)\n\tat com.databricks.spark.connect.service.RequestContext$.com$databricks$spark$connect$service$RequestContext$$withLocalProperties(RequestContext.scala:537)\n\tat com.databricks.spark.connect.service.RequestContext.$anonfun$runWith$2(RequestContext.scala:337)\n\tat com.databricks.logging.AttributionContextTracing.$anonfun$withAttributionContext$1(AttributionContextTracing.scala:49)\n\tat com.databricks.logging.AttributionContext$.$anonfun$withValue$1(AttributionContext.scala:293)\n\tat scala.util.DynamicVariable.withValue(DynamicVariable.scala:59)\n\tat com.databricks.logging.AttributionContext$.withValue(AttributionContext.scala:289)\n\tat com.databricks.logging.AttributionContextTracing.withAttributionContext(AttributionContextTracing.scala:47)\n\tat com.databricks.logging.AttributionContextTracing.withAttributionContext$(AttributionContextTracing.scala:44)\n\tat com.databricks.spark.util.PublicDBLogging.withAttributionContext(DatabricksSparkUsageLogger.scala:30)\n\tat com.databricks.spark.util.UniverseAttributionContextWrapper.withValue(AttributionContextUtils.scala:242)\n\tat com.databricks.spark.connect.service.RequestContext.$anonfun$runWith$1(RequestContext.scala:336)\n\tat com.databricks.spark.connect.service.RequestContext.withContext(RequestContext.scala:349)\n\tat com.databricks.spark.connect.service.RequestContext.runWith(RequestContext.scala:329)\n\tat com.databricks.spark.connect.service.AuthenticationInterceptor$AuthenticatedServerCallListener.onHalfClose(AuthenticationInterceptor.scala:381)\n\tat grpc_shaded.io.grpc.internal.ServerCallImpl$ServerStreamListenerImpl.halfClosed(ServerCallImpl.java:351)\n\tat grpc_shaded.io.grpc.internal.ServerImpl$JumpToApplicationThreadServerStreamListener$1HalfClosed.runInContext(ServerImpl.java:861)\n\tat grpc_shaded.io.grpc.internal.ContextRunnable.run(ContextRunnable.java:37)\n\tat grpc_shaded.io.grpc.internal.SerializingExecutor.run(SerializingExecutor.java:133)\n\tat org.apache.spark.util.threads.SparkThreadLocalCapturingRunnable.$anonfun$run$1(SparkThreadLocalForwardingThreadPoolExecutor.scala:165)\n\tat scala.runtime.java8.JFunction0$mcV$sp.apply(JFunction0$mcV$sp.scala:18)\n\tat com.databricks.util.LexicalThreadLocal$Handle.runWith(LexicalThreadLocal.scala:63)\n\tat org.apache.spark.util.threads.SparkThreadLocalCapturingHelper.$anonfun$runWithCaptured$6(SparkThreadLocalForwardingThreadPoolExecutor.scala:119)\n\tat com.databricks.sql.transaction.tahoe.mst.MSTThreadHelper$.runWithMstTxnId(MSTThreadHelper.scala:57)\n\tat org.apache.spark.util.threads.SparkThreadLocalCapturingHelper.$anonfun$runWithCaptured$5(SparkThreadLocalForwardingThreadPoolExecutor.scala:118)\n\tat com.databricks.spark.util.IdentityClaim$.withClaim(IdentityClaim.scala:48)\n\tat org.apache.spark.util.threads.SparkThreadLocalCapturingHelper.$anonfun$runWithCaptured$4(SparkThreadLocalForwardingThreadPoolExecutor.scala:117)\n\tat com.databricks.unity.UCSEphemeralState$Handle.runWith(UCSEphemeralState.scala:51)\n\tat org.apache.spark.util.threads.SparkThreadLocalCapturingHelper.runWithCaptured(SparkThreadLocalForwardingThreadPoolExecutor.scala:116)\n\tat org.apache.spark.util.threads.SparkThreadLocalCapturingHelper.runWithCaptured$(SparkThreadLocalForwardingThreadPoolExecutor.scala:93)\n\tat org.apache.spark.util.threads.SparkThreadLocalCapturingRunnable.runWithCaptured(SparkThreadLocalForwardingThreadPoolExecutor.scala:162)\n\tat org.apache.spark.util.threads.SparkThreadLocalCapturingRunnable.run(SparkThreadLocalForwardingThreadPoolExecutor.scala:165)\n\tat java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)\n\tat java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)\n\tat java.lang.Thread.run(Thread.java:840)", "context": {"errorClass": "AMBIGUOUS_REFERENCE"}, "exception": {"class": "_InactiveRpcError", "msg": "<_InactiveRpcError of RPC that terminated with:\n\tstatus = StatusCode.INTERNAL\n\tdetails = \"[AMBIGUOUS_REFERENCE] Reference `EXMP_CP_RC_JOINED`.`DeliveryEntity` is ambiguous, could be: [`EXMP_CP_RC_JOINED`.`DeliveryEntity`, `EXMP_CP_RC_JOINED`.`DeliveryEntity`, `EXMP_CP_RC_JOINED`.`DeliveryEntity`, `EXMP_CP_RC_JOINED`.`DeliveryEntity`]. SQLSTATE: 42704; line 1 pos 0\"\n\tdebug_error_string = \"UNKNOWN:Error received from peer  {created_time:\"2025-08-12T13:36:41.46788361+00:00\", grpc_status:13, grpc_message:\"[AMBIGUOUS_REFERENCE] Reference `EXMP_CP_RC_JOINED`.`DeliveryEntity` is ambiguous, could be: [`EXMP_CP_RC_JOINED`.`DeliveryEntity`, `EXMP_CP_RC_JOINED`.`DeliveryEntity`, `EXMP_CP_RC_JOINED`.`DeliveryEntity`, `EXMP_CP_RC_JOINED`.`DeliveryEntity`]. SQLSTATE: 42704; line 1 pos 0\"}\"\n>", "stacktrace": [{"class": null, "method": "_analyze", "file": "/databricks/spark/python/pyspark/sql/connect/client/core.py", "line": "1736"}, {"class": null, "method": "__call__", "file": "/databricks/python/lib/python3.12/site-packages/grpc/_interceptor.py", "line": "277"}, {"class": null, "method": "_with_call", "file": "/databricks/python/lib/python3.12/site-packages/grpc/_interceptor.py", "line": "332"}, {"class": null, "method": "result", "file": "/databricks/python/lib/python3.12/site-packages/grpc/_channel.py", "line": "437"}, {"class": null, "method": "continuation", "file": "/databricks/python/lib/python3.12/site-packages/grpc/_interceptor.py", "line": "315"}, {"class": null, "method": "with_call", "file": "/databricks/python/lib/python3.12/site-packages/grpc/_channel.py", "line": "1177"}, {"class": null, "method": "_end_unary_response_blocking", "file": "/databricks/python/lib/python3.12/site-packages/grpc/_channel.py", "line": "1003"}]}}
-2025-08-12 13:36:41 [ERROR] _log:  [AMBIGUOUS_REFERENCE] Reference `EXMP_CP_RC_JOINED`.`DeliveryEntity` is ambiguous, could be: [`EXMP_CP_RC_JOINED`.`DeliveryEntity`, `EXMP_CP_RC_JOINED`.`DeliveryEntity`, `EXMP_CP_RC_JOINED`.`DeliveryEntity`, `EXMP_CP_RC_JOINED`.`DeliveryEntity`]. SQLSTATE: 42704; line 1 pos 0
-
-JVM stacktrace:
-org.apache.spark.sql.AnalysisException
-	at org.apache.spark.sql.errors.QueryCompilationErrors$.ambiguousReferenceError(QueryCompilationErrors.scala:2921)
-	at org.apache.spark.sql.catalyst.expressions.package$AttributeSeq.resolve(package.scala:372)
-	at org.apache.spark.sql.catalyst.plans.logical.LogicalPlan.resolveChildren(LogicalPlan.scala:196)
-	at org.apache.spark.sql.catalyst.analysis.ColumnResolutionHelper.$anonfun$resolveExpressionByPlanChildren$1(ColumnResolutionHelper.scala:544)
-	at org.apache.spark.sql.catalyst.analysis.ColumnResolutionHelper.$anonfun$resolveExpression$3(ColumnResolutionHelper.scala:153)
-	at org.apache.spark.sql.catalyst.analysis.package$.withPosition(package.scala:107)
-	at org.apache.spark.sql.catalyst.analysis.ColumnResolutionHelper.$anonfun$resolveExpression$1(ColumnResolutionHelper.scala:163)
-	at org.apache.spark.sql.catalyst.trees.CurrentOrigin$.withOrigin(origin.scala:85)
-	at org.apache.spark.sql.catalyst.analysis.ColumnResolutionHelper.innerResolve$1(ColumnResolutionHelper.scala:123)
-	at org.apache.spark.sql.catalyst.analysis.ColumnResolutionHelper.$anonfun$resolveExpression$9(ColumnResolutionHelper.scala:186)
-	at org.apache.spark.sql.catalyst.trees.UnaryLike.mapChildren(TreeNode.scala:1330)
-	at org.apache.spark.sql.catalyst.trees.UnaryLike.mapChildren$(TreeNode.scala:1329)
-	at org.apache.spark.sql.catalyst.expressions.UnaryExpression.mapChildren(Expression.scala:712)
-	at org.apache.spark.sql.catalyst.analysis.ColumnResolutionHelper.$anonfun$resolveExpression$1(ColumnResolutionHelper.scala:186)
-	at org.apache.spark.sql.catalyst.trees.CurrentOrigin$.withOrigin(origin.scala:85)
-	at org.apache.spark.sql.catalyst.analysis.ColumnResolutionHelper.innerResolve$1(ColumnResolutionHelper.scala:123)
-	at org.apache.spark.sql.catalyst.analysis.ColumnResolutionHelper.resolveExpression(ColumnResolutionHelper.scala:193)
-	at org.apache.spark.sql.catalyst.analysis.ColumnResolutionHelper.resolveExpressionByPlanChildren(ColumnResolutionHelper.scala:551)
-	at org.apache.spark.sql.catalyst.analysis.ColumnResolutionHelper.resolveExpressionByPlanChildren$(ColumnResolutionHelper.scala:537)
-	at org.apache.spark.sql.catalyst.analysis.Analyzer$ResolveReferences.resolveExpressionByPlanChildren(Analyzer.scala:2033)
-	at org.apache.spark.sql.catalyst.analysis.Analyzer$ResolveReferences$$anonfun$apply$15.$anonfun$applyOrElse$124(Analyzer.scala:2195)
-	at scala.collection.immutable.List.map(List.scala:246)
-	at scala.collection.immutable.List.map(List.scala:79)
-	at org.apache.spark.sql.catalyst.analysis.Analyzer$ResolveReferences$$anonfun$apply$15.applyOrElse(Analyzer.scala:2195)
-	at org.apache.spark.sql.catalyst.analysis.Analyzer$ResolveReferences$$anonfun$apply$15.applyOrElse(Analyzer.scala:2070)
-	at org.apache.spark.sql.catalyst.plans.logical.AnalysisHelper.$anonfun$resolveOperatorsUpWithPruning$3(AnalysisHelper.scala:141)
-	at org.apache.spark.sql.catalyst.trees.CurrentOrigin$.withOrigin(origin.scala:85)
-	at org.apache.spark.sql.catalyst.plans.logical.AnalysisHelper.$anonfun$resolveOperatorsUpWithPruning$1(AnalysisHelper.scala:141)
-	at org.apache.spark.sql.catalyst.plans.logical.AnalysisHelper$.allowInvokingTransformsInAnalyzer(AnalysisHelper.scala:418)
-	at org.apache.spark.sql.catalyst.plans.logical.AnalysisHelper.resolveOperatorsUpWithPruning(AnalysisHelper.scala:137)
-	at org.apache.spark.sql.catalyst.plans.logical.AnalysisHelper.resolveOperatorsUpWithPruning$(AnalysisHelper.scala:133)
-	at org.apache.spark.sql.catalyst.plans.logical.LogicalPlan.resolveOperatorsUpWithPruning(LogicalPlan.scala:42)
-	at org.apache.spark.sql.catalyst.plans.logical.AnalysisHelper.$anonfun$resolveOperatorsUpWithPruning$2(AnalysisHelper.scala:138)
-	at org.apache.spark.sql.catalyst.trees.UnaryLike.mapChildren(TreeNode.scala:1330)
-	at org.apache.spark.sql.catalyst.trees.UnaryLike.mapChildren$(TreeNode.scala:1329)
-	at org.apache.spark.sql.catalyst.plans.logical.Filter.mapChildren(basicLogicalOperators.scala:379)
-	at org.apache.spark.sql.catalyst.plans.logical.AnalysisHelper.$anonfun$resolveOperatorsUpWithPruning$1(AnalysisHelper.scala:138)
-	at org.apache.spark.sql.catalyst.plans.logical.AnalysisHelper$.allowInvokingTransformsInAnalyzer(AnalysisHelper.scala:418)
-	at org.apache.spark.sql.catalyst.plans.logical.AnalysisHelper.resolveOperatorsUpWithPruning(AnalysisHelper.scala:137)
-	at org.apache.spark.sql.catalyst.plans.logical.AnalysisHelper.resolveOperatorsUpWithPruning$(AnalysisHelper.scala:133)
-	at org.apache.spark.sql.catalyst.plans.logical.LogicalPlan.resolveOperatorsUpWithPruning(LogicalPlan.scala:42)
-	at org.apache.spark.sql.catalyst.plans.logical.AnalysisHelper.resolveOperatorsUp(AnalysisHelper.scala:114)
-	at org.apache.spark.sql.catalyst.plans.logical.AnalysisHelper.resolveOperatorsUp$(AnalysisHelper.scala:113)
-	at org.apache.spark.sql.catalyst.plans.logical.LogicalPlan.resolveOperatorsUp(LogicalPlan.scala:42)
-	at org.apache.spark.sql.catalyst.analysis.Analyzer$ResolveReferences.apply(Analyzer.scala:2070)
-	at org.apache.spark.sql.catalyst.analysis.Analyzer$ResolveReferences.apply(Analyzer.scala:2033)
-	at org.apache.spark.sql.catalyst.rules.RuleExecutor.$anonfun$execute$16(RuleExecutor.scala:480)
-	at org.apache.spark.sql.catalyst.rules.RecoverableRuleExecutionHelper.processRule(RuleExecutor.scala:629)
-	at org.apache.spark.sql.catalyst.rules.RecoverableRuleExecutionHelper.processRule$(RuleExecutor.scala:613)
-	at org.apache.spark.sql.catalyst.rules.RuleExecutor.processRule(RuleExecutor.scala:131)
-	at org.apache.spark.sql.catalyst.rules.RuleExecutor.$anonfun$execute$15(RuleExecutor.scala:480)
-	at com.databricks.spark.util.FrameProfiler$.record(FrameProfiler.scala:94)
-	at org.apache.spark.sql.catalyst.rules.RuleExecutor.$anonfun$execute$14(RuleExecutor.scala:479)
-	at scala.collection.LinearSeqOps.foldLeft(LinearSeq.scala:183)
-	at scala.collection.LinearSeqOps.foldLeft$(LinearSeq.scala:179)
-	at scala.collection.immutable.List.foldLeft(List.scala:79)
-	at org.apache.spark.sql.catalyst.rules.RuleExecutor.$anonfun$execute$13(RuleExecutor.scala:475)
-	at scala.runtime.java8.JFunction0$mcV$sp.apply(JFunction0$mcV$sp.scala:18)
-	at com.databricks.spark.util.FrameProfiler$.record(FrameProfiler.scala:94)
-	at org.apache.spark.sql.catalyst.rules.RuleExecutor.executeBatch$1(RuleExecutor.scala:452)
-	at org.apache.spark.sql.catalyst.rules.RuleExecutor.$anonfun$execute$22(RuleExecutor.scala:585)
-	at org.apache.spark.sql.catalyst.rules.RuleExecutor.$anonfun$execute$22$adapted(RuleExecutor.scala:585)
-	at scala.collection.immutable.List.foreach(List.scala:333)
-	at org.apache.spark.sql.catalyst.rules.RuleExecutor.$anonfun$execute$1(RuleExecutor.scala:585)
-	at com.databricks.spark.util.FrameProfiler$.record(FrameProfiler.scala:94)
-	at org.apache.spark.sql.catalyst.rules.RuleExecutor.execute(RuleExecutor.scala:349)
-	at org.apache.spark.sql.catalyst.analysis.Analyzer.executeSameContext(Analyzer.scala:498)
-	at org.apache.spark.sql.catalyst.analysis.Analyzer.$anonfun$execute$1(Analyzer.scala:491)
-	at org.apache.spark.sql.catalyst.analysis.AnalysisContext$.withNewAnalysisContext(Analyzer.scala:397)
-	at org.apache.spark.sql.catalyst.analysis.Analyzer.execute(Analyzer.scala:491)
-	at org.apache.spark.sql.catalyst.analysis.Analyzer.execute(Analyzer.scala:416)
-	at org.apache.spark.sql.catalyst.rules.RuleExecutor.$anonfun$executeAndTrack$1(RuleExecutor.scala:341)
-	at org.apache.spark.sql.catalyst.QueryPlanningTracker$.withTracker(QueryPlanningTracker.scala:219)
-	at org.apache.spark.sql.catalyst.rules.RuleExecutor.executeAndTrack(RuleExecutor.scala:341)
-	at org.apache.spark.sql.catalyst.analysis.resolver.HybridAnalyzer.resolveInFixedPoint(HybridAnalyzer.scala:252)
-	at org.apache.spark.sql.catalyst.analysis.resolver.HybridAnalyzer.$anonfun$apply$1(HybridAnalyzer.scala:96)
-	at org.apache.spark.sql.catalyst.analysis.resolver.HybridAnalyzer.withTrackedAnalyzerBridgeState(HybridAnalyzer.scala:131)
-	at org.apache.spark.sql.catalyst.analysis.resolver.HybridAnalyzer.apply(HybridAnalyzer.scala:87)
-	at org.apache.spark.sql.catalyst.analysis.Analyzer.$anonfun$executeAndCheck$1(Analyzer.scala:478)
-	at org.apache.spark.sql.catalyst.plans.logical.AnalysisHelper$.markInAnalyzer(AnalysisHelper.scala:425)
-	at org.apache.spark.sql.catalyst.analysis.Analyzer.executeAndCheck(Analyzer.scala:478)
-	at org.apache.spark.sql.execution.QueryExecution.$anonfun$lazyAnalyzed$3(QueryExecution.scala:294)
-	at com.databricks.spark.util.FrameProfiler$.record(FrameProfiler.scala:94)
-	at org.apache.spark.sql.catalyst.QueryPlanningTracker.measurePhase(QueryPlanningTracker.scala:548)
-	at org.apache.spark.sql.execution.QueryExecution.$anonfun$executePhase$5(QueryExecution.scala:668)
-	at org.apache.spark.sql.execution.SQLExecution$.withExecutionPhase(SQLExecution.scala:151)
-	at org.apache.spark.sql.execution.QueryExecution.$anonfun$executePhase$4(QueryExecution.scala:668)
-	at org.apache.spark.sql.execution.QueryExecution$.withInternalError(QueryExecution.scala:1307)
-	at org.apache.spark.sql.execution.QueryExecution.$anonfun$executePhase$2(QueryExecution.scala:661)
-	at com.databricks.util.LexicalThreadLocal$Handle.runWith(LexicalThreadLocal.scala:63)
-	at org.apache.spark.sql.execution.QueryExecution.$anonfun$executePhase$1(QueryExecution.scala:658)
-	at org.apache.spark.sql.SparkSession.withActive(SparkSession.scala:1462)
-	at org.apache.spark.sql.execution.QueryExecution.executePhase(QueryExecution.scala:658)
-	at org.apache.spark.sql.execution.QueryExecution.$anonfun$lazyAnalyzed$2(QueryExecution.scala:288)
-	at com.databricks.sql.util.MemoryTrackerHelper.withMemoryTracking(MemoryTrackerHelper.scala:80)
-	at org.apache.spark.sql.execution.QueryExecution.$anonfun$lazyAnalyzed$1(QueryExecution.scala:287)
-	at scala.util.Try$.apply(Try.scala:210)
-	at org.apache.spark.util.Utils$.doTryWithCallerStacktrace(Utils.scala:1684)
-	at org.apache.spark.util.Utils$.getTryWithCallerStacktrace(Utils.scala:1745)
-	at org.apache.spark.util.LazyTry.get(LazyTry.scala:58)
-	at org.apache.spark.sql.execution.QueryExecution.analyzed(QueryExecution.scala:321)
-	at org.apache.spark.sql.connect.planner.SparkConnectPlanner.transformDeduplicate(SparkConnectPlanner.scala:1643)
-	at org.apache.spark.sql.connect.planner.SparkConnectPlanner.$anonfun$transformRelation$1(SparkConnectPlanner.scala:198)
-	at org.apache.spark.sql.connect.service.SessionHolder.$anonfun$usePlanCache$7(SessionHolder.scala:614)
-	at org.apache.spark.sql.connect.service.SessionHolder.measureSubtreeRelationNodes(SessionHolder.scala:630)
-	at org.apache.spark.sql.connect.service.SessionHolder.$anonfun$usePlanCache$5(SessionHolder.scala:613)
-	at scala.Option.getOrElse(Option.scala:201)
-	at org.apache.spark.sql.connect.service.SessionHolder.usePlanCache(SessionHolder.scala:611)
-	at org.apache.spark.sql.connect.planner.SparkConnectPlanner.transformRelation(SparkConnectPlanner.scala:185)
-	at org.apache.spark.sql.connect.service.SparkConnectAnalyzeHandler.transformRelation$1(SparkConnectAnalyzeHandler.scala:119)
-	at org.apache.spark.sql.connect.service.SparkConnectAnalyzeHandler.process(SparkConnectAnalyzeHandler.scala:130)
-	at org.apache.spark.sql.connect.service.SparkConnectAnalyzeHandler.$anonfun$handle$3(SparkConnectAnalyzeHandler.scala:104)
-	at org.apache.spark.sql.connect.service.SparkConnectAnalyzeHandler.$anonfun$handle$3$adapted(SparkConnectAnalyzeHandler.scala:66)
-	at org.apache.spark.sql.connect.service.SessionHolder.$anonfun$withSession$2(SessionHolder.scala:464)
-	at org.apache.spark.sql.SparkSession.withActive(SparkSession.scala:1462)
-	at org.apache.spark.sql.connect.service.SessionHolder.$anonfun$withSession$1(SessionHolder.scala:464)
-	at org.apache.spark.JobArtifactSet$.withActiveJobArtifactState(JobArtifactSet.scala:97)
-	at org.apache.spark.sql.artifact.ArtifactManager.$anonfun$withResources$1(ArtifactManager.scala:90)
-	at org.apache.spark.util.Utils$.withContextClassLoader(Utils.scala:241)
-	at org.apache.spark.sql.artifact.ArtifactManager.withResources(ArtifactManager.scala:89)
-	at org.apache.spark.sql.connect.service.SessionHolder.withSession(SessionHolder.scala:463)
-	at org.apache.spark.sql.connect.service.SparkConnectAnalyzeHandler.$anonfun$handle$1(SparkConnectAnalyzeHandler.scala:66)
-	at org.apache.spark.sql.connect.service.SparkConnectAnalyzeHandler.$anonfun$handle$1$adapted(SparkConnectAnalyzeHandler.scala:51)
-	at com.databricks.spark.connect.logging.rpc.SparkConnectRpcMetricsCollectorUtils$.collectMetrics(SparkConnectRpcMetricsCollector.scala:258)
-	at org.apache.spark.sql.connect.service.SparkConnectAnalyzeHandler.handle(SparkConnectAnalyzeHandler.scala:50)
-	at org.apache.spark.sql.connect.service.SparkConnectService.analyzePlan(SparkConnectService.scala:109)
-	at org.apache.spark.connect.proto.SparkConnectServiceGrpc$MethodHandlers.invoke(SparkConnectServiceGrpc.java:801)
-	at grpc_shaded.io.grpc.stub.ServerCalls$UnaryServerCallHandler$UnaryServerCallListener.onHalfClose(ServerCalls.java:182)
-	at grpc_shaded.io.grpc.PartialForwardingServerCallListener.onHalfClose(PartialForwardingServerCallListener.java:35)
-	at grpc_shaded.io.grpc.ForwardingServerCallListener.onHalfClose(ForwardingServerCallListener.java:23)
-	at grpc_shaded.io.grpc.ForwardingServerCallListener$SimpleForwardingServerCallListener.onHalfClose(ForwardingServerCallListener.java:40)
-	at grpc_shaded.io.grpc.PartialForwardingServerCallListener.onHalfClose(PartialForwardingServerCallListener.java:35)
-	at grpc_shaded.io.grpc.ForwardingServerCallListener.onHalfClose(ForwardingServerCallListener.java:23)
-	at grpc_shaded.io.grpc.ForwardingServerCallListener$SimpleForwardingServerCallListener.onHalfClose(ForwardingServerCallListener.java:40)
-	at com.databricks.spark.connect.service.AuthenticationInterceptor$AuthenticatedServerCallListener.$anonfun$onHalfClose$1(AuthenticationInterceptor.scala:381)
-	at scala.runtime.java8.JFunction0$mcV$sp.apply(JFunction0$mcV$sp.scala:18)
-	at com.databricks.unity.UCSEphemeralState$Handle.runWith(UCSEphemeralState.scala:51)
-	at com.databricks.unity.HandleImpl.runWith(UCSHandle.scala:104)
-	at com.databricks.spark.connect.service.RequestContext.$anonfun$runWith$3(RequestContext.scala:337)
-	at com.databricks.spark.connect.service.RequestContext$.com$databricks$spark$connect$service$RequestContext$$withLocalProperties(RequestContext.scala:537)
-	at com.databricks.spark.connect.service.RequestContext.$anonfun$runWith$2(RequestContext.scala:337)
-	at com.databricks.logging.AttributionContextTracing.$anonfun$withAttributionContext$1(AttributionContextTracing.scala:49)
-	at com.databricks.logging.AttributionContext$.$anonfun$withValue$1(AttributionContext.scala:293)
-	at scala.util.DynamicVariable.withValue(DynamicVariable.scala:59)
-	at com.databricks.logging.AttributionContext$.withValue(AttributionContext.scala:289)
-	at com.databricks.logging.AttributionContextTracing.withAttributionContext(AttributionContextTracing.scala:47)
-	at com.databricks.logging.AttributionContextTracing.withAttributionContext$(AttributionContextTracing.scala:44)
-	at com.databricks.spark.util.PublicDBLogging.withAttributionContext(DatabricksSparkUsageLogger.scala:30)
-	at com.databricks.spark.util.UniverseAttributionContextWrapper.withValue(AttributionContextUtils.scala:242)
-	at com.databricks.spark.connect.service.RequestContext.$anonfun$runWith$1(RequestContext.scala:336)
-	at com.databricks.spark.connect.service.RequestContext.withContext(RequestContext.scala:349)
-	at com.databricks.spark.connect.service.RequestContext.runWith(RequestContext.scala:329)
-	at com.databricks.spark.connect.service.AuthenticationInterceptor$AuthenticatedServerCallListener.onHalfClose(AuthenticationInterceptor.scala:381)
-	at grpc_shaded.io.grpc.internal.ServerCallImpl$ServerStreamListenerImpl.halfClosed(ServerCallImpl.java:351)
-	at grpc_shaded.io.grpc.internal.ServerImpl$JumpToApplicationThreadServerStreamListener$1HalfClosed.runInContext(ServerImpl.java:861)
-	at grpc_shaded.io.grpc.internal.ContextRunnable.run(ContextRunnable.java:37)
-	at grpc_shaded.io.grpc.internal.SerializingExecutor.run(SerializingExecutor.java:133)
-	at org.apache.spark.util.threads.SparkThreadLocalCapturingRunnable.$anonfun$run$1(SparkThreadLocalForwardingThreadPoolExecutor.scala:165)
-	at scala.runtime.java8.JFunction0$mcV$sp.apply(JFunction0$mcV$sp.scala:18)
-	at com.databricks.util.LexicalThreadLocal$Handle.runWith(LexicalThreadLocal.scala:63)
-	at org.apache.spark.util.threads.SparkThreadLocalCapturingHelper.$anonfun$runWithCaptured$6(SparkThreadLocalForwardingThreadPoolExecutor.scala:119)
-	at com.databricks.sql.transaction.tahoe.mst.MSTThreadHelper$.runWithMstTxnId(MSTThreadHelper.scala:57)
-	at org.apache.spark.util.threads.SparkThreadLocalCapturingHelper.$anonfun$runWithCaptured$5(SparkThreadLocalForwardingThreadPoolExecutor.scala:118)
-	at com.databricks.spark.util.IdentityClaim$.withClaim(IdentityClaim.scala:48)
-	at org.apache.spark.util.threads.SparkThreadLocalCapturingHelper.$anonfun$runWithCaptured$4(SparkThreadLocalForwardingThreadPoolExecutor.scala:117)
-	at com.databricks.unity.UCSEphemeralState$Handle.runWith(UCSEphemeralState.scala:51)
-	at org.apache.spark.util.threads.SparkThreadLocalCapturingHelper.runWithCaptured(SparkThreadLocalForwardingThreadPoolExecutor.scala:116)
-	at org.apache.spark.util.threads.SparkThreadLocalCapturingHelper.runWithCaptured$(SparkThreadLocalForwardingThreadPoolExecutor.scala:93)
-	at org.apache.spark.util.threads.SparkThreadLocalCapturingRunnable.runWithCaptured(SparkThreadLocalForwardingThreadPoolExecutor.scala:162)
-	at org.apache.spark.util.threads.SparkThreadLocalCapturingRunnable.run(SparkThreadLocalForwardingThreadPoolExecutor.scala:165)
-	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
-	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
-	at java.lang.Thread.run(Thread.java:840)
-Traceback (most recent call last):
-  File "/databricks/spark/python/pyspark/sql/connect/client/core.py", line 1736, in _analyze
-    resp = self._stub.AnalyzePlan(req, metadata=self.metadata())
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/databricks/python/lib/python3.12/site-packages/grpc/_interceptor.py", line 277, in __call__
-    response, ignored_call = self._with_call(
-                             ^^^^^^^^^^^^^^^^
-  File "/databricks/python/lib/python3.12/site-packages/grpc/_interceptor.py", line 332, in _with_call
-    return call.result(), call
-           ^^^^^^^^^^^^^
-  File "/databricks/python/lib/python3.12/site-packages/grpc/_channel.py", line 437, in result
-    raise self
-  File "/databricks/python/lib/python3.12/site-packages/grpc/_interceptor.py", line 315, in continuation
-    response, call = self._thunk(new_method).with_call(
-                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/databricks/python/lib/python3.12/site-packages/grpc/_channel.py", line 1177, in with_call
-    return _end_unary_response_blocking(state, call, True, None)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/databricks/python/lib/python3.12/site-packages/grpc/_channel.py", line 1003, in _end_unary_response_blocking
-    raise _InactiveRpcError(state)  # pytype: disable=not-instantiable
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-grpc._channel._InactiveRpcError: <_InactiveRpcError of RPC that terminated with:
-	status = StatusCode.INTERNAL
-	details = "[AMBIGUOUS_REFERENCE] Reference `EXMP_CP_RC_JOINED`.`DeliveryEntity` is ambiguous, could be: [`EXMP_CP_RC_JOINED`.`DeliveryEntity`, `EXMP_CP_RC_JOINED`.`DeliveryEntity`, `EXMP_CP_RC_JOINED`.`DeliveryEntity`, `EXMP_CP_RC_JOINED`.`DeliveryEntity`]. SQLSTATE: 42704; line 1 pos 0"
-	debug_error_string = "UNKNOWN:Error received from peer  {created_time:"2025-08-12T13:36:41.46788361+00:00", grpc_status:13, grpc_message:"[AMBIGUOUS_REFERENCE] Reference `EXMP_CP_RC_JOINED`.`DeliveryEntity` is ambiguous, could be: [`EXMP_CP_RC_JOINED`.`DeliveryEntity`, `EXMP_CP_RC_JOINED`.`DeliveryEntity`, `EXMP_CP_RC_JOINED`.`DeliveryEntity`, `EXMP_CP_RC_JOINED`.`DeliveryEntity`]. SQLSTATE: 42704; line 1 pos 0"}"
->
+[AMBIGUOUS_REFERENCE] Reference `FAC_WITH_PD`.`CounterpartyID` is ambiguous, could be: [`FAC_WITH_PD`.`CounterpartyID`, `FAC_WITH_PD`.`CounterpartyID`]. SQLSTATE: 42704
+File <command-8220669334324123>, line 1
+----> 1 write_and_comment(
+      2     spark,
+      3     business_logic_dict,
+      4     transformed_data,
+      5     run_month=run_month,
+      6     source_system=delivery_entity,
+      7 )
+File /local_disk0/.ephemeral_nfs/cluster_libraries/python/lib/python3.12/site-packages/abnamro_bsrc_etl/transform/table_write_and_comment.py:222, in write_and_comment(spark, business_logic, data, run_month, dq_check_folder, source_system, schema, local)
+    210 def write_and_comment(
+    211     spark: SparkSession,
+    212     business_logic: BusinessLogicConfig,
+   (...)
+    219     local: bool = False,
+    220 ) -> bool:
+    221     """Write data to Unity Catalog and add table & column comments from logic."""
+--> 222     write_to_table(spark=spark, table_name=business_logic["target"], data=data)
+    223     table_summary(spark=spark, business_logic=business_logic)
+    224     target_expression_comments(spark=spark, business_logic=business_logic)
+File /local_disk0/.ephemeral_nfs/cluster_libraries/python/lib/python3.12/site-packages/abnamro_bsrc_etl/transform/table_write_and_comment.py:42, in write_to_table(spark, table_name, data, mode)
+     39         data.write.mode(mode).saveAsTable(table_name)
+     40 except AnalysisException:
+     41     # Table doesn't exist, create it
+---> 42     data.write.saveAsTable(table_name)
