@@ -1,0 +1,11 @@
+# Mainbank exemption claim counterparty:
+select * from bsrc_d.int_202505.mainbank_exemptionclaim_counterparty_ec a
+left join bsrc_d.enrich_202505.mainbank_exemptionclaim_counterparty_rc b
+on a.CounterpartyID=b.CounterpartyID and a.CounterpartySourceSystemIdentifier=b.CounterpartySourceSystemIdentifier
+where not (a.ExemptionConditionId=b.ExemptionConditionIdRC) or not (a.BaselCreditRiskApproach=b.BaselCreditRiskApproach) or not (a.ExemptionType=b.ExemptionTypeRC)
+
+# Mainbank exemption claim credit facility:
+select * from bsrc_d.int_202505.mainbank_exemptionclaim_creditfacility_ec a
+left join bsrc_d.enrich_202505.mainbank_exemptionclaim_creditfacility_rc b
+on a.CreditFacilityID=b.CreditFacilityID and a.CreditFacilitySourceSystemIdentifier=b.CreditFacilitySourceSystemIdentifier
+where not (a.ExemptionConditionId=b.ExemptionConditionIdRC) or not (a.BaselCreditRiskApproach=b.BaselCreditRiskApproach) or not (a.ExemptionType=b.ExemptionTypeRC)
