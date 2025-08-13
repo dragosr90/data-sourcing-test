@@ -1,6 +1,6 @@
-description: The exemption claim is used to identify the regulatory approach that applies to an exposure. There are "exemptions" that are prescribed by the regulation in the CRR Article 150, however, institutions can also ask permission to move specific portfolios to less sophisticated approaches (both SA and FIRB). The reference table 1286 contains a set of exemption conditions which rely on different sourced attributes that are used to define the portfolios eligible for the application of both i) the prescribed regulatory PPUs portfolios and ii) the additional requested portfolios. This exemption claim will first be checked at Counterparty level and then at facility level and product level. This YAML is to determine exemption at credit facility level.
+description: The exemption claim is used to identify the regulatory approach that applies to an exposure. There are "exemptions" that are prescribed by the regulation in the CRR Article 150, however, institutions can also ask permission to move specific portfolios to less sophisticated approaches (both SA and FIRB). The reference table 1286 contains a set of exemption conditions which rely on different sourced attributes that are used to define the portfolios eligible for the application of both i) the prescribed regulatory PPUs portfolios and ii) the additional requested portfolios. This exemption claim will first be checked at Counterparty level and then at facility level and product level. This YAML is to determine exemption at credit facility level for EC.
 
-target: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_exemptionclaim_creditfacility_ec
+target: enrich_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_exemptionclaim_creditfacility_ec
 
 sources:
   # Main facility data source - already includes CounterpartyID and CounterpartySourceSystemIdentifier
@@ -22,11 +22,13 @@ sources:
     filter: SubFacilityFlag = 'N'
     source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_integrated_creditfacility
 
+  # Credit facility links for counterparty hierarchy
+  - alias: INT_CF_LINKS
+    source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_integrated_creditfacility_links
+
   # SSF Counterparty data for Basel calculations
   - alias: INT_CP
     columns:
-    - DeliveryEntity
-    - ReportingDate
     - LocalId
     - SourceSystemIdentifier
     - GlobalCounterpartyIdentifier
@@ -34,9 +36,9 @@ sources:
     - ExemptionFromAdvancedInternalRatingBasedApproach
     source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_integrated_counterparty
 
-  # Exemption mapping table (1286)
-  - alias: 1286EXMP
-    source: stg_{{ RUN_MONTH }}.bsl_andes_1286_b2_exmp_cond
+  # Exemption mapping table (1286) for EC
+  - alias: EXMP_1286
+    source: stg_{{ RUN_MONTH }}.bsl_andes_1286_b2_exmp_cond #TODO: confirm EC table name
 
   # PD UCR integration data
   - alias: PD_UCR
@@ -60,10 +62,12 @@ sources:
     columns:
     - CreditFacilityID
     - CreditFacilitySourceSystemIdentifier
-    - CounterpartyID
-    - CounterpartySourceSystemIdentifier
     - LGDModelCode
     source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_lgd
+
+  # Counterparty level exemption claim EC
+  - alias: EXMP_CP_EC
+    source: enrich_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_exemptionclaim_counterparty_ec
 
 transformations:
   # Join with INT_CP to get counterparty data
@@ -99,27 +103,47 @@ transformations:
         - CF.SourceSystemIdentifier = LGD.CreditFacilitySourceSystemIdentifier
       how: left
 
-  # Join with exemption mapping table
+  # Join with exemption mapping table EC for facility level
   - join:
-      right_source: 1286EXMP
+      right_source: EXMP_1286
       condition:
-        - 1286EXMP.reporting_entity_id = CF.ReportingEntity or 1286EXMP.reporting_entity_id = '*'
-        - 1286EXMP.b2_pd_type_id = CF.BaselIIProductType or 1286EXMP.b2_pd_type_id = '*'
-        - 1286EXMP.lgd_rtg_model = LGD.LGDModelCode or 1286EXMP.lgd_rtg_model = '*'
-        - 1286EXMP.pl_npl_indicator = CF.PlNplIndicator or 1286EXMP.pl_npl_indicator = '*'
-        - 1286EXMP.specialised_lending_type = CF.SpecialisedLendingType or 1286EXMP.specialised_lending_type = '*'
-        - 1286EXMP.cr_pd_program = CF.ProductProgram or 1286EXMP.cr_pd_program = '*'
-        - 1286EXMP.pd_rtg_model = PD_UCR.PDModelCode or 1286EXMP.pd_rtg_model = PD_UCR.LastPerformingPDModelCode or 1286EXMP.pd_rtg_model = '*'
-        - 1286EXMP.b2_cpty_type_id = INT_CP.BaselIICounterpartyType or 1286EXMP.b2_cpty_type_id = '*'
-        - 1286EXMP.intercompany_flag = IC.InterCompanyFlag = 'Y' or 1286EXMP.intercompany_flag = '*'
-        - upper(1286EXMP.sourced_exemption_id) = upper(coalesce(CF.ExemptionFromAdvancedInternalRatingBasedApproach, INT_CP.ExemptionFromAdvancedInternalRatingBasedApproach)) or 1286EXMP.sourced_exemption_id = '*'
-        - (1286EXMP.ctpty_ssc || 1286EXMP.ctpty_uid = INT_CP.LocalId) OR
-          (1286EXMP.ctpty_ssc = 'EPR' and ltrim('0', 1286EXMP.ctpty_uid) = ltrim('0', INT_CP.GlobalCounterpartyIdentifier)) OR  
-          (1286EXMP.ctpty_uid = '*')
+        - EXMP_1286.reporting_entity_id = CF.ReportingEntity or EXMP_1286.reporting_entity_id = '*'
+        - EXMP_1286.b2_pd_type_id = CF.BaselIIProductType or EXMP_1286.b2_pd_type_id = '*'
+        - EXMP_1286.lgd_rtg_model = LGD.LGDModelCode or EXMP_1286.lgd_rtg_model = '*'
+        - EXMP_1286.pl_npl_indicator = CF.PlNplIndicator or EXMP_1286.pl_npl_indicator = '*'
+        - EXMP_1286.specialised_lending_type = CF.SpecialisedLendingType or EXMP_1286.specialised_lending_type = '*'
+        - EXMP_1286.cr_pd_program = CF.ProductProgram or EXMP_1286.cr_pd_program = '*'
+        - EXMP_1286.pd_rtg_model = PD_UCR.PDModelCode or EXMP_1286.pd_rtg_model = PD_UCR.LastPerformingPDModelCode or EXMP_1286.pd_rtg_model = '*'
+        - EXMP_1286.b2_cpty_type_id = INT_CP.BaselIICounterpartyType or EXMP_1286.b2_cpty_type_id = '*'
+        - EXMP_1286.intercompany_flag = IC.InterCompanyFlag = 'Y' or EXMP_1286.intercompany_flag = '*'
+        - upper(EXMP_1286.sourced_exemption_id) = upper(coalesce(CF.ExemptionFromAdvancedInternalRatingBasedApproach, INT_CP.ExemptionFromAdvancedInternalRatingBasedApproach)) or EXMP_1286.sourced_exemption_id = '*'
+        - (EXMP_1286.ctpty_ssc || EXMP_1286.ctpty_uid = INT_CP.LocalId) OR
+          (EXMP_1286.ctpty_ssc = 'EPR' and ltrim('0', EXMP_1286.ctpty_uid) = ltrim('0', INT_CP.GlobalCounterpartyIdentifier)) OR  
+          (EXMP_1286.ctpty_uid = '*')
       how: left
+  
   - add_variables:
       column_mapping:
-        var_lowest_ExemptionClaimConditonID: min(1286EXMP.exemption_condition_id) OVER (PARTITION BY CF.LocalFacilityIdentifier)
+        var_lowest_ExemptionClaimConditonID_FAC_EC: min(EXMP_1286.exemption_condition_id) OVER (PARTITION BY CF.LocalFacilityIdentifier)
+
+  # To get Lowest Exemption Condition ID on Counterparty level EC
+  - join:
+      right_source: INT_CF_LINKS
+      condition:
+        - CF.LocalFacilityIdentifier = INT_CF_LINKS.CreditFacility
+        - CF.SourceSystemIdentifier = INT_CF_LINKS.CreditFacilitySourceSystemIdentifier
+      how: left
+  
+  - join:
+      right_source: EXMP_CP_EC
+      condition:
+        - INT_CF_LINKS.ParticipatingCounterparty = EXMP_CP_EC.CounterpartyID
+        - INT_CF_LINKS.ParticipatingCounterpartySourceSystemIdentifier = EXMP_CP_EC.CounterpartySourceSystemIdentifier
+      how: left
+  
+  - add_variables:
+      column_mapping:
+        var_lowest_ExemptionClaimConditonID_CP_EC: min(EXMP_CP_EC.ExemptionConditionIdEC) OVER (PARTITION BY INT_CF_LINKS.CreditFacility)
 
 expressions:
   DeliveryEntity: CF.DeliveryEntity
@@ -137,18 +161,38 @@ expressions:
   LastPerformingPDModelCode: PD_UCR.LastPerformingPDModelCode
   InterCompanyFlag: IC.InterCompanyFlag
   LGDModelCode: LGD.LGDModelCode
-  BaselCreditRiskApproach: case when 1286EXMP.basel_approach='STD' then 'SA'
-                                when 1286EXMP.basel_approach='FOU' then 'FIRB'
-                                when 1286EXMP.basel_approach='IRB' then 'AIRB'
-                                else 1286EXMP.basel_approach
-                            end
-  ExemptionConditionId: 1286EXMP.exemption_condition_id
-  ExemptionId: 1286EXMP.exemption_id
-  ExemptionName: 1286EXMP.exemption_name
-  ExemptionType: case when 1286EXMP.exemption_end_date= '9999-12-31' then 'P' else 'T' end
+  BaselCreditRiskApproach: coalesce( 
+    case when least(EXMP_1286.exemption_condition_id, var_lowest_ExemptionClaimConditonID_CP_EC) = var_lowest_ExemptionClaimConditonID_CP_EC 
+         then EXMP_CP_EC.BaselCreditRiskApproach 
+    end,
+    case when EXMP_1286.basel_approach='STD' then 'SA'
+         when EXMP_1286.basel_approach='FOU' then 'FIRB'
+         when EXMP_1286.basel_approach='IRB' then 'AIRB'
+         else EXMP_1286.basel_approach
+    end
+    )
+  ExemptionConditionIdEC: least(EXMP_1286.exemption_condition_id, var_lowest_ExemptionClaimConditonID_CP_EC)
+  ExemptionIdEC: coalesce(
+    case when least(EXMP_1286.exemption_condition_id, var_lowest_ExemptionClaimConditonID_CP_EC) = var_lowest_ExemptionClaimConditonID_CP_EC 
+         then EXMP_CP_EC.ExemptionIdEC 
+    end,
+    EXMP_1286.exemption_id
+    )
+  ExemptionNameEC: coalesce(
+    case when least(EXMP_1286.exemption_condition_id, var_lowest_ExemptionClaimConditonID_CP_EC) = var_lowest_ExemptionClaimConditonID_CP_EC 
+         then EXMP_CP_EC.ExemptionNameEC 
+    end,
+    EXMP_1286.exemption_name
+    )
+  ExemptionTypeEC: coalesce(
+    case when least(EXMP_1286.exemption_condition_id, var_lowest_ExemptionClaimConditonID_CP_EC) = var_lowest_ExemptionClaimConditonID_CP_EC 
+         then EXMP_CP_EC.ExemptionTypeEC 
+    end,
+    case when EXMP_1286.exemption_end_date= '9999-12-31' then 'P' else 'T' end
+    )
 
 filter_target:
-- 1286EXMP.exemption_condition_id is not null
-- ExemptionConditionId = var_lowest_ExemptionClaimConditonID
+- EXMP_1286.exemption_condition_id is not null or var_lowest_ExemptionClaimConditonID_CP_EC is not null
+- ExemptionConditionIdEC = var_lowest_ExemptionClaimConditonID_FAC_EC or ExemptionConditionIdEC = var_lowest_ExemptionClaimConditonID_CP_EC
 
 drop_duplicates: true
