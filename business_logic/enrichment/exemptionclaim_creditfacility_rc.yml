@@ -1,4 +1,4 @@
-description: The exemption claim is used to identify the regulatory approach that applies to an exposure. There are "exemptions" that are prescribed by the regulation in the CRR Article 150, however, institutions can also ask permission to move specific portfolios to less sophisticated approaches (both SA and FIRB). The reference table 1286 contains a set of exemption conditions which rely on different sourced attributes that are used to define the portfolios eligible for the application of both i) the prescribed regulatory PPUs portfolios and ii) the additional requested portfolios. This exemption claim will first be checked at Counterparty level and then at facility level and product level. This YAML is to determine exemption at credit facility level for RC.
+description: The exemption claim is used to identify the regulatory approach that applies to an exposure. This YAML is to determine exemption at credit facility level for RC.
 
 target: enrich_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_exemptionclaim_creditfacility_rc
 
@@ -38,7 +38,25 @@ sources:
 
   # Exemption mapping table (1286) for RC
   - alias: EXMP_1286
-    source: stg_{{ RUN_MONTH }}.bsl_andes_1286_b2_exmp_cond #TODO: confirm RC table name
+    columns:
+    - exemption_condition_id
+    - exemption_id
+    - exemption_name
+    - exemption_end_date
+    - basel_approach
+    - reporting_entity_id
+    - b2_pd_type_id
+    - lgd_rtg_model
+    - pl_npl_indicator
+    - specialised_lending_type
+    - cr_pd_program
+    - pd_rtg_model
+    - b2_cpty_type_id
+    - intercompany_flag
+    - sourced_exemption_id
+    - ctpty_ssc
+    - ctpty_uid
+    source: stg_{{ RUN_MONTH }}.bsl_andes_1286_b2_exmp_cond
 
   # PD UCR integration data
   - alias: PD_UCR
@@ -161,35 +179,31 @@ expressions:
   LastPerformingPDModelCode: PD_UCR.LastPerformingPDModelCode
   InterCompanyFlag: IC.InterCompanyFlag
   LGDModelCode: LGD.LGDModelCode
-  BaselCreditRiskApproach: coalesce( 
-    case when least(EXMP_1286.exemption_condition_id, var_lowest_ExemptionClaimConditonID_CP_RC) = var_lowest_ExemptionClaimConditonID_CP_RC 
-         then EXMP_CP_RC.BaselCreditRiskApproach 
-    end,
-    case when EXMP_1286.basel_approach='STD' then 'SA'
-         when EXMP_1286.basel_approach='FOU' then 'FIRB'
-         when EXMP_1286.basel_approach='IRB' then 'AIRB'
-         else EXMP_1286.basel_approach
+  BaselCreditRiskApproach: case 
+    when least(EXMP_1286.exemption_condition_id, var_lowest_ExemptionClaimConditonID_CP_RC) = var_lowest_ExemptionClaimConditonID_CP_RC 
+         then EXMP_CP_RC.BaselCreditRiskApproach
+    when EXMP_1286.basel_approach='STD' then 'SA'
+    when EXMP_1286.basel_approach='FOU' then 'FIRB'
+    when EXMP_1286.basel_approach='IRB' then 'AIRB'
+    else EXMP_1286.basel_approach
     end
-    )
   ExemptionConditionIdRC: least(EXMP_1286.exemption_condition_id, var_lowest_ExemptionClaimConditonID_CP_RC)
-  ExemptionIdRC: coalesce(
-    case when least(EXMP_1286.exemption_condition_id, var_lowest_ExemptionClaimConditonID_CP_RC) = var_lowest_ExemptionClaimConditonID_CP_RC 
-         then EXMP_CP_RC.ExemptionIdRC 
-    end,
-    EXMP_1286.exemption_id
-    )
-  ExemptionNameRC: coalesce(
-    case when least(EXMP_1286.exemption_condition_id, var_lowest_ExemptionClaimConditonID_CP_RC) = var_lowest_ExemptionClaimConditonID_CP_RC 
-         then EXMP_CP_RC.ExemptionNameRC 
-    end,
-    EXMP_1286.exemption_name
-    )
-  ExemptionTypeRC: coalesce(
-    case when least(EXMP_1286.exemption_condition_id, var_lowest_ExemptionClaimConditonID_CP_RC) = var_lowest_ExemptionClaimConditonID_CP_RC 
-         then EXMP_CP_RC.ExemptionTypeRC 
-    end,
-    case when EXMP_1286.exemption_end_date= '9999-12-31' then 'P' else 'T' end
-    )
+  ExemptionIdRC: case 
+    when least(EXMP_1286.exemption_condition_id, var_lowest_ExemptionClaimConditonID_CP_RC) = var_lowest_ExemptionClaimConditonID_CP_RC 
+         then EXMP_CP_RC.ExemptionIdRC
+    else EXMP_1286.exemption_id
+    end
+  ExemptionNameRC: case 
+    when least(EXMP_1286.exemption_condition_id, var_lowest_ExemptionClaimConditonID_CP_RC) = var_lowest_ExemptionClaimConditonID_CP_RC 
+         then EXMP_CP_RC.ExemptionNameRC
+    else EXMP_1286.exemption_name
+    end
+  ExemptionTypeRC: case 
+    when least(EXMP_1286.exemption_condition_id, var_lowest_ExemptionClaimConditonID_CP_RC) = var_lowest_ExemptionClaimConditonID_CP_RC 
+         then EXMP_CP_RC.ExemptionTypeRC
+    when EXMP_1286.exemption_end_date = '9999-12-31' then 'P' 
+    else 'T' 
+    end
 
 filter_target:
 - EXMP_1286.exemption_condition_id is not null or var_lowest_ExemptionClaimConditonID_CP_RC is not null
