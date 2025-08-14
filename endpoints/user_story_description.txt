@@ -1,0 +1,16 @@
+Background
+
+The CICD setup was done to have the code available as a package. To be able to run this code from ADF, we need to create simple endpoints outside of the package that run the scripts inside it.
+
+The endpoint should be very simple, all logic should be in the scripts in the package.
+Components:
+  1. Import of the script module
+  2. Pass arguments as parameters to the module
+  3. Trigger module
+
+Tasks
+1. Create an endpoint for every script.
+2. Check if they get deployed properly when triggering the pipeline.
+3. Test them from data factory in a separate pipeline -- via test pipeline (with just one python task)
+4. Once it works from datafactory, update the ADF pipelines to use the endpoint instead of the workspace version and test from there (both via Debug and Trigger, because those have different behaviour at times)
+    4.1 Check with team if no one is using that pipeline at the time
