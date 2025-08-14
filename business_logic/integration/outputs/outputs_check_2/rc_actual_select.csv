@@ -1,0 +1,3 @@
+query_type,CreditFacilityID,ExemptionConditionIdRC,ExemptionNameRC,BaselCreditRiskApproach
+RC_RESULT,1N02060594,1640,PPU4_Non-Mainbank Corporates,FIRB
+RC_RESULT,1N02060594,1552,Specialised Lending Commercial Real Estate,AIRB
