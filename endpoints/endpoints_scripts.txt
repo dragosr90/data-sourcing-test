@@ -1,0 +1,176 @@
+"""
+Azure Data Factory Endpoint Scripts
+Each script serves as a simple entry point that imports and calls the corresponding module from the package
+"""
+
+# ============================================
+# 1. run_dial_staging.py
+# ============================================
+import sys
+from abnamro_bsrc_etl.scripts.dial_staging_process import dial_load
+from abnamro_bsrc_etl.utils.logging_util import get_logger
+
+logger = get_logger()
+
+if __name__ == "__main__":
+    # Get args: run_month, [run_id]
+    if len(sys.argv) not in [2, 3]:
+        logger.error(
+            "Incorrect number of parameters, expected 1 or 2: "
+            "run_month, [run_id]"
+        )
+        sys.exit(-1)
+    
+    script, run_month, *run_id_li = sys.argv
+    run_id = 1 if not run_id_li else int(run_id_li[0])
+    
+    dial_load(
+        spark=spark,  # type: ignore[name-defined]
+        run_month=run_month,
+        run_id=run_id,
+    )
+
+
+# ============================================
+# 2. run_nonssf_staging.py
+# ============================================
+import sys
+from abnamro_bsrc_etl.scripts.nonssf_staging_process import non_ssf_load
+from abnamro_bsrc_etl.utils.logging_util import get_logger
+
+logger = get_logger()
+
+if __name__ == "__main__":
+    # Get args: run_month, [run_id]
+    if len(sys.argv) not in [2, 3]:
+        logger.error(
+            "Incorrect number of parameters, expected 1 or 2: "
+            "run_month, [run_id]"
+        )
+        sys.exit(-1)
+    
+    script, run_month, *run_id_li = sys.argv
+    run_id = 1 if not run_id_li else int(run_id_li[0])
+    
+    non_ssf_load(
+        spark=spark,  # type: ignore[name-defined]
+        run_month=run_month,
+        run_id=run_id,
+    )
+
+
+# ============================================
+# 3. run_ssf_staging.py
+# ============================================
+import sys
+from abnamro_bsrc_etl.scripts.ssf_staging_process import ssf_load
+from abnamro_bsrc_etl.utils.logging_util import get_logger
+
+logger = get_logger()
+
+if __name__ == "__main__":
+    # Get args: run_month, [run_id]
+    if len(sys.argv) not in [2, 3]:
+        logger.error(
+            "Incorrect number of parameters, expected 1 or 2: "
+            "run_month, [run_id]"
+        )
+        sys.exit(-1)
+    
+    script, run_month, *run_id_li = sys.argv
+    run_id = 1 if not run_id_li else int(run_id_li[0])
+    
+    ssf_load(
+        spark=spark,  # type: ignore[name-defined]
+        run_month=run_month,
+        run_id=run_id,
+    )
+
+
+# ============================================
+# 4. run_dial_check_delayed.py
+# ============================================
+import sys
+from abnamro_bsrc_etl.scripts.dial_check_delayed_files import run_check_delayed
+from abnamro_bsrc_etl.utils.logging_util import get_logger
+
+logger = get_logger()
+
+if __name__ == "__main__":
+    # Get args: run_month
+    if len(sys.argv) != 2:
+        logger.error(
+            "Incorrect number of parameters, expected 1: run_month"
+        )
+        sys.exit(-1)
+    
+    script, run_month = sys.argv
+    
+    run_check_delayed(
+        spark=spark,  # type: ignore[name-defined]
+        run_month=run_month,
+    )
+
+
+# ============================================
+# 5. run_new_month_setup.py
+# ============================================
+import sys
+from abnamro_bsrc_etl.scripts.new_month_setup import new_month_catalog_setup
+from abnamro_bsrc_etl.utils.logging_util import get_logger
+
+logger = get_logger()
+
+if __name__ == "__main__":
+    # Get args: [month_no]
+    if len(sys.argv) not in [1, 2]:
+        logger.error(
+            "Incorrect number of parameters, expected 0 or 1: [month_no]"
+        )
+        sys.exit(-1)
+    
+    script, *month_no_li = sys.argv
+    month_no = None if not month_no_li else month_no_li[0]
+    
+    new_month_catalog_setup(
+        spark=spark,  # type: ignore[name-defined]
+        month_no=month_no,
+    )
+
+
+# ============================================
+# 6. run_mapping.py (already exists, but here for completeness)
+# ============================================
+import sys
+from abnamro_bsrc_etl.scripts.run_mapping import run_mapping
+from abnamro_bsrc_etl.utils.logging_util import get_logger
+
+logger = get_logger()
+
+if __name__ == "__main__":
+    # Get args: stage, target_mapping, run_month, [delivery_entity, parent_workflow, run_id]
+    if len(sys.argv) not in [4, 5, 6, 7]:
+        logger.error(
+            "Incorrect number of parameters, expected 3-6: "
+            "stage, target_mapping, run_month, "
+            "[delivery_entity, parent_workflow, run_id]"
+        )
+        sys.exit(-1)
+    
+    script, stage, target_mapping, run_month = sys.argv[:4]
+    remaining_args = sys.argv[4:]
+    
+    # Parse optional arguments
+    delivery_entity = "" if len(remaining_args) < 1 else remaining_args[0]
+    parent_workflow = "" if len(remaining_args) < 2 else remaining_args[1]
+    run_id = 1 if len(remaining_args) < 3 else int(remaining_args[2])
+    
+    run_mapping(
+        spark=spark,  # type: ignore[name-defined]
+        stage=stage,
+        target_mapping=target_mapping,
+        run_month=run_month,
+        delivery_entity=delivery_entity,
+        parent_workflow=parent_workflow,
+        run_id=run_id,
+    )
