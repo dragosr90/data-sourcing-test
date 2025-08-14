@@ -1,0 +1,21 @@
+Source,ExemptionConditionId,ExemptionName,BaselCreditRiskApproach,facility_count
+RC,1640,PPU4_Non-Mainbank Corporates,FIRB,2335
+RC,1528,Article_151_8,FIRB,631
+RC,1552,Specialised Lending Commercial Real Estate,AIRB,330
+RC,1158,Article_151_8_EC Foundation,FIRB,133
+RC,359,Starting companies Non-NL,SA,129
+RC,1553,Specialised Lending Residential Real Estate,AIRB,123
+RC,1560,PPU4_Large Corporates above 500 mln,FIRB,118
+RC,1200,Article_151_8_EC Foundation,FIRB,117
+RC,1169,Article_151_8_EC Foundation,FIRB,60
+RC,1512,Article_151_8,FIRB,31
+RC,1511,Article_151_8,FIRB,23
+RC,100,Intercompany,SA,15
+RC,1684,PPU4_NMB Corps LGD proxy cor,FIRB,15
+RC,1515,Article_151_8,FIRB,10
+RC,1682,PPU4_Non-Mainbank Corporates,FIRB,7
+RC,352,Multilateral Development Bank,SA,4
+RC,1527,Article_151_8,FIRB,4
+RC,1171,Article_151_8_EC Foundation,FIRB,3
+RC,702,PPU3_Other Sov Exposures ,SA,2
+RC,701,PPU3_Other Sov Exposures ,SA,2

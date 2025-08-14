@@ -1,0 +1,8 @@
+CreditFacilityID,EC_ConditionId,EC_Name,EC_Approach,RC_ConditionId,RC_Name,RC_Approach,EC_IntercompanyFlag,RC_IntercompanyFlag
+1N000134933,1169,Article_151_8_EC Foundation,FIRB,100,Intercompany,SA,Y,Y
+1N00710022,1851,PPU3_Commercial Banks PD PICO F-IRB,FIRB,100,Intercompany,SA,Y,Y
+1N01009074,1156,Article_151_8_EC Foundation,FIRB,100,Intercompany,SA,Y,Y
+1N01178715,1553,Specialised Lending Residential Real Estate,AIRB,1553,Specialised Lending Residential Real Estate,AIRB,null,null
+1N01178715,1553,Specialised Lending Residential Real Estate,AIRB,1640,PPU4_Non-Mainbank Corporates,FIRB,null,null
+1N01354915,1552,Specialised Lending Commercial Real Estate,AIRB,1552,Specialised Lending Commercial Real Estate,AIRB,null,null
+1N01354915,1552,Specialised Lending Commercial Real Estate,AIRB,1640,PPU4_Non-Mainbank Corporates,FIRB,null,null

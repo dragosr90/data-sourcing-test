@@ -1,0 +1,9 @@
+exemption_condition_id,exemption_name,basel_approach,ec_model_input_indicator,count
+100,Intercompany,STD,N,1
+359,Starting companies Non-NL,STD,N,1
+1169,Article_151_8_EC Foundation,FOU,Y,1
+1552,Specialised Lending Commercial Real Estate,IRB,Y,1
+1553,Specialised Lending Residential Real Estate,IRB,Y,1
+1640,PPU4_Non-Mainbank Corporates,FOU,Y,1
+1684,PPU4_NMB Corps LGD proxy cor,FOU,Y,1
+1851,PPU3_Commercial Banks PD PICO F-IRB,FOU,Y,1

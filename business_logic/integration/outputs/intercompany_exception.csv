@@ -1,0 +1,2 @@
+exemption_condition_id,exemption_id,exemption_name,basel_approach,ec_model_input_indicator,exemption_end_date,reporting_entity_id,b2_pd_type_id,b2_cpty_type_id,intercompany_flag
+100,ICO,Intercompany,STD,N,9999-12-31,*,*,*,Y

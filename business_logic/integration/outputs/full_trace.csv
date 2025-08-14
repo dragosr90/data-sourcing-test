@@ -1,0 +1,11 @@
+Pipeline,exemption_condition_id,exemption_name,basel_approach,ec_model_input_indicator,intercompany_flag,rn
+EC,473,NPL PPU SOV Nationale Hypotheek Garantie,STD,Y,*,1
+EC,750,EBA list exemption,STD,Y,*,2
+EC,751,EBA list exemption,STD,Y,*,3
+EC,752,EBA list exemption,STD,Y,*,4
+EC,753,EBA list exemption,STD,Y,*,5
+RC,100,Intercompany,STD,N,Y,1
+RC,473,NPL PPU SOV Nationale Hypotheek Garantie,STD,Y,*,2
+RC,476,PPU3_Commodities ,STD,N,*,3
+RC,477,PPU3_Commodities ,STD,N,*,4
+RC,481,PPU3_Diamonds ,STD,N,*,5
