@@ -1,11 +1,308 @@
-# Mainbank exemption claim counterparty:
-select * from bsrc_d.int_202505.mainbank_exemptionclaim_counterparty_ec a
-left join bsrc_d.enrich_202505.mainbank_exemptionclaim_counterparty_rc b
-on a.CounterpartyID=b.CounterpartyID and a.CounterpartySourceSystemIdentifier=b.CounterpartySourceSystemIdentifier
-where not (a.ExemptionConditionId=b.ExemptionConditionIdRC) or not (a.BaselCreditRiskApproach=b.BaselCreditRiskApproach) or not (a.ExemptionType=b.ExemptionTypeRC)
+-- =====================================================
+-- INVESTIGATION QUERIES FOR EC vs RC EXEMPTION DIFFERENCES
+-- =====================================================
 
-# Mainbank exemption claim credit facility:
-select * from bsrc_d.int_202505.mainbank_exemptionclaim_creditfacility_ec a
-left join bsrc_d.enrich_202505.mainbank_exemptionclaim_creditfacility_rc b
-on a.CreditFacilityID=b.CreditFacilityID and a.CreditFacilitySourceSystemIdentifier=b.CreditFacilitySourceSystemIdentifier
-where not (a.ExemptionConditionId=b.ExemptionConditionIdRC) or not (a.BaselCreditRiskApproach=b.BaselCreditRiskApproach) or not (a.ExemptionType=b.ExemptionTypeRC)
+-- 1. CHECK INTERCOMPANY EXEMPTION (ID 100) IN SOURCE TABLE
+-- Check if it exists and what its EC_MODEL_INPUT_INDICATOR value is
+SELECT 
+    exemption_condition_id,
+    exemption_id,
+    exemption_name,
+    basel_approach,
+    ec_model_input_indicator,
+    exemption_end_date,
+    reporting_entity_id,
+    b2_pd_type_id,
+    b2_cpty_type_id,
+    intercompany_flag
+FROM stg_202505.bsl_andes_1286_b2_exmp_cond
+WHERE exemption_condition_id = 100
+   OR exemption_name = 'Intercompany';
+
+-- 2. CHECK WHAT EXEMPTIONS ARE AVAILABLE FOR A SAMPLE FACILITY
+-- Let's use facility '1N000134933' which shows EC:1169→RC:100 difference
+
+-- 2a. Get facility details first
+SELECT 
+    LocalFacilityIdentifier,
+    SourceSystemIdentifier,
+    CounterpartyID,
+    CounterpartySourceSystemIdentifier,
+    BaselIIProductType,
+    PlNplIndicator,
+    SpecialisedLendingType,
+    ProductProgram,
+    ReportingEntity,
+    ExemptionFromAdvancedInternalRatingBasedApproach
+FROM int_202505.ihubfr1_integrated_creditfacility
+WHERE LocalFacilityIdentifier = '1N000134933'
+  AND SubFacilityFlag = 'N';
+
+-- 2b. Get counterparty details
+SELECT 
+    cp.LocalId,
+    cp.SourceSystemIdentifier,
+    cp.BaselIICounterpartyType,
+    cp.ExemptionFromAdvancedInternalRatingBasedApproach,
+    ic.InterCompanyFlag
+FROM int_202505.ihubfr1_integrated_counterparty cp
+LEFT JOIN int_202505.ihubfr1_intercompany ic
+    ON cp.LocalId = ic.CounterpartyID
+    AND cp.SourceSystemIdentifier = ic.CounterpartySourceSystemIdentifier
+WHERE cp.LocalId IN (
+    SELECT CounterpartyID 
+    FROM int_202505.ihubfr1_integrated_creditfacility
+    WHERE LocalFacilityIdentifier = '1N000134933'
+);
+
+-- 3. CHECK ALL MATCHING EXEMPTIONS FOR THIS FACILITY (BEFORE MIN)
+-- This shows what exemptions COULD match before we apply MIN()
+WITH facility_data AS (
+    SELECT 
+        cf.LocalFacilityIdentifier,
+        cf.SourceSystemIdentifier,
+        cf.ReportingEntity,
+        cf.BaselIIProductType,
+        cf.PlNplIndicator,
+        cf.SpecialisedLendingType,
+        cf.ProductProgram,
+        cf.CounterpartyID,
+        cf.CounterpartySourceSystemIdentifier,
+        cf.ExemptionFromAdvancedInternalRatingBasedApproach as cf_sourced_exemption,
+        cp.BaselIICounterpartyType,
+        cp.ExemptionFromAdvancedInternalRatingBasedApproach as cp_sourced_exemption,
+        pd.PDModelCode,
+        pd.LastPerformingPDModelCode,
+        ic.InterCompanyFlag,
+        lgd.LGDModelCode
+    FROM int_202505.ihubfr1_integrated_creditfacility cf
+    LEFT JOIN int_202505.ihubfr1_integrated_counterparty cp
+        ON cf.CounterpartyID = cp.LocalId
+        AND cf.CounterpartySourceSystemIdentifier = cp.SourceSystemIdentifier
+    LEFT JOIN int_202505.ihubfr1_pd_ucr_step3 pd
+        ON cf.CounterpartyID = pd.CounterpartyID
+        AND cf.CounterpartySourceSystemIdentifier = pd.CounterpartySourceSystemIdentifier
+    LEFT JOIN int_202505.ihubfr1_intercompany ic
+        ON cf.CounterpartyID = ic.CounterpartyID
+        AND cf.CounterpartySourceSystemIdentifier = ic.CounterpartySourceSystemIdentifier
+    LEFT JOIN int_202505.ihubfr1_lgd lgd
+        ON cf.LocalFacilityIdentifier = lgd.CreditFacilityID
+        AND cf.SourceSystemIdentifier = lgd.CreditFacilitySourceSystemIdentifier
+    WHERE cf.LocalFacilityIdentifier = '1N000134933'
+      AND cf.SubFacilityFlag = 'N'
+)
+SELECT 
+    exmp.exemption_condition_id,
+    exmp.exemption_id,
+    exmp.exemption_name,
+    exmp.basel_approach,
+    exmp.ec_model_input_indicator,
+    exmp.intercompany_flag as exmp_intercompany_flag,
+    fd.InterCompanyFlag as actual_intercompany_flag,
+    CASE 
+        WHEN exmp.reporting_entity_id = fd.ReportingEntity THEN 'MATCH'
+        WHEN exmp.reporting_entity_id = '*' THEN 'WILDCARD'
+        ELSE 'NO_MATCH'
+    END as reporting_entity_match,
+    CASE 
+        WHEN exmp.b2_pd_type_id = fd.BaselIIProductType THEN 'MATCH'
+        WHEN exmp.b2_pd_type_id = '*' THEN 'WILDCARD'
+        ELSE 'NO_MATCH'
+    END as product_type_match,
+    CASE 
+        WHEN exmp.b2_cpty_type_id = fd.BaselIICounterpartyType THEN 'MATCH'
+        WHEN exmp.b2_cpty_type_id = '*' THEN 'WILDCARD'
+        ELSE 'NO_MATCH'
+    END as cpty_type_match,
+    CASE 
+        WHEN exmp.intercompany_flag = fd.InterCompanyFlag THEN 'MATCH'
+        WHEN exmp.intercompany_flag = '*' THEN 'WILDCARD'
+        ELSE 'NO_MATCH'
+    END as intercompany_match
+FROM facility_data fd
+CROSS JOIN stg_202505.bsl_andes_1286_b2_exmp_cond exmp
+WHERE 
+    -- All join conditions from the YAML
+    (exmp.reporting_entity_id = fd.ReportingEntity OR exmp.reporting_entity_id = '*')
+    AND (exmp.b2_pd_type_id = fd.BaselIIProductType OR exmp.b2_pd_type_id = '*')
+    AND (exmp.lgd_rtg_model = fd.LGDModelCode OR exmp.lgd_rtg_model = '*')
+    AND (exmp.pl_npl_indicator = fd.PlNplIndicator OR exmp.pl_npl_indicator = '*')
+    AND (exmp.specialised_lending_type = fd.SpecialisedLendingType OR exmp.specialised_lending_type = '*')
+    AND (exmp.cr_pd_program = fd.ProductProgram OR exmp.cr_pd_program = '*')
+    AND (exmp.pd_rtg_model = fd.PDModelCode OR exmp.pd_rtg_model = fd.LastPerformingPDModelCode OR exmp.pd_rtg_model = '*')
+    AND (exmp.b2_cpty_type_id = fd.BaselIICounterpartyType OR exmp.b2_cpty_type_id = '*')
+    AND (exmp.intercompany_flag = (CASE WHEN fd.InterCompanyFlag = 'Y' THEN 'Y' ELSE '*' END) OR exmp.intercompany_flag = '*')
+    AND (UPPER(exmp.sourced_exemption_id) = UPPER(COALESCE(fd.cf_sourced_exemption, fd.cp_sourced_exemption)) OR exmp.sourced_exemption_id = '*')
+ORDER BY exmp.exemption_condition_id;
+
+-- 4. COMPARE EC AND RC EXEMPTIONS FOR SPECIFIC FACILITIES
+-- Shows what each selected and why
+SELECT 
+    ec.CreditFacilityID,
+    ec.ExemptionConditionId as EC_ConditionId,
+    ec.ExemptionName as EC_Name,
+    ec.BaselCreditRiskApproach as EC_Approach,
+    rc.ExemptionConditionIdRC as RC_ConditionId,
+    rc.ExemptionNameRC as RC_Name,
+    rc.BaselCreditRiskApproach as RC_Approach,
+    ec.InterCompanyFlag as EC_IntercompanyFlag,
+    rc.InterCompanyFlag as RC_IntercompanyFlag
+FROM int_202505.ihubfr1_exemptionclaim_creditfacility_ec ec
+LEFT JOIN int_202505.ihubfr1_exemptionclaim_creditfacility_rc rc
+    ON ec.CreditFacilityID = rc.CreditFacilityID
+    AND ec.CreditFacilitySourceSystemIdentifier = rc.CreditFacilitySourceSystemIdentifier
+WHERE ec.CreditFacilityID IN ('1N000134933', '1N00710022', '1N01009074', '1N01178715', '1N01354915')
+ORDER BY ec.CreditFacilityID;
+
+-- 5. CHECK EXEMPTION DISTRIBUTION
+-- See how many facilities are affected by each exemption type
+SELECT 
+    'EC' as Source,
+    ExemptionConditionId,
+    ExemptionName,
+    BaselCreditRiskApproach,
+    COUNT(*) as facility_count
+FROM int_202505.ihubfr1_exemptionclaim_creditfacility_ec
+GROUP BY ExemptionConditionId, ExemptionName, BaselCreditRiskApproach
+ORDER BY facility_count DESC
+LIMIT 20;
+
+SELECT 
+    'RC' as Source,
+    ExemptionConditionIdRC as ExemptionConditionId,
+    ExemptionNameRC as ExemptionName,
+    BaselCreditRiskApproach,
+    COUNT(*) as facility_count
+FROM int_202505.ihubfr1_exemptionclaim_creditfacility_rc
+GROUP BY ExemptionConditionIdRC, ExemptionNameRC, BaselCreditRiskApproach
+ORDER BY facility_count DESC
+LIMIT 20;
+
+-- 6. CHECK IF EC_MODEL_INPUT_INDICATOR IS CAUSING THE DIFFERENCE
+-- Look at exemptions with different EC_MODEL_INPUT_INDICATOR values
+SELECT 
+    exemption_condition_id,
+    exemption_name,
+    basel_approach,
+    ec_model_input_indicator,
+    COUNT(*) as count
+FROM stg_202505.bsl_andes_1286_b2_exmp_cond
+WHERE exemption_condition_id IN (
+    100,  -- Intercompany
+    359,  -- Starting companies Non-NL
+    1169, -- Article_151_8_EC Foundation
+    1552, -- Specialised Lending Commercial Real Estate
+    1553, -- Specialised Lending Residential Real Estate
+    1640, -- PPU4_Non-Mainbank Corporates
+    1684, -- PPU4_NMB Corps LGD proxy cor
+    1851  -- PPU3_Commercial Banks PD PICO F-IRB
+)
+GROUP BY exemption_condition_id, exemption_name, basel_approach, ec_model_input_indicator
+ORDER BY exemption_condition_id;
+
+-- 7. CHECK FOR DUPLICATE EXEMPTIONS WITH SAME CONDITION ID
+-- Sometimes there might be multiple rows with same condition_id but different criteria
+SELECT 
+    exemption_condition_id,
+    exemption_name,
+    COUNT(*) as row_count,
+    COUNT(DISTINCT ec_model_input_indicator) as distinct_ec_indicators,
+    COUNT(DISTINCT intercompany_flag) as distinct_intercompany_flags,
+    COUNT(DISTINCT reporting_entity_id) as distinct_reporting_entities
+FROM stg_202505.bsl_andes_1286_b2_exmp_cond
+WHERE exemption_condition_id IN (100, 359, 1169, 1552, 1553, 1640, 1684, 1851)
+GROUP BY exemption_condition_id, exemption_name
+HAVING COUNT(*) > 1
+ORDER BY exemption_condition_id;
+
+-- 8. TRACE THE FULL EXEMPTION SELECTION PROCESS FOR A FACILITY
+-- This mimics what the YAML does step by step
+WITH facility_base AS (
+    SELECT 
+        cf.*,
+        cp.BaselIICounterpartyType,
+        cp.ExemptionFromAdvancedInternalRatingBasedApproach as cp_exemption,
+        pd.PDModelCode,
+        pd.LastPerformingPDModelCode,
+        ic.InterCompanyFlag,
+        lgd.LGDModelCode
+    FROM int_202505.ihubfr1_integrated_creditfacility cf
+    LEFT JOIN int_202505.ihubfr1_integrated_counterparty cp
+        ON cf.CounterpartyID = cp.LocalId
+        AND cf.CounterpartySourceSystemIdentifier = cp.SourceSystemIdentifier
+    LEFT JOIN int_202505.ihubfr1_pd_ucr_step3 pd
+        ON cf.CounterpartyID = pd.CounterpartyID
+        AND cf.CounterpartySourceSystemIdentifier = pd.CounterpartySourceSystemIdentifier
+    LEFT JOIN int_202505.ihubfr1_intercompany ic
+        ON cf.CounterpartyID = ic.CounterpartyID
+        AND cf.CounterpartySourceSystemIdentifier = ic.CounterpartySourceSystemIdentifier
+    LEFT JOIN int_202505.ihubfr1_lgd lgd
+        ON cf.LocalFacilityIdentifier = lgd.CreditFacilityID
+        AND cf.SourceSystemIdentifier = lgd.CreditFacilitySourceSystemIdentifier
+    WHERE cf.LocalFacilityIdentifier = '1N000134933'
+      AND cf.SubFacilityFlag = 'N'
+),
+ec_exemptions AS (
+    SELECT 
+        fb.LocalFacilityIdentifier,
+        exmp.*,
+        ROW_NUMBER() OVER (PARTITION BY fb.LocalFacilityIdentifier ORDER BY exmp.exemption_condition_id) as rn
+    FROM facility_base fb
+    CROSS JOIN stg_202505.bsl_andes_1286_b2_exmp_cond exmp
+    WHERE 
+        -- EC FILTER
+        (exmp.ec_model_input_indicator = 'Y' OR exmp.ec_model_input_indicator IS NULL)
+        -- All other conditions
+        AND (exmp.reporting_entity_id = fb.ReportingEntity OR exmp.reporting_entity_id = '*')
+        AND (exmp.b2_pd_type_id = fb.BaselIIProductType OR exmp.b2_pd_type_id = '*')
+        AND (exmp.lgd_rtg_model = fb.LGDModelCode OR exmp.lgd_rtg_model = '*')
+        AND (exmp.pl_npl_indicator = fb.PlNplIndicator OR exmp.pl_npl_indicator = '*')
+        AND (exmp.specialised_lending_type = fb.SpecialisedLendingType OR exmp.specialised_lending_type = '*')
+        AND (exmp.cr_pd_program = fb.ProductProgram OR exmp.cr_pd_program = '*')
+        AND (exmp.pd_rtg_model = fb.PDModelCode OR exmp.pd_rtg_model = fb.LastPerformingPDModelCode OR exmp.pd_rtg_model = '*')
+        AND (exmp.b2_cpty_type_id = fb.BaselIICounterpartyType OR exmp.b2_cpty_type_id = '*')
+        AND (exmp.intercompany_flag = (CASE WHEN fb.InterCompanyFlag = 'Y' THEN 'Y' ELSE '*' END) OR exmp.intercompany_flag = '*')
+        AND (UPPER(exmp.sourced_exemption_id) = UPPER(COALESCE(fb.ExemptionFromAdvancedInternalRatingBasedApproach, fb.cp_exemption)) OR exmp.sourced_exemption_id = '*')
+),
+rc_exemptions AS (
+    SELECT 
+        fb.LocalFacilityIdentifier,
+        exmp.*,
+        ROW_NUMBER() OVER (PARTITION BY fb.LocalFacilityIdentifier ORDER BY exmp.exemption_condition_id) as rn
+    FROM facility_base fb
+    CROSS JOIN stg_202505.bsl_andes_1286_b2_exmp_cond exmp
+    WHERE 
+        -- NO EC FILTER FOR RC
+        (exmp.reporting_entity_id = fb.ReportingEntity OR exmp.reporting_entity_id = '*')
+        AND (exmp.b2_pd_type_id = fb.BaselIIProductType OR exmp.b2_pd_type_id = '*')
+        AND (exmp.lgd_rtg_model = fb.LGDModelCode OR exmp.lgd_rtg_model = '*')
+        AND (exmp.pl_npl_indicator = fb.PlNplIndicator OR exmp.pl_npl_indicator = '*')
+        AND (exmp.specialised_lending_type = fb.SpecialisedLendingType OR exmp.specialised_lending_type = '*')
+        AND (exmp.cr_pd_program = fb.ProductProgram OR exmp.cr_pd_program = '*')
+        AND (exmp.pd_rtg_model = fb.PDModelCode OR exmp.pd_rtg_model = fb.LastPerformingPDModelCode OR exmp.pd_rtg_model = '*')
+        AND (exmp.b2_cpty_type_id = fb.BaselIICounterpartyType OR exmp.b2_cpty_type_id = '*')
+        AND (exmp.intercompany_flag = (CASE WHEN fb.InterCompanyFlag = 'Y' THEN 'Y' ELSE '*' END) OR exmp.intercompany_flag = '*')
+        AND (UPPER(exmp.sourced_exemption_id) = UPPER(COALESCE(fb.ExemptionFromAdvancedInternalRatingBasedApproach, fb.cp_exemption)) OR exmp.sourced_exemption_id = '*')
+)
+SELECT 
+    'EC' as Pipeline,
+    exemption_condition_id,
+    exemption_name,
+    basel_approach,
+    ec_model_input_indicator,
+    intercompany_flag,
+    rn
+FROM ec_exemptions
+WHERE rn <= 5  -- Show top 5 matches
+UNION ALL
+SELECT 
+    'RC' as Pipeline,
+    exemption_condition_id,
+    exemption_name,
+    basel_approach,
+    ec_model_input_indicator,
+    intercompany_flag,
+    rn
+FROM rc_exemptions
+WHERE rn <= 5  -- Show top 5 matches
+ORDER BY Pipeline, exemption_condition_id;
