@@ -219,13 +219,22 @@ ORDER BY exemption_condition_id;
 -- This mimics what the YAML does step by step
 WITH facility_base AS (
     SELECT 
-        cf.*,
+        cf.LocalFacilityIdentifier,
+        cf.SourceSystemIdentifier,
+        cf.ReportingEntity,
+        cf.BaselIIProductType,
+        cf.PlNplIndicator,
+        cf.SpecialisedLendingType,
+        cf.ProductProgram,
+        cf.CounterpartyID,
+        cf.CounterpartySourceSystemIdentifier,
+        cf.ExemptionFromAdvancedInternalRatingBasedApproach,
         cp.BaselIICounterpartyType,
         cp.ExemptionFromAdvancedInternalRatingBasedApproach as cp_exemption,
         pd.PDModelCode,
         pd.LastPerformingPDModelCode,
         ic.InterCompanyFlag,
-        lgd.LGDModelCode
+        lgd.LGDModelCode as lgd_model_code
     FROM int_202505.ihubfr1_integrated_creditfacility cf
     LEFT JOIN int_202505.ihubfr1_integrated_counterparty cp
         ON cf.CounterpartyID = cp.LocalId
@@ -255,7 +264,7 @@ ec_exemptions AS (
         -- All other conditions
         AND (exmp.reporting_entity_id = fb.ReportingEntity OR exmp.reporting_entity_id = '*')
         AND (exmp.b2_pd_type_id = fb.BaselIIProductType OR exmp.b2_pd_type_id = '*')
-        AND (exmp.lgd_rtg_model = fb.LGDModelCode OR exmp.lgd_rtg_model = '*')
+        AND (exmp.lgd_rtg_model = fb.lgd_model_code OR exmp.lgd_rtg_model = '*')
         AND (exmp.pl_npl_indicator = fb.PlNplIndicator OR exmp.pl_npl_indicator = '*')
         AND (exmp.specialised_lending_type = fb.SpecialisedLendingType OR exmp.specialised_lending_type = '*')
         AND (exmp.cr_pd_program = fb.ProductProgram OR exmp.cr_pd_program = '*')
@@ -275,7 +284,7 @@ rc_exemptions AS (
         -- NO EC FILTER FOR RC
         (exmp.reporting_entity_id = fb.ReportingEntity OR exmp.reporting_entity_id = '*')
         AND (exmp.b2_pd_type_id = fb.BaselIIProductType OR exmp.b2_pd_type_id = '*')
-        AND (exmp.lgd_rtg_model = fb.LGDModelCode OR exmp.lgd_rtg_model = '*')
+        AND (exmp.lgd_rtg_model = fb.lgd_model_code OR exmp.lgd_rtg_model = '*')
         AND (exmp.pl_npl_indicator = fb.PlNplIndicator OR exmp.pl_npl_indicator = '*')
         AND (exmp.specialised_lending_type = fb.SpecialisedLendingType OR exmp.specialised_lending_type = '*')
         AND (exmp.cr_pd_program = fb.ProductProgram OR exmp.cr_pd_program = '*')
