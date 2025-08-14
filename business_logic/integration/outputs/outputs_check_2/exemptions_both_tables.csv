@@ -1,0 +1,8 @@
+exemption_condition_id,ec_name,rc_name,ec_approach,rc_approach,ec_indicator,rc_indicator,presence
+100,Intercompany,Intercompany,STD,STD,N,N,BOTH
+359,Starting companies Non-NL,Starting companies Non-NL,STD,STD,N,N,BOTH
+1169,Article_151_8_EC Foundation,Article_151_8_EC Foundation,FOU,FOU,Y,Y,BOTH
+1552,Specialised Lending Commercial Real Estate,Specialised Lending Commercial Real Estate,IRB,IRB,Y,Y,BOTH
+1553,Specialised Lending Residential Real Estate,Specialised Lending Residential Real Estate,IRB,IRB,Y,Y,BOTH
+1640,PPU4_Non-Mainbank Corporates,PPU4_Non-Mainbank Corporates,FOU,FOU,Y,Y,BOTH
+1851,PPU3_Commercial Banks PD PICO F-IRB,PPU3_Commercial Banks PD PICO F-IRB,FOU,FOU,Y,Y,BOTH

@@ -1,0 +1,7 @@
+source,exemption_condition_id,exemption_name,basel_approach,specialised_lending_type,row_count
+EC,1552,Specialised Lending Commercial Real Estate,IRB,IPREF-CRE,1
+RC,1552,Specialised Lending Commercial Real Estate,IRB,IPREF-CRE,1
+EC,1553,Specialised Lending Residential Real Estate,IRB,IPREF-RRE,1
+RC,1553,Specialised Lending Residential Real Estate,IRB,IPREF-RRE,1
+EC,1640,PPU4_Non-Mainbank Corporates,FOU,*,1
+RC,1640,PPU4_Non-Mainbank Corporates,FOU,*,1

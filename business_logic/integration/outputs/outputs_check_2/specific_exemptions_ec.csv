@@ -1,0 +1,4 @@
+source,exemption_condition_id,exemption_id,exemption_name,basel_approach,ec_model_input_indicator,exemption_end_date,reporting_entity_id,b2_pd_type_id,specialised_lending_type
+EC_source,1552,AIRB_SL_CRE,Specialised Lending Commercial Real Estate,IRB,Y,9999-12-31,*,*,IPREF-CRE
+EC_source,1553,AIRB_SL_RRE,Specialised Lending Residential Real Estate,IRB,Y,9999-12-31,*,*,IPREF-RRE
+EC_source,1640,NMB Corps_ECIRB,PPU4_Non-Mainbank Corporates,FOU,Y,9999-12-31,810219,*,*
