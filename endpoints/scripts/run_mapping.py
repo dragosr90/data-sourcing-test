@@ -1,0 +1,122 @@
+"""Script to run the mapping
+
+Args:
+  stage
+  target_mapping
+  run_month
+  [delivery_entity]"""
+
+import sys
+from datetime import datetime, timezone
+
+from pyspark.sql import SparkSession
+
+from abnamro_bsrc_etl.config.constants import PROJECT_ROOT_DIRECTORY
+from abnamro_bsrc_etl.extract.master_data_sql import GetIntegratedData
+from abnamro_bsrc_etl.transform.table_write_and_comment import write_and_comment
+from abnamro_bsrc_etl.transform.transform_business_logic_sql import (
+    transform_business_logic_sql,
+)
+from abnamro_bsrc_etl.utils.get_env import get_catalog
+from abnamro_bsrc_etl.utils.parse_yaml import parse_yaml
+from abnamro_bsrc_etl.utils.table_logging import write_to_log
+from abnamro_bsrc_etl.validate.run_all import validate_business_logic_mapping
+
+
+def run_mapping(
+    spark: SparkSession,
+    stage: str,
+    target_mapping: str,
+    run_month: str,
+    dq_check_folder: str = "dq_checks",
+    delivery_entity: str = "",
+    parent_workflow: str = "",
+    run_id: int = 1,
+    *,
+    local: bool = False,
+) -> None:
+    log_info = {
+        "RunID": run_id,
+        "Timestamp": datetime.now(tz=timezone.utc),
+        "Workflow": parent_workflow,
+        "Component": target_mapping,
+        "Layer": stage,
+        "SourceSystem": delivery_entity,
+    }
+    write_to_log(
+        spark=spark,
+        run_month=run_month,
+        log_table="process_log",
+        record={
+            **log_info,
+            "Status": "Started",
+            "Comments": "",
+        },
+    )
+
+    if not local:
+        spark.sql(f"""USE CATALOG {get_catalog(spark)};""")
+
+    business_logic_dict = parse_yaml(
+        yaml_path=PROJECT_ROOT_DIRECTORY / stage / target_mapping,
+        parameters={
+            "RUN_MONTH": run_month,
+            "DELIVERY_ENTITY": delivery_entity,
+        },
+    )
+
+    if not validate_business_logic_mapping(spark, business_logic_dict):
+        write_to_log(
+            spark=spark,
+            run_month=run_month,
+            log_table="process_log",
+            record={
+                **log_info,
+                "Status": "Failed",
+                "Comments": "Mapping validation failed",
+            },
+        )
+
+        sys.exit(1)
+
+    data = GetIntegratedData(
+        spark=spark, business_logic=business_logic_dict
+    ).get_integrated_data()
+
+    transformed_data = transform_business_logic_sql(
+        data=data,
+        business_logic=business_logic_dict,
+    )
+
+    if not write_and_comment(
+        spark=spark,
+        business_logic=business_logic_dict,
+        data=transformed_data,
+        run_month=run_month,
+        dq_check_folder=dq_check_folder,
+        source_system=delivery_entity,
+        local=local,
+    ):
+        write_to_log(
+            spark=spark,
+            run_month=run_month,
+            log_table="process_log",
+            record={
+                **log_info,
+                "Status": "Failed",
+                "Comments": "DQ validation failed",
+            },
+        )
+
+        sys.exit(2)
+
+    write_to_log(
+        spark=spark,
+        run_month=run_month,
+        log_table="process_log",
+        record={
+            **log_info,
+            "Status": "Completed",
+            "Comments": "",
+        },
+    )
