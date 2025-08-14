@@ -1,0 +1,21 @@
+2025-08-14T13:09:55.4949441Z ##[section]Starting: Ruff formatting check
+2025-08-14T13:09:55.4953957Z ==============================================================================
+2025-08-14T13:09:55.4954092Z Task         : Command line
+2025-08-14T13:09:55.4954303Z Description  : Run a command line script using Bash on Linux and macOS and cmd.exe on Windows
+2025-08-14T13:09:55.4954426Z Version      : 2.250.1
+2025-08-14T13:09:55.4954518Z Author       : Microsoft Corporation
+2025-08-14T13:09:55.4954610Z Help         : https://docs.microsoft.com/azure/devops/pipelines/tasks/utility/command-line
+2025-08-14T13:09:55.4954729Z ==============================================================================
+2025-08-14T13:09:55.6949374Z Generating script.
+2025-08-14T13:09:55.6957973Z ========================== Starting Command Output ===========================
+2025-08-14T13:09:55.6972177Z [command]/usr/bin/bash --noprofile --norc /__w/_temp/7d9dd2e1-9fc1-4328-aa16-bd85b6961129.sh
+2025-08-14T13:09:55.7027897Z Virtual environment: /__w/1161/b/venv
+2025-08-14T13:09:55.7267533Z Would reformat: endpoints/run_dial_check_delayed.py
+2025-08-14T13:09:55.7268355Z Would reformat: endpoints/run_dial_staging.py
+2025-08-14T13:09:55.7268803Z Would reformat: endpoints/run_new_month_setup.py
+2025-08-14T13:09:55.7269296Z Would reformat: endpoints/run_nonssf_staging.py
+2025-08-14T13:09:55.7269704Z Would reformat: endpoints/run_ssf_staging.py
+2025-08-14T13:09:55.7270242Z 5 files would be reformatted, 99 files already formatted
+2025-08-14T13:09:55.7305098Z 
+2025-08-14T13:09:55.7328598Z ##[error]Bash exited with code '1'.
+2025-08-14T13:09:55.7390476Z ##[section]Finishing: Ruff formatting check
