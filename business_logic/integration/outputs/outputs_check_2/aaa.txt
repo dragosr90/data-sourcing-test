@@ -1,32 +1,54 @@
-WITH facility_info AS (
-    SELECT 
-        cf.LocalFacilityIdentifier,
-        cf.SpecialisedLendingType,
-        cf.BaselIIProductType,
-        ic.InterCompanyFlag,
-        lgd.LGDModelCode
-    FROM int_202505.ihubfr1_integrated_creditfacility cf
-    LEFT JOIN int_202505.ihubfr1_intercompany ic
-        ON cf.CounterpartyID = ic.CounterpartyID
-    LEFT JOIN int_202505.ihubfr1_lgd lgd
-        ON cf.LocalFacilityIdentifier = lgd.CreditFacilityID
-    WHERE cf.LocalFacilityIdentifier = '1N02060594'
-),
-linked_counterparties AS (
-    SELECT 
-        l.CreditFacility,
-        l.ParticipatingCounterparty,
-        ec.ExemptionConditionId as EC_CP_Exemption,
-        rc.ExemptionConditionIdRC as RC_CP_Exemption
-    FROM int_202505.ihubfr1_integrated_creditfacility_links l
-    LEFT JOIN int_202505.ihubfr1_exemptionclaim_counterparty_ec ec
-        ON l.ParticipatingCounterparty = ec.CounterpartyID
-    LEFT JOIN int_202505.ihubfr1_exemptionclaim_counterparty_rc rc
-        ON l.ParticipatingCounterparty = rc.CounterpartyID
-    WHERE l.CreditFacility = '1N02060594'
-)
-SELECT * FROM facility_info
-UNION ALL
-SELECT 'Linked Counterparties:', null, null, null, null
-UNION ALL
-SELECT * FROM linked_counterparties;
+-- Check facility 1N02060594 (EC picks 1640, RC picks 1552)
+-- First, get facility info
+SELECT 
+    'FACILITY_INFO' as query_type,
+    cf.LocalFacilityIdentifier,
+    cf.SpecialisedLendingType,
+    cf.BaselIIProductType,
+    ic.InterCompanyFlag,
+    lgd.LGDModelCode
+FROM int_202505.ihubfr1_integrated_creditfacility cf
+LEFT JOIN int_202505.ihubfr1_intercompany ic
+    ON cf.CounterpartyID = ic.CounterpartyID
+    AND cf.CounterpartySourceSystemIdentifier = ic.CounterpartySourceSystemIdentifier
+LEFT JOIN int_202505.ihubfr1_lgd lgd
+    ON cf.LocalFacilityIdentifier = lgd.CreditFacilityID
+    AND cf.SourceSystemIdentifier = lgd.CreditFacilitySourceSystemIdentifier
+WHERE cf.LocalFacilityIdentifier = '1N02060594'
+  AND cf.SubFacilityFlag = 'N';
+
+-- Second, check linked counterparties
+SELECT 
+    'LINKED_COUNTERPARTIES' as query_type,
+    l.CreditFacility,
+    l.ParticipatingCounterparty,
+    ec.ExemptionConditionId as EC_CP_Exemption,
+    rc.ExemptionConditionIdRC as RC_CP_Exemption
+FROM int_202505.ihubfr1_integrated_creditfacility_links l
+LEFT JOIN int_202505.ihubfr1_exemptionclaim_counterparty_ec ec
+    ON l.ParticipatingCounterparty = ec.CounterpartyID
+    AND l.ParticipatingCounterpartySourceSystemIdentifier = ec.CounterpartySourceSystemIdentifier
+LEFT JOIN int_202505.ihubfr1_exemptionclaim_counterparty_rc rc
+    ON l.ParticipatingCounterparty = rc.CounterpartyID
+    AND l.ParticipatingCounterpartySourceSystemIdentifier = rc.CounterpartySourceSystemIdentifier
+WHERE l.CreditFacility = '1N02060594';
+
+-- Third, check what EC actually selected
+SELECT 
+    'EC_RESULT' as query_type,
+    CreditFacilityID,
+    ExemptionConditionIdEC,
+    ExemptionNameEC,
+    BaselCreditRiskApproach
+FROM int_202505.ihubfr1_exemptionclaim_creditfacility_ec
+WHERE CreditFacilityID = '1N02060594';
+
+-- Fourth, check what RC actually selected
+SELECT 
+    'RC_RESULT' as query_type,
+    CreditFacilityID,
+    ExemptionConditionIdRC,
+    ExemptionNameRC,
+    BaselCreditRiskApproach
+FROM int_202505.ihubfr1_exemptionclaim_creditfacility_rc
+WHERE CreditFacilityID = '1N02060594';
