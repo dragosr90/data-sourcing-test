@@ -1,1 +1,32 @@
-bbb
+WITH facility_info AS (
+    SELECT 
+        cf.LocalFacilityIdentifier,
+        cf.SpecialisedLendingType,
+        cf.BaselIIProductType,
+        ic.InterCompanyFlag,
+        lgd.LGDModelCode
+    FROM int_202505.ihubfr1_integrated_creditfacility cf
+    LEFT JOIN int_202505.ihubfr1_intercompany ic
+        ON cf.CounterpartyID = ic.CounterpartyID
+    LEFT JOIN int_202505.ihubfr1_lgd lgd
+        ON cf.LocalFacilityIdentifier = lgd.CreditFacilityID
+    WHERE cf.LocalFacilityIdentifier = '1N02060594'
+),
+linked_counterparties AS (
+    SELECT 
+        l.CreditFacility,
+        l.ParticipatingCounterparty,
+        ec.ExemptionConditionId as EC_CP_Exemption,
+        rc.ExemptionConditionIdRC as RC_CP_Exemption
+    FROM int_202505.ihubfr1_integrated_creditfacility_links l
+    LEFT JOIN int_202505.ihubfr1_exemptionclaim_counterparty_ec ec
+        ON l.ParticipatingCounterparty = ec.CounterpartyID
+    LEFT JOIN int_202505.ihubfr1_exemptionclaim_counterparty_rc rc
+        ON l.ParticipatingCounterparty = rc.CounterpartyID
+    WHERE l.CreditFacility = '1N02060594'
+)
+SELECT * FROM facility_info
+UNION ALL
+SELECT 'Linked Counterparties:', null, null, null, null
+UNION ALL
+SELECT * FROM linked_counterparties;
