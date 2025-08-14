@@ -1,6 +1,7 @@
+
 description: The exemption claim is used to identify the regulatory approach that applies to an exposure. This YAML is to determine exemption at credit facility level for RC.
 
-target: enrich_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_exemptionclaim_creditfacility_rc
+target: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_exemptionclaim_creditfacility_rc
 
 sources:
   # Main facility data source - already includes CounterpartyID and CounterpartySourceSystemIdentifier
@@ -85,7 +86,7 @@ sources:
 
   # Counterparty level exemption claim RC
   - alias: EXMP_CP_RC
-    source: enrich_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_exemptionclaim_counterparty_rc
+    source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_exemptionclaim_counterparty_rc
 
 transformations:
   # Join with INT_CP to get counterparty data
