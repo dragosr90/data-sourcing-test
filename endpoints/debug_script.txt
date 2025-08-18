@@ -1,0 +1,16 @@
+# Run this in a Databricks notebook to check the structure
+import os
+from pathlib import Path
+
+workspace_path = Path("/Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl")
+
+# Check if directories exist
+print(f"Workspace exists: {workspace_path.exists()}")
+print(f"business_logic exists: {(workspace_path / 'business_logic').exists()}")
+print(f"integration exists: {(workspace_path / 'business_logic' / 'integration').exists()}")
+
+# List YAML files
+yaml_path = workspace_path / "business_logic" / "integration"
+if yaml_path.exists():
+    yaml_files = list(yaml_path.glob("*.yml")) + list(yaml_path.glob("*.yaml"))
+    print(f"YAML files in integration: {[f.name for f in yaml_files]}")
