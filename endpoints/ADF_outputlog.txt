@@ -1,0 +1,61 @@
+
+FileNotFoundError: [Errno 2] No such file or directory: '/local_disk0/.ephemeral_nfs/cluster_libraries/python/lib/python3.12/integration/derivative_flatten.yml'
+---------------------------------------------------------------------------
+FileNotFoundError                         Traceback (most recent call last)
+File ~/.ipykernel/61328/command--1-1736396823:8
+      5 del sys
+      7 with open(filename, "rb") as f:
+----> 8   exec(compile(f.read(), filename, 'exec'))
+
+File /Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/endpoints/run_mapping.py:24
+     21 parent_workflow = "" if len(remaining_args) < 2 else remaining_args[1]
+     22 run_id = 1 if len(remaining_args) < 3 else int(remaining_args[2])
+---> 24 run_mapping(
+     25     spark,  # type: ignore[name-defined]
+     26     stage=stage,
+     27     target_mapping=target_mapping,
+     28     run_month=run_month,
+     29     delivery_entity=delivery_entity,
+     30     parent_workflow=parent_workflow,
+     31     run_id=run_id,
+     32 )
+
+File /local_disk0/.ephemeral_nfs/cluster_libraries/python/lib/python3.12/site-packages/abnamro_bsrc_etl/scripts/run_mapping.py:60, in run_mapping(spark, stage, target_mapping, run_month, dq_check_folder, delivery_entity, parent_workflow, run_id, local)
+     57 if not local:
+     58     spark.sql(f"""USE CATALOG {get_catalog(spark)};""")
+---> 60 business_logic_dict = parse_yaml(
+     61     yaml_path=PROJECT_ROOT_DIRECTORY / stage / target_mapping,
+     62     parameters={
+     63         "RUN_MONTH": run_month,
+     64         "DELIVERY_ENTITY": delivery_entity,
+     65     },
+     66 )
+     68 if not validate_business_logic_mapping(spark, business_logic_dict):
+     69     write_to_log(
+     70         spark=spark,
+     71         run_month=run_month,
+   (...)
+     77         },
+     78     )
+
+File /local_disk0/.ephemeral_nfs/cluster_libraries/python/lib/python3.12/site-packages/abnamro_bsrc_etl/utils/parse_yaml.py:32, in parse_yaml(yaml_path, parameters)
+     11 def parse_yaml(
+     12     yaml_path: str | Path, parameters: dict | None = None
+     13 ) -> BusinessLogicConfig:
+     14     """Parse YAML with business logic and replace placeholders with parameters.
+     15 
+     16     This function processes a YAML file by:
+   (...)
+     30         BusinessLogicConfig: Business Logic mapping for ETL
+     31     """
+---> 32     with Path.open(PROJECT_ROOT_DIRECTORY / "business_logic" / yaml_path) as yaml_file:
+     33         original_yaml = yaml_file.read()
+     35     # Replacing quoted strings (single or double quotes) with triple single quotes
+
+File /usr/lib/python3.12/pathlib.py:1015, in Path.open(self, mode, buffering, encoding, errors, newline)
+   1013 if "b" not in mode:
+   1014     encoding = io.text_encoding(encoding)
+-> 1015 return io.open(self, mode, buffering, encoding, errors, newline)
+
+FileNotFoundError: [Errno 2] No such file or directory: '/local_disk0/.ephemeral_nfs/cluster_libraries/python/lib/python3.12/integration/derivative_flatten.yml'
+Workload failed, see run output for details
