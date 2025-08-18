@@ -14,3 +14,9 @@ yaml_path = workspace_path / "business_logic" / "integration"
 if yaml_path.exists():
     yaml_files = list(yaml_path.glob("*.yml")) + list(yaml_path.glob("*.yaml"))
     print(f"YAML files in integration: {[f.name for f in yaml_files]}")
+
+Output:
+Workspace exists: True
+business_logic exists: True
+integration exists: True
+YAML files in integration: ['lgd.yml', 'market_instruments.yml', 'dummy_guarantee_fmi_links.yml', 'counterparty_scoping_global.yml', 'fair_turnover.yml', 'dummy_facility_ca_links.yml', 'intercompany.yml', 'integrated_guarantee_links.yml', 'epr_ext_rating_flatten.yml', 'pd_ucr_step2.yml', 'integrated_creditfacility_links.yml', 'exemptionclaim_counterparty_ec.yml', 'counterparty_scra.yml', 'integrated_counterparty.yml', 'integrated_guarantee.yml', 'dummy_guarantee_fmi.yml', 'exemptionclaim_creditfacility_ec.yml', 'dummy_facility_spirit_links.yml', 'default_creditfacility.yml', 'integrated_creditfacility.yml', 'dummy_facility_ca.yml', 'dummy_counterparty_markets.yml', 'dial_rating_fca_scra_int.yml', 'fair_pd_ucr_actual.yml', 'dummy_facility_fmi_links.yml', 'pd_ucr_step1.yml', 'default_counterparty.yml', 'epr_turnover_assets.yml', 'exemptionclaim_product_ec.yml', 'dummy_facility_sft_links.yml', 'dummy_facility_derivative_links.yml', 'pd_ucr_step3.yml', 'nme_sapfc_actual.yml', 'int_ssf_ext_cust_collateral_eligibility.yml', 'counterparty_scoping_local.yml', 'dummy_facility_derivative.yml', 'derivative_adaptiv_match.yml', 'dummy_facility_sft.yml', 'derivative_flatten.yml', 'dummy_facility_spirit.yml', 'epr_global_cpty.yml', 'dummy_facility_fmi.yml']
