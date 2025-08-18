@@ -1,0 +1,16 @@
+### Functionality
+_Explain what is changed/added in this pull request and why._
+
+### Checks
+
+Before submitting this PR, check:
+- [ ] Does the logic/code run successfully? Provide a screenshot or link to the output (table).
+- [ ] For business logic: Are any changes in output table (format, domain values) checked and updated in downstream mappings?
+- [ ] For code: Is all new logic covered in relevant unit tests?
+
+---
+
+### For the reviewer, check:
+- Do you understand and agree with the logic/code?
+    - If you have any comments or improvements (e.g. simplification, standardization), please place a comment at the relevant location. This will improve the quality of our application.
+- Are all field and table names according to the naming convention?
