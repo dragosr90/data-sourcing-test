@@ -1,0 +1,70 @@
+description: This yaml is used to create Target exposure dataset with proxy logic, from merged exposures 
+
+target: dist_{{ RUN_MONTH }}.tgt_exposure
+
+sources:
+  - alias: EXP
+    source: dist_{{ RUN_MONTH }}.merge_exposure
+  
+expressions:
+  DeliveryEntity: EXP.DeliveryEntity
+  ReportingDate: EXP.ReportingDate
+  ExposureID: EXP.ExposureID
+  ExposureSourceSystemIdentifier: EXP.ExposureSourceSystemIdentifier
+  BaselSSC: EXP.BaselSSC
+  #not in inventory list 
+  AccruedFeesAmountReportingAmount: EXP.AccruedFeesAmountReportingAmount
+  AccruedInterestAmountReportingAmount: EXP.AccruedInterestAmountReportingAmount
+  AccumulatedTechnicalWriteoffReportingAmount: EXP.AccumulatedTechnicalWriteoffReportingAmount
+  BaselProcessFilterCode: EXP.BaselProcessFilterCode
+  BaselProductType: EXP.BaselProductType
+  BusinessSegmentLevel3: EXP.BusinessSegmentLevel3
+  ContractStatus: EXP.ContractStatus
+  ContractStatusDate: EXP.ContractStatusDate
+  #not in inventory list
+  CounterpartyID: EXP.CounterpartyID
+  CounterpartySourceSystemIdentifier: EXP.CounterpartySourceSystemIdentifier
+  CreditFacilityID: EXP.CreditFacilityID
+  CreditFacilitySourceSystemIdentifier: EXP.CreditFacilitySourceSystemIdentifier
+  CurrencyExchangeRate: EXP.CurrencyExchangeRate
+  DateOfSecuritisation: EXP.DateOfSecuritisation
+  DebitCreditIndicator: EXP.DebitCreditIndicator
+  EffectiveMaturity: EXP.EffectiveMaturity
+  EffectiveMaturityDateCRR: EXP.EffectiveMaturityDateCRR
+  ExemptionType: EXP.ExemptionType
+  ExemptionClaimConditionIDRC: EXP.ExemptionClaimConditionIDRC
+  ExemptionClaimConditionIDEC: EXP.ExemptionClaimConditionIDEC
+  ForbearanceMeasure: EXP.ForbearanceMeasure
+  ForbearanceMeasureApprovalDate: EXP.ForbearanceMeasureApprovalDate
+  Ifrs9RiskStage: EXP.Ifrs9RiskStage
+  LoanLossAllowanceRcoa: EXP.LoanLossAllowanceRcoa
+  LoanLossAllowanceReportingAmount: EXP.LoanLossAllowanceReportingAmount
+  LeaseProductFlag: EXP.LeaseProductFlag
+  MagnitudeKey: EXP.MagnitudeKey
+  MaturityDate: EXP.MaturityDate
+  NonPerformingStartDate: EXP.NonPerformingStartDate
+  OffBalanceProductFlag: EXP.OffBalanceProductFlag
+  OutstandingAmount: EXP.OutstandingAmount
+  PlNplIndicator: EXP.PlNplIndicator
+  #not in inventory list
+  QRRETransactor: EXP.QRRETransactor
+  ReportingCOA: EXP.ReportingCOA
+  ReportingEntity: EXP.ReportingEntity
+  ResidualValueOperationalLeaseReportingAmount: EXP.ResidualValueOperationalLeaseReportingAmount
+  RevolvingFlag: EXP.RevolvingFlag
+  RevolvingProductFlag: EXP.RevolvingProductFlag
+  RiskWeightedExposureApproachRC: EXP.RiskWeightedExposureApproachRC
+  RiskWeightedExposureApproachEC: EXP.RiskWeightedExposureApproachEC
+  SecuritisationIdentifier: EXP.SecuritisationIdentifier
+  SecuritisationRoleType: EXP.SecuritisationRoleType
+  SecuritisationType: EXP.SecuritisationType
+  SettlementDate: EXP.SettlementDate
+  SourcedExemptionID: EXP.SourcedExemptionID
+  #not in inventory list
+  SSFProductCategory: EXP.SSFProductCategory
+  SubordinationType: EXP.SubordinationType
+  TechnicalWriteoffReportingAmount: EXP.TechnicalWriteoffReportingAmount
+  TradeDate: EXP.TradeDate
+  TransactionCurrency: EXP.TransactionCurrency
+  ExemptionFromAdvancedInternalRatingBasedApproach: CAST(NULL as STRING)
+  #ExemptionFromAdvancedInternalRatingBasedApproach present in inventory
