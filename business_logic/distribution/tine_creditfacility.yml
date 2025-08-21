@@ -1,0 +1,239 @@
+description: This YAML creates TINE NPL and PL Crefit facilities ,enter like 2 Files, from tgt_creditfacility. This dataset will be shared with calculation and Reporting application after converting into parquet format. This NPL structure is as per August release (test env).
+
+target: dist_{{ RUN_MONTH }}.tine_npl_credit_fac_agmt
+
+sources:
+  - alias: CF
+    filter: PlNplIndicator = 'NPL'
+    source: dist_{{ RUN_MONTH }}.tgt_creditfacility
+  
+expressions:
+  CREDIT_FAC_AGMT_ID: concat(coalesce (BaselSSC,'AZ1'),CF.CreditFacilityID)
+    # to handle null ssc scenario temporarily. AZ1 is default value. 
+  CPTY_ID: concat(case when CounterpartySourceSystemIdentifier = 'AAB.SYS.1861' then 'FB1' when BaselSSC is not null then BaselSSC else 'AZ1' end,CF.CounterpartyID)
+    # to handle null ssc scenario temporarily. AZ1 is default value.
+  PARENT_CREDIT_FAC_AGMT_ID: CAST (NULL AS STRING)
+  ULTIMATE_CREDIT_FAC_AGMT_ID: CAST (NULL AS STRING)
+  EXEMPTION_CLAIM_CONDITION_ID: CF.ExemptionClaimConditionIDRC
+    #check once, tba in inventory
+  EXEMPTION_TYPE: CF.ExemptionType
+  CREDIT_AGMT_ID: CF.CreditAgreementID
+  REPORTING_DATE: CF.ReportingDate
+  LEGAL_ENTITY_OF_THE_BANK: CAST (NULL AS STRING)
+    # to be checked
+  BOOK_TYPE: >
+          case 
+            when CF.BookType ='BB' then 'Banking Portfolio Segment' 
+            when CF.BookType ='TB' then 'Trading Portfolio Segment' 
+          end
+  AR_PARTICIPATION_TYPE: >
+                      case 
+                        when CF.ArrangementParticipationType in ('JOINT','JOINTSEV') then 'Joint Counterparties'
+                      end
+  AR_FINANCIAL_STATUS_TYPE: >
+                        case 
+                          when CF.Default= 'Y' then 'In Default Arrangement' 
+                          else 'In Order Arrangement'
+                        end
+  SUBORDINATION_TYPE: CF.SubordinationType
+  BASEL_PRODUCT_TYPE: CF.BaselProductType
+  COMMITTED_IND: CF.TypeOfCommitment
+  AR_START_DATE: CF.TradeDate
+  MATURITY_DATE: CF.MaturityDate
+  REPORTING_ENTITY: CF.ReportingEntity
+  AR_LIFE_CYCLE_STATUS_TYPE: >
+                        case 
+                          when CF.ContractStatus = 'MATURED' then 'Completed Arrangement'
+                          when  CF.ContractStatus = 'OFFACS' then 'Accepted Arrangement' 
+                          else 'Effective Arrangement' 
+                        end
+  DUMMY_FAC_FLAG: >
+                case
+                  when CF.DummyFacilityFlag = 'Y' then 1
+                  else 0
+                end
+    # CF.DummyFacilityFlag
+  IMPAIRED_FLAG: CAST (NULL AS INT)
+  IMPAIRED_STATUS_CODE: CAST (NULL AS STRING)
+  DATE_OF_IMPAIRMENT: CAST (NULL AS DATE)
+  BUSINESS_SEGMENT_LEVEL_4: CAST (NULL AS STRING)
+  BUSINESS_SEGMENT_LEVEL_3: CAST(CF.BusinessSegmentLevel3 AS STRING)
+  SINGLE_DRAWDOWN_FLAG: CAST (NULL AS INT)
+  MULTI_DRAWDOWN_FLAG: CAST (NULL AS INT)
+  MULTI_REPORTING_ENTITY_FLAG: CAST (NULL AS INT)
+  CREDIT_RISK_APPROACH_TYPE:  >
+                          case 
+                            when CF.RiskWeightedExposureApproachRC = 'SA' then 'STD_NR'
+                            when CF.RiskWeightedExposureApproachRC = 'FIRB' then 'IRB_FOUND_NR'
+                            when CF.RiskWeightedExposureApproachRC = 'AIRB' then 'IRB_ADV_NR'
+                          end
+  GLOBAL_FAC_ID: CF.GlobalFacilityID
+  INTENSIVE_CREDIT_REPORTING_IND: CAST (NULL AS STRING)
+  MAGNITUDE_KEY: CF.MagnitudeKey
+  TECHNICAL_KEY_SEGMENT: CAST (NULL AS STRING)
+  BO_NUMBER: CAST (NULL AS STRING)
+  LOCAL_PRODUCT_TYPE: CAST (NULL AS STRING)
+  REVOLVING_PRODUCT_FLAG: >
+                        case
+                          when CF.RevolvingProductFlag = 'Y' then 1
+                          else 0
+                        end
+  LEASE_PRODUCT_FLAG: >
+                    case
+                      when CF.LeaseProductFlag = 'Y' then 1
+                      else 0
+                    end
+   # Can be derived by product type (inventory)richment
+  OFF_BALANCE_PRODUCT_FLAG: >
+                        case
+                          when CF.OffBalanceProductFlag = 'Y' then 1
+                          else 0
+                        end 
+   # to be derived as per inventory #OffBalanceProductFlag 
+  PROCESS_FILTER_CODE: CAST(CF.BaselProcessFilterCode AS INT)
+  CREDIT_PORTFOLIO: CAST (NULL AS STRING)
+  GOVERNMENT_GUARANTEE_IND: CAST (NULL AS STRING)
+    #GovernmentGuaranteeIndicator, inventory sheet not present in merge
+  BORROWING_BASE_FLAG: CAST (NULL AS INT)
+  EAD_MODEL: CF.EADModelCode
+  EFFECTIVE_MATURITY: CAST(CF.EffectiveMaturity AS DOUBLE)
+  #validate -- no value for now. if populated from int/enr, then casting might not be required.
+  SECZ_ASSET_PERCENTAGE: CAST (NULL AS DOUBLE)
+  LOCAL_COA: CAST (NULL AS STRING)
+  REPORTING_COA: CF.ReportingCOA
+  MEASUREMENT_CCY: CAST (NULL AS STRING)
+  ORIGINAL_CCY: CF.TransactionCurrency
+  EXCHANGE_RATE_TO_ORIGINAL_CCY: CF.CurrencyExchangeRate
+  BORROWING_BASE_LIMIT: CF.BorrowingBaseReportingAmount
+  BORROWING_BASE_FRANCHISE: CAST (NULL AS DOUBLE)
+  CREDIT_LIMIT: CF.CreditLimitReportingAmountBasel
+  UNDRAWN_AMOUNT: CF.UndrawnReportingAmount 
+  DRAWN_AMOUNT: CF.DrawnAmountReportingAmount
+  ACCRUED_FEES: CAST (NULL AS DOUBLE)
+    #CF.AccruedFeesAmountReportingAmount - decided to keep NULL
+  PRE_CALCULATED_EAD: CAST (NULL AS DOUBLE)
+  CLOSING_EAD: CAST (NULL AS DOUBLE)
+  RAY_PREFIX: CAST (NULL AS STRING)
+  TIME_STAMP: CURRENT_TIMESTAMP
+    #CAST (NULL AS DATE)
+  SOURCE_SYSTEM: CAST (NULL AS STRING)
+  CREDIT_FAC_AGMT_UID: CF.CreditFacilityID
+  CREDIT_FAC_AGMT_SSC: coalesce(CF.BaselSSC, 'AZ1')
+    #CF.CreditFacilitySourceSystemIdentifier
+  ORIGINAL_CREDIT_FAC_AGMT_UID: CAST (NULL AS STRING)
+  PARENT_CREDIT_FAC_AGMT_UID: CAST (NULL AS STRING)
+  PARENT_CREDIT_FAC_AGMT_SSC: CAST (NULL AS STRING)
+  ULTIMATE_CREDIT_FAC_AGMT_UID: CAST (NULL AS STRING)
+  ULTIMATE_CREDIT_FAC_AGMT_SSC: CAST (NULL AS STRING)
+  AR_END_DATE: CF.EffectiveMaturityDateCRR
+  CPTY_UID: CF.CounterpartyID
+    # To check in merge
+  CPTY_SSC:  >
+        case 
+          when CounterpartySourceSystemIdentifier = 'AAB.SYS.1861' then 'FB1'
+          when  BaselSSC is not null then BaselSSC
+          else 'AZ1'
+        end
+   # CF.BaselSSC
+  #chnage as in derivative cpty_id, make for ssc
+  TOTAL_NUMBER_OF_EXPOSURES: CF.NumberOfExposures
+  NETTING_AGMT_ID: CAST (NULL AS STRING)
+  CREDIT_RISK_AUTHORITY_GROUP: CAST (NULL AS STRING)
+  BORROWER_ID: CAST (NULL AS STRING)
+  BORROWER_UID: CAST (NULL AS STRING)
+  BORROWER_SSC: CAST (NULL AS STRING)
+  BUSINESS_SEGMENT_LEVEL_5: CAST (NULL AS STRING)
+  LGD_APPROVAL_DATE: CF.LossGivenDefaultRatingApprovalDate
+  LGD_CLASS: CF.LGDClass
+  LGD_DOWNTURN_WITH_CONS: CF.DownturnLossGivenDefault
+  LGD_MODEL: CF.LGDModelCode
+  LGD_PROXY_FLAG: CAST (NULL AS INT)
+  LGD_TTC_WITH_CONS: CF.ThroughTheCycleLossGivenDefault
+  MANAGING_ENTITY: CAST (NULL AS STRING)
+  MULTI_OBLIGOR_FAC_FLAG: CAST (NULL AS INT)
+  MULTI_PRODUCT_FAC_FLAG: CAST (NULL AS INT)
+  MULTI_PRODUCT_FAC_TYPE: CAST (NULL AS STRING)
+  NUMBER_OF_DAYS_DELINQUENCY: CAST (NULL AS INT)
+  NO_OF_MONTHS_IN_FINANCIAL_REST: CAST (NULL AS INT)
+  UCR_FACTOR: CAST (NULL AS DOUBLE)
+  LGD_SOURCE_SYSTEM_ID: CAST (NULL AS STRING)
+  DELIVERY_ENTITY: CF.DeliveryEntity
+  IFRS9_RISK_STAGE: CF.Ifrs9RiskStage
+  LOAN_LOSS_ALLOWANCE_T_AMOUNT: CAST (NULL AS DOUBLE)
+  LOAN_LOSS_ALLOWANCE_T_CCY: CAST (NULL AS STRING)
+  LOAN_LOSS_ALLOWANCE_AMOUNT: CF.LoanLossAllowanceReportingAmount
+  LOAN_LOSS_ALLOWANCE_RCOA: CF.LoanLossAllowanceRcoa
+  LEDGER_WRITEOFF_RCOA: CAST (NULL AS STRING)
+  LEDGER_WRITEOFF_AMOUNT: CAST (NULL AS DOUBLE)
+  LEDGER_WRITEOFF_T_AMOUNT: CAST (NULL AS DOUBLE)
+  LEDGER_WRITEOFF_T_CCY: CAST (NULL AS STRING)
+  WRITEOFF_RCOA: CAST (NULL AS STRING)  
+  WRITEOFF_AMOUNT: CAST (NULL AS DOUBLE)
+  WRITEOFF_T_AMOUNT: CAST (NULL AS DOUBLE)
+  WRITEOFF_T_CCY: CAST (NULL AS STRING)
+  SECZ_INVL_TYPE: CF.SecuritisationProductFlag
+  TERM_OUT_DATE: CAST (NULL AS DATE)
+  HIGHQUALITYINDICATOR: CF.HighQualityIndicator
+  INFRASTRUCTSUPPORTINGFACTOR: CF.InfrastructuralSupportingFactor
+  PROJECTFINANCEPHASEINDICATOR: CF.ProjectFinancePhaseIndicator
+  SPECIALISEDLENDINGTYPE: CF.SpecialisedLendingType
+  DEFAULTDATE: CF.DefaultDate
+  DEFAULTENDDATE: CF.DefaultEndDate
+  FORBORNE: CF.Forborne
+  FORBORNEDATE: CF.ForborneDate
+  NONPERFORMINGENDDATE: CF.NonPerformingEndDate
+  NONPERFORMINGSTARTDATE: CF.NonPerformingStartDate
+  PERFORMINGINDICATOR: CF.PerformingIndicator
+  RISKWEIGHTEDEXPAMOUNTRCOA: CAST (NULL AS STRING)
+  RISKWEIGHTEDEXPAMOUNTTAMNT: CAST (NULL AS DOUBLE)
+  RISKWEIGHTEDEXPAMOUNTTCURR: CAST (NULL AS STRING)
+  RISKWEIGHTEDEXPAMOUNTRAMNT: CAST (NULL AS DOUBLE)
+  RISKWEIGHTEDEXPOSUREAPPROACH: CAST (NULL AS STRING)
+  LGD_SOURCE_SYSTEM: CAST (NULL AS STRING)
+  MANAGING_BU: CAST (NULL AS STRING)
+  ASSET_SEC_INVOLVEMENT_TYPE: CAST (NULL AS STRING)
+  PROBE_NOM_DAYS_DELINQUENCY: CAST (NULL AS INT)
+  UNADVISED_LIMIT: CF.UnadvisedCreditLimitReportingAmount
+  DRAW_DOWN_UNDER_ADV_LIMIT_IND: CAST (NULL AS STRING)
+  CEASETOBEFORBORNEDATE: CAST (NULL AS DATE)
+  SUBORDINATION_PROXY_FLAG: CAST (NULL AS STRING)
+  SUBJCOVID19PUBLICGUARSCHSTAT: CAST (NULL AS STRING)
+  RETAIL_ASSET_CLASS: CAST (NULL AS STRING)
+  REALESTATECPINDICATOR: CAST (NULL AS STRING)
+  TMP_CREDIT_RISK_APPROACH_TYPE: CAST (NULL AS STRING)
+  TMP_EXEMPTION_CLAIM_CONDTN_ID: CAST (NULL AS DOUBLE)
+  TMP_EXEMPTION_TYPE: CAST (NULL AS STRING)
+  LGD_SUBMODEL_CODE: CAST (NULL AS STRING)
+  SOURCED_EXEMPTION_ID: CF.SourcedExemptionID
+  TYPEOFCOMMITMENT: CF.TypeOfCommitment
+  SSF_MATCH_IND: CAST (NULL AS STRING)
+  EXPIRY_DATE: CAST (NULL AS DATE)
+  BEST_ESTIMATE_LGD: CAST (NULL AS DOUBLE)
+  LGD_MARGIN_OF_CONSERVATISM: CF.LGDMarginOfConservatism
+  B2_PRODUCT_TYPE_DERIV_RULE: CAST (NULL AS STRING)
+  FILE_NAME: CAST (NULL AS STRING)
+  SOURCESYSTEMIDENTIFIER: CF.CreditFacilitySourceSystemIdentifier
+  ELBEPERCENTAGEBEFOREAPPLOFCON: CAST (NULL AS DOUBLE)
+  LANDACQUISITIONDEVCONSTEXPOFIN: CF.LandAcquisitionDevelopmentAndConstructionExposureFinance
+  LOAN_LOSS_ALLOWANCE_R_CCY: CAST (NULL AS STRING)
+  ORIGINALSETTLEMENTDATE: CAST (NULL AS DATE)
+  UNADVISEDCREDITLIMITRAMNT: CAST (NULL AS DOUBLE)
+  UNADVISEDCREDITLIMITRCURR: CAST (NULL AS STRING)
+  UNADVISEDCREDITLIMITTAMNT: CAST (NULL AS DOUBLE)
+  UNADVISEDCREDITLIMITTCURR: CAST (NULL AS STRING)
+  MATURITYDATE_PROXY_FLAG: CAST (NULL AS STRING)
+  REVOLVINGINDICATOR: >
+                   case
+                    when CF.RevolvingFlag = 'Y' then 1
+                    else 0
+                   end
+  INCOMEPRODUCINGRESTFINANCE: CF.IncomeProducingRealEstateFinance
+  PENSION_FUNDED_FLG: CAST (NULL AS STRING)
+  INSURED_FLG: CAST (NULL AS STRING)
+  SLOTTING_CATEGORY: CAST (NULL AS STRING)
+  LGD_CONSERVATISM_SCENARIO: CAST (NULL AS STRING)
+  EFFECTIVE_MATURITY_DATE: CF.EffectiveMaturityDateCRR
+  TRADE_DATE: CF.TradeDate
+  EC_CREDIT_RISK_APPROACH_TYPE: CF.RiskWeightedExposureApproachEC
+  EC_EXEMPTION_CLAIM_CONDITION_ID: CF.ExemptionClaimConditionIDEC
+  SSF_LOCALFACILITYIDENTIFIER: CAST (NULL AS STRING)
