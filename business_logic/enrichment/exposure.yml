@@ -24,7 +24,11 @@ sources:
   - alias: MDM_1027
     source: stg_{{ RUN_MONTH }}.bsl_ggop_1027_aab_rptg_entity
   - alias: MDM_1265
-    source: stg_{{ RUN_MONTH }}.frrd_mdm_1265_ast_scrztn_cpty  
+    source: stg_{{ RUN_MONTH }}.frrd_mdm_1265_ast_scrztn_cpty
+  - alias: MKEY
+    source: stg_{{ RUN_MONTH }}.dial_gold_mkey
+  - alias: MDM_1282
+    source: stg_{{ RUN_MONTH }}.frrd_mdm_1282_mapp_ru_to_bsl  
   - alias: SSC
     source: stg_{{ RUN_MONTH }}.bsl_ctrl_ssc_ssf_basel
   # Enrich Exemption claim EC
@@ -34,9 +38,9 @@ sources:
     source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_exemptionclaim_creditfacility_ec
   # Enrich Exemption claim RC
   - alias: EXMP_PR_RC
-    source: enrich_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_exemptionclaim_product_rc
+    source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_exemptionclaim_product_rc
   - alias: EXMP_FAC_RC
-    source: enrich_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_exemptionclaim_creditfacility_rc
+    source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_exemptionclaim_creditfacility_rc
 
 transformations:
   - join:
@@ -113,6 +117,16 @@ transformations:
         - concat_ws('','NL_' || var_counterparty_id) = MDM_1265.CPTY_ID
       how: left
   - join:
+      right_source: MKEY 
+      condition:
+        - SSF_PR.BusinessSegment = MKEY.Mkey  
+      how: left
+  - join: 
+      right_source: MDM_1282
+      how: left
+      condition:
+        - SSF_PR.ReportingEntity = MDM_1282.REPORTING_UNIT_ID
+  - join:
       right_source: SSC
       condition:
         - INT_CF.DeliveryEntity = SSC.delivery_entity
@@ -156,7 +170,7 @@ expressions:
   AccumulatedTechnicalWriteoffReportingAmount: coalesce(SSF_CA.AccumulatedTechnicalWriteoffReportingAmount,SSF_FP.AccumulatedTechnicalWriteoffReportingAmount)
   BaselProcessFilterCode: cast(NULL as integer) # To be updated later
   BaselProductType: SSF_PR.BaselIIProductType
-  BusinessSegmentLevel3: cast(NULL as string) # To be updated later
+  BusinessSegmentLevel3: coalesce(MKEY.BSL_Level3_Code, MDM_1282.BUSINESS_SEGMENT_LEVEL3_CODE)
   ContractStatus: SSF_PR.ContractStatus
   ContractStatusDate: SSF_PR.ContractStatusDate
   CounterpartyID: var_counterparty_id
@@ -173,7 +187,6 @@ expressions:
   ExemptionClaimConditionIDRC: coalesce(EXMP_PR_RC.ExemptionConditionIdRC, EXMP_FAC_RC.ExemptionConditionIdRC)
   ExemptionTypeEC: coalesce(EXMP_PR_EC.ExemptionType, EXMP_FAC_EC.ExemptionType)
   ExemptionTypeRC: coalesce(EXMP_PR_RC.ExemptionTypeRC, EXMP_FAC_RC.ExemptionTypeRC)
-  ExemptionType: coalesce(EXMP_PR_EC.ExemptionType, EXMP_FAC_EC.ExemptionType)  # Keeping for backward compatibility
   ForbearanceMeasure: coalesce(SSF_FP.ForbearanceMeasure,SSF_CA.ForbearanceMeasure)
   ForbearanceMeasureApprovalDate: cast(NULL as date) # To be updated later
   Ifrs9RiskStage: coalesce(SSF_CA.Ifrs9RiskStage, INT_CF.ifrs9riskstage,'X')
@@ -208,9 +221,8 @@ expressions:
   SSFProductCategory: case when SSF_CA.ArrangementIdentifier is not null then 'CA' 
                            when SSF_FP.ArrangementIdentifier is not null then 'FP' 
                       end
-  SubordinationType: case when substr(LGD.LGDClass, 1,1) in ('M','N','Z') then 'Subordinated Lien'
-                          when SSF_FP.Subordinated ='Y' then 'Subordinated Lien' 
-                          else 'Unsubordinated Lien' 
+  SubordinationType: case when substr(LGD.LGDClass, 1,1) = 'N' then 'Y'
+                          else coalesce(SSF_FP.Subordinated, SSF_CA.Subordinated) 
                      end
   TechnicalWriteoffReportingAmount: coalesce(SSF_FP.TechnicalWriteoffReportingAmount,SSF_CA.TechnicalWriteoffReportingAmount) / var_reporting_exchange_rate
   TradeDate: SSF_PR.TradeDate
