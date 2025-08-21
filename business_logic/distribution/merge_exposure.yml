@@ -1,0 +1,98 @@
+description: This is created to merge enriched Exposure data from all entities 
+
+target: dist_{{ RUN_MONTH }}.merge_exposure
+
+sources:
+  - alias: FR
+    source: enrich_{{ RUN_MONTH }}.ihubfr1_exposure
+  - alias: BE
+    source: enrich_{{ RUN_MONTH }}.ihubbe1_exposure
+  - alias: DE
+    source: enrich_{{ RUN_MONTH }}.ihubde2_exposure
+  - alias: LEASE
+    source: enrich_{{ RUN_MONTH }}.lease_exposure
+  - alias: MB
+    source: enrich_{{ RUN_MONTH }}.mainbank_exposure
+  - alias: NME
+    source: enrich_{{ RUN_MONTH }}.nme_exposure
+  # - alias: FINOB
+  #   source: enrich_{{ RUN_MONTH }}.finob_exposure
+  - alias: FRP
+    source: enrich_{{ RUN_MONTH }}.frp_exposure
+  
+transformations:
+  - union:
+      alias: EXP
+      column_mapping:
+      - FR
+      - BE
+      - DE
+      - MB
+      - LEASE
+      - NME
+      # - FINOB
+      - FRP
+      allow_missing_columns: true
+
+expressions:
+  DeliveryEntity: EXP.DeliveryEntity
+  ReportingDate: EXP.ReportingDate
+  ExposureID: EXP.ExposureID
+  ExposureSourceSystemIdentifier: EXP.ExposureSourceSystemIdentifier
+  BaselSSC: EXP.BaselSSC
+  #not in inventory list 
+  AccruedFeesAmountReportingAmount: EXP.AccruedFeesAmountReportingAmount
+  AccruedInterestAmountReportingAmount: EXP.AccruedInterestAmountReportingAmount
+  AccumulatedTechnicalWriteoffReportingAmount: EXP.AccumulatedTechnicalWriteoffReportingAmount
+  BaselProcessFilterCode: EXP.BaselProcessFilterCode
+  BaselProductType: EXP.BaselProductType
+  BusinessSegmentLevel3: EXP.BusinessSegmentLevel3
+  ContractStatus: EXP.ContractStatus
+  ContractStatusDate: EXP.ContractStatusDate
+  #not in inventory list
+  CounterpartyID: EXP.CounterpartyID
+  CounterpartySourceSystemIdentifier: EXP.CounterpartySourceSystemIdentifier
+  CreditFacilityID: EXP.CreditFacilityID
+  CreditFacilitySourceSystemIdentifier: EXP.CreditFacilitySourceSystemIdentifier
+  CurrencyExchangeRate: EXP.CurrencyExchangeRate
+  DateOfSecuritisation: EXP.DateOfSecuritisation
+  DebitCreditIndicator: EXP.DebitCreditIndicator
+  EffectiveMaturity: EXP.EffectiveMaturity
+  EffectiveMaturityDateCRR: EXP.EffectiveMaturityDateCRR
+  ExemptionType: EXP.ExemptionType
+  ExemptionClaimConditionIDRC: EXP.ExemptionClaimConditionIDRC
+  ExemptionClaimConditionIDEC: EXP.ExemptionClaimConditionIDEC
+  ForbearanceMeasure: EXP.ForbearanceMeasure
+  ForbearanceMeasureApprovalDate: EXP.ForbearanceMeasureApprovalDate
+  Ifrs9RiskStage: EXP.Ifrs9RiskStage
+  LeaseProductFlag: EXP.LeaseProductFlag
+  LoanLossAllowanceRcoa: EXP.LoanLossAllowanceRcoa
+  LoanLossAllowanceReportingAmount: EXP.LoanLossAllowanceReportingAmount
+  MagnitudeKey: EXP.MagnitudeKey
+  MaturityDate: EXP.MaturityDate
+  NonPerformingStartDate: EXP.NonPerformingStartDate
+  OffBalanceProductFlag: EXP.OffBalanceProductFlag
+  OutstandingAmount: EXP.OutstandingAmount
+  PlNplIndicator: EXP.PlNplIndicator
+  #not in inventory list
+  QRRETransactor: EXP.QRRETransactor
+  ReportingCOA: EXP.ReportingCOA
+  ReportingEntity: EXP.ReportingEntity
+  ResidualValueOperationalLeaseReportingAmount: EXP.ResidualValueOperationalLeaseReportingAmount
+  RevolvingFlag: EXP.RevolvingFlag
+  RevolvingProductFlag: EXP.RevolvingProductFlag
+  RiskWeightedExposureApproachRC: EXP.RiskWeightedExposureApproachRC
+  RiskWeightedExposureApproachEC: EXP.RiskWeightedExposureApproachEC
+  SecuritisationIdentifier: EXP.SecuritisationIdentifier
+  SecuritisationRoleType: EXP.SecuritisationRoleType
+  SecuritisationType: EXP.SecuritisationType
+  SettlementDate: EXP.SettlementDate
+  SourcedExemptionID: EXP.SourcedExemptionID
+  #not in inventory list
+  SSFProductCategory: EXP.SSFProductCategory
+  SubordinationType: EXP.SubordinationType
+  TechnicalWriteoffReportingAmount: EXP.TechnicalWriteoffReportingAmount
+  TradeDate: EXP.TradeDate
+  TransactionCurrency: EXP.TransactionCurrency
+  ExemptionFromAdvancedInternalRatingBasedApproach: CAST(NULL as STRING)
+  #ExemptionFromAdvancedInternalRatingBasedApproach present in inventory
