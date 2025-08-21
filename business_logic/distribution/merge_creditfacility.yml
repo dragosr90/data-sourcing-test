@@ -64,7 +64,8 @@ expressions:
   EffectiveMaturityDateCRR: CF.EffectiveMaturityDateCRR
   ExemptionClaimConditionIDEC: CF.ExemptionClaimConditionIDEC
   ExemptionClaimConditionIDRC: CF.ExemptionClaimConditionIDRC
-  ExemptionType: CF.ExemptionType
+  ExemptionTypeEC: CF.ExemptionTypeEC
+  ExemptionTypeRC: CF.ExemptionTypeRC
   FacilityType: CF.FacilityType
   Forborne: CF.Forborne
   ForborneDate: CF.ForborneDate
@@ -95,7 +96,6 @@ expressions:
   ReportingEntity: CF.ReportingEntity
   RevolvingFlag: CF.RevolvingFlag
   RevolvingProductFlag: CF.RevolvingProductFlag
-  #RevolvingIndicator: CF.RevolvingIndicator
   RiskWeightedExposureApproachEC: CF.RiskWeightedExposureApproachEC
   RiskWeightedExposureApproachRC: CF.RiskWeightedExposureApproachRC
   SecuritisationProductFlag: CF.SecuritisationProductFlag
