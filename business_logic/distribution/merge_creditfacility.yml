@@ -1,0 +1,113 @@
+description: This yaml is for Target Credit facility data with proxy logic
+
+target: dist_{{ RUN_MONTH }}.merge_creditfacility
+
+sources:
+  - alias: FR
+    source: enrich_{{ RUN_MONTH }}.ihubfr1_creditfacility
+  - alias: BE
+    source: enrich_{{ RUN_MONTH }}.ihubbe1_creditfacility
+  - alias: DE
+    source: enrich_{{ RUN_MONTH }}.ihubde2_creditfacility
+  - alias: LEASE
+    source: enrich_{{ RUN_MONTH }}.lease_creditfacility
+  - alias: MB
+    source: enrich_{{ RUN_MONTH }}.mainbank_creditfacility
+  - alias: NME
+    source: enrich_{{ RUN_MONTH }}.nme_creditfacility
+  - alias: FRP
+    source: enrich_{{ RUN_MONTH }}.frp_creditfacility
+  
+
+transformations:
+  - union:
+      alias: CF
+      column_mapping:
+      - FR
+      - BE
+      - DE
+      - LEASE
+      - MB
+      - NME
+      - FRP
+      allow_missing_columns: true
+  
+expressions:
+  DeliveryEntity: CF.DeliveryEntity
+  ReportingDate: CF.ReportingDate
+  CreditFacilityID: CF.CreditFacilityID
+  CreditFacilitySourceSystemIdentifier: CF.CreditFacilitySourceSystemIdentifier
+  BaselSSC: CF.BaselSSC
+  AccruedFeesAmountReportingAmount: CF.AccruedFeesAmountReportingAmount
+  ArrangementParticipationType: CF.ArrangementParticipationType
+  BaselProcessFilterCode: CF.BaselProcessFilterCode
+  BaselProductType: CF.BaselProductType
+  BookType: CF.BookType 
+  BorrowingBaseReportingAmount: CF.BorrowingBaseReportingAmount
+  BusinessSegmentLevel3: CF.BusinessSegmentLevel3
+  ContractStatus: CF.ContractStatus
+  ContractStatusDate: CF.ContractStatusDate
+  CounterpartyID: CF.CounterpartyID
+  CounterpartySourceSystemIdentifier: CF.CounterpartySourceSystemIdentifier
+  CreditAgreementID: CF.CreditAgreementID
+  CreditLimitReportingAmount: CF.CreditLimitReportingAmount
+  CreditLimitReportingAmountBasel: CF.CreditLimitReportingAmountBasel
+  CurrencyExchangeRate: CF.CurrencyExchangeRate
+  Default: CF.Default
+  DefaultDate: CF.DefaultDate
+  DefaultEndDate: CF.DefaultEndDate
+  DownturnLossGivenDefault: CF.DownturnLossGivenDefault
+  DrawnAmountReportingAmount: CF.DrawnAmountReportingAmount
+  DummyFacilityFlag: CF.DummyFacilityFlag
+  EADModelCode: CF.EADModelCode
+  EffectiveMaturity: CF.EffectiveMaturity
+  EffectiveMaturityDateCRR: CF.EffectiveMaturityDateCRR
+  ExemptionClaimConditionIDEC: CF.ExemptionClaimConditionIDEC
+  ExemptionClaimConditionIDRC: CF.ExemptionClaimConditionIDRC
+  ExemptionType: CF.ExemptionType
+  FacilityType: CF.FacilityType
+  Forborne: CF.Forborne
+  ForborneDate: CF.ForborneDate
+  GlobalFacilityID: CF.GlobalFacilityID
+  HighQualityIndicator: CF.HighQualityIndicator
+  Ifrs9RiskStage: CF.Ifrs9RiskStage
+  IncomeProducingRealEstateFinance: CF.IncomeProducingRealEstateFinance
+  InfrastructuralSupportingFactor: CF.InfrastructuralSupportingFactor
+  InsuredFlag: CF.InsuredFlag
+  LandAcquisitionDevelopmentAndConstructionExposureFinance: CF.LandAcquisitionDevelopmentAndConstructionExposureFinance
+  LeaseProductFlag: CF.LeaseProductFlag
+  LGDClass: CF.LGDClass
+  LGDMarginOfConservatism: CF.LGDMarginOfConservatism
+  LGDModelCode: CF.LGDModelCode
+  LoanLossAllowanceRcoa: CF.LoanLossAllowanceRcoa
+  LoanLossAllowanceReportingAmount: CF.LoanLossAllowanceReportingAmount
+  LossGivenDefaultRatingApprovalDate: CF.LossGivenDefaultRatingApprovalDate
+  MagnitudeKey: CF.MagnitudeKey
+  MaturityDate: CF.MaturityDate
+  NonPerformingEndDate: CF.NonPerformingEndDate
+  NonPerformingStartDate: CF.NonPerformingStartDate
+  NumberOfExposures: CF.NumberOfExposures
+  OffBalanceProductFlag: CF.OffBalanceProductFlag
+  PerformingIndicator: CF.PerformingIndicator
+  PlNplIndicator: CF.PlNplIndicator
+  ProjectFinancePhaseIndicator: CF.ProjectFinancePhaseIndicator
+  ReportingCOA: CF.ReportingCOA
+  ReportingEntity: CF.ReportingEntity
+  RevolvingFlag: CF.RevolvingFlag
+  RevolvingProductFlag: CF.RevolvingProductFlag
+  #RevolvingIndicator: CF.RevolvingIndicator
+  RiskWeightedExposureApproachEC: CF.RiskWeightedExposureApproachEC
+  RiskWeightedExposureApproachRC: CF.RiskWeightedExposureApproachRC
+  SecuritisationProductFlag: CF.SecuritisationProductFlag
+  SourcedExemptionID: CF.SourcedExemptionID
+  SpecialisedLendingType: CF.SpecialisedLendingType
+  SubordinationType: CF.SubordinationType
+  ThroughTheCycleLossGivenDefault: CF.ThroughTheCycleLossGivenDefault
+  TradeDate: CF.TradeDate
+  TransactionCurrency: CF.TransactionCurrency
+  TypeOfCommitment: CF.TypeOfCommitment
+  UnadvisedCreditLimitReportingAmount: CF.UnadvisedCreditLimitReportingAmount
+  UndrawnRcoa: CF.UndrawnRcoa
+  UndrawnReportingAmount: CF.UndrawnReportingAmount
+
+drop_duplicates: true
