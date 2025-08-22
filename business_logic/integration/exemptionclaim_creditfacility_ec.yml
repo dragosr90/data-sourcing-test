@@ -144,7 +144,7 @@ transformations:
   
   - add_variables:
       column_mapping:
-        var_lowest_ExemptionClaimConditonID_CP_EC: min(EXMP_CP_EC.ExemptionConditionId) OVER (PARTITION BY INT_CF_LINKS.CreditFacility)
+        var_lowest_ExemptionClaimConditonID_CP_EC: min(EXMP_CP_EC.ExemptionConditionIdEC) OVER (PARTITION BY INT_CF_LINKS.CreditFacility)
 
 expressions:
   DeliveryEntity: CF.DeliveryEntity
@@ -162,9 +162,9 @@ expressions:
   LastPerformingPDModelCode: PD_UCR.LastPerformingPDModelCode
   InterCompanyFlag: IC.InterCompanyFlag
   LGDModelCode: LGD.LGDModelCode
-  BaselCreditRiskApproach: case 
+  RiskWeightedExposureApproachEC: case 
     when least(EXMP_1286.exemption_condition_id, var_lowest_ExemptionClaimConditonID_CP_EC) = var_lowest_ExemptionClaimConditonID_CP_EC 
-         then EXMP_CP_EC.BaselCreditRiskApproach
+         then EXMP_CP_EC.RiskWeightedExposureApproachEC
     when EXMP_1286.basel_approach='STD' then 'SA'
     when EXMP_1286.basel_approach='FOU' then 'FIRB'
     when EXMP_1286.basel_approach='IRB' then 'AIRB'
@@ -173,23 +173,23 @@ expressions:
   ExemptionConditionIdEC: least(EXMP_1286.exemption_condition_id, var_lowest_ExemptionClaimConditonID_CP_EC)
   ExemptionIdEC: case 
     when least(EXMP_1286.exemption_condition_id, var_lowest_ExemptionClaimConditonID_CP_EC) = var_lowest_ExemptionClaimConditonID_CP_EC 
-         then EXMP_CP_EC.ExemptionId
+         then EXMP_CP_EC.ExemptionIdEC
     else EXMP_1286.exemption_id
     end
   ExemptionNameEC: case 
     when least(EXMP_1286.exemption_condition_id, var_lowest_ExemptionClaimConditonID_CP_EC) = var_lowest_ExemptionClaimConditonID_CP_EC 
-         then EXMP_CP_EC.ExemptionName
+         then EXMP_CP_EC.ExemptionNameEC
     else EXMP_1286.exemption_name
     end
   ExemptionTypeEC: case 
     when least(EXMP_1286.exemption_condition_id, var_lowest_ExemptionClaimConditonID_CP_EC) = var_lowest_ExemptionClaimConditonID_CP_EC 
-         then EXMP_CP_EC.ExemptionType
+         then EXMP_CP_EC.ExemptionTypeEC
     when EXMP_1286.exemption_end_date = '9999-12-31' then 'P' 
     else 'T' 
     end
 
 filter_target:
-- EXMP_1286.exemption_condition_id is not null or var_lowest_ExemptionClaimConditonID_CP_EC is not null
-- ExemptionConditionIdEC = var_lowest_ExemptionClaimConditonID_FAC_EC or ExemptionConditionIdEC = var_lowest_ExemptionClaimConditonID_CP_EC
+- EXMP_1286.exemption_condition_id is not null
+- ExemptionConditionIdEC = var_lowest_ExemptionClaimConditonID_CP_EC
 
 drop_duplicates: true
