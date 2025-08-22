@@ -180,9 +180,9 @@ expressions:
   LastPerformingPDModelCode: PD_UCR.LastPerformingPDModelCode
   InterCompanyFlag: IC.InterCompanyFlag
   LGDModelCode: LGD.LGDModelCode
-  BaselCreditRiskApproach: case 
+  RiskWeightedExposureApproachRC: case 
     when least(EXMP_1286.exemption_condition_id, var_lowest_ExemptionClaimConditonID_CP_RC) = var_lowest_ExemptionClaimConditonID_CP_RC 
-         then EXMP_CP_RC.BaselCreditRiskApproach
+         then EXMP_CP_RC.RiskWeightedExposureApproachRC
     when EXMP_1286.basel_approach='STD' then 'SA'
     when EXMP_1286.basel_approach='FOU' then 'FIRB'
     when EXMP_1286.basel_approach='IRB' then 'AIRB'
@@ -207,7 +207,7 @@ expressions:
     end
 
 filter_target:
-- EXMP_1286.exemption_condition_id is not null or var_lowest_ExemptionClaimConditonID_CP_RC is not null
-- ExemptionConditionIdRC = var_lowest_ExemptionClaimConditonID_FAC_RC or ExemptionConditionIdRC = var_lowest_ExemptionClaimConditonID_CP_RC
+- EXMP_1286.exemption_condition_id is not null
+- ExemptionConditionIdRC = var_lowest_ExemptionClaimConditonID_CP_RC
 
 drop_duplicates: true
