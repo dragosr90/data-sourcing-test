@@ -1,0 +1,24 @@
+Background
+As of now, we are creating 6 schemas every month like below - 
+log_yyyymm
+metadata_yyyymm
+stg_yyyymm
+int_yyyymm
+enrich_yyyymm
+dist_yyyymm
+
+When we have schemas for multiple months in our catalog, we can not find all schemas created for each month at one place. Hence naming convention should be changed to find all schema related to a month can be seen easily.
+
+So new naming convention for schema will be -
+yyyymm_log
+yyyymm_metadata
+yyyymm_stg
+yyyymm_int
+yyyymm_enrich
+yyyymm_dist
+
+Tasks
+Change schema names in schema creation script - </scripts/new_month_setup.py> and merge changes in main.
+Manually update all schema from catalog
+Update all YAMLs in main branch and push them back to main.
+Inform team to incorporate same change in their feature branch
