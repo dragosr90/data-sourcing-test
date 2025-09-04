@@ -1,0 +1,5 @@
+Update notebook --> Cleanup Run_mapping_minimal (see if initialization can be moved out, keep in same repo) and remove other notebooks
+Update PROJECT_ROOT_DIR to correct location --> deployed location for script and within repo for notebook
+  1. In config.constants, update to /Workspace/Shared/deployment/mappings (check if you need to add `file:` as prefix)
+  2.In notebook, keep the override and point it to the parent location of the notebook
+  3. --> See if you want to rename this parameter (since it is not the project root anymore), e.g. MAPPING_ROOT_DIR (if changed, make sure to rename it everywhere).
