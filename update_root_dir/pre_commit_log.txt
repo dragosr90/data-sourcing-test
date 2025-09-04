@@ -1,0 +1,24 @@
+(bsrc-etl-venv) PS C:\Users\B25712\bsrc-etl-venv\bsrc-etl> pre-commit run --all-files
+ruff lint................................................................Failed
+- hook id: ruff
+- exit code: 1
+
+All checks passed!
+All checks passed!
+notebooks\Run_YAML_mapping__minimal.py:39:22: RUF005 Consider `["", *sorted(os.listdir(mapping_dir))]` instead of concatenation
+   |
+37 | stage = dbutils.widgets.get("stage")
+38 | mapping_dir = NOTEBOOK_ROOT_DIR / "business_logic" / stage
+39 | available_mappings = [""] + sorted(os.listdir(mapping_dir)) if mapping_dir.exists() else [""]
+   |                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ RUF005
+40 |
+41 | dbutils.widgets.dropdown(
+   |
+   = help: Replace with `["", *sorted(os.listdir(mapping_dir))]`
+
+Found 1 error.
+No fixes available (1 hidden fix can be enabled with the `--unsafe-fixes` option).
+All checks passed!
+
+ruff format..............................................................Passed
+mypy.....................................................................Passed
