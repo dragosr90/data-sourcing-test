@@ -1,0 +1,13 @@
+FileNotFoundError: [Errno 2] No such file or directory: '/local_disk0/.ephemeral_nfs/cluster_libraries/python/lib/python3.12/business_logic/integration'
+File <command-4656911196868379>, line 1
+----> 1 business_logic_dict = parse_yaml(
+      2     yaml_path=f"{stage}/{target_mapping}",
+      3     parameters={
+      4         "RUN_MONTH": run_month,
+      5         "DELIVERY_ENTITY": delivery_entity,
+      6     },
+      7 )
+File /usr/lib/python3.12/pathlib.py:1015, in Path.open(self, mode, buffering, encoding, errors, newline)
+   1013 if "b" not in mode:
+   1014     encoding = io.text_encoding(encoding)
+-> 1015 return io.open(self, mode, buffering, encoding, errors, newline)
