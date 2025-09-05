@@ -1,0 +1,195 @@
+description: ...enter your YAML description here...
+
+target: test_ssf_counterparty_delt
+
+sources:
+  - alias: EPR_ENT_PARTY
+    columns:
+    - o_GLOBAL_ID
+    - o_SNAPSHOTDATE
+    - o_PRTY_TYP
+    - o_PRTY_NM
+    source: enterprise_party_delt
+  - alias: EPR_RLTN_UP
+    columns:
+    - o_RLTNSHP_TYP
+    - o_RLTNSHP_STTS
+    - o_GLOBAL_D1
+    - o_GLOBAL_ID2
+    filter: o_RLTNSHP_TYP = 102
+    source: epr_party_relationship_delt
+  - alias: EPR_RLTN_HO
+    columns:
+    - o_RLTNSHP_TYP
+    - o_RLTNSHP_STTS
+    - o_GLOBAL_D1
+    - o_GLOBAL_ID2
+    filter: o_RLTNSHP_TYP = 103
+    source: epr_party_relationship_delt
+  - alias: EPR_RLTN_DP
+    columns:
+    - o_RLTNSHP_TYP
+    - o_RLTNSHP_STTS
+    - o_GLOBAL_D1
+    - o_GLOBAL_ID2
+    filter: o_RLTNSHP_TYP = 101
+    source: epr_party_relationship_delt
+  - alias: EPR_EXT_ID_LEI
+    columns:
+    - o_GLOBAL_ID
+    - o_EXTRN_ID_TYP
+    - o_EXTRN_ID_VAL
+    filter: o_EXTRN_ID_TYP = 'LEI'
+    source: epr_party_external_identifier_delt
+  - alias: EPR_CLASS_02_NACE
+    columns:
+    - o_GLOBAL_ID
+    - o_CLSFCTN_TYP
+    - o_CLSFCTN_VAL
+    filter: o_CLSFCTN_TYP = 2
+    source: epr_party_classification_delt
+  - alias: EPR_ENT_PARTY_UP
+    columns:
+    - o_GLOBAL_ID
+    source: enterprise_party_delt
+  - alias: EPR_ENT_PARTY_HO
+    columns:
+    - o_GLOBAL_ID
+    source: enterprise_party_delt
+  - alias: EPR_ENT_PARTY_DP
+    columns:
+    - o_GLOBAL_ID
+    source: enterprise_party_delt
+  - alias: EPR_ORG
+    columns:
+    - o_GLOBAL_ID
+    - o_MAIN_COC
+    - o_CNTRY_OF_INCORP
+    - o_SNAPSHOTDATE
+    source: epr_organisation_delt
+  - alias: EPR_LOC_ID_INSIGHT
+    columns:
+    - o_GLOBAL_ID
+    - o_LOCL_SRC_SYSTM
+    - o_LOCL_ID
+    filter: o_LOCL_SRC_SYSTM = 'INSIGHTER'
+    source: epr_party_local_identifier_delt
+  - alias: EPR_ADDRESS_PREF
+    columns:
+    - o_GLOBAL_ID
+    - o_ADRES_TYPE
+    - o_CNTRY
+    filter: o_ADRES_TYPE = 'PREF'
+    source: epr_party_address_delt
+  - alias: EPR_CLASS_SBI_01
+    columns:
+    - o_GLOBAL_ID
+    - o_CLSFCTN_TYP
+    - o_CLSFCTN_VAL
+    filter: o_CLSFCTN_TYP = 1
+    source: epr_party_classification_delt
+  - alias: EPR_CLASS_SBI_03
+    columns:
+    - o_GLOBAL_ID
+    - o_CLSFCTN_TYP
+    - o_CLSFCTN_VAL
+    filter: o_CLSFCTN_TYP = 3
+    source: epr_party_classification_delt
+  - alias: EPR_FINANCIAL_DET
+    columns:
+    - o_global_id
+    - o_accnt_data_level
+    - o_annl_trnover
+    - o_accnt_crrncy
+    source: organisation_financial_details_delt
+  - alias: EPR_CLASS_VAL
+    columns:
+    - o_GLOBAL_ID
+    - o_CLSFCTN_TYP
+    - o_CLSFCTN_VAL
+    filter: o_CLSFCTN_STS = 1  and o_CLSFCTN_TYP = 18
+    source: epr_party_classification_delt
+
+transformations:
+  - join:
+      left_source: EPR_ENT_PARTY
+      right_source: EPR_ORG
+      condition: 
+        - EPR_ENT_PARTY.o_GLOBAL_ID = EPR_ORG.o_GLOBAL_ID 
+        - EPR_ENT_PARTY.o_SNAPSHOTDATE = EPR_ORG.o_GLOBAL_ID
+        - EPR_ENT_PARTY.o_GLOBAL_ID = (EPR_ORG.o_GLOBAL_ID||EPR_ORG.o_SNAPSHOTDATE)
+  - join:
+      right_source: EPR_CLASS_02_NACE
+      condition: 
+        - EPR_ENT_PARTY.o_GLOBAL_ID = EPR_CLASS_02_NACE.o_GLOBAL_ID 
+  - join:
+      right_source: EPR_CLASS_SBI_03
+      condition: 
+        - EPR_ENT_PARTY.o_GLOBAL_ID = EPR_CLASS_SBI_03.o_GLOBAL_ID
+  - join:
+      right_source: EPR_CLASS_SBI_01
+      condition: 
+        - EPR_ENT_PARTY.o_GLOBAL_ID = EPR_CLASS_SBI_01.o_GLOBAL_ID
+  - join: 
+      right_source: EPR_ADDRESS_PREF
+      condition: 
+        - EPR_ENT_PARTY.o_GLOBAL_ID = EPR_ADDRESS_PREF.o_GLOBAL_ID
+  - join:
+      right_source: EPR_EXT_ID_LEI
+      condition: 
+        - EPR_ENT_PARTY.o_GLOBAL_ID = EPR_EXT_ID_LEI.o_GLOBAL_ID
+  - join:
+      right_source: EPR_RLTN_UP
+      condition: 
+        - EPR_ENT_PARTY.o_GLOBAL_ID = EPR_RLTN_UP.o_GLOBAL_D1
+  - join:
+      right_source: EPR_ENT_PARTY_UP
+      condition: 
+        - EPR_RLTN_UP.o_GLOBAL_ID2 = EPR_ENT_PARTY_UP.o_GLOBAL_ID
+  - join:
+      right_source: EPR_RLTN_HO
+      condition: 
+        - EPR_ENT_PARTY.o_GLOBAL_ID = EPR_RLTN_HO.o_GLOBAL_D1
+  - join:
+      right_source: EPR_ENT_PARTY_HO
+      condition: 
+        - EPR_RLTN_HO.o_GLOBAL_ID2 = EPR_ENT_PARTY_HO.o_GLOBAL_ID
+  - join:
+      right_source: EPR_RLTN_DP
+      condition: 
+        - EPR_ENT_PARTY.o_GLOBAL_ID = EPR_RLTN_DP.o_GLOBAL_D1
+  - join:
+      right_source: EPR_ENT_PARTY_DP
+      condition: 
+        - EPR_RLTN_DP.o_GLOBAL_ID2 = EPR_ENT_PARTY_DP.o_GLOBAL_ID
+  - join:
+      right_source: EPR_LOC_ID_INSIGHT
+      condition: 
+        - EPR_ENT_PARTY.o_GLOBAL_ID = EPR_LOC_ID_INSIGHT.o_GLOBAL_ID
+  - join:
+      right_source: EPR_FINANCIAL_DET
+      condition: 
+        - EPR_ENT_PARTY.o_GLOBAL_ID = EPR_FINANCIAL_DET.o_GLOBAL_ID
+  - join:
+      right_source: EPR_CLASS_VAL
+      condition: 
+        - EPR_ENT_PARTY.o_GLOBAL_ID = EPR_CLASS_VAL.o_GLOBAL_ID
+
+expressions:
+  CounterpartyName: EPR_ENT_PARTY.o_PRTY_NM
+  CountryOfIncorporation: EPR_ORG.o_CNTRY_OF_INCORP
+  CountryOfResidence: case when EPR_ADDRESS_PREF.o_ADRES_TYPE = 'PREF' then EPR_ADDRESS_PREF.o_CNTRY end
+  GlobalCounterpartyIdentifier: EPR_ENT_PARTY.o_GLOBAL_ID
+  Group_Annual_Turnover: case when EPR_RLTN_UP.o_RLTNSHP_TYP = 102 and EPR_FINANCIAL_DET.o_accnt_data_level = 3 and EPR_RLTN_UP.o_RLTNSHP_STTS = 1 then EPR_FINANCIAL_DET.o_annl_trnover end
+  Group_Annual_Turnover_Currency: case when EPR_RLTN_UP.o_RLTNSHP_TYP = 102 and EPR_FINANCIAL_DET.o_accnt_data_level = 3 and EPR_RLTN_UP.o_RLTNSHP_STTS = 1 then EPR_FINANCIAL_DET.o_accnt_crrncy end
+  HeadOfficeOrganisation: case when EPR_RLTN_HO.o_RLTNSHP_TYP = 103 then EPR_ENT_PARTY_HO.o_GLOBAL_ID end
+  ImmediateParentOrganisation: case when EPR_RLTN_DP.o_RLTNSHP_TYP = 101 then EPR_ENT_PARTY_DP.o_GLOBAL_ID end
+  InsighterId: case when EPR_LOC_ID_INSIGHT.o_LOCL_SRC_SYSTM = 'INSIGHTER' then EPR_LOC_ID_INSIGHT.o_LOCL_ID end
+  LeiCode: case when EPR_EXT_ID_LEI.o_EXTRN_ID_TYP = 'LEI' then EPR_EXT_ID_LEI.o_EXTRN_ID_VAL end
+  NationalIdentifier: case when EPR_ENT_PARTY.o_PRTY_TYP = 'ORG' then EPR_ORG.o_MAIN_COC end
+  OFFICIAL_NACE: case when EPR_CLASS_02_NACE.o_CLSFCTN_TYP = 2 then EPR_CLASS_02_NACE.o_CLSFCTN_VAL end
+  OFFICIAL_SBI_CODE: case when EPR_CLASS_SBI_01.o_CLSFCTN_TYP = 1 then EPR_CLASS_SBI_01.o_CLSFCTN_VAL end
+  PartyType: EPR_ENT_PARTY.o_PRTY_TYP
+  REAL_SBI_CODE: case when EPR_CLASS_SBI_03.o_CLSFCTN_TYP = 3 then EPR_CLASS_SBI_03.o_CLSFCTN_VAL end
+  SnapshotDate: EPR_ENT_PARTY.o_SNAPSHOTDATE
+  UltimateParentOrganisation: EPR_ENT_PARTY_UP.o_GLOBAL_ID
