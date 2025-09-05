@@ -1,13 +1,65 @@
-FileNotFoundError: [Errno 2] No such file or directory: '/local_disk0/.ephemeral_nfs/cluster_libraries/python/lib/python3.12/business_logic/integration'
-File <command-4656911196868379>, line 1
-----> 1 business_logic_dict = parse_yaml(
-      2     yaml_path=f"{stage}/{target_mapping}",
-      3     parameters={
-      4         "RUN_MONTH": run_month,
-      5         "DELIVERY_ENTITY": delivery_entity,
-      6     },
-      7 )
-File /usr/lib/python3.12/pathlib.py:1015, in Path.open(self, mode, buffering, encoding, errors, newline)
-   1013 if "b" not in mode:
-   1014     encoding = io.text_encoding(encoding)
--> 1015 return io.open(self, mode, buffering, encoding, errors, newline)
+(bsrc-etl-venv) PS C:\Users\B25712\bsrc-etl-venv\bsrc-etl> pre-commit run --all-files
+ruff lint................................................................Passed
+ruff format..............................................................Passed
+mypy.....................................................................Failed
+- hook id: mypy
+- exit code: 1
+
+notebooks\Export TINE - for manual sharing with Calc.py:15: error: Name "dbutils" is not defined  [name-defined]
+notebooks\Export TINE - for manual sharing with Calc.py:20: error: Name "dbutils" is not defined  [name-defined]
+notebooks\Export TINE - for manual sharing with Calc.py:25: error: Name "dbutils" is not defined  [name-defined]
+notebooks\Export TINE - for manual sharing with Calc.py:30: error: Name "dbutils" is not defined  [name-defined]
+notebooks\Export TINE - for manual sharing with Calc.py:35: error: Name "dbutils" is not defined  [name-defined]
+notebooks\Export TINE - for manual sharing with Calc.py:40: error: Name "dbutils" is not defined  [name-defined]
+notebooks\Export TINE - for manual sharing with Calc.py:45: error: Name "dbutils" is not defined  [name-defined]
+notebooks\Export TINE - for manual sharing with Calc.py:50: error: Name "dbutils" is not defined  [name-defined]
+notebooks\Export TINE - for manual sharing with Calc.py:55: error: Name "dbutils" is not defined  [name-defined]
+notebooks\Export TINE - for manual sharing with Calc.py:60: error: Name "dbutils" is not defined  [name-defined]
+notebooks\Export TINE - for manual sharing with Calc.py:65: error: Name "dbutils" is not defined  [name-defined]
+notebooks\Export TINE - for manual sharing with Calc.py:70: error: Name "dbutils" is not defined  [name-defined]
+notebooks\Export TINE - for manual sharing with Calc.py:79: error: Name "dbutils" is not defined  [name-defined]
+notebooks\Export TINE - for manual sharing with Calc.py:93: error: Name "dbutils" is not defined  [name-defined]
+Found 14 errors in 1 file (checked 28 source files)
+Success: no issues found in 28 source files
+notebooks\ProcessXML.py:6: error: Cannot determine type of "dbutils"  [has-type]
+notebooks\ProcessXML.py:6: error: Name "dbutils" is used before definition  [used-before-def]
+notebooks\ProcessXML.py:89: error: Name "spark" is not defined  [name-defined]
+notebooks\Run_YAML_mapping__minimal.py:9: error: Name "dbutils" is not defined  [name-defined]
+notebooks\Run_YAML_mapping__minimal.py:33: error: Name "spark" is not defined  [name-defined]
+notebooks\Run_YAML_mapping__minimal.py:35: error: Name "dbutils" is not defined  [name-defined]
+notebooks\Run_YAML_mapping__minimal.py:43: error: Name "dbutils" is not defined  [name-defined]
+notebooks\Run_YAML_mapping__minimal.py:49: error: Name "dbutils" is not defined  [name-defined]
+notebooks\Run_YAML_mapping__minimal.py:55: error: Name "dbutils" is not defined  [name-defined]
+notebooks\Run_YAML_mapping__minimal.py:77: error: Name "dbutils" is not defined  [name-defined]
+notebooks\Run_YAML_mapping__minimal.py:84: error: Name "dbutils" is not defined  [name-defined]
+notebooks\Run_YAML_mapping__minimal.py:85: error: Name "dbutils" is not defined  [name-defined]
+notebooks\Run_YAML_mapping__minimal.py:86: error: Name "dbutils" is not defined  [name-defined]
+notebooks\Run_YAML_mapping__minimal.py:104: error: Name "spark" is not defined  [name-defined]
+notebooks\Run_YAML_mapping__minimal.py:111: error: Name "spark" is not defined  [name-defined]
+notebooks\Run_YAML_mapping__minimal.py:128: error: Name "spark" is not defined  [name-defined]
+notebooks\Run_YAML_mapping__descriptive.py:8: error: Name "dbutils" is not defined  [name-defined]
+notebooks\Run_YAML_mapping__descriptive.py:44: error: Name "spark" is not defined  [name-defined]
+notebooks\Run_YAML_mapping__descriptive.py:61: error: Name "dbutils" is not defined  [name-defined]
+notebooks\Run_YAML_mapping__descriptive.py:68: error: Name "dbutils" is not defined  [name-defined]
+notebooks\Run_YAML_mapping__descriptive.py:74: error: Name "dbutils" is not defined  [name-defined]
+notebooks\Run_YAML_mapping__descriptive.py:80: error: Name "dbutils" is not defined  [name-defined]
+notebooks\Run_YAML_mapping__descriptive.py:85: error: Name "dbutils" is not defined  [name-defined]
+notebooks\Run_YAML_mapping__descriptive.py:92: error: Name "dbutils" is not defined  [name-defined]
+notebooks\Run_YAML_mapping__descriptive.py:93: error: Name "dbutils" is not defined  [name-defined]
+notebooks\Run_YAML_mapping__descriptive.py:94: error: Name "dbutils" is not defined  [name-defined]
+notebooks\Run_YAML_mapping__descriptive.py:115: error: Name "display" is not defined  [name-defined]
+notebooks\Run_YAML_mapping__descriptive.py:123: error: Name "display" is not defined  [name-defined]
+notebooks\Run_YAML_mapping__descriptive.py:159: error: Name "display" is not defined  [name-defined]
+notebooks\Run_YAML_mapping__descriptive.py:169: error: Name "display" is not defined  [name-defined]
+notebooks\Run_YAML_mapping__descriptive.py:185: error: Name "display" is not defined  [name-defined]
+notebooks\Run_YAML_mapping__descriptive.py:213: error: Name "display" is not defined  [name-defined]
+notebooks\Run_YAML_mapping__descriptive.py:222: error: Name "display" is not defined  [name-defined]
+notebooks\Run_YAML_mapping__descriptive.py:231: error: Name "spark" is not defined  [name-defined]
+notebooks\Run_YAML_mapping__descriptive.py:236: error: Name "spark" is not defined  [name-defined]
+notebooks\Run_YAML_mapping__descriptive.py:264: error: Name "display" is not defined  [name-defined]
+notebooks\Run_YAML_mapping__descriptive.py:284: error: Name "display" is not defined  [name-defined]
+notebooks\Run_YAML_mapping__descriptive.py:297: error: Name "display" is not defined  [name-defined]
+notebooks\Run_YAML_mapping__descriptive.py:303: error: Name "spark" is not defined  [name-defined]
+Found 39 errors in 3 files (checked 28 source files)
+test\test_utils\test_process_logging.py:72: note: By default the bodies of untyped functions are not checked, consider using --check-untyped-defs  [annotation-unchecked]
+Success: no issues found in 28 source files
