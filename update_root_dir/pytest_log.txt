@@ -1,0 +1,613 @@
+(bsrc-etl-venv) PS C:\Users\B25712\bsrc-etl-venv\bsrc-etl> pytest test/test_transform/test_transform_business_logic_sql.py
+===================================================================================== test session starts ======================================================================================
+platform win32 -- Python 3.10.11, pytest-8.3.3, pluggy-1.5.0
+rootdir: C:\Users\B25712\bsrc-etl-venv\bsrc-etl
+configfile: pyproject.toml
+plugins: cov-6.0.0, mock-3.14.0
+collected 10 items
+
+test\test_transform\test_transform_business_logic_sql.py FFFFF.....                                                                                                                       [100%]
+
+=========================================================================================== FAILURES =========================================================================================== 
+__________________________________________________________________ test_transform_business_logic_expressions[epr_party-None] ___________________________________________________________________ 
+
+spark_session = <pyspark.sql.session.SparkSession object at 0x0000025458363280>
+expressions = {'CounterpartyId': 'CounterpartyId', 'CountryOfIncorporation': 'CountryOfIncorporation', 'HeadOfficeOrganisation': 'HeadOfficeOrganisation', 'PartyType': 'PartyTypre', ...}       
+data_group = 'epr_party', filter_target = None
+
+    @pytest.mark.parametrize(
+        ("data_group", "filter_target"),
+        [
+            ("epr_party", None),
+            # Applying 1 filter condition -> `test.data.epr_transform.TransformTestData`
+            ("epr_org", ["CountryOfIncorporation = 'NL'"]),
+            ("epr_org", None),
+            ("epr_relation", None),
+            # Applying 2 filter conditions -> `test.data.epr_transform.TransformTestData`
+            (
+                "epr_relation",
+                ["UltimateParentOrganisation = 1234", "HeadOfficeOrganisation = 4321"],
+            ),
+            ("epr_address", None),
+            ("epr_loc_id", None),
+            ("epr_ext_id", None),
+            ("epr_finan", None),
+        ],
+    )
+    def test_transform_business_logic_expressions(
+        spark_session, expressions, data_group, filter_target
+    ):
+        """Test Transform Business Logic for different data domains.
+
+            - EPR Counterparty
+            - EPR Organisation
+            - EPR Relation
+            - EPR Address
+            - EPR Local Identifier
+            - EPR External Identifier
+            - EPR Financial details.
+
+        Note:
+            Check documentation of `TransformTestData` in `test/data/epr_transform.py`
+            for more details on the different scenarios that are tested per data
+            domain.
+        """
+        data_set = TransformTestData(filtered=bool(filter_target)).get_data()[data_group]
+        input_dataframe, expected_output = create_dataframes_with_table_aliases(
+            spark_session, **data_set
+        )
+        output_field_names = data_set["output_field_names"]
+        expr_dict = {k: v for k, v in expressions.items() if k in output_field_names}
+        business_logic = {"expressions": expr_dict}
+        if filter_target:
+            business_logic["filter_target"] = filter_target
+>       result = transform_business_logic_sql(input_dataframe, business_logic)
+
+test\test_transform\test_transform_business_logic_sql.py:93:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _  
+src\abnamro_bsrc_etl\transform\transform_business_logic_sql.py:14: in transform_business_logic_sql
+    transformed_data = data.selectExpr(
+..\bsrc-etl-venv\lib\site-packages\pyspark\sql\dataframe.py:3269: in selectExpr
+    jdf = self._jdf.selectExpr(self._jseq(expr))
+..\bsrc-etl-venv\lib\site-packages\py4j\java_gateway.py:1322: in __call__
+    return_value = get_return_value(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _  
+
+a = ('xro95', <py4j.clientserver.JavaClient object at 0x000002545831A740>, 'o77', 'selectExpr'), kw = {}, converted = AnalysisException()
+
+    def deco(*a: Any, **kw: Any) -> Any:
+        try:
+            return f(*a, **kw)
+        except Py4JJavaError as e:
+            converted = convert_exception(e.java_exception)
+            if not isinstance(converted, UnknownException):
+                # Hide where the exception came from that shows a non-Pythonic
+                # JVM exception message.
+>               raise converted from None
+E               pyspark.errors.exceptions.captured.AnalysisException: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column or function parameter with name `PartyTypre` cannot be resolved. Did you mean one of the following? [`o_PRTY_NM`, `o_PRTY_TYP`, `o_GLOBAL_ID`, `o_SNAPSHOTDATE`].; line 1 pos 0;
+E               'Project ['PartyTypre AS PartyType#60]
+E               +- Project [o_GLOBAL_ID#30, o_SNAPSHOTDATE#31, o_PRTY_TYP#32, o_PRTY_NM#33]
+E                  +- SubqueryAlias EPR_ENT_PARTY
+E                     +- Project [o_GLOBAL_ID#30, o_SNAPSHOTDATE#31, o_PRTY_TYP#32, o_PRTY_NM#33, monotonically_increasing_id() AS idx#38L]
+E                        +- Project [EPR_ENT_PARTY.o_GLOBAL_ID#0 AS o_GLOBAL_ID#30, EPR_ENT_PARTY.o_SNAPSHOTDATE#1 AS o_SNAPSHOTDATE#31, EPR_ENT_PARTY.o_PRTY_TYP#2 AS o_PRTY_TYP#32, EPR_ENT_PARTY.o_PRTY_NM#3 AS o_PRTY_NM#33]
+E                           +- Project [EPR_ENT_PARTY.o_GLOBAL_ID#0, EPR_ENT_PARTY.o_SNAPSHOTDATE#1, EPR_ENT_PARTY.o_PRTY_TYP#2, EPR_ENT_PARTY.o_PRTY_NM#3]
+E                              +- Sort [id#16L ASC NULLS FIRST], true
+E                                 +- Project [EPR_ENT_PARTY.o_GLOBAL_ID#0, EPR_ENT_PARTY.o_SNAPSHOTDATE#1, EPR_ENT_PARTY.o_PRTY_TYP#2, EPR_ENT_PARTY.o_PRTY_NM#3, SnapshotDate#4, GlobalCounterpartyIdentifier#5, PartyType#6, CounterpartyName#7, monotonically_increasing_id() AS id#16L]
+E                                    +- LogicalRDD [EPR_ENT_PARTY.o_GLOBAL_ID#0, EPR_ENT_PARTY.o_SNAPSHOTDATE#1, EPR_ENT_PARTY.o_PRTY_TYP#2, EPR_ENT_PARTY.o_PRTY_NM#3, SnapshotDate#4, GlobalCounterpartyIdentifier#5, PartyType#6, CounterpartyName#7], false
+
+..\bsrc-etl-venv\lib\site-packages\pyspark\errors\exceptions\captured.py:185: AnalysisException
+------------------------------------------------------------------------------------ Captured stderr setup ------------------------------------------------------------------------------------- 
+Setting default log level to "WARN".
+To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
+______________________________________________________________ test_transform_business_logic_expressions[epr_org-filter_target1] _______________________________________________________________ 
+
+spark_session = <pyspark.sql.session.SparkSession object at 0x0000025458363280>
+expressions = {'CounterpartyId': 'CounterpartyId', 'CountryOfIncorporation': 'CountryOfIncorporation', 'HeadOfficeOrganisation': 'HeadOfficeOrganisation', 'PartyType': 'PartyTypre', ...}       
+data_group = 'epr_org', filter_target = ["CountryOfIncorporation = 'NL'"]
+
+    @pytest.mark.parametrize(
+        ("data_group", "filter_target"),
+        [
+            ("epr_party", None),
+            # Applying 1 filter condition -> `test.data.epr_transform.TransformTestData`
+            ("epr_org", ["CountryOfIncorporation = 'NL'"]),
+            ("epr_org", None),
+            ("epr_relation", None),
+            # Applying 2 filter conditions -> `test.data.epr_transform.TransformTestData`
+            (
+                "epr_relation",
+                ["UltimateParentOrganisation = 1234", "HeadOfficeOrganisation = 4321"],
+            ),
+            ("epr_address", None),
+            ("epr_loc_id", None),
+            ("epr_ext_id", None),
+            ("epr_finan", None),
+        ],
+    )
+    def test_transform_business_logic_expressions(
+        spark_session, expressions, data_group, filter_target
+    ):
+        """Test Transform Business Logic for different data domains.
+    
+            - EPR Counterparty
+            - EPR Organisation
+            - EPR Relation
+            - EPR Address
+            - EPR Local Identifier
+            - EPR External Identifier
+            - EPR Financial details.
+
+        Note:
+            Check documentation of `TransformTestData` in `test/data/epr_transform.py`
+            for more details on the different scenarios that are tested per data
+            domain.
+        """
+        data_set = TransformTestData(filtered=bool(filter_target)).get_data()[data_group]
+        input_dataframe, expected_output = create_dataframes_with_table_aliases(
+            spark_session, **data_set
+        )
+        output_field_names = data_set["output_field_names"]
+        expr_dict = {k: v for k, v in expressions.items() if k in output_field_names}
+        business_logic = {"expressions": expr_dict}
+        if filter_target:
+            business_logic["filter_target"] = filter_target
+>       result = transform_business_logic_sql(input_dataframe, business_logic)
+
+test\test_transform\test_transform_business_logic_sql.py:93:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _  
+src\abnamro_bsrc_etl\transform\transform_business_logic_sql.py:14: in transform_business_logic_sql
+    transformed_data = data.selectExpr(
+..\bsrc-etl-venv\lib\site-packages\pyspark\sql\dataframe.py:3269: in selectExpr
+    jdf = self._jdf.selectExpr(self._jseq(expr))
+..\bsrc-etl-venv\lib\site-packages\py4j\java_gateway.py:1322: in __call__
+    return_value = get_return_value(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _  
+
+a = ('xro163', <py4j.clientserver.JavaClient object at 0x000002545831A740>, 'o149', 'selectExpr'), kw = {}, converted = AnalysisException()
+
+    def deco(*a: Any, **kw: Any) -> Any:
+        try:
+            return f(*a, **kw)
+        except Py4JJavaError as e:
+            converted = convert_exception(e.java_exception)
+            if not isinstance(converted, UnknownException):
+                # Hide where the exception came from that shows a non-Pythonic
+                # JVM exception message.
+>               raise converted from None
+E               pyspark.errors.exceptions.captured.AnalysisException: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column or function parameter with name `CountryOfIncorporation` cannot be resolved. Did you mean one of the following? [`EPR_ORG`.`o_MAIN_COC`, `EPR_ENT_PARTY`.`o_PRTY_TYP`, `EPR_ORG`.`o_CNTRY_OF_INCORP`].; line 1 pos 0;
+E               'Project ['CountryOfIncorporation AS CountryOfIncorporation#114]
+E               +- Project [o_PRTY_TYP#81, o_MAIN_COC#86, o_CNTRY_OF_INCORP#87]
+E                  +- Project [idx#83L, o_PRTY_TYP#81, o_MAIN_COC#86, o_CNTRY_OF_INCORP#87]
+E                     +- Join LeftOuter, (idx#83L = idx#90L)
+E                        :- SubqueryAlias EPR_ENT_PARTY
+E                        :  +- Project [o_PRTY_TYP#81, monotonically_increasing_id() AS idx#83L]
+E                        :     +- Project [EPR_ENT_PARTY.o_PRTY_TYP#61 AS o_PRTY_TYP#81]
+E                        :        +- Project [EPR_ENT_PARTY.o_PRTY_TYP#61, EPR_ORG.o_MAIN_COC#62, EPR_ORG.o_CNTRY_OF_INCORP#63]
+E                        :           +- Sort [id#71L ASC NULLS FIRST], true
+E                        :              +- Project [EPR_ENT_PARTY.o_PRTY_TYP#61, EPR_ORG.o_MAIN_COC#62, EPR_ORG.o_CNTRY_OF_INCORP#63, NationalIdentifier#64, CountryOfIncorporation#65, monotonically_increasing_id() AS id#71L]
+E                        :                 +- LogicalRDD [EPR_ENT_PARTY.o_PRTY_TYP#61, EPR_ORG.o_MAIN_COC#62, EPR_ORG.o_CNTRY_OF_INCORP#63, NationalIdentifier#64, CountryOfIncorporation#65], false
+E                        +- SubqueryAlias EPR_ORG
+E                           +- Project [o_MAIN_COC#86, o_CNTRY_OF_INCORP#87, monotonically_increasing_id() AS idx#90L]
+E                              +- Project [EPR_ORG.o_MAIN_COC#95 AS o_MAIN_COC#86, EPR_ORG.o_CNTRY_OF_INCORP#96 AS o_CNTRY_OF_INCORP#87]
+E                                 +- Project [EPR_ENT_PARTY.o_PRTY_TYP#94, EPR_ORG.o_MAIN_COC#95, EPR_ORG.o_CNTRY_OF_INCORP#96]
+E                                    +- Sort [id#71L ASC NULLS FIRST], true
+E                                       +- Project [EPR_ENT_PARTY.o_PRTY_TYP#94, EPR_ORG.o_MAIN_COC#95, EPR_ORG.o_CNTRY_OF_INCORP#96, NationalIdentifier#97, CountryOfIncorporation#98, monotonically_increasing_id() AS id#71L]
+E                                          +- LogicalRDD [EPR_ENT_PARTY.o_PRTY_TYP#94, EPR_ORG.o_MAIN_COC#95, EPR_ORG.o_CNTRY_OF_INCORP#96, NationalIdentifier#97, CountryOfIncorporation#98], false
+
+..\bsrc-etl-venv\lib\site-packages\pyspark\errors\exceptions\captured.py:185: AnalysisException
+___________________________________________________________________ test_transform_business_logic_expressions[epr_org-None] ____________________________________________________________________
+
+spark_session = <pyspark.sql.session.SparkSession object at 0x0000025458363280>
+expressions = {'CounterpartyId': 'CounterpartyId', 'CountryOfIncorporation': 'CountryOfIncorporation', 'HeadOfficeOrganisation': 'HeadOfficeOrganisation', 'PartyType': 'PartyTypre', ...}       
+data_group = 'epr_org', filter_target = None
+
+    @pytest.mark.parametrize(
+        ("data_group", "filter_target"),
+        [
+            ("epr_party", None),
+            # Applying 1 filter condition -> `test.data.epr_transform.TransformTestData`
+            ("epr_org", ["CountryOfIncorporation = 'NL'"]),
+            ("epr_org", None),
+            ("epr_relation", None),
+            # Applying 2 filter conditions -> `test.data.epr_transform.TransformTestData`
+            (
+                "epr_relation",
+                ["UltimateParentOrganisation = 1234", "HeadOfficeOrganisation = 4321"],
+            ),
+            ("epr_address", None),
+            ("epr_loc_id", None),
+            ("epr_ext_id", None),
+            ("epr_finan", None),
+        ],
+    )
+    def test_transform_business_logic_expressions(
+        spark_session, expressions, data_group, filter_target
+    ):
+        """Test Transform Business Logic for different data domains.
+
+            - EPR Counterparty
+            - EPR Organisation
+            - EPR Relation
+            - EPR Address
+            - EPR Local Identifier
+            - EPR External Identifier
+            - EPR Financial details.
+
+        Note:
+            Check documentation of `TransformTestData` in `test/data/epr_transform.py`
+            for more details on the different scenarios that are tested per data
+            domain.
+        """
+        data_set = TransformTestData(filtered=bool(filter_target)).get_data()[data_group]
+        input_dataframe, expected_output = create_dataframes_with_table_aliases(
+            spark_session, **data_set
+        )
+        output_field_names = data_set["output_field_names"]
+        expr_dict = {k: v for k, v in expressions.items() if k in output_field_names}
+        business_logic = {"expressions": expr_dict}
+        if filter_target:
+            business_logic["filter_target"] = filter_target
+>       result = transform_business_logic_sql(input_dataframe, business_logic)
+
+test\test_transform\test_transform_business_logic_sql.py:93:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _  
+src\abnamro_bsrc_etl\transform\transform_business_logic_sql.py:14: in transform_business_logic_sql
+    transformed_data = data.selectExpr(
+..\bsrc-etl-venv\lib\site-packages\pyspark\sql\dataframe.py:3269: in selectExpr
+    jdf = self._jdf.selectExpr(self._jseq(expr))
+..\bsrc-etl-venv\lib\site-packages\py4j\java_gateway.py:1322: in __call__
+    return_value = get_return_value(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _  
+
+a = ('xro231', <py4j.clientserver.JavaClient object at 0x000002545831A740>, 'o217', 'selectExpr'), kw = {}, converted = AnalysisException()
+
+    def deco(*a: Any, **kw: Any) -> Any:
+        try:
+            return f(*a, **kw)
+        except Py4JJavaError as e:
+            converted = convert_exception(e.java_exception)
+            if not isinstance(converted, UnknownException):
+                # Hide where the exception came from that shows a non-Pythonic
+                # JVM exception message.
+>               raise converted from None
+E               pyspark.errors.exceptions.captured.AnalysisException: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column or function parameter with name `CountryOfIncorporation` cannot be resolved. Did you mean one of the following? [`EPR_ORG`.`o_MAIN_COC`, `EPR_ENT_PARTY`.`o_PRTY_TYP`, `EPR_ORG`.`o_CNTRY_OF_INCORP`].; line 1 pos 0;
+E               'Project ['CountryOfIncorporation AS CountryOfIncorporation#168]
+E               +- Project [o_PRTY_TYP#135, o_MAIN_COC#140, o_CNTRY_OF_INCORP#141]
+E                  +- Project [idx#137L, o_PRTY_TYP#135, o_MAIN_COC#140, o_CNTRY_OF_INCORP#141]
+E                     +- Join LeftOuter, (idx#137L = idx#144L)
+E                        :- SubqueryAlias EPR_ENT_PARTY
+E                        :  +- Project [o_PRTY_TYP#135, monotonically_increasing_id() AS idx#137L]
+E                        :     +- Project [EPR_ENT_PARTY.o_PRTY_TYP#115 AS o_PRTY_TYP#135]
+E                        :        +- Project [EPR_ENT_PARTY.o_PRTY_TYP#115, EPR_ORG.o_MAIN_COC#116, EPR_ORG.o_CNTRY_OF_INCORP#117]
+E                        :           +- Sort [id#125L ASC NULLS FIRST], true
+E                        :              +- Project [EPR_ENT_PARTY.o_PRTY_TYP#115, EPR_ORG.o_MAIN_COC#116, EPR_ORG.o_CNTRY_OF_INCORP#117, NationalIdentifier#118, CountryOfIncorporation#119, monotonically_increasing_id() AS id#125L]
+E                        :                 +- LogicalRDD [EPR_ENT_PARTY.o_PRTY_TYP#115, EPR_ORG.o_MAIN_COC#116, EPR_ORG.o_CNTRY_OF_INCORP#117, NationalIdentifier#118, CountryOfIncorporation#119], false
+E                        +- SubqueryAlias EPR_ORG
+E                           +- Project [o_MAIN_COC#140, o_CNTRY_OF_INCORP#141, monotonically_increasing_id() AS idx#144L]
+E                              +- Project [EPR_ORG.o_MAIN_COC#149 AS o_MAIN_COC#140, EPR_ORG.o_CNTRY_OF_INCORP#150 AS o_CNTRY_OF_INCORP#141]
+E                                 +- Project [EPR_ENT_PARTY.o_PRTY_TYP#148, EPR_ORG.o_MAIN_COC#149, EPR_ORG.o_CNTRY_OF_INCORP#150]
+E                                    +- Sort [id#125L ASC NULLS FIRST], true
+E                                       +- Project [EPR_ENT_PARTY.o_PRTY_TYP#148, EPR_ORG.o_MAIN_COC#149, EPR_ORG.o_CNTRY_OF_INCORP#150, NationalIdentifier#151, CountryOfIncorporation#152, monotonically_increasing_id() AS id#125L]
+E                                          +- LogicalRDD [EPR_ENT_PARTY.o_PRTY_TYP#148, EPR_ORG.o_MAIN_COC#149, EPR_ORG.o_CNTRY_OF_INCORP#150, NationalIdentifier#151, CountryOfIncorporation#152], false
+
+..\bsrc-etl-venv\lib\site-packages\pyspark\errors\exceptions\captured.py:185: AnalysisException
+_________________________________________________________________ test_transform_business_logic_expressions[epr_relation-None] _________________________________________________________________ 
+
+spark_session = <pyspark.sql.session.SparkSession object at 0x0000025458363280>
+expressions = {'CounterpartyId': 'CounterpartyId', 'CountryOfIncorporation': 'CountryOfIncorporation', 'HeadOfficeOrganisation': 'HeadOfficeOrganisation', 'PartyType': 'PartyTypre', ...}       
+data_group = 'epr_relation', filter_target = None
+
+    @pytest.mark.parametrize(
+        ("data_group", "filter_target"),
+        [
+            ("epr_party", None),
+            # Applying 1 filter condition -> `test.data.epr_transform.TransformTestData`
+            ("epr_org", ["CountryOfIncorporation = 'NL'"]),
+            ("epr_org", None),
+            ("epr_relation", None),
+            # Applying 2 filter conditions -> `test.data.epr_transform.TransformTestData`
+            (
+                "epr_relation",
+                ["UltimateParentOrganisation = 1234", "HeadOfficeOrganisation = 4321"],
+            ),
+            ("epr_address", None),
+            ("epr_loc_id", None),
+            ("epr_ext_id", None),
+            ("epr_finan", None),
+        ],
+    )
+    def test_transform_business_logic_expressions(
+        spark_session, expressions, data_group, filter_target
+    ):
+        """Test Transform Business Logic for different data domains.
+
+            - EPR Counterparty
+            - EPR Organisation
+            - EPR Relation
+            - EPR Address
+            - EPR Local Identifier
+            - EPR External Identifier
+            - EPR Financial details.
+
+        Note:
+            Check documentation of `TransformTestData` in `test/data/epr_transform.py`
+            for more details on the different scenarios that are tested per data
+            domain.
+        """
+        data_set = TransformTestData(filtered=bool(filter_target)).get_data()[data_group]
+        input_dataframe, expected_output = create_dataframes_with_table_aliases(
+            spark_session, **data_set
+        )
+        output_field_names = data_set["output_field_names"]
+        expr_dict = {k: v for k, v in expressions.items() if k in output_field_names}
+        business_logic = {"expressions": expr_dict}
+        if filter_target:
+            business_logic["filter_target"] = filter_target
+>       result = transform_business_logic_sql(input_dataframe, business_logic)
+
+test\test_transform\test_transform_business_logic_sql.py:93:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _  
+src\abnamro_bsrc_etl\transform\transform_business_logic_sql.py:14: in transform_business_logic_sql
+    transformed_data = data.selectExpr(
+..\bsrc-etl-venv\lib\site-packages\pyspark\sql\dataframe.py:3269: in selectExpr
+    jdf = self._jdf.selectExpr(self._jseq(expr))
+..\bsrc-etl-venv\lib\site-packages\py4j\java_gateway.py:1322: in __call__
+    return_value = get_return_value(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _  
+
+a = ('xro337', <py4j.clientserver.JavaClient object at 0x000002545831A740>, 'o318', 'selectExpr'), kw = {}, converted = AnalysisException()
+
+    def deco(*a: Any, **kw: Any) -> Any:
+        try:
+            return f(*a, **kw)
+        except Py4JJavaError as e:
+            converted = convert_exception(e.java_exception)
+            if not isinstance(converted, UnknownException):
+                # Hide where the exception came from that shows a non-Pythonic
+                # JVM exception message.
+>               raise converted from None
+E               pyspark.errors.exceptions.captured.AnalysisException: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column or function parameter with name `UltimateParentOrganisation` cannot be resolved. Did you mean one of the following? [`EPR_RLTN_DP`.`o_RLTNSHP_TYP`, `EPR_RLTN_HO`.`o_RLTNSHP_TYP`, `EPR_ENT_PARTY_HO`.`o_GLOBAL_ID`, `EPR_ENT_PARTY_UP`.`o_GLOBAL_ID`, `EPR_ENT_PARTY_DP`.`o_GLOBAL_ID`].; line 1 pos 0;
+E               'Project ['UltimateParentOrganisation AS UltimateParentOrganisation#293, 'HeadOfficeOrganisation AS HeadOfficeOrganisation#294]
+E               +- Project [o_GLOBAL_ID#200, o_RLTNSHP_TYP#205, o_GLOBAL_ID#210, o_RLTNSHP_TYP#215, o_GLOBAL_ID#220]
+E                  +- Project [idx#202L, o_GLOBAL_ID#200, o_RLTNSHP_TYP#205, o_GLOBAL_ID#210, o_RLTNSHP_TYP#215, o_GLOBAL_ID#220]
+E                     +- Join LeftOuter, (idx#202L = idx#222L)
+E                        :- Project [idx#202L, o_GLOBAL_ID#200, o_RLTNSHP_TYP#205, o_GLOBAL_ID#210, o_RLTNSHP_TYP#215]
+E                        :  +- Join LeftOuter, (idx#202L = idx#217L)
+E                        :     :- Project [idx#202L, o_GLOBAL_ID#200, o_RLTNSHP_TYP#205, o_GLOBAL_ID#210]
+E                        :     :  +- Join LeftOuter, (idx#202L = idx#212L)
+E                        :     :     :- Project [idx#202L, o_GLOBAL_ID#200, o_RLTNSHP_TYP#205]
+E                        :     :     :  +- Join LeftOuter, (idx#202L = idx#207L)
+E                        :     :     :     :- SubqueryAlias EPR_ENT_PARTY_UP
+E                        :     :     :     :  +- Project [o_GLOBAL_ID#200, monotonically_increasing_id() AS idx#202L]
+E                        :     :     :     :     +- Project [EPR_ENT_PARTY_UP.o_GLOBAL_ID#169 AS o_GLOBAL_ID#200]
+E                        :     :     :     :        +- Project [EPR_ENT_PARTY_UP.o_GLOBAL_ID#169, EPR_RLTN_HO.o_RLTNSHP_TYP#170, EPR_ENT_PARTY_HO.o_GLOBAL_ID#171, EPR_RLTN_DP.o_RLTNSHP_TYP#172, EPR_ENT_PARTY_DP.o_GLOBAL_ID#173]
+E                        :     :     :     :           +- Sort [id#185L ASC NULLS FIRST], true
+E                        :     :     :     :              +- Project [EPR_ENT_PARTY_UP.o_GLOBAL_ID#169, EPR_RLTN_HO.o_RLTNSHP_TYP#170, EPR_ENT_PARTY_HO.o_GLOBAL_ID#171, EPR_RLTN_DP.o_RLTNSHP_TYP#172, EPR_ENT_PARTY_DP.o_GLOBAL_ID#173, UltimateParentOrganisation#174, HeadOfficeOrganisation#175, ImmediateParentOrganisation#176, monotonically_increasing_id() AS id#185L]
+E                        :     :     :     :                 +- LogicalRDD [EPR_ENT_PARTY_UP.o_GLOBAL_ID#169, EPR_RLTN_HO.o_RLTNSHP_TYP#170, EPR_ENT_PARTY_HO.o_GLOBAL_ID#171, EPR_RLTN_DP.o_RLTNSHP_TYP#172, EPR_ENT_PARTY_DP.o_GLOBAL_ID#173, UltimateParentOrganisation#174, HeadOfficeOrganisation#175, ImmediateParentOrganisation#176], false
+E                        :     :     :     +- SubqueryAlias EPR_RLTN_HO
+E                        :     :     :        +- Project [o_RLTNSHP_TYP#205, monotonically_increasing_id() AS idx#207L]
+E                        :     :     :           +- Project [EPR_RLTN_HO.o_RLTNSHP_TYP#226 AS o_RLTNSHP_TYP#205]
+E                        :     :     :              +- Project [EPR_ENT_PARTY_UP.o_GLOBAL_ID#225, EPR_RLTN_HO.o_RLTNSHP_TYP#226, EPR_ENT_PARTY_HO.o_GLOBAL_ID#227, EPR_RLTN_DP.o_RLTNSHP_TYP#228, EPR_ENT_PARTY_DP.o_GLOBAL_ID#229]
+E                        :     :     :                 +- Sort [id#185L ASC NULLS FIRST], true
+E                        :     :     :                    +- Project [EPR_ENT_PARTY_UP.o_GLOBAL_ID#225, EPR_RLTN_HO.o_RLTNSHP_TYP#226, EPR_ENT_PARTY_HO.o_GLOBAL_ID#227, EPR_RLTN_DP.o_RLTNSHP_TYP#228, EPR_ENT_PARTY_DP.o_GLOBAL_ID#229, UltimateParentOrganisation#230, HeadOfficeOrganisation#231, ImmediateParentOrganisation#232, monotonically_increasing_id() AS id#185L]
+E                        :     :     :                       +- LogicalRDD [EPR_ENT_PARTY_UP.o_GLOBAL_ID#225, EPR_RLTN_HO.o_RLTNSHP_TYP#226, EPR_ENT_PARTY_HO.o_GLOBAL_ID#227, EPR_RLTN_DP.o_RLTNSHP_TYP#228, EPR_ENT_PARTY_DP.o_GLOBAL_ID#229, UltimateParentOrganisation#230, HeadOfficeOrganisation#231, ImmediateParentOrganisation#232], false
+E                        :     :     +- SubqueryAlias EPR_ENT_PARTY_HO
+E                        :     :        +- Project [o_GLOBAL_ID#210, monotonically_increasing_id() AS idx#212L]
+E                        :     :           +- Project [EPR_ENT_PARTY_HO.o_GLOBAL_ID#238 AS o_GLOBAL_ID#210]
+E                        :     :              +- Project [EPR_ENT_PARTY_UP.o_GLOBAL_ID#236, EPR_RLTN_HO.o_RLTNSHP_TYP#237, EPR_ENT_PARTY_HO.o_GLOBAL_ID#238, EPR_RLTN_DP.o_RLTNSHP_TYP#239, EPR_ENT_PARTY_DP.o_GLOBAL_ID#240]
+E                        :     :                 +- Sort [id#185L ASC NULLS FIRST], true
+E                        :     :                    +- Project [EPR_ENT_PARTY_UP.o_GLOBAL_ID#236, EPR_RLTN_HO.o_RLTNSHP_TYP#237, EPR_ENT_PARTY_HO.o_GLOBAL_ID#238, EPR_RLTN_DP.o_RLTNSHP_TYP#239, EPR_ENT_PARTY_DP.o_GLOBAL_ID#240, UltimateParentOrganisation#241, HeadOfficeOrganisation#242, ImmediateParentOrganisation#243, monotonically_increasing_id() AS id#185L]
+E                        :     :                       +- LogicalRDD [EPR_ENT_PARTY_UP.o_GLOBAL_ID#236, EPR_RLTN_HO.o_RLTNSHP_TYP#237, EPR_ENT_PARTY_HO.o_GLOBAL_ID#238, EPR_RLTN_DP.o_RLTNSHP_TYP#239, EPR_ENT_PARTY_DP.o_GLOBAL_ID#240, UltimateParentOrganisation#241, HeadOfficeOrganisation#242, ImmediateParentOrganisation#243], false
+E                        :     +- SubqueryAlias EPR_RLTN_DP
+E                        :        +- Project [o_RLTNSHP_TYP#215, monotonically_increasing_id() AS idx#217L]
+E                        :           +- Project [EPR_RLTN_DP.o_RLTNSHP_TYP#251 AS o_RLTNSHP_TYP#215]
+E                        :              +- Project [EPR_ENT_PARTY_UP.o_GLOBAL_ID#248, EPR_RLTN_HO.o_RLTNSHP_TYP#249, EPR_ENT_PARTY_HO.o_GLOBAL_ID#250, EPR_RLTN_DP.o_RLTNSHP_TYP#251, EPR_ENT_PARTY_DP.o_GLOBAL_ID#252]
+E                        :                 +- Sort [id#185L ASC NULLS FIRST], true
+E                        :                    +- Project [EPR_ENT_PARTY_UP.o_GLOBAL_ID#248, EPR_RLTN_HO.o_RLTNSHP_TYP#249, EPR_ENT_PARTY_HO.o_GLOBAL_ID#250, EPR_RLTN_DP.o_RLTNSHP_TYP#251, EPR_ENT_PARTY_DP.o_GLOBAL_ID#252, UltimateParentOrganisation#253, HeadOfficeOrganisation#254, ImmediateParentOrganisation#255, monotonically_increasing_id() AS id#185L]
+E                        :                       +- LogicalRDD [EPR_ENT_PARTY_UP.o_GLOBAL_ID#248, EPR_RLTN_HO.o_RLTNSHP_TYP#249, EPR_ENT_PARTY_HO.o_GLOBAL_ID#250, EPR_RLTN_DP.o_RLTNSHP_TYP#251, EPR_ENT_PARTY_DP.o_GLOBAL_ID#252, UltimateParentOrganisation#253, HeadOfficeOrganisation#254, ImmediateParentOrganisation#255], false
+E                        +- SubqueryAlias EPR_ENT_PARTY_DP
+E                           +- Project [o_GLOBAL_ID#220, monotonically_increasing_id() AS idx#222L]
+E                              +- Project [EPR_ENT_PARTY_DP.o_GLOBAL_ID#265 AS o_GLOBAL_ID#220]
+E                                 +- Project [EPR_ENT_PARTY_UP.o_GLOBAL_ID#261, EPR_RLTN_HO.o_RLTNSHP_TYP#262, EPR_ENT_PARTY_HO.o_GLOBAL_ID#263, EPR_RLTN_DP.o_RLTNSHP_TYP#264, EPR_ENT_PARTY_DP.o_GLOBAL_ID#265]
+E                                    +- Sort [id#185L ASC NULLS FIRST], true
+E                                       +- Project [EPR_ENT_PARTY_UP.o_GLOBAL_ID#261, EPR_RLTN_HO.o_RLTNSHP_TYP#262, EPR_ENT_PARTY_HO.o_GLOBAL_ID#263, EPR_RLTN_DP.o_RLTNSHP_TYP#264, EPR_ENT_PARTY_DP.o_GLOBAL_ID#265, UltimateParentOrganisation#266, HeadOfficeOrganisation#267, ImmediateParentOrganisation#268, monotonically_increasing_id() AS id#185L]
+E                                          +- LogicalRDD [EPR_ENT_PARTY_UP.o_GLOBAL_ID#261, EPR_RLTN_HO.o_RLTNSHP_TYP#262, EPR_ENT_PARTY_HO.o_GLOBAL_ID#263, EPR_RLTN_DP.o_RLTNSHP_TYP#264, EPR_ENT_PARTY_DP.o_GLOBAL_ID#265, UltimateParentOrganisation#266, HeadOfficeOrganisation#267, ImmediateParentOrganisation#268], false
+
+..\bsrc-etl-venv\lib\site-packages\pyspark\errors\exceptions\captured.py:185: AnalysisException
+____________________________________________________________ test_transform_business_logic_expressions[epr_relation-filter_target4] ____________________________________________________________ 
+
+spark_session = <pyspark.sql.session.SparkSession object at 0x0000025458363280>
+expressions = {'CounterpartyId': 'CounterpartyId', 'CountryOfIncorporation': 'CountryOfIncorporation', 'HeadOfficeOrganisation': 'HeadOfficeOrganisation', 'PartyType': 'PartyTypre', ...}       
+data_group = 'epr_relation', filter_target = ['UltimateParentOrganisation = 1234', 'HeadOfficeOrganisation = 4321']
+
+    @pytest.mark.parametrize(
+        ("data_group", "filter_target"),
+        [
+            ("epr_party", None),
+            # Applying 1 filter condition -> `test.data.epr_transform.TransformTestData`
+            ("epr_org", ["CountryOfIncorporation = 'NL'"]),
+            ("epr_org", None),
+            ("epr_relation", None),
+            # Applying 2 filter conditions -> `test.data.epr_transform.TransformTestData`
+            (
+                "epr_relation",
+                ["UltimateParentOrganisation = 1234", "HeadOfficeOrganisation = 4321"],
+            ),
+            ("epr_address", None),
+            ("epr_loc_id", None),
+            ("epr_ext_id", None),
+            ("epr_finan", None),
+        ],
+    )
+    def test_transform_business_logic_expressions(
+        spark_session, expressions, data_group, filter_target
+    ):
+        """Test Transform Business Logic for different data domains.
+
+            - EPR Counterparty
+            - EPR Organisation
+            - EPR Relation
+            - EPR Address
+            - EPR Local Identifier
+            - EPR External Identifier
+            - EPR Financial details.
+
+        Note:
+            Check documentation of `TransformTestData` in `test/data/epr_transform.py`
+            for more details on the different scenarios that are tested per data
+            domain.
+        """
+        data_set = TransformTestData(filtered=bool(filter_target)).get_data()[data_group]
+        input_dataframe, expected_output = create_dataframes_with_table_aliases(
+            spark_session, **data_set
+        )
+        output_field_names = data_set["output_field_names"]
+        expr_dict = {k: v for k, v in expressions.items() if k in output_field_names}
+        business_logic = {"expressions": expr_dict}
+        if filter_target:
+            business_logic["filter_target"] = filter_target
+>       result = transform_business_logic_sql(input_dataframe, business_logic)
+
+test\test_transform\test_transform_business_logic_sql.py:93:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _  
+src\abnamro_bsrc_etl\transform\transform_business_logic_sql.py:14: in transform_business_logic_sql
+    transformed_data = data.selectExpr(
+..\bsrc-etl-venv\lib\site-packages\pyspark\sql\dataframe.py:3269: in selectExpr
+    jdf = self._jdf.selectExpr(self._jseq(expr))
+..\bsrc-etl-venv\lib\site-packages\py4j\java_gateway.py:1322: in __call__
+    return_value = get_return_value(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _  
+
+a = ('xro443', <py4j.clientserver.JavaClient object at 0x000002545831A740>, 'o424', 'selectExpr'), kw = {}, converted = AnalysisException()
+
+    def deco(*a: Any, **kw: Any) -> Any:
+        try:
+            return f(*a, **kw)
+        except Py4JJavaError as e:
+            converted = convert_exception(e.java_exception)
+            if not isinstance(converted, UnknownException):
+                # Hide where the exception came from that shows a non-Pythonic
+                # JVM exception message.
+>               raise converted from None
+E               pyspark.errors.exceptions.captured.AnalysisException: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column or function parameter with name `UltimateParentOrganisation` cannot be resolved. Did you mean one of the following? [`EPR_RLTN_DP`.`o_RLTNSHP_TYP`, `EPR_RLTN_HO`.`o_RLTNSHP_TYP`, `EPR_ENT_PARTY_HO`.`o_GLOBAL_ID`, `EPR_ENT_PARTY_UP`.`o_GLOBAL_ID`, `EPR_ENT_PARTY_DP`.`o_GLOBAL_ID`].; line 1 pos 0;
+E               'Project ['UltimateParentOrganisation AS UltimateParentOrganisation#419, 'HeadOfficeOrganisation AS HeadOfficeOrganisation#420]
+E               +- Project [o_GLOBAL_ID#326, o_RLTNSHP_TYP#331, o_GLOBAL_ID#336, o_RLTNSHP_TYP#341, o_GLOBAL_ID#346]
+E                  +- Project [idx#328L, o_GLOBAL_ID#326, o_RLTNSHP_TYP#331, o_GLOBAL_ID#336, o_RLTNSHP_TYP#341, o_GLOBAL_ID#346]
+E                     +- Join LeftOuter, (idx#328L = idx#348L)
+E                        :- Project [idx#328L, o_GLOBAL_ID#326, o_RLTNSHP_TYP#331, o_GLOBAL_ID#336, o_RLTNSHP_TYP#341]
+E                        :  +- Join LeftOuter, (idx#328L = idx#343L)
+E                        :     :- Project [idx#328L, o_GLOBAL_ID#326, o_RLTNSHP_TYP#331, o_GLOBAL_ID#336]
+E                        :     :  +- Join LeftOuter, (idx#328L = idx#338L)
+E                        :     :     :- Project [idx#328L, o_GLOBAL_ID#326, o_RLTNSHP_TYP#331]
+E                        :     :     :  +- Join LeftOuter, (idx#328L = idx#333L)
+E                        :     :     :     :- SubqueryAlias EPR_ENT_PARTY_UP
+E                        :     :     :     :  +- Project [o_GLOBAL_ID#326, monotonically_increasing_id() AS idx#328L]
+E                        :     :     :     :     +- Project [EPR_ENT_PARTY_UP.o_GLOBAL_ID#295 AS o_GLOBAL_ID#326]
+E                        :     :     :     :        +- Project [EPR_ENT_PARTY_UP.o_GLOBAL_ID#295, EPR_RLTN_HO.o_RLTNSHP_TYP#296, EPR_ENT_PARTY_HO.o_GLOBAL_ID#297, EPR_RLTN_DP.o_RLTNSHP_TYP#298, EPR_ENT_PARTY_DP.o_GLOBAL_ID#299]
+E                        :     :     :     :           +- Sort [id#311L ASC NULLS FIRST], true
+E                        :     :     :     :              +- Project [EPR_ENT_PARTY_UP.o_GLOBAL_ID#295, EPR_RLTN_HO.o_RLTNSHP_TYP#296, EPR_ENT_PARTY_HO.o_GLOBAL_ID#297, EPR_RLTN_DP.o_RLTNSHP_TYP#298, EPR_ENT_PARTY_DP.o_GLOBAL_ID#299, UltimateParentOrganisation#300, HeadOfficeOrganisation#301, ImmediateParentOrganisation#302, monotonically_increasing_id() AS id#311L]
+E                        :     :     :     :                 +- LogicalRDD [EPR_ENT_PARTY_UP.o_GLOBAL_ID#295, EPR_RLTN_HO.o_RLTNSHP_TYP#296, EPR_ENT_PARTY_HO.o_GLOBAL_ID#297, EPR_RLTN_DP.o_RLTNSHP_TYP#298, EPR_ENT_PARTY_DP.o_GLOBAL_ID#299, UltimateParentOrganisation#300, HeadOfficeOrganisation#301, ImmediateParentOrganisation#302], false
+E                        :     :     :     +- SubqueryAlias EPR_RLTN_HO
+E                        :     :     :        +- Project [o_RLTNSHP_TYP#331, monotonically_increasing_id() AS idx#333L]
+E                        :     :     :           +- Project [EPR_RLTN_HO.o_RLTNSHP_TYP#352 AS o_RLTNSHP_TYP#331]
+E                        :     :     :              +- Project [EPR_ENT_PARTY_UP.o_GLOBAL_ID#351, EPR_RLTN_HO.o_RLTNSHP_TYP#352, EPR_ENT_PARTY_HO.o_GLOBAL_ID#353, EPR_RLTN_DP.o_RLTNSHP_TYP#354, EPR_ENT_PARTY_DP.o_GLOBAL_ID#355]
+E                        :     :     :                 +- Sort [id#311L ASC NULLS FIRST], true
+E                        :     :     :                    +- Project [EPR_ENT_PARTY_UP.o_GLOBAL_ID#351, EPR_RLTN_HO.o_RLTNSHP_TYP#352, EPR_ENT_PARTY_HO.o_GLOBAL_ID#353, EPR_RLTN_DP.o_RLTNSHP_TYP#354, EPR_ENT_PARTY_DP.o_GLOBAL_ID#355, UltimateParentOrganisation#356, HeadOfficeOrganisation#357, ImmediateParentOrganisation#358, monotonically_increasing_id() AS id#311L]
+E                        :     :     :                       +- LogicalRDD [EPR_ENT_PARTY_UP.o_GLOBAL_ID#351, EPR_RLTN_HO.o_RLTNSHP_TYP#352, EPR_ENT_PARTY_HO.o_GLOBAL_ID#353, EPR_RLTN_DP.o_RLTNSHP_TYP#354, EPR_ENT_PARTY_DP.o_GLOBAL_ID#355, UltimateParentOrganisation#356, HeadOfficeOrganisation#357, ImmediateParentOrganisation#358], false
+E                        :     :     +- SubqueryAlias EPR_ENT_PARTY_HO
+E                        :     :        +- Project [o_GLOBAL_ID#336, monotonically_increasing_id() AS idx#338L]
+E                        :     :           +- Project [EPR_ENT_PARTY_HO.o_GLOBAL_ID#364 AS o_GLOBAL_ID#336]
+E                        :     :              +- Project [EPR_ENT_PARTY_UP.o_GLOBAL_ID#362, EPR_RLTN_HO.o_RLTNSHP_TYP#363, EPR_ENT_PARTY_HO.o_GLOBAL_ID#364, EPR_RLTN_DP.o_RLTNSHP_TYP#365, EPR_ENT_PARTY_DP.o_GLOBAL_ID#366]
+E                        :     :                 +- Sort [id#311L ASC NULLS FIRST], true
+E                        :     :                    +- Project [EPR_ENT_PARTY_UP.o_GLOBAL_ID#362, EPR_RLTN_HO.o_RLTNSHP_TYP#363, EPR_ENT_PARTY_HO.o_GLOBAL_ID#364, EPR_RLTN_DP.o_RLTNSHP_TYP#365, EPR_ENT_PARTY_DP.o_GLOBAL_ID#366, UltimateParentOrganisation#367, HeadOfficeOrganisation#368, ImmediateParentOrganisation#369, monotonically_increasing_id() AS id#311L]
+E                        :     :                       +- LogicalRDD [EPR_ENT_PARTY_UP.o_GLOBAL_ID#362, EPR_RLTN_HO.o_RLTNSHP_TYP#363, EPR_ENT_PARTY_HO.o_GLOBAL_ID#364, EPR_RLTN_DP.o_RLTNSHP_TYP#365, EPR_ENT_PARTY_DP.o_GLOBAL_ID#366, UltimateParentOrganisation#367, HeadOfficeOrganisation#368, ImmediateParentOrganisation#369], false
+E                        :     +- SubqueryAlias EPR_RLTN_DP
+E                        :        +- Project [o_RLTNSHP_TYP#341, monotonically_increasing_id() AS idx#343L]
+E                        :           +- Project [EPR_RLTN_DP.o_RLTNSHP_TYP#377 AS o_RLTNSHP_TYP#341]
+E                        :              +- Project [EPR_ENT_PARTY_UP.o_GLOBAL_ID#374, EPR_RLTN_HO.o_RLTNSHP_TYP#375, EPR_ENT_PARTY_HO.o_GLOBAL_ID#376, EPR_RLTN_DP.o_RLTNSHP_TYP#377, EPR_ENT_PARTY_DP.o_GLOBAL_ID#378]
+E                        :                 +- Sort [id#311L ASC NULLS FIRST], true
+E                        :                    +- Project [EPR_ENT_PARTY_UP.o_GLOBAL_ID#374, EPR_RLTN_HO.o_RLTNSHP_TYP#375, EPR_ENT_PARTY_HO.o_GLOBAL_ID#376, EPR_RLTN_DP.o_RLTNSHP_TYP#377, EPR_ENT_PARTY_DP.o_GLOBAL_ID#378, UltimateParentOrganisation#379, HeadOfficeOrganisation#380, ImmediateParentOrganisation#381, monotonically_increasing_id() AS id#311L]
+E                        :                       +- LogicalRDD [EPR_ENT_PARTY_UP.o_GLOBAL_ID#374, EPR_RLTN_HO.o_RLTNSHP_TYP#375, EPR_ENT_PARTY_HO.o_GLOBAL_ID#376, EPR_RLTN_DP.o_RLTNSHP_TYP#377, EPR_ENT_PARTY_DP.o_GLOBAL_ID#378, UltimateParentOrganisation#379, HeadOfficeOrganisation#380, ImmediateParentOrganisation#381], false
+E                        +- SubqueryAlias EPR_ENT_PARTY_DP
+E                           +- Project [o_GLOBAL_ID#346, monotonically_increasing_id() AS idx#348L]
+E                              +- Project [EPR_ENT_PARTY_DP.o_GLOBAL_ID#391 AS o_GLOBAL_ID#346]
+E                                 +- Project [EPR_ENT_PARTY_UP.o_GLOBAL_ID#387, EPR_RLTN_HO.o_RLTNSHP_TYP#388, EPR_ENT_PARTY_HO.o_GLOBAL_ID#389, EPR_RLTN_DP.o_RLTNSHP_TYP#390, EPR_ENT_PARTY_DP.o_GLOBAL_ID#391]
+E                                    +- Sort [id#311L ASC NULLS FIRST], true
+E                                       +- Project [EPR_ENT_PARTY_UP.o_GLOBAL_ID#387, EPR_RLTN_HO.o_RLTNSHP_TYP#388, EPR_ENT_PARTY_HO.o_GLOBAL_ID#389, EPR_RLTN_DP.o_RLTNSHP_TYP#390, EPR_ENT_PARTY_DP.o_GLOBAL_ID#391, UltimateParentOrganisation#392, HeadOfficeOrganisation#393, ImmediateParentOrganisation#394, monotonically_increasing_id() AS id#311L]
+E                                          +- LogicalRDD [EPR_ENT_PARTY_UP.o_GLOBAL_ID#387, EPR_RLTN_HO.o_RLTNSHP_TYP#388, EPR_ENT_PARTY_HO.o_GLOBAL_ID#389, EPR_RLTN_DP.o_RLTNSHP_TYP#390, EPR_ENT_PARTY_DP.o_GLOBAL_ID#391, UltimateParentOrganisation#392, HeadOfficeOrganisation#393, ImmediateParentOrganisation#394], false
+
+..\bsrc-etl-venv\lib\site-packages\pyspark\errors\exceptions\captured.py:185: AnalysisException
+
+---------- coverage: platform win32, python 3.10.11-final-0 ----------
+Name                                                             Stmts   Miss  Cover   Missing
+----------------------------------------------------------------------------------------------
+src\__init__.py                                                      0      0   100%
+src\abnamro_bsrc_etl\__init__.py                                     0      0   100%
+src\abnamro_bsrc_etl\config\__init__.py                              0      0   100%
+src\abnamro_bsrc_etl\config\business_logic.py                       54      0   100%
+src\abnamro_bsrc_etl\config\constants.py                             2      0   100%
+src\abnamro_bsrc_etl\config\exceptions.py                           37     37     0%   1-91
+src\abnamro_bsrc_etl\config\process.py                               7      7     0%   1-10
+src\abnamro_bsrc_etl\config\schema.py                                5      0   100%
+src\abnamro_bsrc_etl\config\ssf_tables.py                            2      2     0%   1-37
+src\abnamro_bsrc_etl\dq\__init__.py                                  0      0   100%
+src\abnamro_bsrc_etl\dq\dq_validation.py                           153    153     0%   1-498
+src\abnamro_bsrc_etl\extract\__init__.py                             0      0   100%
+src\abnamro_bsrc_etl\extract\master_data_sql.py                     96     67    30%   37-38, 42, 59-88, 109-137, 149-156, 162-164, 222-231, 285-300, 329-356
+src\abnamro_bsrc_etl\month_setup\__init__.py                         0      0   100%
+src\abnamro_bsrc_etl\month_setup\dial_derive_snapshotdate.py        36     36     0%   1-85
+src\abnamro_bsrc_etl\month_setup\metadata_log_tables.py             40     40     0%   1-203
+src\abnamro_bsrc_etl\month_setup\setup_new_month.py                 29     29     0%   1-94
+src\abnamro_bsrc_etl\scripts\__init__.py                             0      0   100%
+src\abnamro_bsrc_etl\scripts\check_dependencies.py                  26     26     0%   1-186
+src\abnamro_bsrc_etl\scripts\dial_check_delayed_files.py            27     27     0%   1-69
+src\abnamro_bsrc_etl\scripts\dial_staging_process.py                65     65     0%   1-280
+src\abnamro_bsrc_etl\scripts\export_tine_tables.py                  33     33     0%   1-123
+src\abnamro_bsrc_etl\scripts\new_month_setup.py                      7      7     0%   1-18
+src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py              63     63     0%   1-279
+src\abnamro_bsrc_etl\scripts\run_mapping.py                         26     26     0%   9-113
+src\abnamro_bsrc_etl\scripts\ssf_staging_process.py                 58     58     0%   1-234
+src\abnamro_bsrc_etl\scripts\ssf_staging_process_xml.py             24     24     0%   1-57
+src\abnamro_bsrc_etl\staging\__init__.py                             0      0   100%
+src\abnamro_bsrc_etl\staging\extract_base.py                        77     77     0%   1-420
+src\abnamro_bsrc_etl\staging\extract_dial_data.py                   77     77     0%   1-360
+src\abnamro_bsrc_etl\staging\extract_nonssf_data.py                153    153     0%   1-514
+src\abnamro_bsrc_etl\staging\extract_ssf_data.py                   179    179     0%   1-622
+src\abnamro_bsrc_etl\staging\status.py                              58     58     0%   1-162
+src\abnamro_bsrc_etl\transform\__init__.py                           0      0   100%
+src\abnamro_bsrc_etl\transform\complex_types.py                     15     15     0%   1-62
+src\abnamro_bsrc_etl\transform\table_write_and_comment.py           79     79     0%   1-237
+src\abnamro_bsrc_etl\transform\transform_business_logic_sql.py       9      0   100%
+src\abnamro_bsrc_etl\utils\__init__.py                               0      0   100%
+src\abnamro_bsrc_etl\utils\alias_util.py                            18      0   100%
+src\abnamro_bsrc_etl\utils\azure_utils.py                            5      5     0%   1-13
+src\abnamro_bsrc_etl\utils\export_parquet.py                        22     22     0%   1-68
+src\abnamro_bsrc_etl\utils\get_dbutils.py                            6      6     0%   1-11
+src\abnamro_bsrc_etl\utils\get_env.py                               12     12     0%   1-84
+src\abnamro_bsrc_etl\utils\logging_util.py                          10      0   100%
+src\abnamro_bsrc_etl\utils\parameter_utils.py                       25     25     0%   1-116
+src\abnamro_bsrc_etl\utils\parse_yaml.py                            28     28     0%   1-127
+src\abnamro_bsrc_etl\utils\sources_util.py                          56     56     0%   1-218
+src\abnamro_bsrc_etl\utils\table_logging.py                         19     19     0%   1-56
+src\abnamro_bsrc_etl\utils\table_schema.py                           6      6     0%   1-16
+src\abnamro_bsrc_etl\utils\transformations_util.py                  20     12    40%   20-25, 39, 51, 65-68
+src\abnamro_bsrc_etl\utils\xml_utils.py                             86     86     0%   1-219
+src\abnamro_bsrc_etl\validate\__init__.py                            0      0   100%
+src\abnamro_bsrc_etl\validate\base.py                                5      5     0%   1-7
+src\abnamro_bsrc_etl\validate\expressions.py                        34     34     0%   1-75
+src\abnamro_bsrc_etl\validate\run_all.py                            15     15     0%   1-48
+src\abnamro_bsrc_etl\validate\sources.py                            33     33     0%   1-67
+src\abnamro_bsrc_etl\validate\transformations.py                   200    200     0%   1-593
+src\abnamro_bsrc_etl\validate\validate_sql.py                       63     63     0%   1-130
+src\abnamro_bsrc_etl\validate\yaml.py                               19     19     0%   1-34
+----------------------------------------------------------------------------------------------
+TOTAL                                                             2119   1984     6%
+Coverage HTML written to dir htmlcov
+
+=================================================================================== short test summary info ==================================================================================== 
+FAILED test/test_transform/test_transform_business_logic_sql.py::test_transform_business_logic_expressions[epr_party-None] - pyspark.errors.exceptions.captured.AnalysisException: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column or function parameter with name `PartyTypre` cannot be resolved. Did you mean one of the ...
+FAILED test/test_transform/test_transform_business_logic_sql.py::test_transform_business_logic_expressions[epr_org-filter_target1] - pyspark.errors.exceptions.captured.AnalysisException: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column or function parameter with name `CountryOfIncorporation` cannot be resolved. Did you mean...
+FAILED test/test_transform/test_transform_business_logic_sql.py::test_transform_business_logic_expressions[epr_org-None] - pyspark.errors.exceptions.captured.AnalysisException: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column or function parameter with name `CountryOfIncorporation` cannot be resolved. Did you mean...
+FAILED test/test_transform/test_transform_business_logic_sql.py::test_transform_business_logic_expressions[epr_relation-None] - pyspark.errors.exceptions.captured.AnalysisException: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column or function parameter with name `UltimateParentOrganisation` cannot be resolved. Did you ...
+FAILED test/test_transform/test_transform_business_logic_sql.py::test_transform_business_logic_expressions[epr_relation-filter_target4] - pyspark.errors.exceptions.captured.AnalysisException: [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column or function parameter with name `UltimateParentOrganisation` cannot be resolved. Did you ...
+============================================================================ 5 failed, 5 passed in 73.55s (0:01:13) ============================================================================
