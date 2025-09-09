@@ -1,0 +1,20 @@
+Financial institutions face rising threats from fraud, money laundering, and social-engineering risks, while regulatory expectations for transparency and explainability continue to tighten. 
+Traditional rule-based monitoring platforms generate high volumes of false positives, overwhelming analysts and slowing response times.
+
+To address this, we propose a GenAI-powered anomaly detection platform on Azure that unifies real-time transaction monitoring, behavioral analysis, graph intelligence, and natural-language risk explanations. 
+The solution continuously ingests financial and interaction data streams, applies advanced anomaly detection models, and leverages GenAI to generate clear, human-readable rationales for each alert.
+
+Key features include:
+
+Streaming anomaly detection with millisecond latency using Databricks, Event Hubs, and Azure ML.
+
+Graph-based risk scoring to uncover hidden mule networks, collusion, and layered transactions.
+
+GenAI co-pilot providing plain-language explanations, case summaries, and next-best investigative steps.
+
+Continuous drift and bias monitoring, ensuring models remain accurate, fair, and regulator-ready.
+
+Seamless governance with Azure Purview for data lineage, RBAC for access control, and Responsible AI guardrails.
+
+This integrated framework transforms raw transaction and customer-interaction data into trusted, actionable intelligence. 
+By reducing false positives, accelerating analyst workflows, and providing explainable insights, the platform enables banks to protect customer trust, strengthen compliance posture, and respond faster to emerging threats.
