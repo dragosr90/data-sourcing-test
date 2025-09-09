@@ -1,0 +1,92 @@
+1. Ingestion Layer
+
+Where all the raw signals flow in.
+
+Event Hubs → Streams transactional events (payments, logins, account actions) in near-real-time.
+
+API Management (APIM) → Brings in digital interaction data: chat logs, helpdesk tickets, mobile app events, IVR transcripts. 
+  This is crucial for detecting social engineering (fraudulent customer conversations, scam scripts, phishing attempts).
+
+IoT Hub → ATM & branch device telemetry (useful for detecting skimming or compromised devices).
+
+2. Storage Layer
+
+Landing and organizing all ingested data.
+
+ADLS Gen2 → Bronze (raw), Silver (cleaned), Gold (curated) zones for both financial and conversational data.
+
+Delta Lake → Provides ACID compliance, schema evolution, and efficient querying for anomaly features.
+
+3. Processing Layer
+
+Where features are engineered and prepared for models.
+
+Databricks Delta Live Tables (DLT) → Real-time feature pipelines: transaction velocity, geo-distance, unusual login patterns.
+
+Azure ML Feature Store → Central registry of reusable fraud/interaction features.
+
+Cognitive Services (Speech-to-Text) → Converts voice calls from IVR or call centers into transcripts for downstream NLP-based social engineering detection.
+
+4. Detection Layer
+
+The brains of anomaly detection, combining different techniques.
+
+Isolation Forest / Autoencoder → Detect outliers in transaction patterns.
+
+XGBoost / GBM models → Supervised learning on labeled fraud/social engineering cases.
+
+Graph GNN (CosmosDB + GraphFrames) → Identifies hidden money mule networks or collusion between accounts.
+
+Social Engineering NLP Classifier → LLM-powered model detects conversational fraud indicators, such as:
+
+unusual language in chats,
+
+urgency/red flag keywords in emails,
+
+scripted scam patterns in voice calls.
+
+5. GenAI Layer
+
+Where intelligence is transformed into analyst-friendly outputs.
+
+Azure OpenAI (LLM) → Interprets anomalies, explains why the event is suspicious in plain language.
+
+Cognitive Search (RAG) → Grounds the LLM with historical fraud cases, internal playbooks, and compliance policies.
+
+Analyst Co-pilot → Provides summaries, rationales, and next-best investigation steps.
+
+6. Governance & Security
+
+Critical to make the platform regulator-ready.
+
+Purview → End-to-end data lineage, PII classification, audit trails.
+
+Key Vault → Secrets, encryption keys, and token management.
+
+Sentinel → SIEM/SOAR integration to push critical alerts into the SOC.
+
+Responsible AI Guardrails → Fairness checks, explainability, bias monitoring on social engineering NLP models.
+
+7. Consumption Layer
+
+Where insights are delivered to users.
+
+Power BI Dashboards → For fraud operations and compliance reporting.
+
+Case Management (Power Apps / GRC tools) → Analysts work cases enriched with GenAI explanations.
+
+SOC/SIEM Integration → Fraud alerts routed to existing security ops workflows.
+
+👉 In short:
+
+Transactions → Event Hubs
+
+Conversations (chat/voice) → APIM + Speech-to-Text → NLP classifier
+
+All data unified in Delta Lake
+
+Models (tabular, graph, NLP) detect anomalies
+
+GenAI explains them in plain language + suggests actions
+
+Analysts see cases in dashboards / case mgmt tools
