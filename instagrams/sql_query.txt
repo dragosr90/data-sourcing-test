@@ -1,0 +1,3 @@
+select FileDeliveryEntity, FileReportingDate, SSFTableName, XSDVersion, FileName, TotalNumberOfRecords
+from instap_p.ez_basel_vw.run_process_table
+where FileDeliveryEntity in  ('IHUB-DE1','BRDWH') and FileReportingDate = '2025-07-31' order by FileReportingDate desc, SSFTableName;
