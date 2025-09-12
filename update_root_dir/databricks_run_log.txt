@@ -1,0 +1,1 @@
+ImportError: cannot import name 'MAPPING_ROOT_DIR' from 'abnamro_bsrc_etl.config.constants' (/local_disk0/.ephemeral_nfs/cluster_libraries/python/lib/python3.12/site-packages/abnamro_bsrc_etl/config/constants.py)
