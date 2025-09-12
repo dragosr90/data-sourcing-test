@@ -1,162 +1,52 @@
-2025-09-05T09:30:39.9692801Z ##[section]Starting: Test with pytest
-2025-09-05T09:30:39.9699529Z ==============================================================================
-2025-09-05T09:30:39.9699764Z Task         : Command line
-2025-09-05T09:30:39.9699916Z Description  : Run a command line script using Bash on Linux and macOS and cmd.exe on Windows
-2025-09-05T09:30:39.9700129Z Version      : 2.250.1
-2025-09-05T09:30:39.9700284Z Author       : Microsoft Corporation
-2025-09-05T09:30:39.9700446Z Help         : https://docs.microsoft.com/azure/devops/pipelines/tasks/utility/command-line
-2025-09-05T09:30:39.9700657Z ==============================================================================
-2025-09-05T09:30:40.2033282Z Generating script.
-2025-09-05T09:30:40.2043535Z ========================== Starting Command Output ===========================
-2025-09-05T09:30:40.2059496Z [command]/usr/bin/bash --noprofile --norc /__w/_temp/d09e37fd-0337-442a-be6a-f705f60528db.sh
-2025-09-05T09:30:40.2136652Z ------------------------- python -m site ---------
-2025-09-05T09:30:40.2257224Z sys.path = [
-2025-09-05T09:30:40.2257643Z     '/__w/364/s',
-2025-09-05T09:30:40.2258056Z     '/usr/local/lib/python311.zip',
-2025-09-05T09:30:40.2258862Z     '/usr/local/lib/python3.11',
-2025-09-05T09:30:40.2259443Z     '/usr/local/lib/python3.11/lib-dynload',
-2025-09-05T09:30:40.2259967Z     '/home/pipeuser_azpcontainer/.local/lib/python3.11/site-packages',
-2025-09-05T09:30:40.2260496Z     '/usr/local/lib/python3.11/site-packages',
-2025-09-05T09:30:40.2260887Z ]
-2025-09-05T09:30:40.2261303Z USER_BASE: '/home/pipeuser_azpcontainer/.local' (exists)
-2025-09-05T09:30:40.2261805Z USER_SITE: '/home/pipeuser_azpcontainer/.local/lib/python3.11/site-packages' (exists)
-2025-09-05T09:30:40.2262280Z ENABLE_USER_SITE: True
-2025-09-05T09:30:40.2288433Z ------------------------ python -c 'import site; print(site.getsitepackages())' ----------
-2025-09-05T09:30:40.2377888Z ['/usr/local/lib/python3.11/site-packages']
-2025-09-05T09:30:40.2397275Z ------------------------ python -m site --user-site ----------
-2025-09-05T09:30:40.2533523Z /home/pipeuser_azpcontainer/.local/lib/python3.11/site-packages
-2025-09-05T09:30:40.4898731Z Defaulting to user installation because normal site-packages is not writeable
-2025-09-05T09:30:40.5680184Z Looking in indexes: https://p-nexus-3.development.nl.eu.abnamro.com:8443/repository/python-group/simple, https://p-nexus-3.development.nl.eu.abnamro.com:8443/repository/python-group/simple
-2025-09-05T09:30:40.6670187Z Collecting pytest-azure-devops
-2025-09-05T09:30:40.6748399Z   Downloading https://p-nexus-3.development.nl.eu.abnamro.com:8443/repository/python-group/packages/pytest-azure-devops/0.3.0/pytest_azure_devops-0.3.0-py3-none-any.whl (9.2 kB)
-2025-09-05T09:30:40.6961809Z Requirement already satisfied: pytest in /home/pipeuser_azpcontainer/.local/lib/python3.11/site-packages (8.3.3)
-2025-09-05T09:30:40.6982175Z Requirement already satisfied: pytest-cov in /home/pipeuser_azpcontainer/.local/lib/python3.11/site-packages (6.0.0)
-2025-09-05T09:30:40.6992638Z Requirement already satisfied: pytest-mock in /home/pipeuser_azpcontainer/.local/lib/python3.11/site-packages (3.14.0)
-2025-09-05T09:30:40.7149578Z Requirement already satisfied: iniconfig in /home/pipeuser_azpcontainer/.local/lib/python3.11/site-packages (from pytest) (2.1.0)
-2025-09-05T09:30:40.7158701Z Requirement already satisfied: packaging in /usr/local/lib/python3.11/site-packages (from pytest) (25.0)
-2025-09-05T09:30:40.7172409Z Requirement already satisfied: pluggy<2,>=1.5 in /home/pipeuser_azpcontainer/.local/lib/python3.11/site-packages (from pytest) (1.6.0)
-2025-09-05T09:30:40.7237868Z Requirement already satisfied: coverage>=7.5 in /home/pipeuser_azpcontainer/.local/lib/python3.11/site-packages (from coverage[toml]>=7.5->pytest-cov) (7.10.6)
-2025-09-05T09:30:41.0297077Z Installing collected packages: pytest-azure-devops
-2025-09-05T09:30:41.0605560Z Successfully installed pytest-azure-devops-0.3.0
-2025-09-05T09:30:41.0990158Z 
-2025-09-05T09:30:41.0991142Z [notice] A new release of pip is available: 24.0 -> 25.2
-2025-09-05T09:30:41.0991955Z [notice] To update, run: pip install --upgrade pip
-2025-09-05T09:30:45.1496492Z ============================= test session starts ==============================
-2025-09-05T09:30:45.1497070Z platform linux -- Python 3.11.13, pytest-8.3.3, pluggy-1.6.0
-2025-09-05T09:30:45.1497462Z rootdir: /__w/364/s
-2025-09-05T09:30:45.1497790Z configfile: pyproject.toml
-2025-09-05T09:30:45.1498180Z plugins: mock-3.14.0, cov-6.0.0, azure-devops-0.3.0, anyio-4.10.0
-2025-09-05T09:30:45.1498721Z Agent nr. 1 of 1 selected 387 of 387 tests (other filters might apply afterwards, e.g. pytest marks)
-2025-09-05T09:30:45.1499137Z collected 387 items / 2 errors
-2025-09-05T09:30:45.1499271Z 
-2025-09-05T09:30:45.1499667Z ==================================== ERRORS ====================================
-2025-09-05T09:30:45.1500083Z __ ERROR collecting test/test_transform/test_transform_business_logic_sql.py ___
-2025-09-05T09:30:45.1500603Z test/test_transform/test_transform_business_logic_sql.py:18: in <module>
-2025-09-05T09:30:45.1501036Z     with Path.open(MAPPING_ROOT_DIR / "business_logic/BCR_CPTY.yml") as stream:
-2025-09-05T09:30:45.1501315Z /usr/local/lib/python3.11/pathlib.py:1044: in open
-2025-09-05T09:30:45.1501580Z     return io.open(self, mode, buffering, encoding, errors, newline)
-2025-09-05T09:30:45.1501892Z E   FileNotFoundError: [Errno 2] No such file or directory: '/__w/364/s/Workspace/Shared/deployment/mappings/business_logic/BCR_CPTY.yml'
-2025-09-05T09:30:45.1502208Z __ ERROR collecting test/test_transform/test_transform_business_logic_sql.py ___
-2025-09-05T09:30:45.1502500Z test/test_transform/test_transform_business_logic_sql.py:18: in <module>
-2025-09-05T09:30:45.1502788Z     with Path.open(MAPPING_ROOT_DIR / "business_logic/BCR_CPTY.yml") as stream:
-2025-09-05T09:30:45.1503054Z /usr/local/lib/python3.11/pathlib.py:1044: in open
-2025-09-05T09:30:45.1503337Z     return io.open(self, mode, buffering, encoding, errors, newline)
-2025-09-05T09:30:45.1503641Z E   FileNotFoundError: [Errno 2] No such file or directory: '/__w/364/s/Workspace/Shared/deployment/mappings/business_logic/BCR_CPTY.yml'
-2025-09-05T09:30:45.1503955Z =============================== warnings summary ===============================
-2025-09-05T09:30:45.1504266Z ../../../home/pipeuser_azpcontainer/.local/lib/python3.11/site-packages/holidays/deprecations/v1_incompatibility.py:40
-2025-09-05T09:30:45.1504623Z   /home/pipeuser_azpcontainer/.local/lib/python3.11/site-packages/holidays/deprecations/v1_incompatibility.py:40: FutureIncompatibilityWarning: 
-2025-09-05T09:30:45.1504896Z   
-2025-09-05T09:30:45.1505131Z   This is a future version incompatibility warning from Holidays v0.62
-2025-09-05T09:30:45.1505420Z   to inform you about an upcoming change in our API versioning strategy that may affect your
-2025-09-05T09:30:45.1505712Z   project's dependencies. Starting from version 1.0 onwards, we will be following a loose form of
-2025-09-05T09:30:45.1506011Z   Semantic Versioning (SemVer, https://semver.org) to provide clearer communication regarding any
-2025-09-05T09:30:45.1506268Z   potential breaking changes.
-2025-09-05T09:30:45.1506604Z   
-2025-09-05T09:30:45.1506850Z   This means that while we strive to maintain backward compatibility, there might be occasional
-2025-09-05T09:30:45.1507151Z   updates that introduce breaking changes to our API. To ensure the stability of your projects,
-2025-09-05T09:30:45.1507437Z   we highly recommend pinning the version of our API that you rely on. You can pin your current
-2025-09-05T09:30:45.1507732Z   holidays v0.x dependency (e.g., holidays==0.62) or limit it (e.g., holidays<1.0) in order to
-2025-09-05T09:30:45.1508023Z   avoid potentially unwanted upgrade to the version 1.0 when it's released (ETA 2025Q1-Q2).
-2025-09-05T09:30:45.1508261Z   
-2025-09-05T09:30:45.1508507Z   If you have any questions or concerns regarding this change, please don't hesitate to reach out
-2025-09-05T09:30:45.1509017Z   to us via https://github.com/vacanza/holidays/discussions/1800.
-2025-09-05T09:30:45.1509382Z   
-2025-09-05T09:30:45.1509789Z     warnings.warn(
-2025-09-05T09:30:45.1509876Z 
-2025-09-05T09:30:45.1510118Z -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
-2025-09-05T09:30:45.1510400Z --- generated xml file: /__w/364/TestResults/test_report/test-results-1.xml ----
-2025-09-05T09:30:45.1510523Z 
-2025-09-05T09:30:45.1510763Z ---------- coverage: platform linux, python 3.11.13-final-0 ----------
-2025-09-05T09:30:45.1511029Z Name                                                             Stmts   Miss Branch BrPart  Cover   Missing
-2025-09-05T09:30:45.1511322Z ------------------------------------------------------------------------------------------------------------
-2025-09-05T09:30:45.1511608Z src/__init__.py                                                      0      0      0      0   100%
-2025-09-05T09:30:45.1511856Z src/abnamro_bsrc_etl/__init__.py                                     0      0      0      0   100%
-2025-09-05T09:30:45.1512180Z src/abnamro_bsrc_etl/config/__init__.py                              0      0      0      0   100%
-2025-09-05T09:30:45.1512454Z src/abnamro_bsrc_etl/config/business_logic.py                       54      0      0      0   100%
-2025-09-05T09:30:45.1512710Z src/abnamro_bsrc_etl/config/constants.py                             2      0      0      0   100%
-2025-09-05T09:30:45.1512987Z src/abnamro_bsrc_etl/config/exceptions.py                           37      9      0      0    76%   26, 29, 37-39, 66-71, 82-91
-2025-09-05T09:30:45.1513270Z src/abnamro_bsrc_etl/config/process.py                               7      0      0      0   100%
-2025-09-05T09:30:45.1513530Z src/abnamro_bsrc_etl/config/schema.py                                5      2      0      0    60%   51-52
-2025-09-05T09:30:45.1513791Z src/abnamro_bsrc_etl/config/ssf_tables.py                            2      0      0      0   100%
-2025-09-05T09:30:45.1514045Z src/abnamro_bsrc_etl/dq/__init__.py                                  0      0      0      0   100%
-2025-09-05T09:30:45.1514353Z src/abnamro_bsrc_etl/dq/dq_validation.py                           153    135     46      0     9%   47-109, 163-193, 209-261, 277-298, 330-362, 384-404, 426-498
-2025-09-05T09:30:45.1514657Z src/abnamro_bsrc_etl/extract/__init__.py                             0      0      0      0   100%
-2025-09-05T09:30:45.1514970Z src/abnamro_bsrc_etl/extract/master_data_sql.py                     96     71     36      0    19%   31-33, 37-38, 42, 59-88, 109-137, 149-156, 162-164, 188, 222-231, 285-300, 329-356
-2025-09-05T09:30:45.1515292Z src/abnamro_bsrc_etl/month_setup/__init__.py                         0      0      0      0   100%
-2025-09-05T09:30:45.1515577Z src/abnamro_bsrc_etl/month_setup/dial_derive_snapshotdate.py        36     27      8      0    20%   12-18, 28-37, 47-50, 69-85
-2025-09-05T09:30:45.1515884Z src/abnamro_bsrc_etl/month_setup/metadata_log_tables.py             40     28      8      0    25%   23-84, 88-159, 166-203
-2025-09-05T09:30:45.1516184Z src/abnamro_bsrc_etl/month_setup/setup_new_month.py                 29     17      0      0    41%   60-84, 88-94
-2025-09-05T09:30:45.1516454Z src/abnamro_bsrc_etl/scripts/__init__.py                             0      0      0      0   100%
-2025-09-05T09:30:45.1516732Z src/abnamro_bsrc_etl/scripts/check_dependencies.py                  26     12      2      0    50%   94-103, 130-158, 181-186
-2025-09-05T09:30:45.1517036Z src/abnamro_bsrc_etl/scripts/dial_check_delayed_files.py            27     14      6      0    39%   31-41, 52-62, 66-69
-2025-09-05T09:30:45.1517331Z src/abnamro_bsrc_etl/scripts/dial_staging_process.py                65     49     22      0    18%   49-225, 253-271, 280
-2025-09-05T09:30:45.1517613Z src/abnamro_bsrc_etl/scripts/export_tine_tables.py                  33     21      6      0    31%   38-73, 97-123
-2025-09-05T09:30:45.1517894Z src/abnamro_bsrc_etl/scripts/new_month_setup.py                      7      3      2      0    44%   15-18
-2025-09-05T09:30:45.1518184Z src/abnamro_bsrc_etl/scripts/nonssf_staging_process.py              63     48     20      0    18%   30-49, 71-159, 196-233, 261-279
-2025-09-05T09:30:45.1518512Z src/abnamro_bsrc_etl/scripts/run_mapping.py                         26     14      6      0    38%   38-113
-2025-09-05T09:30:45.1518960Z src/abnamro_bsrc_etl/scripts/ssf_staging_process.py                 58     45     18      0    17%   39-184, 216-234
-2025-09-05T09:30:45.1519253Z src/abnamro_bsrc_etl/scripts/ssf_staging_process_xml.py             24      9      0      0    62%   26-57
-2025-09-05T09:30:45.1519518Z src/abnamro_bsrc_etl/staging/__init__.py                             0      0      0      0   100%
-2025-09-05T09:30:45.1519815Z src/abnamro_bsrc_etl/staging/extract_base.py                        77     45     10      0    37%   73-83, 97, 107-113, 155-176, 205-219, 275-321, 343-352, 387-404, 420
-2025-09-05T09:30:45.1520175Z src/abnamro_bsrc_etl/staging/extract_dial_data.py                   77     44      2      0    42%   31-32, 36, 69-74, 116-125, 145, 176-194, 216-232, 253-268, 285-312, 330-347, 360
-2025-09-05T09:30:45.1520597Z src/abnamro_bsrc_etl/staging/extract_nonssf_data.py                153    124     40      0    15%   27, 38-55, 68-94, 115-137, 153-229, 241-290, 301-324, 337-384, 404-438, 453, 469, 492-514
-2025-09-05T09:30:45.1521076Z src/abnamro_bsrc_etl/staging/extract_ssf_data.py                   179    144     30      0    17%   40-47, 52-55, 59, 79-85, 140-168, 189-191, 207, 229-330, 349-376, 389-412, 438-549, 562-622
-2025-09-05T09:30:45.1521425Z src/abnamro_bsrc_etl/staging/status.py                              58      9      0      0    84%   18, 26, 35, 53-54, 63, 107, 129, 151
-2025-09-05T09:30:45.1521705Z src/abnamro_bsrc_etl/transform/__init__.py                           0      0      0      0   100%
-2025-09-05T09:30:45.1521980Z src/abnamro_bsrc_etl/transform/complex_types.py                     15      8      0      0    47%   10-23, 29, 59-62
-2025-09-05T09:30:45.1522300Z src/abnamro_bsrc_etl/transform/table_write_and_comment.py           79     64     22      0    15%   24-42, 47-123, 128-129, 137-149, 160-195, 202-205, 222-237
-2025-09-05T09:30:45.1522615Z src/abnamro_bsrc_etl/transform/transform_business_logic_sql.py       9      4      0      0    56%   13-25
-2025-09-05T09:30:45.1522888Z src/abnamro_bsrc_etl/utils/__init__.py                               0      0      0      0   100%
-2025-09-05T09:30:45.1523171Z src/abnamro_bsrc_etl/utils/alias_util.py                            18     10      0      0    44%   14-19, 58-78, 101-109
-2025-09-05T09:30:45.1523446Z src/abnamro_bsrc_etl/utils/azure_utils.py                            5      2      0      0    60%   12-13
-2025-09-05T09:30:45.1523719Z src/abnamro_bsrc_etl/utils/export_parquet.py                        22     12      0      0    45%   38-57, 67-68
-2025-09-05T09:30:45.1523997Z src/abnamro_bsrc_etl/utils/get_dbutils.py                            6      2      0      0    67%   7, 11
-2025-09-05T09:30:45.1524271Z src/abnamro_bsrc_etl/utils/get_env.py                               12      6      0      0    50%   22-32, 48, 64, 84
-2025-09-05T09:30:45.1524547Z src/abnamro_bsrc_etl/utils/logging_util.py                          10      0      0      0   100%
-2025-09-05T09:30:45.1524837Z src/abnamro_bsrc_etl/utils/parameter_utils.py                       25     19     10      0    17%   33-53, 79-84, 105-116
-2025-09-05T09:30:45.1525124Z src/abnamro_bsrc_etl/utils/parse_yaml.py                            28     19     12      0    22%   32-66, 91, 119-127
-2025-09-05T09:30:45.1525564Z src/abnamro_bsrc_etl/utils/sources_util.py                          56     40     18      0    22%   18-28, 39, 52-53, 65-68, 81, 106-110, 122, 135-139, 149, 173-193, 201-218
-2025-09-05T09:30:45.1525943Z src/abnamro_bsrc_etl/utils/table_logging.py                         19     11      2      0    38%   25-37, 54-56
-2025-09-05T09:30:45.1526213Z src/abnamro_bsrc_etl/utils/table_schema.py                           6      2      0      0    67%   13-16
-2025-09-05T09:30:45.1526510Z src/abnamro_bsrc_etl/utils/transformations_util.py                  20     12      4      0    33%   20-25, 39, 51, 65-68
-2025-09-05T09:30:45.1526893Z src/abnamro_bsrc_etl/utils/xml_utils.py                             86     61     30      0    22%   54, 58-69, 73-85, 89-134, 138, 145-149, 167, 181, 185, 194-205, 219
-2025-09-05T09:30:45.1527193Z src/abnamro_bsrc_etl/validate/__init__.py                            0      0      0      0   100%
-2025-09-05T09:30:45.1527450Z src/abnamro_bsrc_etl/validate/base.py                                5      2      0      0    60%   6-7
-2025-09-05T09:30:45.1527725Z src/abnamro_bsrc_etl/validate/expressions.py                        34     23     10      0    25%   24-27, 33-75
-2025-09-05T09:30:45.1528016Z src/abnamro_bsrc_etl/validate/run_all.py                            15      5      2      0    59%   41-48
-2025-09-05T09:30:45.1528298Z src/abnamro_bsrc_etl/validate/sources.py                            33     24      6      0    23%   12-13, 25-51, 54-67
-2025-09-05T09:30:45.1528782Z src/abnamro_bsrc_etl/validate/transformations.py                   200    170     84      0    11%   52-54, 65-73, 76-94, 97-102, 119-168, 172-180, 183-236, 244-247, 259-269, 280-297, 307-317, 327-354, 362-370, 381-405, 426-431, 450-456, 476-487, 525-547, 574-593
-2025-09-05T09:30:45.1529195Z src/abnamro_bsrc_etl/validate/validate_sql.py                       63     49     18      0    17%   23-63, 75-95, 118-124, 130
-2025-09-05T09:30:45.1529486Z src/abnamro_bsrc_etl/validate/yaml.py                               19     14      2      0    24%   8, 11-34
-2025-09-05T09:30:45.1529781Z ------------------------------------------------------------------------------------------------------------
-2025-09-05T09:30:45.1530076Z TOTAL                                                             2119   1429    482      0    27%
-2025-09-05T09:30:45.1530318Z Coverage HTML written to dir htmlcov
-2025-09-05T09:30:45.1530419Z 
-2025-09-05T09:30:45.1530662Z =========================== short test summary info ============================
-2025-09-05T09:30:45.1530964Z ERROR test/test_transform/test_transform_business_logic_sql.py - FileNotFound...
-2025-09-05T09:30:45.1531247Z ERROR test/test_transform/test_transform_business_logic_sql.py - FileNotFound...
-2025-09-05T09:30:45.1531523Z !!!!!!!!!!!!!!!!!!! Interrupted: 2 errors during collection !!!!!!!!!!!!!!!!!!!!
-2025-09-05T09:30:45.1531800Z ========================= 1 warning, 2 errors in 3.42s =========================
-2025-09-05T09:30:45.4684825Z 
-2025-09-05T09:30:45.4715145Z ##[error]Bash exited with code '2'.
-2025-09-05T09:30:45.4771581Z ##[section]Finishing: Test with pytest
+FileNotFoundError: [Errno 2] No such file or directory: '/local_disk0/.ephemeral_nfs/cluster_libraries/python/lib/python3.12/business_logic/integration/derivative_flatten.yml'
+---------------------------------------------------------------------------
+FileNotFoundError                         Traceback (most recent call last)
+File ~/.ipykernel/25283/command--1-1157412118:8
+      5 del sys
+      7 with open(filename, "rb") as f:
+----> 8   exec(compile(f.read(), filename, 'exec'))
+
+File /Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/src/abnamro_bsrc_etl/scripts/run_mapping.py:141
+    139 script, stage, target_mapping, run_month, *del_entity = sys.argv
+    140 delivery_entity = "" if not del_entity else del_entity[0]
+--> 141 run_mapping(spark, stage, target_mapping, run_month, delivery_entity=delivery_entity)
+
+File /Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/src/abnamro_bsrc_etl/scripts/run_mapping.py:64, in run_mapping(spark, stage, target_mapping, run_month, dq_check_folder, delivery_entity, parent_workflow, business_logic_path, run_id, local)
+     61 if not local:
+     62     spark.sql(f"""USE CATALOG {get_catalog(spark)};""")
+---> 64 business_logic_dict = parse_yaml(
+     65     yaml_path=Path(stage, target_mapping),
+     66     parameters={
+     67         "RUN_MONTH": run_month,
+     68         "DELIVERY_ENTITY": delivery_entity,
+     69     },
+     70 )
+     72 if not validate_business_logic_mapping(spark, business_logic_dict):
+     73     write_to_log(
+     74         spark=spark,
+     75         run_month=run_month,
+   (...)
+     81         },
+     82     )
+
+File /local_disk0/.ephemeral_nfs/cluster_libraries/python/lib/python3.12/site-packages/abnamro_bsrc_etl/utils/parse_yaml.py:32, in parse_yaml(yaml_path, parameters)
+     11 def parse_yaml(
+     12     yaml_path: str | Path, parameters: dict | None = None
+     13 ) -> BusinessLogicConfig:
+     14     """Parse YAML with business logic and replace placeholders with parameters.
+     15 
+     16     This function processes a YAML file by:
+   (...)
+     30         BusinessLogicConfig: Business Logic mapping for ETL
+     31     """
+---> 32     with Path.open(PROJECT_ROOT_DIRECTORY / "business_logic" / yaml_path) as yaml_file:
+     33         original_yaml = yaml_file.read()
+     35     # Replacing quoted strings (single or double quotes) with triple single quotes
+
+File /usr/lib/python3.12/pathlib.py:1015, in Path.open(self, mode, buffering, encoding, errors, newline)
+   1013 if "b" not in mode:
+   1014     encoding = io.text_encoding(encoding)
+-> 1015 return io.open(self, mode, buffering, encoding, errors, newline)
+
+FileNotFoundError: [Errno 2] No such file or directory: '/local_disk0/.ephemeral_nfs/cluster_libraries/python/lib/python3.12/business_logic/integration/derivative_flatten.yml'
+Workload failed, see run output for details
