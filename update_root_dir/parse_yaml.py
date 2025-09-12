@@ -3,13 +3,17 @@ from pathlib import Path
 
 import yaml
 
+# MAPPING_ROOT_DIR = Path("/Workspace/Shared/deployment/mappings").resolve()
+
 from abnamro_bsrc_etl.config.business_logic import BusinessLogicConfig
-from abnamro_bsrc_etl.config.constants import PROJECT_ROOT_DIRECTORY
+#from abnamro_bsrc_etl.config.constants import MAPPING_ROOT_DIR
 from abnamro_bsrc_etl.utils.parameter_utils import standardize_delivery_entity
 
 
 def parse_yaml(
-    yaml_path: str | Path, parameters: dict | None = None
+    yaml_path: Path | str,
+    parameters: dict | None = None,
+    business_logic_path: Path | str = "/Workspace/Shared/deployment/mappings/business_logic"
 ) -> BusinessLogicConfig:
     """Parse YAML with business logic and replace placeholders with parameters.
 
@@ -29,7 +33,7 @@ def parse_yaml(
     Returns:
         BusinessLogicConfig: Business Logic mapping for ETL
     """
-    with Path.open(PROJECT_ROOT_DIRECTORY / "business_logic" / yaml_path) as yaml_file:
+    with Path.open(Path("/Workspace/Shared/deployment/mappings/business_logic", yaml_path)) as yaml_file:
         original_yaml = yaml_file.read()
 
     # Replacing quoted strings (single or double quotes) with triple single quotes
