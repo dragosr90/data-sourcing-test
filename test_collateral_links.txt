@@ -1,1 +1,73 @@
 [UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `SSF_FP`.`CreditFacility` cannot be resolved. Did you mean one of the following? [`SSF_COL_X_FP`.`DeliveryEntity`, `SSF_COL_X_FP`.`Collateral`, `SSF_COL_X_FP`.`ReportingDate`, `SSF_COL_X_FP`.`FinancingProduct`, `SSF_COL_X_FP`.`CollateralSourceSystemIdentifier`]. SQLSTATE: 42703
+
+Option 1:
+transformations:
+  - join:
+      left_source: SSF_COL_X_FP
+      right_source: SSF_FP
+      condition:
+        - SSF_COL_X_FP.FinancingProduct = SSF_FP.ArrangementIdentifier
+        - SSF_COL_X_FP.FinancingProductSourceSystemIdentifier = SSF_FP.SourceSystemIdentifier
+      how: left
+      select:
+        - SSF_COL_X_FP.*
+        - SSF_FP.CreditFacility as FP_CreditFacility
+        - SSF_FP.CreditFacilitySourceSystemIdentifier as FP_CreditFacilitySourceSystemIdentifier
+
+- union:
+    alias: COMBINED_X_COL
+    column_mapping:
+      - SSF_COL_X_FP:
+          Collateral: Collateral
+          CollateralSourceSystemIdentifier: CollateralSourceSystemIdentifier
+          AR_ID: FinancingProduct 
+          AR_IDSourceSystemIdentifier: FinancingProductSourceSystemIdentifier
+          AR_EXP_TYPE: "FINANCING PRODUCT"
+          CreditFacility: FP_CreditFacility
+          CreditFacilitySourceSystemIdentifier: FP_CreditFacilitySourceSystemIdentifier
+          DeliveryEntity: DeliveryEntity
+          ReportingDate: ReportingDate
+
+Option 2:
+transformations:
+  - join:
+      left_source: SSF_COL_X_FP
+      right_source: SSF_FP
+      condition:
+        - SSF_COL_X_FP.FinancingProduct = SSF_FP.ArrangementIdentifier
+        - SSF_COL_X_FP.FinancingProductSourceSystemIdentifier = SSF_FP.SourceSystemIdentifier
+      how: left
+  - add_variables:
+      column_mapping:
+        FP_CreditFacility: CreditFacility
+        FP_CreditFacilitySourceSystemIdentifier: CreditFacilitySourceSystemIdentifier
+  - join:
+      left_source: SSF_COL_X_CA
+      right_source: SSF_CA
+      condition:
+        - SSF_COL_X_CA.CurrentAccount = SSF_CA.ArrangementIdentifier
+        - SSF_COL_X_CA.CurrentAccountSourceSystemIdentifier = SSF_CA.SourceSystemIdentifier
+      how: left
+  - union:
+      alias: COMBINED_X_COL
+      column_mapping:
+        - SSF_CF_X_COL:
+            Collateral: Collateral
+            CollateralSourceSystemIdentifier: CollateralSourceSystemIdentifier
+            AR_ID: CreditFacility 
+            AR_IDSourceSystemIdentifier: CreditFacilitySourceSystemIdentifier
+            AR_EXP_TYPE: "CREDIT FACILITY"
+            CreditFacility: CreditFacility
+            CreditFacilitySourceSystemIdentifier: CreditFacilitySourceSystemIdentifier
+            DeliveryEntity: DeliveryEntity
+            ReportingDate: ReportingDate
+        - SSF_COL_X_FP:
+            Collateral: Collateral
+            CollateralSourceSystemIdentifier: CollateralSourceSystemIdentifier
+            AR_ID: FinancingProduct 
+            AR_IDSourceSystemIdentifier: FinancingProductSourceSystemIdentifier
+            AR_EXP_TYPE: "FINANCING PRODUCT"
+            CreditFacility: FP_CreditFacility
+            CreditFacilitySourceSystemIdentifier: FP_CreditFacilitySourceSystemIdentifier
+            DeliveryEntity: DeliveryEntity
+            ReportingDate: ReportingDate
