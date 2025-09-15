@@ -1,0 +1,1 @@
+[UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name `SSF_FP`.`CreditFacility` cannot be resolved. Did you mean one of the following? [`SSF_COL_X_FP`.`DeliveryEntity`, `SSF_COL_X_FP`.`Collateral`, `SSF_COL_X_FP`.`ReportingDate`, `SSF_COL_X_FP`.`FinancingProduct`, `SSF_COL_X_FP`.`CollateralSourceSystemIdentifier`]. SQLSTATE: 42703
