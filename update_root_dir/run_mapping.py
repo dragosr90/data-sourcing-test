@@ -9,10 +9,12 @@ Args:
 import sys
 from datetime import datetime, timezone
 
-from pyspark.sql import SparkSession
+sys.path.insert(0, "/Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/src")
+
 from pathlib import Path
 
-# from abnamro_bsrc_etl.config.constants import MAPPING_ROOT_DIR
+from pyspark.sql import SparkSession
+
 from abnamro_bsrc_etl.extract.master_data_sql import GetIntegratedData
 from abnamro_bsrc_etl.transform.table_write_and_comment import write_and_comment
 from abnamro_bsrc_etl.transform.transform_business_logic_sql import (
@@ -26,6 +28,7 @@ from abnamro_bsrc_etl.validate.run_all import validate_business_logic_mapping
 
 MAPPING_ROOT_DIR = Path("/Workspace/Shared/deployment/mappings").resolve()
 
+
 def run_mapping(
     spark: SparkSession,
     stage: str,
@@ -34,7 +37,7 @@ def run_mapping(
     dq_check_folder: str = "dq_checks",
     delivery_entity: str = "",
     parent_workflow: str = "",
-    business_logic_path: Path | str = MAPPING_ROOT_DIR / "business_logic",
+    business_logic_path: Path | str = MAPPING_ROOT_DIR / "business_logic",  # noqa: ARG001
     run_id: int = 1,
     *,
     local: bool = False,
@@ -125,11 +128,12 @@ def run_mapping(
         },
     )
 
+
 if __name__ == "__main__":
     logger = get_logger()
 
     # Get args:
-    if len(sys.argv) not in [4, 5]: # First is script name
+    if len(sys.argv) not in [4, 5]:  # First is script name
         logger.error(
             "Incorrect number of parameters, expected 3 or 4: "
             "stage target_mapping run_month[ delivery_entity]"
@@ -138,4 +142,10 @@ if __name__ == "__main__":
 
     script, stage, target_mapping, run_month, *del_entity = sys.argv
     delivery_entity = "" if not del_entity else del_entity[0]
-    run_mapping(spark, stage, target_mapping, run_month, delivery_entity=delivery_entity)  # type: ignore[name-defined]
+    run_mapping(
+        spark,  # type: ignore  # noqa: PGH003
+        stage,
+        target_mapping,
+        run_month,
+        delivery_entity=delivery_entity,
+    )  # type: ignore[name-defined]
