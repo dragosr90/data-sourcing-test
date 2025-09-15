@@ -1,0 +1,122 @@
+description: This mapping creates the enrichment table for collateral links. The main functionality is to get the eligibility indicators and determine the Basel 4 Eligibility based on the indicators and approach.
+
+# THIS IS A TEST FILE TO REPLICATE COLLATERAL LINKS BY ADDING CURRENT ACCOUNT AND FINANCING PRODUCT
+
+target: enrich_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_collateral_links_test
+  
+sources:
+  - alias: ENRICH_COL
+    columns: 
+      - CollateralID
+      - CollateralSourceSystemIdentifier
+    source: enrich_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_collateral
+  - alias: SSF_FP
+    columns:
+    - ArrangementIdentifier
+    - SourceSystemIdentifier
+    - CreditFacility
+    - CreditFacilitySourceSystemIdentifier
+    - FinancingProductType
+    source: stg_{{ RUN_MONTH }}.ssf_{{ DELIVERY_ENTITY }}_fp
+  - alias: SSF_COL_X_FP
+    source: stg_{{ RUN_MONTH }}.ssf_{{ DELIVERY_ENTITY }}_colxfp
+  - alias: SSF_CA
+    columns:
+    - ArrangementIdentifier
+    - SourceSystemIdentifier
+    - CreditFacility
+    - CreditFacilitySourceSystemIdentifier
+    source: stg_{{ RUN_MONTH }}.ssf_{{ DELIVERY_ENTITY }}_ca
+  - alias: SSF_COL_X_CA
+    source: stg_{{ RUN_MONTH }}.ssf_{{ DELIVERY_ENTITY }}_caxcol
+  - alias: SSF_CF_X_COL
+    source: stg_{{ RUN_MONTH }}.ssf_{{ DELIVERY_ENTITY }}_cfxcol
+  - alias: INTEGRATED_CF
+    columns: 
+      - localfacilityidentifier
+      - HighestExistingFacility
+      - plnplindicator
+      - SourceSystemIdentifier
+    source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_integrated_creditfacility
+  - alias: TCTRL_SSC_COL
+    source: stg_{{ RUN_MONTH }}.bsl_ctrl_ssc_ssf_basel
+  - alias: TCTRL_SSC_CF
+    source: stg_{{ RUN_MONTH }}.bsl_ctrl_ssc_ssf_basel
+  - alias: COLL_ELIG
+    source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_collateral_eligibility
+  - alias: ENRICH_CF
+    columns:
+    - CreditFacilityID
+    - CreditFacilitySourceSystemIdentifier
+    - BaselProductType
+    - RiskWeightedExposureApproachEC
+    - ExemptionClaimConditionIDEC
+    - LGDClass
+    source: enrich_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_creditfacility
+  - alias: CTRL_LGD_DETERMINE
+    source: stg_{{ RUN_MONTH }}.bsl_ctrl_lgd_class_determine
+  - alias: EXCLAIM_NAME
+    columns:
+    - EXEMPTION_CONDITION_ID
+    - EXEMPTION_NAME
+    source: stg_{{ RUN_MONTH }}.bsl_andes_1286_b2_exmp_cond
+
+transformations:
+  - join:
+      left_source: SSF_COL_X_FP
+      right_source: SSF_FP
+      condition:
+        - SSF_COL_X_FP.FinancingProduct = SSF_FP.ArrangementIdentifier
+        - SSF_COL_X_FP.FinancingProductSourceSystemIdentifier = SSF_FP.SourceSystemIdentifier
+      how: left
+  - join:
+      left_source: SSF_COL_X_CA
+      right_source: SSF_CA
+      condition:
+        - SSF_COL_X_CA.CurrentAccount = SSF_CA.ArrangementIdentifier
+        - SSF_COL_X_CA.CurrentAccountSourceSystemIdentifier = SSF_CA.SourceSystemIdentifier
+      how: left
+  - union:
+      alias: COMBINED_X_COL
+      column_mapping:
+        - SSF_CF_X_COL:
+            Collateral: Collateral
+            CollateralSourceSystemIdentifier: CollateralSourceSystemIdentifier
+            AR_ID: CreditFacility 
+            AR_IDSourceSystemIdentifier: CreditFacilitySourceSystemIdentifier
+            AR_EXP_TYPE: "CREDIT FACILITY"
+            CreditFacility: CreditFacility
+            CreditFacilitySourceSystemIdentifier: CreditFacilitySourceSystemIdentifier
+            DeliveryEntity: DeliveryEntity
+            ReportingDate: ReportingDate
+        - SSF_COL_X_FP:
+            Collateral: Collateral
+            CollateralSourceSystemIdentifier: CollateralSourceSystemIdentifier
+            AR_ID: FinancingProduct 
+            AR_IDSourceSystemIdentifier: FinancingProductSourceSystemIdentifier
+            AR_EXP_TYPE: "FINANCING PRODUCT"
+            CreditFacility: SSF_FP.CreditFacility
+            CreditFacilitySourceSystemIdentifier: cast(NULL as string)
+            DeliveryEntity: DeliveryEntity
+            ReportingDate: ReportingDate
+
+expressions:
+  DeliveryEntity: cast(NULL as string)
+  ReportingDate: cast(NULL as string)
+  CollateralID: Collateral
+  CollateralSourceSystemIdentifier: CollateralSourceSystemIdentifier
+  AR_ID: AR_ID
+  AR_IDSourceSystemIdentifier: AR_IDSourceSystemIdentifier
+  AR_EXP_TYPE: AR_EXP_TYPE
+  CreditFacilityID: cast(NULL as string)
+  CreditFacilitySourceSystemIdentifier: cast(NULL as string)
+  BaselSSC: cast(NULL as string)
+  Basel4Eligible: cast(NULL as string)
+  # There are two extra checks on the FIRB and AIRB eligibility, besides applying the Eligibility indicators from the collateral_eligibility table. 
+  # - FIRB can only be eligible when the exemption condition leading to the FIRB approach is not PPU3 or when the eligibility indicator comes from the ctrl table (and not SSF).
+  # - AIRB can only be eligible when the related LGD class is not marked as unsecured.
+  Basel4STDEligible: cast(NULL as string)
+  DepositToCashFlag: cast(NULL as string)
+  PlNplIndicator: cast(NULL as string)
+
+drop_duplicates: true
