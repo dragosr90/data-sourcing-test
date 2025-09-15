@@ -1,0 +1,100 @@
+(bsrc-etl-venv) PS C:\Users\B25712\bsrc-etl-venv\bsrc-etl> pre-commit run --all-files
+ruff lint................................................................Failed
+- hook id: ruff
+- exit code: 1
+ 
+warning: Failed to write cache file `C:\Users\B25712\bsrc-etl-venv\bsrc-etl\.ruff_cache\0.7.1\6855762402394514817`: Access is denied. (os error 5)
+All checks passed!
+All checks passed!
+warning: Failed to write cache file `C:\Users\B25712\bsrc-etl-venv\bsrc-etl\.ruff_cache\0.7.1\3724950456484890784`: Access is denied. (os error 5)
+warning: Failed to write cache file `C:\Users\B25712\bsrc-etl-venv\bsrc-etl\.ruff_cache\0.7.1\17488858214265708296`: Access is denied. (os error 5)
+src\abnamro_bsrc_etl\scripts\ssf_staging_process_xml.py:38:30: W291 [*] Trailing whitespace
+   |
+36 |         "202505": "2025Q2V2",
+37 |         "202507": "2025Q2V2",
+38 |         "202508": "2025Q2V2",
+   |                              ^^^^ W291
+39 |     }[run_month]
+40 |     xsd_file_path = join_path(ssf_data_month_folder, f"FRIM_{xsd_version}.xsd")
+   |
+   = help: Remove trailing whitespace
+ 
+Found 1 error.
+[*] 1 fixable with the `--fix` option.
+All checks passed!
+ 
+ruff format..............................................................Failed
+- hook id: ruff
+- files were modified by this hook
+ 
+warning: Failed to write cache file `C:\Users\B25712\bsrc-etl-venv\bsrc-etl\.ruff_cache\0.7.1\6855762402394514817`: Access is denied. (os error 5)
+27 files left unchanged
+27 files left unchanged
+27 files left unchanged
+1 file reformatted, 26 files left unchanged
+ 
+mypy.....................................................................Failed
+- hook id: mypy
+- exit code: 1
+ 
+Traceback (most recent call last):
+  File "C:\Program Files\Python310\lib\runpy.py", line 196, in _run_module_as_main
+    return _run_code(code, main_globals, None,
+  File "C:\Program Files\Python310\lib\runpy.py", line 86, in _run_code
+    exec(code, run_globals)
+  File "C:\Users\B25712\bsrc-etl-venv\bsrc-etl-venv\Scripts\mypy.EXE\__main__.py", line 7, in <module>
+  File "C:\Users\B25712\bsrc-etl-venv\bsrc-etl-venv\lib\site-packages\mypy\__main__.py", line 15, in console_entry
+    main()
+  File "mypy\main.py", line 102, in main
+  File "mypy\main.py", line 186, in run_build
+  File "mypy\build.py", line 194, in build
+  File "mypy\build.py", line 269, in _build
+  File "mypy\build.py", line 2935, in dispatch
+  File "mypy\build.py", line 3326, in process_graph
+  File "mypy\build.py", line 3407, in process_fresh_modules
+  File "mypy\build.py", line 2104, in fix_cross_refs
+  File "mypy\fixup.py", line 52, in fixup_module
+  File "mypy\fixup.py", line 127, in visit_symbol_table
+  File "mypy\lookup.py", line 31, in lookup_fully_qualified
+AssertionError: Cannot find module for google
+Traceback (most recent call last):
+  File "C:\Program Files\Python310\lib\runpy.py", line 196, in _run_module_as_main
+    return _run_code(code, main_globals, None,
+  File "C:\Program Files\Python310\lib\runpy.py", line 86, in _run_code
+    exec(code, run_globals)
+  File "C:\Users\B25712\bsrc-etl-venv\bsrc-etl-venv\Scripts\mypy.EXE\__main__.py", line 7, in <module>
+  File "C:\Users\B25712\bsrc-etl-venv\bsrc-etl-venv\lib\site-packages\mypy\__main__.py", line 15, in console_entry
+    main()
+  File "mypy\main.py", line 102, in main
+  File "mypy\main.py", line 186, in run_build
+  File "mypy\build.py", line 194, in build
+  File "mypy\build.py", line 269, in _build
+  File "mypy\build.py", line 2935, in dispatch
+  File "mypy\build.py", line 3326, in process_graph
+  File "mypy\build.py", line 3407, in process_fresh_modules
+  File "mypy\build.py", line 2104, in fix_cross_refs
+  File "mypy\fixup.py", line 52, in fixup_module
+  File "mypy\fixup.py", line 127, in visit_symbol_table
+  File "mypy\lookup.py", line 31, in lookup_fully_qualified
+AssertionError: Cannot find module for google
+Traceback (most recent call last):
+  File "C:\Program Files\Python310\lib\runpy.py", line 196, in _run_module_as_main
+    return _run_code(code, main_globals, None,
+  File "C:\Program Files\Python310\lib\runpy.py", line 86, in _run_code
+    exec(code, run_globals)
+  File "C:\Users\B25712\bsrc-etl-venv\bsrc-etl-venv\Scripts\mypy.EXE\__main__.py", line 7, in <module>
+  File "C:\Users\B25712\bsrc-etl-venv\bsrc-etl-venv\lib\site-packages\mypy\__main__.py", line 15, in console_entry
+    main()
+  File "mypy\main.py", line 102, in main
+  File "mypy\main.py", line 186, in run_build
+  File "mypy\build.py", line 194, in build
+  File "mypy\build.py", line 269, in _build
+  File "mypy\build.py", line 2935, in dispatch
+  File "mypy\build.py", line 3326, in process_graph
+  File "mypy\build.py", line 3407, in process_fresh_modules
+  File "mypy\build.py", line 2104, in fix_cross_refs
+  File "mypy\fixup.py", line 52, in fixup_module
+  File "mypy\fixup.py", line 127, in visit_symbol_table
+  File "mypy\lookup.py", line 31, in lookup_fully_qualified
+AssertionError: Cannot find module for google
+Success: no issues found in 15 source files
