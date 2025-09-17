@@ -1,3 +1,342 @@
-FAILED test/test_transform/test_pipeline_yaml_integrated_target.py::test_pipeline_yaml_integrated_target[parameters0-test_catalog.test_schema_20240801.testd1_test_target_table] - FileNotFoundError: [Errno 2] No such file or directory: '\\Workspace\\Shared\\deployment\\mappings\\business_logic\\..\\test\\data\\TEST_YAML.yml'
-FAILED test/test_transform/test_pipeline_yaml_integrated_target.py::test_pipeline_yaml_pivot - FileNotFoundError: [Errno 2] No such file or directory: '\\Workspace\\Shared\\deployment\\mappings\\business_logic\\..\\test\\data\\TEST_YAML_PIVOT.yml'
-FAILED test/test_transform/test_pipeline_yaml_integrated_target.py::test_run_mapping - FileNotFoundError: [Errno 2] No such file or directory: '\\Workspace\\Shared\\deployment\\mappings\\business_logic\\test\\data\\TEST_YAML_PIVOT.yml'
+(bsrc-etl-venv) PS C:\Users\B25712\bsrc-etl-venv\bsrc-etl> pytest test/test_transform/test_pipeline_yaml_integrated_target.py
+=========================================================================================== test session starts ============================================================================================
+platform win32 -- Python 3.10.11, pytest-8.3.3, pluggy-1.5.0
+rootdir: C:\Users\B25712\bsrc-etl-venv\bsrc-etl
+configfile: pyproject.toml
+plugins: cov-6.0.0, mock-3.14.0
+collected 4 items
+
+test\test_transform\test_pipeline_yaml_integrated_target.py F.FF                                                                                                                                      [100%]
+
+================================================================================================= FAILURES ================================================================================================= 
+_______________________________________________ test_pipeline_yaml_integrated_target[parameters0-test_catalog.test_schema_20240801.testd1_test_target_table] _______________________________________________ 
+
+spark_session = <pyspark.sql.session.SparkSession object at 0x000001D722F47A00>
+source_data = {'table_a': {'data': [(1, 2, 3, 1, 5, 1, ...), (2, 3, 3, 1, 5, 2, ...), (3, 1, 3, 0, 5, 3, ...)], 'schema': ['col01', ...col09b']}, 'table_c_testd1': {'data': [(1, 10, 11), (2, 10, 11), (3, 10, 11)], 'schema': ['col01c', 'col11', 'col12']}}
+parameters = {'DELIVERY_ENTITY': 'TEST-D1', 'RUN_MONTH': '20240801'}, target_table_name = 'test_catalog.test_schema_20240801.testd1_test_target_table'
+
+    @pytest.mark.parametrize(
+        ("parameters", "target_table_name"),
+        [
+            (
+                {"RUN_MONTH": "20240801", "DELIVERY_ENTITY": "TEST-D1"},
+                "test_catalog.test_schema_20240801.testd1_test_target_table",
+            ),
+        ],
+    )
+    def test_pipeline_yaml_integrated_target(
+        spark_session, source_data, parameters, target_table_name
+    ):
+        """Test full pipeline of YAML, Integrated data and (filtered) target attributes.
+
+        Check `test/data/TEST_YAML.yml` for:
+        - `description`
+        - `sources`
+        - `transformations`
+        - `expressions`
+        - `filter_target`
+        """
+>       business_logic = parse_yaml("../test/data/TEST_YAML.yml", parameters=parameters)
+
+test\test_transform\test_pipeline_yaml_integrated_target.py:80:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _  
+
+yaml_path = WindowsPath('../test/data/TEST_YAML.yml'), parameters = {'DELIVERY_ENTITY': 'TEST-D1', 'RUN_MONTH': '20240801'}
+
+    def parse_yaml(
+        yaml_path: Path | str,
+        parameters: dict | None = None,
+    ) -> BusinessLogicConfig:
+        """Parse YAML with business logic and replace placeholders with parameters.
+
+        This function processes a YAML file by:
+        1. Replacing quoted strings (single or double quotes) with triple single quotes
+            ('''value''').
+        2. Handling null constants by enclosing them in single quotes ('null').
+        3. Replacing placeholders (e.g., {{ PARAMETER }}) with corresponding values from the
+            `parameters` dictionary.
+        4. Standardizing the value for the `DELIVERY_ENTITY` parameter if required.
+
+        Args:
+            yaml_path (str | Path): Path to the YAML file containing business logic.
+            parameters (dict | None, optional): A dictionary of parameters to replace in the
+                YAML.
+
+        Returns:
+            BusinessLogicConfig: Business Logic mapping for ETL
+        """
+        yaml_path = Path(yaml_path)
+        if str(yaml_path).startswith(".."):
+            base_path = Path("/Workspace/Shared/deployment/mappings/business_logic")
+            full_path = (base_path / yaml_path).resolve()
+        else:
+            base_path = Path("/Workspace/Shared/deployment/mappings/business_logic")
+            full_path = base_path / yaml_path
+
+        if not full_path.exists():
+            msg = f"YAML file not found: {full_path}"
+>           raise FileNotFoundError(msg)
+E           FileNotFoundError: YAML file not found: C:\Workspace\Shared\deployment\mappings\test\data\TEST_YAML.yml
+
+src\abnamro_bsrc_etl\utils\parse_yaml.py:42: FileNotFoundError
+------------------------------------------------------------------------------------------ Captured stderr setup ------------------------------------------------------------------------------------------- 
+Setting default log level to "WARN".
+To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
+_________________________________________________________________________________________ test_pipeline_yaml_pivot _________________________________________________________________________________________ 
+
+spark_session = <pyspark.sql.session.SparkSession object at 0x000001D722F47A00>
+
+    def test_pipeline_yaml_pivot(spark_session):
+>       business_logic = parse_yaml("../test/data/TEST_YAML_PIVOT.yml")
+
+test\test_transform\test_pipeline_yaml_integrated_target.py:210:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _  
+
+yaml_path = WindowsPath('../test/data/TEST_YAML_PIVOT.yml'), parameters = None
+
+    def parse_yaml(
+        yaml_path: Path | str,
+        parameters: dict | None = None,
+    ) -> BusinessLogicConfig:
+        """Parse YAML with business logic and replace placeholders with parameters.
+
+        This function processes a YAML file by:
+        1. Replacing quoted strings (single or double quotes) with triple single quotes
+            ('''value''').
+        2. Handling null constants by enclosing them in single quotes ('null').
+        3. Replacing placeholders (e.g., {{ PARAMETER }}) with corresponding values from the
+            `parameters` dictionary.
+        4. Standardizing the value for the `DELIVERY_ENTITY` parameter if required.
+
+        Args:
+            yaml_path (str | Path): Path to the YAML file containing business logic.
+            parameters (dict | None, optional): A dictionary of parameters to replace in the
+                YAML.
+
+        Returns:
+            BusinessLogicConfig: Business Logic mapping for ETL
+        """
+        yaml_path = Path(yaml_path)
+        if str(yaml_path).startswith(".."):
+            base_path = Path("/Workspace/Shared/deployment/mappings/business_logic")
+            full_path = (base_path / yaml_path).resolve()
+        else:
+            base_path = Path("/Workspace/Shared/deployment/mappings/business_logic")
+            full_path = base_path / yaml_path
+
+        if not full_path.exists():
+            msg = f"YAML file not found: {full_path}"
+>           raise FileNotFoundError(msg)
+E           FileNotFoundError: YAML file not found: C:\Workspace\Shared\deployment\mappings\test\data\TEST_YAML_PIVOT.yml
+
+src\abnamro_bsrc_etl\utils\parse_yaml.py:42: FileNotFoundError
+_____________________________________________________________________________________________ test_run_mapping _____________________________________________________________________________________________ 
+
+spark_session = <pyspark.sql.session.SparkSession object at 0x000001D722F47A00>
+
+    def test_run_mapping(spark_session):
+        """Test full pipeline from run_mapping script"""
+
+        source_dict = {
+            "table_a": {
+                "data": [("a", "b", 2), ("a", "b", 4)],
+                "schema": ["col01", "col02", "col03"],
+            },
+            "table_b": {
+                "data": [("a", "X"), ("a", "Y"), ("b", "Z")],
+                "schema": ["col01", "col04"],
+            },
+            "table_c": {
+                "data": [(2, 1.3, 1.8), (2, 2.6, 3.5)],
+                "schema": ["X", "col05", "col06"],
+            },
+        }
+        for source_name, source_data in source_dict.items():
+            spark_session.createDataFrame(**source_data).createOrReplaceTempView(
+                source_name
+            )
+
+>       run_mapping(
+            spark_session,
+            stage="test/data",
+            target_mapping="TEST_YAML_PIVOT.yml",
+            run_month="",
+            local=True,
+        )
+
+test\test_transform\test_pipeline_yaml_integrated_target.py:288:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _  
+src\abnamro_bsrc_etl\scripts\run_mapping.py:67: in run_mapping
+    business_logic_dict = parse_yaml(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _  
+
+yaml_path = WindowsPath('test/data/TEST_YAML_PIVOT.yml'), parameters = {'DELIVERY_ENTITY': '', 'RUN_MONTH': ''}
+
+    def parse_yaml(
+        yaml_path: Path | str,
+        parameters: dict | None = None,
+    ) -> BusinessLogicConfig:
+        """Parse YAML with business logic and replace placeholders with parameters.
+
+        This function processes a YAML file by:
+        1. Replacing quoted strings (single or double quotes) with triple single quotes
+            ('''value''').
+        2. Handling null constants by enclosing them in single quotes ('null').
+        3. Replacing placeholders (e.g., {{ PARAMETER }}) with corresponding values from the
+            `parameters` dictionary.
+        4. Standardizing the value for the `DELIVERY_ENTITY` parameter if required.
+
+        Args:
+            yaml_path (str | Path): Path to the YAML file containing business logic.
+            parameters (dict | None, optional): A dictionary of parameters to replace in the
+                YAML.
+
+        Returns:
+            BusinessLogicConfig: Business Logic mapping for ETL
+        """
+        yaml_path = Path(yaml_path)
+        if str(yaml_path).startswith(".."):
+            base_path = Path("/Workspace/Shared/deployment/mappings/business_logic")
+            full_path = (base_path / yaml_path).resolve()
+        else:
+            base_path = Path("/Workspace/Shared/deployment/mappings/business_logic")
+            full_path = base_path / yaml_path
+
+        if not full_path.exists():
+            msg = f"YAML file not found: {full_path}"
+>           raise FileNotFoundError(msg)
+E           FileNotFoundError: YAML file not found: \Workspace\Shared\deployment\mappings\business_logic\test\data\TEST_YAML_PIVOT.yml
+
+src\abnamro_bsrc_etl\utils\parse_yaml.py:42: FileNotFoundError
+------------------------------------------------------------------------------------------- Captured stdout call ------------------------------------------------------------------------------------------- 
+2025-09-17 10:24:40 [ERROR] write_to_log:  Error writing to process log table log_.process_log
+Traceback (most recent call last):
+  File "C:\Users\B25712\bsrc-etl-venv\bsrc-etl\src\abnamro_bsrc_etl\utils\table_logging.py", line 33, in write_to_log
+    log_entry_df.write.mode("append").saveAsTable(
+  File "C:\Users\B25712\bsrc-etl-venv\bsrc-etl-venv\lib\site-packages\pyspark\sql\readwriter.py", line 1586, in saveAsTable
+    self._jwrite.saveAsTable(name)
+  File "C:\Users\B25712\bsrc-etl-venv\bsrc-etl-venv\lib\site-packages\py4j\java_gateway.py", line 1322, in __call__
+    return_value = get_return_value(
+  File "C:\Users\B25712\bsrc-etl-venv\bsrc-etl-venv\lib\site-packages\pyspark\errors\exceptions\captured.py", line 185, in deco
+    raise converted from None
+pyspark.errors.exceptions.captured.AnalysisException: Couldn't find a catalog to handle the identifier bsrc_d.log_.process_log.
+2025-09-17 10:24:40 [ERROR] write_to_log:  Error writing to process log table log_.process_log
+Traceback (most recent call last):
+  File "C:\Users\B25712\bsrc-etl-venv\bsrc-etl\src\abnamro_bsrc_etl\utils\table_logging.py", line 33, in write_to_log
+    log_entry_df.write.mode("append").saveAsTable(
+  File "C:\Users\B25712\bsrc-etl-venv\bsrc-etl-venv\lib\site-packages\pyspark\sql\readwriter.py", line 1586, in saveAsTable
+    self._jwrite.saveAsTable(name)
+  File "C:\Users\B25712\bsrc-etl-venv\bsrc-etl-venv\lib\site-packages\py4j\java_gateway.py", line 1322, in __call__
+    return_value = get_return_value(
+  File "C:\Users\B25712\bsrc-etl-venv\bsrc-etl-venv\lib\site-packages\pyspark\errors\exceptions\captured.py", line 185, in deco
+    raise converted from None
+pyspark.errors.exceptions.captured.AnalysisException: Couldn't find a catalog to handle the identifier bsrc_d.log_.process_log.
+-------------------------------------------------------------------------------------------- Captured log call --------------------------------------------------------------------------------------------- 
+ERROR    betl_src_poc_logger:table_logging.py:37 Error writing to process log table log_.process_log
+Traceback (most recent call last):
+  File "C:\Users\B25712\bsrc-etl-venv\bsrc-etl\src\abnamro_bsrc_etl\utils\table_logging.py", line 33, in write_to_log
+    log_entry_df.write.mode("append").saveAsTable(
+  File "C:\Users\B25712\bsrc-etl-venv\bsrc-etl-venv\lib\site-packages\pyspark\sql\readwriter.py", line 1586, in saveAsTable
+    self._jwrite.saveAsTable(name)
+  File "C:\Users\B25712\bsrc-etl-venv\bsrc-etl-venv\lib\site-packages\py4j\java_gateway.py", line 1322, in __call__
+    return_value = get_return_value(
+  File "C:\Users\B25712\bsrc-etl-venv\bsrc-etl-venv\lib\site-packages\pyspark\errors\exceptions\captured.py", line 185, in deco
+    raise converted from None
+pyspark.errors.exceptions.captured.AnalysisException: Couldn't find a catalog to handle the identifier bsrc_d.log_.process_log.
+============================================================================================= warnings summary ============================================================================================= 
+..\bsrc-etl-venv\lib\site-packages\holidays\deprecations\v1_incompatibility.py:40
+  C:\Users\B25712\bsrc-etl-venv\bsrc-etl-venv\lib\site-packages\holidays\deprecations\v1_incompatibility.py:40: FutureIncompatibilityWarning:
+
+  This is a future version incompatibility warning from Holidays v0.62
+  to inform you about an upcoming change in our API versioning strategy that may affect your
+  project's dependencies. Starting from version 1.0 onwards, we will be following a loose form of
+  Semantic Versioning (SemVer, https://semver.org) to provide clearer communication regarding any
+  potential breaking changes.
+
+  This means that while we strive to maintain backward compatibility, there might be occasional
+  updates that introduce breaking changes to our API. To ensure the stability of your projects,
+  we highly recommend pinning the version of our API that you rely on. You can pin your current
+  holidays v0.x dependency (e.g., holidays==0.62) or limit it (e.g., holidays<1.0) in order to
+  avoid potentially unwanted upgrade to the version 1.0 when it's released (ETA 2025Q1-Q2).
+
+  If you have any questions or concerns regarding this change, please don't hesitate to reach out
+  to us via https://github.com/vacanza/holidays/discussions/1800.
+
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+
+---------- coverage: platform win32, python 3.10.11-final-0 ----------
+Name                                                             Stmts   Miss  Cover   Missing
+----------------------------------------------------------------------------------------------
+src\__init__.py                                                      0      0   100%
+src\abnamro_bsrc_etl\__init__.py                                     0      0   100%
+src\abnamro_bsrc_etl\config\__init__.py                              0      0   100%
+src\abnamro_bsrc_etl\config\business_logic.py                       54      0   100%
+src\abnamro_bsrc_etl\config\constants.py                             5      1    80%   5
+src\abnamro_bsrc_etl\config\exceptions.py                           37     37     0%   1-91
+src\abnamro_bsrc_etl\config\process.py                               7      7     0%   1-10
+src\abnamro_bsrc_etl\config\schema.py                                5      2    60%   51-52
+src\abnamro_bsrc_etl\config\ssf_tables.py                            2      2     0%   1-37
+src\abnamro_bsrc_etl\dq\__init__.py                                  0      0   100%
+src\abnamro_bsrc_etl\dq\dq_validation.py                           153    135    12%   47-109, 163-193, 209-261, 277-298, 330-362, 384-404, 426-498
+src\abnamro_bsrc_etl\extract\__init__.py                             0      0   100%
+src\abnamro_bsrc_etl\extract\master_data_sql.py                     96     62    35%   64-88, 109-137, 149-156, 162-164, 188, 222-231, 285-300, 329-356
+src\abnamro_bsrc_etl\month_setup\__init__.py                         0      0   100%
+src\abnamro_bsrc_etl\month_setup\dial_derive_snapshotdate.py        36     27    25%   12-18, 28-37, 47-50, 69-85
+src\abnamro_bsrc_etl\month_setup\metadata_log_tables.py             40     25    38%   23-84, 159, 166-203
+src\abnamro_bsrc_etl\month_setup\setup_new_month.py                 29     29     0%   1-94
+src\abnamro_bsrc_etl\scripts\__init__.py                             0      0   100%
+src\abnamro_bsrc_etl\scripts\check_dependencies.py                  26     26     0%   1-186
+src\abnamro_bsrc_etl\scripts\dial_check_delayed_files.py            27     27     0%   1-69
+src\abnamro_bsrc_etl\scripts\dial_staging_process.py                65     65     0%   1-280
+src\abnamro_bsrc_etl\scripts\export_tine_tables.py                  33     33     0%   1-123
+src\abnamro_bsrc_etl\scripts\new_month_setup.py                      7      7     0%   1-18
+src\abnamro_bsrc_etl\scripts\nonssf_staging_process.py              63     63     0%   1-279
+src\abnamro_bsrc_etl\scripts\run_mapping.py                         37     17    54%   65, 75-120, 133-145
+src\abnamro_bsrc_etl\scripts\ssf_staging_process.py                 58     58     0%   1-234
+src\abnamro_bsrc_etl\scripts\ssf_staging_process_xml.py             24     24     0%   1-60
+src\abnamro_bsrc_etl\staging\__init__.py                             0      0   100%
+src\abnamro_bsrc_etl\staging\extract_base.py                        77     77     0%   1-420
+src\abnamro_bsrc_etl\staging\extract_dial_data.py                   77     77     0%   1-360
+src\abnamro_bsrc_etl\staging\extract_nonssf_data.py                153    153     0%   1-514
+src\abnamro_bsrc_etl\staging\extract_ssf_data.py                   179    179     0%   1-622
+src\abnamro_bsrc_etl\staging\status.py                              58     58     0%   1-162
+src\abnamro_bsrc_etl\transform\__init__.py                           0      0   100%
+src\abnamro_bsrc_etl\transform\complex_types.py                     15     15     0%   1-62
+src\abnamro_bsrc_etl\transform\table_write_and_comment.py           79     64    19%   24-42, 47-123, 128-129, 137-149, 160-195, 202-205, 222-237
+src\abnamro_bsrc_etl\transform\transform_business_logic_sql.py       9      0   100%
+src\abnamro_bsrc_etl\utils\__init__.py                               0      0   100%
+src\abnamro_bsrc_etl\utils\alias_util.py                            18      6    67%   14-19, 101-109
+src\abnamro_bsrc_etl\utils\azure_utils.py                            5      5     0%   1-13
+src\abnamro_bsrc_etl\utils\export_parquet.py                        22     22     0%   1-68
+src\abnamro_bsrc_etl\utils\get_dbutils.py                            6      6     0%   1-11
+src\abnamro_bsrc_etl\utils\get_env.py                               12      2    83%   64, 84
+src\abnamro_bsrc_etl\utils\logging_util.py                          10      0   100%
+src\abnamro_bsrc_etl\utils\parameter_utils.py                       25     19    24%   33-53, 79-84, 105-116
+src\abnamro_bsrc_etl\utils\parse_yaml.py                            36     19    47%   44-78, 103, 131-139
+src\abnamro_bsrc_etl\utils\sources_util.py                          56     40    29%   18-28, 39, 52-53, 65-68, 81, 106-110, 122, 135-139, 149, 173-193, 201-218
+src\abnamro_bsrc_etl\utils\table_logging.py                         19      3    84%   54-56
+src\abnamro_bsrc_etl\utils\table_schema.py                           6      6     0%   1-16
+src\abnamro_bsrc_etl\utils\transformations_util.py                  20     12    40%   20-25, 39, 51, 65-68
+src\abnamro_bsrc_etl\utils\xml_utils.py                             86     86     0%   1-219
+src\abnamro_bsrc_etl\validate\__init__.py                            0      0   100%
+src\abnamro_bsrc_etl\validate\base.py                                5      0   100%
+src\abnamro_bsrc_etl\validate\expressions.py                        34     13    62%   37-61, 73
+src\abnamro_bsrc_etl\validate\run_all.py                            15      0   100%
+src\abnamro_bsrc_etl\validate\sources.py                            33     11    67%   26, 42-49, 63-66
+src\abnamro_bsrc_etl\validate\transformations.py                   200    159    20%   66-72, 76-94, 97-102, 119-168, 172-180, 194-236, 244-247, 259-269, 280-297, 307-317, 327-354, 362-370, 381-405, 426-431, 450-456, 476-487, 525-547, 574-593
+src\abnamro_bsrc_etl\validate\validate_sql.py                       63     18    71%   37-41, 46, 78-79, 81-82, 87, 91-94, 121-123
+src\abnamro_bsrc_etl\validate\yaml.py                               19      4    79%   27-32
+----------------------------------------------------------------------------------------------
+TOTAL                                                             2141   1701    21%
+Coverage HTML written to dir htmlcov
+
+========================================================================================= short test summary info ==========================================================================================
+FAILED test/test_transform/test_pipeline_yaml_integrated_target.py::test_pipeline_yaml_integrated_target[parameters0-test_catalog.test_schema_20240801.testd1_test_target_table] - FileNotFoundError: YAML file not found: C:\Workspace\Shared\deployment\mappings\test\data\TEST_YAML.yml
+FAILED test/test_transform/test_pipeline_yaml_integrated_target.py::test_pipeline_yaml_pivot - FileNotFoundError: YAML file not found: C:\Workspace\Shared\deployment\mappings\test\data\TEST_YAML_PIVOT.yml 
+FAILED test/test_transform/test_pipeline_yaml_integrated_target.py::test_run_mapping - FileNotFoundError: YAML file not found: \Workspace\Shared\deployment\mappings\business_logic\test\data\TEST_YAML_PIVOT.yml
+================================================================================= 3 failed, 1 passed, 1 warning in 51.52s ================================================================================== 
+(bsrc-etl-venv) PS C:\Users\B25712\bsrc-etl-venv\bsrc-etl> SUCCESS: The process with PID 9704 (child process of PID 15372) has been terminated.
+SUCCESS: The process with PID 15372 (child process of PID 22344) has been terminated.
+SUCCESS: The process with PID 22344 (child process of PID 9900) has been terminated.
