@@ -8,9 +8,6 @@ Args:
 
 import sys
 from datetime import datetime, timezone
-
-sys.path.insert(0, "/Workspace/Users/dragos-cosmin.raduta@nl.abnamro.com/bsrc-etl/src")
-
 from pathlib import Path
 
 from pyspark.sql import SparkSession
@@ -25,6 +22,12 @@ from abnamro_bsrc_etl.utils.logging_util import get_logger
 from abnamro_bsrc_etl.utils.parse_yaml import parse_yaml
 from abnamro_bsrc_etl.utils.table_logging import write_to_log
 from abnamro_bsrc_etl.validate.run_all import validate_business_logic_mapping
+
+user = (
+    dbutils.notebook.entry_point.getDbutils().notebook().getContext().userName().get()  # type: ignore # noqa: PGH003
+)
+sys.path.insert(0, f"/Workspace/Users/{user}/bsrc-etl/src")
+
 
 MAPPING_ROOT_DIR = Path("/Workspace/Shared/deployment/mappings").resolve()
 
