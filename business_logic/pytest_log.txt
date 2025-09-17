@@ -11,7 +11,7 @@ test\test_transform\test_pipeline_yaml_integrated_target.py F.FF                
 ================================================================================================= FAILURES ================================================================================================= 
 _______________________________________________ test_pipeline_yaml_integrated_target[parameters0-test_catalog.test_schema_20240801.testd1_test_target_table] _______________________________________________ 
 
-spark_session = <pyspark.sql.session.SparkSession object at 0x000001875C9D78B0>
+spark_session = <pyspark.sql.session.SparkSession object at 0x00000234E84B6C80>
 source_data = {'table_a': {'data': [(1, 2, 3, 1, 5, 1, ...), (2, 3, 3, 1, 5, 2, ...), (3, 1, 3, 0, 5, 3, ...)], 'schema': ['col01', ...col09b']}, 'table_c_testd1': {'data': [(1, 10, 11), (2, 10, 11), (3, 10, 11)], 'schema': ['col01c', 'col11', 'col12']}}
 parameters = {'DELIVERY_ENTITY': 'TEST-D1', 'RUN_MONTH': '20240801'}, target_table_name = 'test_catalog.test_schema_20240801.testd1_test_target_table'
 
@@ -86,7 +86,7 @@ Setting default log level to "WARN".
 To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
 _________________________________________________________________________________________ test_pipeline_yaml_pivot _________________________________________________________________________________________ 
 
-spark_session = <pyspark.sql.session.SparkSession object at 0x000001875C9D78B0>
+spark_session = <pyspark.sql.session.SparkSession object at 0x00000234E84B6C80>
 
     def test_pipeline_yaml_pivot(spark_session):
 >       business_logic = parse_yaml("../test/data/TEST_YAML_PIVOT.yml")
@@ -136,7 +136,7 @@ E           FileNotFoundError: YAML file not found: C:\Users\B25712\bsrc-etl-ven
 src\abnamro_bsrc_etl\utils\parse_yaml.py:45: FileNotFoundError
 _____________________________________________________________________________________________ test_run_mapping _____________________________________________________________________________________________ 
 
-spark_session = <pyspark.sql.session.SparkSession object at 0x000001875C9D78B0>
+spark_session = <pyspark.sql.session.SparkSession object at 0x00000234E84B6C80>
 
     def test_run_mapping(spark_session):
         """Test full pipeline from run_mapping script"""
@@ -215,7 +215,7 @@ E           FileNotFoundError: YAML file not found: C:\Users\B25712\bsrc-etl-ven
 
 src\abnamro_bsrc_etl\utils\parse_yaml.py:45: FileNotFoundError
 ------------------------------------------------------------------------------------------- Captured stdout call ------------------------------------------------------------------------------------------- 
-2025-09-17 10:42:33 [ERROR] write_to_log:  Error writing to process log table log_.process_log
+2025-09-17 11:00:46 [ERROR] write_to_log:  Error writing to process log table log_.process_log
 Traceback (most recent call last):
   File "C:\Users\B25712\bsrc-etl-venv\bsrc-etl\src\abnamro_bsrc_etl\utils\table_logging.py", line 33, in write_to_log
     log_entry_df.write.mode("append").saveAsTable(
@@ -226,7 +226,7 @@ Traceback (most recent call last):
   File "C:\Users\B25712\bsrc-etl-venv\bsrc-etl-venv\lib\site-packages\pyspark\errors\exceptions\captured.py", line 185, in deco
     raise converted from None
 pyspark.errors.exceptions.captured.AnalysisException: Couldn't find a catalog to handle the identifier bsrc_d.log_.process_log.
-2025-09-17 10:42:33 [ERROR] write_to_log:  Error writing to process log table log_.process_log
+2025-09-17 11:00:46 [ERROR] write_to_log:  Error writing to process log table log_.process_log
 Traceback (most recent call last):
   File "C:\Users\B25712\bsrc-etl-venv\bsrc-etl\src\abnamro_bsrc_etl\utils\table_logging.py", line 33, in write_to_log
     log_entry_df.write.mode("append").saveAsTable(
@@ -342,7 +342,7 @@ Coverage HTML written to dir htmlcov
 FAILED test/test_transform/test_pipeline_yaml_integrated_target.py::test_pipeline_yaml_integrated_target[parameters0-test_catalog.test_schema_20240801.testd1_test_target_table] - FileNotFoundError: YAML file not found: C:\Users\B25712\bsrc-etl-venv\bsrc-etl\src\test\data\TEST_YAML.yml
 FAILED test/test_transform/test_pipeline_yaml_integrated_target.py::test_pipeline_yaml_pivot - FileNotFoundError: YAML file not found: C:\Users\B25712\bsrc-etl-venv\bsrc-etl\src\test\data\TEST_YAML_PIVOT.yml
 FAILED test/test_transform/test_pipeline_yaml_integrated_target.py::test_run_mapping - FileNotFoundError: YAML file not found: C:\Users\B25712\bsrc-etl-venv\bsrc-etl\src\business_logic\test\data\TEST_YAML_PIVOT.yml
-================================================================================= 3 failed, 1 passed, 1 warning in 43.33s ================================================================================== 
-(bsrc-etl-venv) PS C:\Users\B25712\bsrc-etl-venv\bsrc-etl> SUCCESS: The process with PID 7872 (child process of PID 6632) has been terminated.
-SUCCESS: The process with PID 6632 (child process of PID 16892) has been terminated.
-SUCCESS: The process with PID 16892 (child process of PID 9956) has been terminated.
+================================================================================= 3 failed, 1 passed, 1 warning in 40.29s ================================================================================== 
+(bsrc-etl-venv) PS C:\Users\B25712\bsrc-etl-venv\bsrc-etl> SUCCESS: The process with PID 1488 (child process of PID 14384) has been terminated.
+SUCCESS: The process with PID 14384 (child process of PID 21584) has been terminated.
+SUCCESS: The process with PID 21584 (child process of PID 15424) has been terminated.
