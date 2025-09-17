@@ -1,0 +1,28 @@
+(bsrc-etl-venv) PS C:\Users\B25712\bsrc-etl-venv\bsrc-etl> pre-commit run --all-files
+ruff lint................................................................Failed
+- hook id: ruff
+- exit code: 1
+
+src\abnamro_bsrc_etl\utils\parse_yaml.py:11:5: C901 `parse_yaml` is too complex (11 > 10)
+   |
+11 | def parse_yaml(
+   |     ^^^^^^^^^^ C901
+12 |     yaml_path: Path | str,
+13 |     parameters: dict | None = None,
+   |
+
+src\abnamro_bsrc_etl\utils\parse_yaml.py:11:5: PLR0912 Too many branches (15 > 12)
+   |
+11 | def parse_yaml(
+   |     ^^^^^^^^^^ PLR0912
+12 |     yaml_path: Path | str,
+13 |     parameters: dict | None = None,
+   |
+
+Found 2 errors.
+All checks passed!
+All checks passed!
+All checks passed!
+
+ruff format..............................................................Passed
+mypy.....................................................................Passed
