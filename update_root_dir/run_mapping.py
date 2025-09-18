@@ -6,6 +6,7 @@ Args:
   run_month
   [delivery_entity]"""
 
+import os
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -23,10 +24,18 @@ from abnamro_bsrc_etl.utils.parse_yaml import parse_yaml
 from abnamro_bsrc_etl.utils.table_logging import write_to_log
 from abnamro_bsrc_etl.validate.run_all import validate_business_logic_mapping
 
-user = (
-    dbutils.notebook.entry_point.getDbutils().notebook().getContext().userName().get()  # type: ignore # noqa: PGH003
-)
-sys.path.insert(0, f"/Workspace/Users/{user}/bsrc-etl/src")
+if os.getenv("DATABRICKS_RUNTIME_VERSION"):
+    try:
+        user = (
+            dbutils.notebook.entry_point.getDbutils()  # type: ignore[name-defined]
+            .notebook()
+            .getContext()
+            .userName()
+            .get()
+        )
+        sys.path.insert(0, f"/Workspace/Users/{user}/bsrc-etl/src")
+    except NameError:
+        pass
 
 
 MAPPING_ROOT_DIR = Path("/Workspace/Shared/deployment/mappings").resolve()
@@ -40,7 +49,6 @@ def run_mapping(
     dq_check_folder: str = "dq_checks",
     delivery_entity: str = "",
     parent_workflow: str = "",
-    business_logic_path: Path | str = MAPPING_ROOT_DIR / "business_logic",  # noqa: ARG001
     run_id: int = 1,
     *,
     local: bool = False,
@@ -146,9 +154,9 @@ if __name__ == "__main__":
     script, stage, target_mapping, run_month, *del_entity = sys.argv
     delivery_entity = "" if not del_entity else del_entity[0]
     run_mapping(
-        spark,  # type: ignore  # noqa: PGH003
+        spark,  # type: ignore[name-defined]
         stage,
         target_mapping,
         run_month,
         delivery_entity=delivery_entity,
-    )  # type: ignore[name-defined]
+    )
