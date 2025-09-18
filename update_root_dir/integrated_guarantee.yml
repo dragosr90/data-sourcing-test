@@ -1,0 +1,43 @@
+description: This YAML is designed to integrate all the guarntees coming from SSF and dummy guarantees created on our side.
+
+target: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_integrated_guarantee_test
+
+sources:
+  - alias: GUA
+    source: stg_{{ RUN_MONTH }}.ssf_{{ DELIVERY_ENTITY }}_gua
+  - alias: DUMMY_GUA
+    source: int_{{ RUN_MONTH }}.{{ DELIVERY_ENTITY }}_dummy_guarantee_fmi
+
+transformations:
+  - union:
+      column_mapping:
+      - GUA
+      - DUMMY_GUA
+      alias: COMBINED_GUA
+      allow_missing_columns: true
+
+expressions:
+  DeliveryEntity: COMBINED_GUA.DeliveryEntity
+  ReportingDate: COMBINED_GUA.ReportingDate
+  AdvancedInternalRatingBasedApproachEligibleGuaranteeIndicator: COMBINED_GUA.AdvancedInternalRatingBasedApproachEligibleGuaranteeIndicator
+  AlternativeLocalReferenceIdentifier: COMBINED_GUA.AlternativeLocalReferenceIdentifier
+  DateOfGuaranteeValue: COMBINED_GUA.DateOfGuaranteeValue
+  EligibleGuaranteeFlag: COMBINED_GUA.EligibleGuaranteeFlag
+  FoundationInternalRatingBasedApproachEligibleGuaranteeIndicator: COMBINED_GUA.FoundationInternalRatingBasedApproachEligibleGuaranteeIndicator
+  GlobalCollateralIdentifier: COMBINED_GUA.GlobalCollateralIdentifier
+  GuaranteeIdentifier: COMBINED_GUA.GuaranteeIdentifier
+  GuaranteeType: COMBINED_GUA.GuaranteeType
+  GuaranteeValueRcoa: COMBINED_GUA.GuaranteeValueRcoa
+  GuaranteeValueReportingAmount: COMBINED_GUA.GuaranteeValueReportingAmount
+  GuaranteeValueReportingCurrency: COMBINED_GUA.GuaranteeValueReportingCurrency
+  GuaranteeValueTransactionAmount: COMBINED_GUA.GuaranteeValueTransactionAmount
+  GuaranteeValueTransactionCurrency: COMBINED_GUA.GuaranteeValueTransactionCurrency
+  GuarantorID: COMBINED_GUA.GuarantorID
+  GuarantorSourceSystemIdentifier: COMBINED_GUA.GuarantorSourceSystemIdentifier
+  LocalReferenceIdentifier: COMBINED_GUA.LocalReferenceIdentifier
+  MaturityDate: COMBINED_GUA.MaturityDate
+  PrincipalOnlyGuarantee: COMBINED_GUA.PrincipalOnlyGuarantee
+  SourceSystemIdentifier: COMBINED_GUA.SourceSystemIdentifier
+  StandardisedApproachEligibleGuaranteeIndicator: COMBINED_GUA.StandardisedApproachEligibleGuaranteeIndicator
+
+drop_duplicates: true
